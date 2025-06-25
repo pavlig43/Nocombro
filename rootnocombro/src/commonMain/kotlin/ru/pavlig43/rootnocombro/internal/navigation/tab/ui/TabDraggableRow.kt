@@ -1,7 +1,6 @@
-package ru.pavlig43.rootnocombro.api.ui
+package ru.pavlig43.rootnocombro.internal.navigation.tab.ui
 
 import androidx.compose.animation.core.Animatable
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.Arrangement
@@ -19,7 +18,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.graphicsLayer
@@ -29,15 +27,16 @@ import androidx.compose.ui.zIndex
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 
+
 /**
  * Properties
  */
 private val defaultTabSpacing = 2.dp
 private val defaultTabPadding = 2.dp
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
+@Suppress("LongParameterList")
 @Composable
-fun <T : Any> TabDraggableRow(
+internal fun <T : Any> TabDraggableRow(
     items: List<T>,
     onMove: (fromIndex: Int, toIndex: Int) -> Unit,
     modifier: Modifier = Modifier,
@@ -77,12 +76,14 @@ fun <T : Any> TabDraggableRow(
     }
 }
 
-inline fun <T : Any> LazyListScope.itemsIndexed(
+private inline fun <T : Any> LazyListScope.itemsIndexed(
     items: List<T>,
     controller: DragController,
     crossinline itemContent: @Composable (index: Int, item: T, draggedItem: T?, modifier: Modifier) -> Unit,
 ) {
-    itemsIndexed(items = items, contentType = { index, _ -> DraggableMetadata(index) }) { index, item ->
+    itemsIndexed(
+        items = items,
+        contentType = { index, _ -> DraggableMetadata(index) }) { index, item ->
         val isDragged = controller.draggedItemIndex == index
         val modifier = Modifier
             .then(
@@ -96,7 +97,7 @@ inline fun <T : Any> LazyListScope.itemsIndexed(
 }
 
 @Composable
-fun rememberDragController(
+private fun rememberDragController(
     lazyListState: LazyListState,
     totalDraggableItems: Int,
     onItemReordered: (oldIndex: Int, newIndex: Int) -> Unit
@@ -108,15 +109,22 @@ fun rememberDragController(
             onReorder = onItemReordered
         )
     }
+    var countItems by remember { mutableStateOf(totalDraggableItems) }
     LaunchedEffect(controller) {
         for (scrollDelta in controller.scrollChannel) {
             lazyListState.scrollBy(scrollDelta)
         }
     }
+    LaunchedEffect(totalDraggableItems) {
+        if (totalDraggableItems > countItems){
+            lazyListState.animateScrollToItem(totalDraggableItems - 1)
+            countItems = totalDraggableItems
+        }
+    }
     return controller
 }
 
-class DragController(
+private class DragController(
     private val totalItems: Int,
     private val listState: LazyListState,
     private val onReorder: (Int, Int) -> Unit
@@ -127,19 +135,19 @@ class DragController(
 
     private var draggedItemInfo: LazyListItemInfo? = null
 
-    internal fun beginDrag(offset: Offset) {
+    fun beginDrag(offset: Offset) {
         draggedItemInfo = listState.layoutInfo.visibleItemsInfo
             .firstOrNull { offset.x.toInt() in it.offset until it.offset + it.size }
             ?.takeIf { it.contentType is DraggableMetadata }
             ?.also { draggedItemIndex = (it.contentType as DraggableMetadata).index }
     }
 
-    internal suspend fun cancelDrag() {
+    suspend fun cancelDrag() {
         offset.animateTo(0f)
         clearDragState()
     }
 
-    internal suspend fun updateDragPosition(offsetDelta: Offset) {
+    suspend fun updateDragPosition(offsetDelta: Offset) {
         offset.snapTo(offset.value + offsetDelta.x)
         val currentIndex = draggedItemIndex ?: return
         val currentItem = draggedItemInfo ?: return
@@ -191,4 +199,4 @@ class DragController(
     }
 }
 
-data class DraggableMetadata(val index: Int)
+private data class DraggableMetadata(val index: Int)

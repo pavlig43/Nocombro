@@ -20,7 +20,7 @@ import ru.pavlig43.itemlist.api.component.DeleteState
 import ru.pavlig43.itemlist.api.data.ItemUi
 import ru.pavlig43.itemlist.internal.ui.settings.SettingsRow
 
-@Suppress("MagicNumber")
+@Suppress("MagicNumber","LongParameterList")
 @Composable
 internal fun ItemListBody(
     itemList: List<ItemUi>,

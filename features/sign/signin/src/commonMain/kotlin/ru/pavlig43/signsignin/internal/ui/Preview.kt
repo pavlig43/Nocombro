@@ -14,7 +14,7 @@ import ru.pavlig43.signcommon.social.api.components.FakeSocialSignComponent
 import ru.pavlig43.signcommon.social.api.components.ISocialSignComponent
 
 
-@Suppress("UnusedPrivateProperty")
+@Suppress("UnusedPrivateMember")
 @Preview
 @Composable
 private fun LogoPassFormPreviewDark() {
@@ -26,7 +26,7 @@ private fun LogoPassFormPreviewDark() {
 
 }
 
-@Suppress("UnusedPrivateProperty")
+@Suppress("UnusedPrivateMember")
 @Preview
 @Composable
 private fun LogoPassFormPreviewLight() {

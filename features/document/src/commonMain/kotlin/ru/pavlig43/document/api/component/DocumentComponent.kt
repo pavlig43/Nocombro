@@ -9,8 +9,12 @@ import com.arkivanov.decompose.router.stack.pop
 import com.arkivanov.decompose.router.stack.pushToFront
 import com.arkivanov.decompose.value.Value
 import com.arkivanov.essenty.instancekeeper.getOrCreate
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.serialization.Serializable
 import org.koin.core.scope.Scope
+import ru.pavlig43.core.SlotComponent
 import ru.pavlig43.core.componentCoroutineScope
 import ru.pavlig43.corekoin.ComponentKoinContext
 import ru.pavlig43.database.data.document.Document
@@ -22,14 +26,15 @@ import ru.pavlig43.itemlist.api.component.ItemListComponent
 
 class DocumentComponent(
     componentContext: ComponentContext,
+    private val onCreateScreen:()->Unit,
     dependencies: IDocumentDependencies
-) : ComponentContext by componentContext, IDocumentComponent {
-    private val coroutineScope = componentCoroutineScope()
+) : ComponentContext by componentContext, IDocumentComponent,SlotComponent {
     private val koinContext = instanceKeeper.getOrCreate {
         ComponentKoinContext()
     }
     private val scope: Scope =
         koinContext.getOrCreateKoinScope(createModule(dependencies))
+
 
     private val stackNavigation = StackNavigation<Config>()
     override val stack: Value<ChildStack<*, IDocumentComponent.Child>> = childStack(
@@ -49,23 +54,10 @@ class DocumentComponent(
                 ItemListComponent<Document, DocumentUi, DocumentType>(
                     componentContext = componentContext,
                     repository = scope.get(),
-                    onCreateScreen = {
-                        stackNavigation.pushToFront(
-                            Config.CreateDocument
-                        )
-                    }
+                    onCreateScreen = onCreateScreen,
                 )
             )
 
-            Config.CreateDocument -> IDocumentComponent.Child.CreateDocument(
-                CreateDocumentComponent(
-                    componentContext = componentContext,
-                    repository = scope.get(),
-                    onBackScreen = {
-                        stackNavigation.pop()
-                    }
-                )
-            )
         }
     }
 
@@ -74,8 +66,13 @@ class DocumentComponent(
     sealed interface Config {
         @Serializable
         data object ItemList : Config
-        @Serializable
-        data object CreateDocument : Config
+
+    }
+
+    private val _model = MutableStateFlow(SlotComponent.TabModel(TAB_TITLE))
+    override val model: StateFlow<SlotComponent.TabModel> = _model.asStateFlow()
+    private companion object {
+        const val TAB_TITLE = "Документы"
     }
 
 }

@@ -4,6 +4,6 @@ import ru.pavlig43.createitem.api.component.ICreateItemComponent
 
 interface ICreateDocumentComponent {
     val createBaseRowsOfComponent: ICreateItemComponent
-    fun onBack()
+
 
 }

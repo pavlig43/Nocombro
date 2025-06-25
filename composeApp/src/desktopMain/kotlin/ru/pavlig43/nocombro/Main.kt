@@ -1,22 +1,17 @@
 package ru.pavlig43.nocombro
 
-import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import com.arkivanov.decompose.DefaultComponentContext
+import com.arkivanov.decompose.extensions.compose.lifecycle.LifecycleController
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import org.koin.core.context.GlobalContext
 import org.koin.java.KoinJavaComponent.getKoin
-import ru.pavlig43.database.NocombroDatabase
-import ru.pavlig43.database.data.document.Document
+import ru.pavlig43.datastore.SettingsRepository
 import ru.pavlig43.rootnocombro.api.IRootDependencies
 import ru.pavlig43.rootnocombro.api.component.RootNocombroComponent
-import javax.swing.SwingUtilities
 
 
 fun main() {
@@ -27,23 +22,33 @@ fun main() {
 
     val rootNocombroComponent =
         runOnUiThread {
+
             RootNocombroComponent(
                 componentContext = DefaultComponentContext(lifecycle = lifecycle),
                 rootDependencies = getKoin().get<IRootDependencies>()
             )
         }
+
     application {
         val windowState = rememberWindowState()
+
         Window(
             onCloseRequest = ::exitApplication,
-            alwaysOnTop = true,
+//            alwaysOnTop = true,
             title = "Nocombro",
             state = windowState
         ) {
+            LifecycleController(
+                lifecycleRegistry = lifecycle,
+                windowState = windowState,
+                windowInfo = LocalWindowInfo.current,
+            )
             App(rootNocombroComponent)
+
 
         }
     }
 }
+
 
 

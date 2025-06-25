@@ -15,10 +15,10 @@ import ru.pavlig43.corekoin.ComponentKoinContext
 class ProductComponent(
     componentContext: ComponentContext,
 ) : ComponentContext by componentContext, IProductComponent {
-    private val coroutineScope = componentCoroutineScope()
-    private val koinContext = instanceKeeper.getOrCreate {
-        ComponentKoinContext()
-    }
+//    private val coroutineScope = componentCoroutineScope()
+//    private val koinContext = instanceKeeper.getOrCreate {
+//        ComponentKoinContext()
+//    }
 //    private val scope: Scope =
 //        koinContext.getOrCreateKoinScope()
 

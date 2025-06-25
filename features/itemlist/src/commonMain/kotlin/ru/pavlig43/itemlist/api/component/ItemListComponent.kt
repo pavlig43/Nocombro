@@ -31,11 +31,11 @@ class ItemListComponent<I : Item, U : ItemUi, S : ItemType>(
     private val repository: IItemRepository<I, U, S>,
 ) : ComponentContext by componentContext, IItemListComponent {
     private val coroutineScope = componentCoroutineScope()
-    private val koinContext = instanceKeeper.getOrCreate {
-        ComponentKoinContext()
-    }
-    private val scope: Scope =
-        koinContext.getOrCreateKoinScope(createItemListModule())
+//    private val koinContext = instanceKeeper.getOrCreate {
+//        ComponentKoinContext()
+//    }
+//    private val scope: Scope =
+//        koinContext.getOrCreateKoinScope(createItemListModule())
 
     private val selectedItemTypes = MutableStateFlow<List<S>>(emptyList())
 
@@ -84,7 +84,6 @@ class ItemListComponent<I : Item, U : ItemUi, S : ItemType>(
             deleteState.update { DeleteState.Loading() }
             val state = repository.deleteItemsById(ids).toDeleteState()
             deleteState.update { state }
-            delay(1000)
             if (state is DeleteState.Success) {
                 _selectedItemIds.clear()
             }

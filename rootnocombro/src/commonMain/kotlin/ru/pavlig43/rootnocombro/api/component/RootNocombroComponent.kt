@@ -1,18 +1,7 @@
 package ru.pavlig43.rootnocombro.api.component
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
 import com.arkivanov.decompose.ComponentContext
+import com.arkivanov.decompose.childContext
 import com.arkivanov.decompose.router.stack.ChildStack
 import com.arkivanov.decompose.router.stack.StackNavigation
 import com.arkivanov.decompose.router.stack.childStack
@@ -21,9 +10,14 @@ import com.arkivanov.decompose.value.Value
 import com.arkivanov.essenty.instancekeeper.getOrCreate
 import kotlinx.serialization.Serializable
 import ru.pavlig43.corekoin.ComponentKoinContext
+import ru.pavlig43.document.api.component.CreateDocumentComponent
 import ru.pavlig43.document.api.component.DocumentComponent
 import ru.pavlig43.rootnocombro.api.IRootDependencies
-import ru.pavlig43.rootnocombro.intetnal.di.createRootNocombroModule
+import ru.pavlig43.rootnocombro.internal.di.createRootNocombroModule
+import ru.pavlig43.rootnocombro.internal.settings.component.ISettingsComponent
+import ru.pavlig43.rootnocombro.internal.settings.component.SettingsComponent
+import ru.pavlig43.rootnocombro.internal.navigation.tab.component.DefaultTabNavigationComponent
+import ru.pavlig43.rootnocombro.internal.navigation.tab.component.TabConfig
 import ru.pavlig43.signroot.api.component.RootSignComponent
 
 class RootNocombroComponent(
@@ -34,20 +28,25 @@ class RootNocombroComponent(
     private val koinContext = instanceKeeper.getOrCreate { ComponentKoinContext() }
     private val scope = koinContext.getOrCreateKoinScope(
         createRootNocombroModule(
-        rootDependencies
+            rootDependencies
         )
     )
 
-
     private val stackNavigation = StackNavigation<Config>()
 
-    override val stack: Value<ChildStack<Config, IRootNocombroComponent.Child>> = childStack<ComponentContext,Config, IRootNocombroComponent.Child>(
-        source = stackNavigation,
-        serializer = Config.serializer(),
-        initialConfiguration = Config.Document,
-        handleBackButton = false,
-        childFactory = ::createChild
+    override val stack: Value<ChildStack<Config, IRootNocombroComponent.Child>> =
+        childStack<ComponentContext, Config, IRootNocombroComponent.Child>(
+            source = stackNavigation,
+            serializer = Config.serializer(),
+            initialConfiguration = Config.Tabs,
+            handleBackButton = false,
+            childFactory = ::createChild
+        )
+    override val settingsComponent: ISettingsComponent = SettingsComponent(
+        componentContext = childContext("settings"),
+        settingsRepository = scope.get()
     )
+
 
     private fun createChild(
         config: Config,
@@ -58,20 +57,37 @@ class RootNocombroComponent(
                 RootSignComponent(
                     componentContext = componentContext,
                     rootSignDependencies = scope.get(),
-                    signIn = { stackNavigation.pushToFront(Config.Document) },
-                    signUp = { stackNavigation.pushToFront(Config.Document) }
+                    signIn = { stackNavigation.pushToFront(Config.Tabs) },
+                    signUp = { stackNavigation.pushToFront(Config.Tabs) }
                 )
 
             )
 
-            Config.Document -> IRootNocombroComponent.Child.Document(
-                DocumentComponent(
+            Config.Tabs -> IRootNocombroComponent.Child.Tabs(
+                DefaultTabNavigationComponent(
                     componentContext = componentContext,
-                    dependencies = scope.get()
+                    startConfigurations = listOf(
+                        TabConfig.DocumentList(),
+                        TabConfig.CreateDocument()
+                    ),
+                    serializer = TabConfig.serializer(),
+                    slotFactory = { context, tabConfig: TabConfig, openNewTab: (TabConfig) -> Unit ->
+                        when (tabConfig) {
+                            is TabConfig.DocumentList -> DocumentComponent(
+                                componentContext = context,
+                                onCreateScreen = { openNewTab(TabConfig.CreateDocument()) },
+                                dependencies = scope.get(),
+                            )
+
+                            is TabConfig.CreateDocument -> CreateDocumentComponent(
+                                componentContext = context,
+                                dependencies = scope.get()
+                            )
+                        }
+                    }
+
                 )
             )
-
-            Config.Tab -> IRootNocombroComponent.Child.Tab()
         }
     }
 
@@ -82,36 +98,12 @@ class RootNocombroComponent(
         data object Sign : Config
 
         @Serializable
-        data object Document : Config
-
-        @Serializable
-        data object Tab : Config
+        data object Tabs : Config
 
     }
 }
 
-@Composable
-fun TabScreen() {
-    var tabIndex by remember { mutableStateOf(0) }
 
-    val tabs = listOf("Home", "About", "Settings")
-
-    Column(modifier = Modifier.fillMaxWidth()) {
-        TabRow(selectedTabIndex = tabIndex) {
-            tabs.forEachIndexed { index, title ->
-                Tab(text = { Text(title) },
-                    selected = tabIndex == index,
-                    onClick = { tabIndex = index }
-                )
-            }
-        }
-        when (tabIndex) {
-            0 -> Box{Text("0")}
-            1 -> Box{Text("1")}
-            2 -> Box{Text("2")}
-        }
-    }
-}
 
 
 

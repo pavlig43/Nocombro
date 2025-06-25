@@ -17,7 +17,6 @@ fun DocumentScreen(
     ){ child, ->
         when(val instance = child.instance){
             is IDocumentComponent.Child.ItemList -> ItemListScreen(instance.component)
-            is IDocumentComponent.Child.CreateDocument -> CreateDocumentScreen(instance.component)
         }
     }
 }

@@ -10,6 +10,8 @@ import org.koin.dsl.bind
 import org.koin.dsl.module
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.platformDataBaseModule
+import ru.pavlig43.datastore.SettingsRepository
+import ru.pavlig43.datastore.di.getSettingsRepository
 import ru.pavlig43.rootnocombro.api.IRootDependencies
 
 fun initKoin(appDeclaration: KoinAppDeclaration = {}) {
@@ -17,18 +19,19 @@ fun initKoin(appDeclaration: KoinAppDeclaration = {}) {
          logger(PrintLogger(Level.DEBUG))
         appDeclaration()
         modules(
-            platformDataBaseModule() + appModule
-
+            platformDataBaseModule()  + getSettingsRepository()  + appModule
         )
 
     }
 }
 
 private val appModule = module {
+
     singleOf(::RootDependencies) bind IRootDependencies::class
 
 }
 
 private class RootDependencies(
-    override val database: NocombroDatabase
+    override val database: NocombroDatabase,
+    override val settingsRepository:SettingsRepository
 ): IRootDependencies

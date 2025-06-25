@@ -23,7 +23,7 @@ class SignUpComponent(
     private val signUp: () -> Unit,
     private val navigateToSignIn: () -> Unit,
 ) : ComponentContext by componentContext, ISignUpComponent {
-    private val coroutineScope = componentCoroutineScope()
+//    private val coroutineScope = componentCoroutineScope()
 
     private val _signUpState = MutableStateFlow<SignUpState>(SignUpState.Initial())
 

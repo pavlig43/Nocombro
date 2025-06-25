@@ -13,7 +13,6 @@ interface IDocumentComponent {
 
     sealed interface Child{
         class ItemList(val component: IItemListComponent): Child
-        class CreateDocument(val component: ICreateDocumentComponent): Child
     }
 }
 

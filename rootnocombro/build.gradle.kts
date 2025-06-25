@@ -14,5 +14,7 @@ kotlin{
         implementation(projects.features.sign.root)
         implementation(projects.features.document)
         implementation(projects.database)
+        implementation(projects.datastore)
+
     }
 }

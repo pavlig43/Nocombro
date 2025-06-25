@@ -39,6 +39,9 @@ kotlin {
             implementation(projects.theme)
             implementation(projects.corekoin)
             implementation(projects.database)
+            implementation(libs.datastore)
+            implementation(libs.datastore.preferences)
+            implementation(projects.datastore)
             implementation(projects.rootnocombro)
 
         }

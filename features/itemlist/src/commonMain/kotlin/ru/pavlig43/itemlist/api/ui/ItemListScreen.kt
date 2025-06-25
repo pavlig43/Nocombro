@@ -38,6 +38,7 @@ fun ItemListScreen(
         modifier = modifier)
 }
 
+@Suppress("LongParameterList")
 @Composable
 private fun ItemListScreenState(
     state: ItemListState,
@@ -52,8 +53,8 @@ private fun ItemListScreenState(
     modifier: Modifier = Modifier,
 ) {
     when (state) {
-        is ItemListState.Error -> ErrorScreen(modifier)
-        is ItemListState.Initial -> Box(modifier)
+        is ItemListState.Error -> ErrorScreen(state.message,modifier)
+        is ItemListState.Initial -> LoadingScreen(modifier)
         is ItemListState.Loading -> LoadingScreen(modifier)
         is ItemListState.Success -> ItemList(
             itemList = state.data,
@@ -70,6 +71,7 @@ private fun ItemListScreenState(
     }
 }
 
+@Suppress("LongParameterList")
 @Composable
 private fun ItemList(
     itemList: List<ItemUi>,

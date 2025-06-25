@@ -27,8 +27,7 @@ import ru.pavlig43.itemlist.internal.ui.SELECTION
 @Composable
 internal fun SelectionLogic(
     fullListSelection: List<ItemType>,
-    saveSelection: (List<ItemType>) -> Unit,
-    modifier: Modifier = Modifier
+    saveSelection: (List<ItemType>) -> Unit
 ) {
 
     var isMenuOpen by remember { mutableStateOf(false) }
@@ -57,7 +56,7 @@ internal fun SelectionLogic(
 
     }
 }
-
+@Suppress("LongParameterList")
 @Composable
 private fun DropDownBody(
     items: List<ItemType>,

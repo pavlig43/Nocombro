@@ -24,7 +24,7 @@ class SignInComponent(
     private val signIn: () -> Unit,
     private val navigateToSignUp: () -> Unit,
 ) : ComponentContext by componentContext, ISignInComponent {
-    private val coroutineScope = componentCoroutineScope()
+//    private val coroutineScope = componentCoroutineScope()
     private val koinContext = instanceKeeper.getOrCreate {
         ComponentKoinContext()
     }

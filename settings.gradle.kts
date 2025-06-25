@@ -38,6 +38,7 @@ include(":composeApp")
 include(":core")
 include(":corekoin")
 include(":database")
+include(":datastore")
 include(":theme")
 
 include(":features:sign:common")
@@ -55,3 +56,5 @@ include(":features:product")
 include(":features:document")
 include(":features:itemlist")
 include(":features:createitem")
+
+

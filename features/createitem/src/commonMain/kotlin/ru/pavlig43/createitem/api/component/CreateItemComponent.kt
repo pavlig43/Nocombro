@@ -25,9 +25,9 @@ class CreateItemComponent<S : ItemType>(
     private val repository: ICreateItemRepository<S>
 ) : ComponentContext by componentContext, ICreateItemComponent {
     private val coroutineScope = componentCoroutineScope()
-    private val koinContext = instanceKeeper.getOrCreate {
-        ComponentKoinContext()
-    }
+//    private val koinContext = instanceKeeper.getOrCreate {
+//        ComponentKoinContext()
+//    }
     private val _name = MutableStateFlow("")
     override val name: StateFlow<String> = _name.asStateFlow()
     override fun onNameChange(name: String) {

@@ -30,6 +30,8 @@ plugins {
     alias(libs.plugins.pavlig43.sqldelight) apply false
     alias(libs.plugins.pavlig43.decompose) apply false
     alias(libs.plugins.pavlig43.detekt) apply false
+    alias(libs.plugins.kotlin.android) apply false
+    alias(libs.plugins.android.kotlin.multiplatform.library) apply false
 
 
 }
