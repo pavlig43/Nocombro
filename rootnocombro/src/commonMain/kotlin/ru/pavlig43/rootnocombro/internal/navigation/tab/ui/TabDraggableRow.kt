@@ -170,6 +170,7 @@ private class DragController(
         }
     }
 
+
     private suspend fun reorderItems(currentIndex: Int, targetItem: LazyListItemInfo) {
         val targetIndex = (targetItem.contentType as DraggableMetadata).index
         onReorder(currentIndex, targetIndex)

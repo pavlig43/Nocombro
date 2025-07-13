@@ -100,7 +100,7 @@ internal class DefaultTabNavigationComponent<TabConfiguration : Any, SlotCompone
     }
 
     override fun onMove(fromIndex: Int, toIndex: Int) {
-        if (fromIndex !in startConfigurations.indices || toIndex !in startConfigurations.indices) return
+        if (fromIndex !in children.value.items .indices || toIndex !in children.value.items.indices) return
 
         navigation.navigate { state ->
             val updatedConfigurations = state.configurations.toMutableList()
@@ -114,7 +114,7 @@ internal class DefaultTabNavigationComponent<TabConfiguration : Any, SlotCompone
     private fun onCloseTab(tabConfiguration: TabConfiguration) {
         children.value.items.forEach {
             if (it.configuration === tabConfiguration) {
-                fun String.toAfterDog() = this.substringAfter("@")
+
                 println(
                     "tab ${
                         it.configuration.toString().toAfterDog()
@@ -181,4 +181,5 @@ internal class DefaultTabNavigationComponent<TabConfiguration : Any, SlotCompone
         }
     }
 }
+fun String.toAfterDog() = this.substringAfter("@")
 

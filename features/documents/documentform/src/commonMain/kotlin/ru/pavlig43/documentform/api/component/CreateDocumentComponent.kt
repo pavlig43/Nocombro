@@ -94,7 +94,6 @@ class CreateDocumentComponent(
     }
 
     override fun closeScreen() {
-        println("state close Screen")
         closeTab()
     }
 
