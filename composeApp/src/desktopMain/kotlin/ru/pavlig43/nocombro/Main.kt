@@ -7,6 +7,7 @@ import androidx.compose.ui.window.rememberWindowState
 import com.arkivanov.decompose.DefaultComponentContext
 import com.arkivanov.decompose.extensions.compose.lifecycle.LifecycleController
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
+import io.github.vinceglb.filekit.FileKit
 import org.koin.core.context.GlobalContext
 import org.koin.java.KoinJavaComponent.getKoin
 import ru.pavlig43.datastore.SettingsRepository
@@ -17,6 +18,7 @@ import ru.pavlig43.rootnocombro.api.component.RootNocombroComponent
 fun main() {
     val lifecycle = LifecycleRegistry()
     initKoin {}
+    FileKit.init(appId = "Nocombro")
 
     // Always create the root component outside Compose on the UI thread
 

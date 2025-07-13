@@ -20,6 +20,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -60,7 +61,7 @@ val tabOnClickModifier = @Composable { onSelect: () -> Unit, interactionSource: 
 
 @Suppress("LongParameterList")
 @Composable
-fun TabContent(
+internal fun TabContent(
     slotComponent: SlotComponent,
     modifier: Modifier = Modifier,
     isSelected: Boolean,
@@ -68,7 +69,7 @@ fun TabContent(
     onClose: () -> Unit,
     onSelect: () -> Unit
 ) {
-    val state = slotComponent.model.collectAsState()
+    val state by slotComponent.model.collectAsState()
     val interactionSource = remember(slotComponent) { MutableInteractionSource() }
     val pressedAsState = interactionSource.collectIsPressedAsState()
     LaunchedEffect(pressedAsState.value) {
@@ -87,7 +88,7 @@ fun TabContent(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(text = state.value.title)
+            Text(text = state.title)
             FilledTonalIconButton(modifier = closeButtonModifier, onClick = onClose) {
                 Icon(
                     modifier = closeButtonIconModifier,

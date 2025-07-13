@@ -43,6 +43,7 @@ kotlin {
             implementation(libs.datastore.preferences)
             implementation(projects.datastore)
             implementation(projects.rootnocombro)
+            implementation(libs.filekit.dialogs)
 
         }
 

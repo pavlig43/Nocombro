@@ -7,22 +7,26 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.Surface
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.Child
 import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
+import kotlinx.coroutines.launch
 import ru.pavlig43.core.SlotComponent
-import ru.pavlig43.document.api.component.CreateDocumentComponent
-import ru.pavlig43.document.api.component.DocumentComponent
-import ru.pavlig43.document.api.ui.CreateDocumentScreen
-import ru.pavlig43.document.api.ui.DocumentScreen
+import ru.pavlig43.documentform.api.component.CreateDocumentComponent
+import ru.pavlig43.documentform.api.ui.DocumentFormScreen
+import ru.pavlig43.documentlist.api.component.DocumentListComponent
+import ru.pavlig43.documentlist.api.ui.DocumentScreen
 import ru.pavlig43.rootnocombro.api.component.IRootNocombroComponent
-import ru.pavlig43.rootnocombro.internal.settings.component.ISettingsComponent
+import ru.pavlig43.rootnocombro.internal.navigation.drawer.ui.NavigationDrawer
 import ru.pavlig43.rootnocombro.internal.navigation.tab.component.TabConfig
 import ru.pavlig43.rootnocombro.internal.navigation.tab.component.TabNavigationComponent
 import ru.pavlig43.rootnocombro.internal.navigation.tab.ui.TabContent
@@ -30,10 +34,12 @@ import ru.pavlig43.rootnocombro.internal.navigation.tab.ui.TabNavigationContent
 import ru.pavlig43.rootnocombro.internal.topbar.ui.NocombroAppBar
 import ru.pavlig43.signroot.api.ui.RootSignScreen
 
+@Suppress("LongMethod")
 @Composable
 fun RootNocombroScreen(rootNocombroComponent: IRootNocombroComponent) {
     val stack by rootNocombroComponent.stack.subscribeAsState()
-
+    val coroutineScope = rememberCoroutineScope()
+    val drawerState = rememberDrawerState(DrawerValue.Closed)
     Surface {
 
         Children(
@@ -54,31 +60,55 @@ fun RootNocombroScreen(rootNocombroComponent: IRootNocombroComponent) {
                     is IRootNocombroComponent.Child.Tabs -> {
                         val tabNavigationComponent: TabNavigationComponent<TabConfig, SlotComponent> =
                             instance.component
-                        NocombroAppBar(settingsComponent = rootNocombroComponent.settingsComponent)
-                        Column(modifier = Modifier.fillMaxSize()) {
-                            TabNavigationContent(
-                                navigationComponent = tabNavigationComponent,
-                                tabContent = { index, slotComponent, modifier, isSelected, isDragging, onClose ->
-                                    TabContent(
-                                        slotComponent = slotComponent,
-                                        modifier = modifier,
-                                        isSelected = isSelected,
-                                        isDragging = isDragging,
-                                        onClose = onClose,
-                                        onSelect = { tabNavigationComponent.onSelect(index) },
-                                    )
-                                },
-                                containerContent = { innerTabs, slotComponent: SlotComponent? ->
-                                    innerTabs(Modifier.fillMaxWidth())
-                                    when (slotComponent) {
-                                        is DocumentComponent -> DocumentScreen(slotComponent)
-                                        is CreateDocumentComponent -> CreateDocumentScreen(slotComponent)
+                        NocombroAppBar(
+                            settingsComponent = rootNocombroComponent.settingsComponent,
+                            onOpenDrawer = {
+                                coroutineScope.launch {
+                                    if (drawerState.isClosed) {
+                                        drawerState.open()
+                                    } else {
+                                        drawerState.close()
                                     }
                                 }
-                            )
+                            }
+                        )
+                        NavigationDrawer(
+                            drawerComponent = tabNavigationComponent.drawerComponent,
+                            drawerState = drawerState,
+                            onCloseNavigationDrawer = {
+                                coroutineScope.launch { drawerState.close() }
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Column(Modifier.fillMaxSize()) {
+                                TabNavigationContent(
+                                    navigationComponent = tabNavigationComponent,
+                                    tabContent = { index, slotComponent, modifier, isSelected, isDragging, onClose ->
+                                        TabContent(
+                                            slotComponent = slotComponent,
+                                            modifier = modifier,
+                                            isSelected = isSelected,
+                                            isDragging = isDragging,
+                                            onClose = onClose,
+                                            onSelect = { tabNavigationComponent.onSelectTab(index) },
+                                        )
+                                    },
+                                    containerContent = { innerTabs: @Composable (modifier: Modifier) -> Unit,
+                                                         slotComponent: SlotComponent? ->
+                                        innerTabs(Modifier.fillMaxWidth())
+                                        when (slotComponent) {
+                                            is DocumentListComponent -> DocumentScreen(slotComponent)
+                                            is CreateDocumentComponent -> DocumentFormScreen(slotComponent)
+                                        }
+                                    }
+                                )
+                            }
+
                         }
 
+
                     }
+
                 }
 
             }

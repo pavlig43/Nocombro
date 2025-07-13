@@ -36,6 +36,7 @@ plugins {
 
 include(":composeApp")
 include(":core")
+include(":coreui")
 include(":corekoin")
 include(":database")
 include(":datastore")
@@ -53,8 +54,12 @@ include(":rootnocombro")
 
 
 include(":features:product")
-include(":features:document")
+
 include(":features:itemlist")
 include(":features:createitem")
 
 
+
+include(":features:documents:addfile")
+include(":features:documents:documentform")
+include(":features:documents:documentlist")

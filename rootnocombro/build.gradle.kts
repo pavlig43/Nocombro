@@ -2,7 +2,7 @@ import ru.pavlig43.convention.extension.commonMainDependencies
 
 plugins {
     alias(libs.plugins.pavlig43.feature)
-    alias(libs.plugins.pavlig43.decompose)
+//    alias(libs.plugins.pavlig43.decompose)
 
 }
 
@@ -12,7 +12,8 @@ android{
 kotlin{
     commonMainDependencies {
         implementation(projects.features.sign.root)
-        implementation(projects.features.document)
+        implementation(projects.features.documents.documentform)
+        implementation(projects.features.documents.documentlist)
         implementation(projects.database)
         implementation(projects.datastore)
 

@@ -6,7 +6,6 @@ plugins {
   alias(libs.plugins.pavlig43.decompose)
 
   alias(libs.plugins.pavlig43.coroutines)
-//  alias(libs.plugins.pavlig43.koin)
 
   }
 
@@ -17,5 +16,6 @@ kotlin{
     commonMainDependencies {
         implementation(libs.decompose)
         implementation(libs.kotlinx.datetime)
+
     }
 }

@@ -5,19 +5,17 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import ru.pavlig43.core.RequestResult
-import ru.pavlig43.database.data.document.Document
 
 private const val ERROR_DATABASE = "Ошибка базы данных "
-private suspend fun <T> dataBaseSafeCall(
+suspend fun <T> dbSafeCall(
     daoTag: String,
-    operationName: String,
     action: suspend () -> T
 
 ): RequestResult<T> {
     return runCatching { action() }.fold(
         onSuccess = { RequestResult.Success(it) },
         onFailure = { throwable ->
-            val message = "$daoTag $ERROR_DATABASE $operationName"
+            val message = "$daoTag $ERROR_DATABASE"
             when (throwable) {
                 is SQLiteException -> RequestResult.Error(throwable = throwable, message = message)
                 else -> RequestResult.Error(throwable = throwable, message = message)
@@ -26,47 +24,7 @@ private suspend fun <T> dataBaseSafeCall(
     )
 }
 
-suspend fun dbSafeInsert(
-    daoTag: String,
-    action: suspend () -> Unit
-): RequestResult<Unit> {
-    return dataBaseSafeCall(daoTag, "insert", action)
-}
 
-suspend fun  dbSafeDelete(
-    daoTag: String,
-    action: suspend () -> Int
-): RequestResult<Int> {
-    val result = dataBaseSafeCall(daoTag, "delete", action)
-    return when (result) {
-        is RequestResult.Success -> {
-            if (result.data == 0) {
-                RequestResult.Error(message = "Не удалось удалить запись")
-            } else result
-        }
-        else -> result
-    }
-}
-suspend fun  dbSafeUpdate(
-    daoTag: String,
-    action: suspend () -> Int
-): RequestResult<Int> {
-    val result = dataBaseSafeCall(daoTag, "update", action)
-    return when (result) {
-        is RequestResult.Success -> {
-            if ( result.data == 0) {
-                RequestResult.Error(message = "Не удалось обновить запись")
-            } else result
-        }
-        else -> result
-    }
-}
-suspend fun <T> dbSafeGet(
-    daoTag: String,
-    action: suspend () -> T
-): RequestResult<T> {
-    return dataBaseSafeCall(daoTag, "get", action)
-}
 
 fun <T> dbSafeFlow(
     daoTag: String,

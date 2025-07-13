@@ -1,6 +1,7 @@
 package ru.pavlig43.createitem.api.component
 
 
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import ru.pavlig43.createitem.internal.ui.NAME_ALREADY_EXISTS_MESSAGE
 import ru.pavlig43.createitem.internal.ui.NAME_IS_EMPTY_MESSAGE
@@ -10,7 +11,9 @@ interface ICreateItemComponent {
     val name:StateFlow<String>
     fun onNameChange(name:String)
     val type:StateFlow<ItemType?>
-
+    val typeVariants:StateFlow<List<ItemType>>
+    fun onSelectType(type:ItemType)
+    val isValidAllValue: Flow<Boolean>
     val isValidName:StateFlow<ValidNameState>
 }
 sealed class ValidNameState{

@@ -1,15 +1,24 @@
 package ru.pavlig43.rootnocombro.internal.navigation.drawer.component
 
 import com.arkivanov.decompose.ComponentContext
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
-class DrawerComponent<DrawerConfiguration : Any>(
+internal class DrawerComponent(
     componentContext: ComponentContext,
-    private val openScreen: (DrawerConfiguration) -> Unit,
-    private val startConfiguration: List<DrawerConfiguration>
-) : ComponentContext by componentContext, IDrawerComponent<DrawerConfiguration> {
+    private val openScreen: DrawerDestination.() -> Unit,
+) : ComponentContext by componentContext, IDrawerComponent {
 
-    override fun onSelect(configuration: DrawerConfiguration) {
+    override fun onSelect(configuration: DrawerDestination) {
         openScreen(configuration)
     }
+
+    private val _drawerConfigurationsState =
+        MutableStateFlow(DrawerDestinationTitle.entries.map { it.toDrawerDestination() })
+
+    override val drawerConfigurationsState: StateFlow<List<DrawerDestination>> =
+        _drawerConfigurationsState.asStateFlow()
+
 
 }

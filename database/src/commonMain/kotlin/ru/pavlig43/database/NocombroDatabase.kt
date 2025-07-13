@@ -11,6 +11,7 @@ import ru.pavlig43.database.data.common.Converters
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.dao.ProductDao
 import ru.pavlig43.database.data.document.Document
+import ru.pavlig43.database.data.document.DocumentFilePath
 import ru.pavlig43.database.data.document.dao.DocumentDao
 import ru.pavlig43.database.data.document.declaration.DeclarationDependencies
 import ru.pavlig43.database.data.product.ProductDependencies
@@ -22,7 +23,8 @@ import ru.pavlig43.database.data.specification.Specification
         Document::class,
         ProductDependencies::class,
         Specification::class,
-        DeclarationDependencies::class
+        DeclarationDependencies::class,
+        DocumentFilePath::class,
     ],
     version = 1
 )

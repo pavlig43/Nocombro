@@ -3,32 +3,26 @@ package ru.pavlig43.itemlist.api.component
 
 import androidx.compose.runtime.mutableStateListOf
 import com.arkivanov.decompose.ComponentContext
-import com.arkivanov.essenty.instancekeeper.getOrCreate
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted.Companion.Eagerly
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.forEach
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.koin.core.scope.Scope
 import ru.pavlig43.core.RequestResult
 import ru.pavlig43.core.componentCoroutineScope
-import ru.pavlig43.corekoin.ComponentKoinContext
 import ru.pavlig43.database.data.common.data.Item
 import ru.pavlig43.database.data.common.data.ItemType
-import ru.pavlig43.itemlist.api.data.IItemRepository
+import ru.pavlig43.itemlist.api.data.IItemListRepository
 import ru.pavlig43.itemlist.api.data.ItemUi
-import ru.pavlig43.itemlist.internal.di.createItemListModule
 
 class ItemListComponent<I : Item, U : ItemUi, S : ItemType>(
     componentContext: ComponentContext,
     private val onCreateScreen: () -> Unit,
-    private val repository: IItemRepository<I, U, S>,
+    private val repository: IItemListRepository<I, U, S>,
 ) : ComponentContext by componentContext, IItemListComponent {
     private val coroutineScope = componentCoroutineScope()
 //    private val koinContext = instanceKeeper.getOrCreate {
@@ -108,7 +102,7 @@ private fun <I : Item, O : ItemUi> RequestResult<List<I>>.toItemListState(
         is RequestResult.Success<List<I>> -> ItemListState.Success(data.map(mapper))
     }
 }
-private fun RequestResult<Int>.toDeleteState(): DeleteState {
+private fun RequestResult<Unit>.toDeleteState(): DeleteState {
     return when (this) {
         is RequestResult.Error<*> -> DeleteState.Error(message ?: "unknown error")
         is RequestResult.InProgress -> DeleteState.Loading()

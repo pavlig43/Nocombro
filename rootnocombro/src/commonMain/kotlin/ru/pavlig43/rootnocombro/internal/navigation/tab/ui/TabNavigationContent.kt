@@ -22,7 +22,8 @@ internal fun <TabConfiguration : Any, SlotComponent : Any> TabNavigationContent(
     ) -> Unit,
     tabsArrangement: Arrangement.Horizontal = Arrangement.spacedBy(4.dp),
     containerContent: @Composable (
-        innerTabs: @Composable (modifier: Modifier) -> Unit, slotComponent: SlotComponent?
+        innerTabs: @Composable (modifier: Modifier) -> Unit,
+        slotComponent: SlotComponent?
     ) -> Unit
 ) {
     val children by navigationComponent.children.subscribeAsState()
@@ -39,12 +40,12 @@ internal fun <TabConfiguration : Any, SlotComponent : Any> TabNavigationContent(
                         index,
                         itemComponent,
                         modifier,
-                        children.selected == index,
+                        children.selectedIndex == index,
                         isDragging
                     ) { navigationComponent.onTabCloseClicked(index) }
                 }
             )
         },
-        children.selected?.let { children.items[it] }?.instance
+        children.selectedIndex?.let { children.items[it] }?.instance
     )
 }

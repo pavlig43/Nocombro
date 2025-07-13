@@ -13,6 +13,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import ru.pavlig43.database.data.common.data.ItemType
 import ru.pavlig43.itemlist.internal.ui.CREATE_RECORD
+import ru.pavlig43.coreui.tooltip.IconButtonToolTip
+
 
 @Composable
 internal fun SettingsRow(
@@ -26,7 +28,7 @@ internal fun SettingsRow(
             .background(MaterialTheme.colorScheme.tertiaryContainer),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        SettingsToolTip(
+        IconButtonToolTip(
             tooltipText = CREATE_RECORD,
             onClick = onCreate,
             icon = Icons.Filled.AddCircle,

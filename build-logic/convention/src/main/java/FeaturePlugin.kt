@@ -18,6 +18,7 @@ class FeaturePlugin:Plugin<Project> {
                 implementation(project(":core"))
                 implementation(project(":corekoin"))
                 implementation(project(":theme"))
+                implementation(project(":coreui"))
 
 
             }
