@@ -2,12 +2,12 @@ package ru.pavlig43.documentform.api.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -21,8 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import ru.pavlig43.addfile.api.ui.AddFileScreen
 import ru.pavlig43.coreui.ProgressIndicator
-import ru.pavlig43.coreui.tooltip.ProjectToolTip
-import ru.pavlig43.createitem.api.ui.CreateBaseRowsOfItem
+import ru.pavlig43.manageitem.api.ui.ManageBaseValuesOfItem
 import ru.pavlig43.documentform.api.component.IDocumentFormComponent
 import ru.pavlig43.documentform.api.component.SaveDocumentState
 import ru.pavlig43.documentform.internal.ui.RETRY
@@ -47,7 +46,7 @@ fun DocumentFormScreen(
             .verticalScroll(scrollState)
     ) {
 
-        CreateBaseRowsOfItem(component = component.createBaseRowsOfComponent)
+        ManageBaseValuesOfItem(component = component.manageBaseValuesOfComponent)
         AddFileScreen(component = component.addFileComponent)
 
 
@@ -58,12 +57,17 @@ fun DocumentFormScreen(
             when(val state = saveState){
                 is SaveDocumentState.Error -> Column(){
                     Text(RETRY)
-                    Text(state.message)
                 }
                 is SaveDocumentState.Init -> Text(SAVE_DOCUMENT)
                 is SaveDocumentState.Loading -> ProgressIndicator(Modifier.size(24.dp))
                 is SaveDocumentState.Success -> LaunchedEffect(Unit){component.closeScreen()}
             }
+        }
+        if (saveState is SaveDocumentState.Error){
+            Text(
+                text = (saveState as SaveDocumentState.Error).message,
+                color = MaterialTheme.colorScheme.error
+                )
         }
         if (saveDialogState){
             SaveDialog(

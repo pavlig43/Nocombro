@@ -10,7 +10,8 @@ android {
 kotlin{
     commonMainDependencies {
         implementation(projects.features.documents.addfile)
-        implementation(projects.features.createitem)
+        implementation(projects.features.manageitem.managebasevaluesitem)
+        implementation(projects.features.manageitem.loadinitdata)
         implementation(projects.database)
         implementation(libs.filekit.dialogs)
 

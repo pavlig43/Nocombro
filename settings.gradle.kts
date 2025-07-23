@@ -56,10 +56,12 @@ include(":rootnocombro")
 include(":features:product")
 
 include(":features:itemlist")
-include(":features:createitem")
+include(":features:manageitem:managebasevaluesitem")
+include(":features:manageitem:loadinitdata")
 
 
 
 include(":features:documents:addfile")
 include(":features:documents:documentform")
 include(":features:documents:documentlist")
+

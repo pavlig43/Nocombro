@@ -19,6 +19,7 @@ import ru.pavlig43.itemlist.api.component.ItemListComponent
 
 class DocumentListComponent(
     componentContext: ComponentContext,
+    onItemClick:(Int)-> Unit,
     onCreateScreen: () -> Unit,
     dependencies: IDocumentLisDependencies
 ) : ComponentContext by componentContext, IDocumentListComponent, SlotComponent {
@@ -40,6 +41,7 @@ class DocumentListComponent(
             componentContext = componentContext,
             repository = scope.get(),
             onCreateScreen = onCreateScreen,
+            onItemClick = onItemClick
         )
 
 }

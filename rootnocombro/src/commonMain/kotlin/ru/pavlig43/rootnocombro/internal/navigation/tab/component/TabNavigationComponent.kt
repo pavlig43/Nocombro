@@ -112,16 +112,6 @@ internal class DefaultTabNavigationComponent<TabConfiguration : Any, SlotCompone
     }
 
     private fun onCloseTab(tabConfiguration: TabConfiguration) {
-        children.value.items.forEach {
-            if (it.configuration === tabConfiguration) {
-
-                println(
-                    "tab ${
-                        it.configuration.toString().toAfterDog()
-                    } - wantDelete: ${tabConfiguration.toString().toAfterDog()}"
-                )
-            }
-        }
         val index = children.value.items.indexOfFirst { it.configuration === tabConfiguration }
         onTabCloseClicked(index)
     }
@@ -175,11 +165,11 @@ internal class DefaultTabNavigationComponent<TabConfiguration : Any, SlotCompone
                     if (index == this.currentIndex) ChildNavState.Status.RESUMED else ChildNavState.Status.CREATED
                 SimpleChildNavState(
                     configuration = config,
-                    status = status,
+                    status = ChildNavState.Status.RESUMED,
                 )
             }
         }
     }
 }
-fun String.toAfterDog() = this.substringAfter("@")
+
 

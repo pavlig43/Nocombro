@@ -2,10 +2,10 @@ package ru.pavlig43.documentform.api.component
 
 import kotlinx.coroutines.flow.StateFlow
 import ru.pavlig43.addfile.api.component.IAddFileComponent
-import ru.pavlig43.createitem.api.component.ICreateItemComponent
+import ru.pavlig43.manageitem.api.component.IManageBaseValueItemComponent
 
 interface IDocumentFormComponent {
-    val createBaseRowsOfComponent: ICreateItemComponent
+    val manageBaseValuesOfComponent: IManageBaseValueItemComponent
     val addFileComponent: IAddFileComponent
     val isValidAllValue: StateFlow<Boolean>
     val saveDocumentState:StateFlow<SaveDocumentState>

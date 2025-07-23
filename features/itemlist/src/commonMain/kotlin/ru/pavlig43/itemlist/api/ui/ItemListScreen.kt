@@ -35,6 +35,7 @@ fun ItemListScreen(
         deleteItems = component::deleteItems,
         shareItems = component::shareItems,
         deleteState = deleteState,
+        onItemClick = {component.onItemClick(it)},
         modifier = modifier)
 }
 
@@ -50,6 +51,7 @@ private fun ItemListScreenState(
     shareItems: (List<Int>) -> Unit,
     fullListSelection: List<ItemType>,
     saveSelection: (List<ItemType>) -> Unit,
+    onItemClick: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     when (state) {
@@ -66,6 +68,7 @@ private fun ItemListScreenState(
             deleteItems = deleteItems,
             shareItems = shareItems,
             deleteState = deleteState,
+            onItemClick = onItemClick,
             modifier = modifier
         )
     }
@@ -83,6 +86,7 @@ private fun ItemList(
     shareItems: (List<Int>) -> Unit,
     fullListSelection: List<ItemType>,
     saveSelection: (List<ItemType>) -> Unit,
+    onItemClick:(Int)->Unit,
     modifier: Modifier = Modifier
 ) {
     val verticalScrollState = rememberLazyListState()
@@ -105,7 +109,8 @@ private fun ItemList(
             saveSelection = saveSelection,
             deleteItems = deleteItems,
             shareItems = shareItems,
-            deleteState = deleteState
+            deleteState = deleteState,
+            onClickItem = onItemClick
         )
     }
 

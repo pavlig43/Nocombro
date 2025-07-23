@@ -1,8 +1,9 @@
-import ru.pavlig43.convention.extension.configureAndroid
-import ru.pavlig43.convention.extension.libs
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.apply
+import ru.pavlig43.convention.extension.androidMainDependencies
+import ru.pavlig43.convention.extension.configureAndroid
+import ru.pavlig43.convention.extension.libs
 
 class LibraryPlugin:Plugin<Project> {
     override fun apply(target: Project) {
@@ -13,6 +14,10 @@ class LibraryPlugin:Plugin<Project> {
 
 
             configureAndroid()
+            androidMainDependencies {
+                implementation(libs.androidx.core.ktx)
+            }
+
         }
     }
 }

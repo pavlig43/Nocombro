@@ -21,7 +21,7 @@ import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import kotlinx.coroutines.launch
 import ru.pavlig43.core.SlotComponent
-import ru.pavlig43.documentform.api.component.CreateDocumentComponent
+import ru.pavlig43.documentform.api.component.DocumentFormComponent
 import ru.pavlig43.documentform.api.ui.DocumentFormScreen
 import ru.pavlig43.documentlist.api.component.DocumentListComponent
 import ru.pavlig43.documentlist.api.ui.DocumentScreen
@@ -98,7 +98,8 @@ fun RootNocombroScreen(rootNocombroComponent: IRootNocombroComponent) {
                                         innerTabs(Modifier.fillMaxWidth())
                                         when (slotComponent) {
                                             is DocumentListComponent -> DocumentScreen(slotComponent)
-                                            is CreateDocumentComponent -> DocumentFormScreen(slotComponent)
+                                            is DocumentFormComponent -> DocumentFormScreen(slotComponent)
+                                            else -> error("$slotComponent SlotComponent не добавлен")
                                         }
                                     }
                                 )

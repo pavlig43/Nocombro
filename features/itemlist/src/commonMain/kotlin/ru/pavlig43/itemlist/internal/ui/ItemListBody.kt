@@ -1,6 +1,7 @@
 package ru.pavlig43.itemlist.internal.ui
 
 import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -34,6 +35,7 @@ internal fun ItemListBody(
     saveSelection: (List<ItemType>) -> Unit,
     horizontalScrollState: ScrollState,
     verticalScrollState: LazyListState,
+    onClickItem:(Int)->Unit,
     modifier: Modifier = Modifier,
 ) {
 
@@ -82,7 +84,7 @@ internal fun ItemListBody(
                             alpha = if (index % 2 == 0) 0.3f else 0.5f
                         ),
                         borderColor = MaterialTheme.colorScheme.onSecondary,
-                        modifier = Modifier.height(32.dp)
+                        modifier = Modifier.height(32.dp).clickable { onClickItem(item.id) }
                     )
                 }
 

@@ -9,9 +9,8 @@ import com.arkivanov.decompose.router.stack.pushToFront
 import com.arkivanov.decompose.value.Value
 import com.arkivanov.essenty.instancekeeper.getOrCreate
 import kotlinx.serialization.Serializable
-import ru.pavlig43.core.SlotComponent
 import ru.pavlig43.corekoin.ComponentKoinContext
-import ru.pavlig43.documentform.api.component.CreateDocumentComponent
+import ru.pavlig43.documentform.api.component.DocumentFormComponent
 import ru.pavlig43.documentlist.api.component.DocumentListComponent
 import ru.pavlig43.rootnocombro.api.IRootDependencies
 import ru.pavlig43.rootnocombro.internal.di.createRootNocombroModule
@@ -72,20 +71,30 @@ class RootNocombroComponent(
                     startConfigurations = listOf(
                         TabConfig.DocumentList(),
                     ),
-                    addConfigurationFromDrawer = {toTabConfig()},
+                    addConfigurationFromDrawer = { toTabConfig() },
                     serializer = TabConfig.serializer(),
-                    slotFactory = { context, tabConfig: TabConfig, openNewTab: (TabConfig) -> Unit,onCloseTab:()->Unit ->
+                    slotFactory = { context, tabConfig: TabConfig, openNewTab: (TabConfig) -> Unit, onCloseTab: () -> Unit ->
+
                         when (tabConfig) {
                             is TabConfig.DocumentList -> DocumentListComponent(
                                 componentContext = context,
                                 onCreateScreen = { openNewTab(TabConfig.CreateDocument()) },
                                 dependencies = scope.get(),
+                                onItemClick = { openNewTab(TabConfig.ChangeDocument(it)) }
                             )
 
-                            is TabConfig.CreateDocument -> CreateDocumentComponent(
+                            is TabConfig.CreateDocument -> DocumentFormComponent(
+                                documentId = 0,
                                 closeTab = onCloseTab,
                                 componentContext = context,
                                 dependencies = scope.get()
+                            )
+
+                            is TabConfig.ChangeDocument -> DocumentFormComponent(
+                                componentContext = context,
+                                dependencies = scope.get(),
+                                closeTab = onCloseTab,
+                                documentId = tabConfig.id
                             )
                         }
                     }
@@ -94,6 +103,7 @@ class RootNocombroComponent(
             )
         }
     }
+
     private fun DrawerDestination.toTabConfig(): TabConfig =
         when (this) {
             is DrawerDestination.CreateDocument -> TabConfig.CreateDocument()

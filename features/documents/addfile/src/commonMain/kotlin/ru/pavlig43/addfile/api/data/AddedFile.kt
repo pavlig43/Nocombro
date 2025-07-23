@@ -3,7 +3,8 @@ package ru.pavlig43.addfile.api.data
 import io.github.vinceglb.filekit.PlatformFile
 
 data class AddedFile(
-    val index: Int,
+    val id: Int,
+    val composeKey:Int,
     val platformFile: PlatformFile,
     val uploadState: UploadState = UploadState.Error
 )

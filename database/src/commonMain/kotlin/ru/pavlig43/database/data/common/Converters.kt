@@ -3,7 +3,6 @@ package ru.pavlig43.database.data.common
 import androidx.room.TypeConverter
 import ru.pavlig43.core.UTC
 import ru.pavlig43.database.data.document.DocumentType
-import ru.pavlig43.database.data.document.FileExtension
 import ru.pavlig43.database.data.product.ProductType
 
 class Converters {
@@ -26,11 +25,7 @@ class Converters {
     @TypeConverter
     fun fromUTC(value: UTC) = value.value
 
-//    @TypeConverter
-//    fun toFileExtension(value: String) = enumValueOf<FileExtension>(value)
-//
-//    @TypeConverter
-//    fun fromFileExtension(value: FileExtension) = value.name
+
 
 
 }

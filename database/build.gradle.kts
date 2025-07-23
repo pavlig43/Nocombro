@@ -8,8 +8,7 @@ plugins {
     alias(libs.plugins.pavlig43.koin)
     alias(libs.plugins.pavlig43.serialization)
     alias(libs.plugins.pavlig43.coroutines)
-    alias(libs.plugins.composeMultiplatform)
-    alias(libs.plugins.composeCompiler)
+
 
 }
 
@@ -20,8 +19,6 @@ android {
 }
 kotlin{
     commonMainDependencies {
-        implementation(compose.runtime)
-        implementation(compose.components.resources)
         implementation(projects.core)
     }
 }

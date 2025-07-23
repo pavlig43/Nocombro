@@ -28,12 +28,16 @@ import io.github.vinceglb.filekit.filesDir
 import io.github.vinceglb.filekit.name
 import org.jetbrains.compose.resources.DrawableResource
 import ru.pavlig43.addfile.api.component.IAddFileComponent
+import ru.pavlig43.addfile.api.data.AddedFile
+import ru.pavlig43.addfile.internal.fileopener.FileOpener
+import ru.pavlig43.addfile.internal.fileopener.getFileOpener
 import ru.pavlig43.addfile.internal.ui.ADD_FILE
 import ru.pavlig43.addfile.internal.ui.AddFileRow
 import ru.pavlig43.addfile.internal.ui.ExistFileDialog
 import ru.pavlig43.addfile.internal.ui.FILES
 import ru.pavlig43.addfile.internal.ui.REQUIRED_FILE_ADD
 import ru.pavlig43.coreui.tooltip.IconButtonToolTip
+import ru.pavlig43.loadinitdata.api.ui.LoadInitDataScreen
 import ru.pavlig43.theme.Res
 import ru.pavlig43.theme.excel
 import ru.pavlig43.theme.pdf
@@ -41,15 +45,38 @@ import ru.pavlig43.theme.unknown
 import ru.pavlig43.theme.word
 
 @Composable
- fun AddFileScreen(
+fun AddFileScreen(
     component: IAddFileComponent,
     modifier: Modifier = Modifier
 ) {
-
     val addedFiles by component.addedFiles.collectAsState()
+
+    Column(modifier = modifier) {
+        LoadInitDataScreen(component.loadInitDataComponent) {
+            AddFileBody(
+                addedFiles = addedFiles,
+                addFile = component::addFile,
+                removeFile = component::removeFile,
+                retryLoadFile = component::retryLoadFile,
+
+                )
+        }
+
+    }
+
+
+}
+
+@Composable
+private fun AddFileBody(
+    addedFiles: List<AddedFile>,
+    addFile: (PlatformFile) -> Unit,
+    removeFile: (Int) -> Unit,
+    retryLoadFile: (Int) -> Unit,
+    modifier: Modifier = Modifier
+) {
     var showDialogState by remember { mutableStateOf(false) }
     var existFilePath by remember { mutableStateOf("") }
-
     val launcher = rememberFilePickerLauncher { platformFile: PlatformFile? ->
 
         platformFile?.let {
@@ -59,7 +86,7 @@ import ru.pavlig43.theme.word
                 showDialogState = true
 
             } else {
-                component.addFile(platformFile)
+                addFile(platformFile)
             }
         }
     }
@@ -90,11 +117,14 @@ import ru.pavlig43.theme.word
                 Text(REQUIRED_FILE_ADD, color = MaterialTheme.colorScheme.error)
             }
             addedFiles.forEach { file ->
+                val fileOpener: FileOpener = getFileOpener()
                 AddFileRow(
-                    removeFile = component::removeFile,
+                    removeFile = removeFile,
                     addedFile = file,
-                    openFile = component::openFile,
-                    retryLoadFile = component::retryLoadFile
+                    openFile = {
+                        fileOpener.openFile(it.absolutePath())
+                    },
+                    retryLoadFile = retryLoadFile
                 )
             }
         }
@@ -103,15 +133,6 @@ import ru.pavlig43.theme.word
     }
 }
 
-internal fun String.toIconDrawableResource(): DrawableResource {
 
-    return when (this) {
-        "pdf" -> Res.drawable.pdf
-        "docx" -> Res.drawable.word
-        "xlsx" -> Res.drawable.excel
-        "jpg" -> Res.drawable.unknown
-        "png" -> Res.drawable.unknown
-        else -> Res.drawable.unknown
-    }
-}
+
 

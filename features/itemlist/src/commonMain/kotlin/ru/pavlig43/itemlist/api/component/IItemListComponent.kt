@@ -15,6 +15,7 @@ interface IItemListComponent {
     fun deleteItems(ids: List<Int>)
     fun shareItems(ids: List<Int>)
     fun actionInSelectedItemIds(checked: Boolean, id: Int)
+    val onItemClick:(id:Int) -> Unit
 }
 
 sealed interface ItemListState {

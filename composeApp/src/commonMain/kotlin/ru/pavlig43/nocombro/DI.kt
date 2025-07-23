@@ -14,12 +14,15 @@ import ru.pavlig43.datastore.SettingsRepository
 import ru.pavlig43.datastore.di.getSettingsRepository
 import ru.pavlig43.rootnocombro.api.IRootDependencies
 
+
 fun initKoin(appDeclaration: KoinAppDeclaration = {}) {
      startKoin {
          logger(PrintLogger(Level.DEBUG))
         appDeclaration()
         modules(
-            platformDataBaseModule()  + getSettingsRepository()  + appModule
+            platformDataBaseModule() +
+            getSettingsRepository()  +
+            appModule
         )
 
     }

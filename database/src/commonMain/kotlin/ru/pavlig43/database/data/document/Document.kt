@@ -61,13 +61,5 @@ data class DocumentWithFiles(
     val files: List<DocumentFilePath>
 ) : Item by document
 
-enum class FileExtension {
-    UNKNOWN,
-    PDF,
-    WORD,
-    EXCEL,
-    JPG,
-    PNG,
 
-}
 

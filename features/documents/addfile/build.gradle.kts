@@ -11,5 +11,7 @@ kotlin{
     commonMainDependencies {
         implementation(libs.filekit.dialogs)
         implementation(libs.filekit.dialogs.compose)
+        implementation(projects.database)
+        implementation(projects.features.manageitem.loadinitdata)
     }
 }

@@ -7,7 +7,6 @@ import ru.pavlig43.database.data.common.dbSafeCall
 import ru.pavlig43.database.data.common.dbSafeFlow
 import ru.pavlig43.database.data.document.Document
 import ru.pavlig43.database.data.document.DocumentType
-import ru.pavlig43.database.data.document.DocumentWithFiles
 import ru.pavlig43.database.data.document.dao.DocumentDao
 import ru.pavlig43.documentlist.api.data.DocumentUi
 import ru.pavlig43.itemlist.api.data.IItemListRepository
@@ -27,7 +26,7 @@ internal class DocumentListRepository(
 
     override fun getAllItem(): Flow<RequestResult<List<Document>>> {
         return dbSafeFlow(TAG){
-            documentDao.getAllDocuments()
+            documentDao.observeAllDocuments()
         }
     }
 
@@ -37,7 +36,7 @@ internal class DocumentListRepository(
 
     override fun getItemsByTypes(types: List<DocumentType>): Flow<RequestResult<List<Document>>> {
         return dbSafeFlow(TAG){
-            documentDao.getDocumentsByTypes(types,)
+            documentDao.observeDocumentsByTypes(types,)
 
         }
     }

@@ -23,6 +23,7 @@ class ItemListComponent<I : Item, U : ItemUi, S : ItemType>(
     componentContext: ComponentContext,
     private val onCreateScreen: () -> Unit,
     private val repository: IItemListRepository<I, U, S>,
+    override val onItemClick: (id: Int) -> Unit,
 ) : ComponentContext by componentContext, IItemListComponent {
     private val coroutineScope = componentCoroutineScope()
 //    private val koinContext = instanceKeeper.getOrCreate {
@@ -70,6 +71,8 @@ class ItemListComponent<I : Item, U : ItemUi, S : ItemType>(
             _selectedItemIds.remove(id)
         }
     }
+
+
 
     override val fullListSelection: List<ItemType> = repository.getAllItemTypes()
     override fun deleteItems(ids: List<Int>) {
