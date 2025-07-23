@@ -39,6 +39,7 @@ class DocumentListComponent(
     override val itemListComponent: IItemListComponent =
         ItemListComponent<Document, DocumentUi, DocumentType>(
             componentContext = componentContext,
+            fullListSelection = DocumentType.entries,
             repository = scope.get(),
             onCreateScreen = onCreateScreen,
             onItemClick = onItemClick

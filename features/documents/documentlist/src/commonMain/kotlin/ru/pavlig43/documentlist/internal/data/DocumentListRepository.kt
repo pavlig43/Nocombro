@@ -30,9 +30,7 @@ internal class DocumentListRepository(
         }
     }
 
-    override fun getAllItemTypes(): List<DocumentType> {
-        return DocumentType.entries
-    }
+
 
     override fun getItemsByTypes(types: List<DocumentType>): Flow<RequestResult<List<Document>>> {
         return dbSafeFlow(TAG){

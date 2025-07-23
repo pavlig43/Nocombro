@@ -14,7 +14,5 @@ interface IItemListRepository<I:Item,U:ItemUi,S:ItemType> {
 
     fun getItemsByTypes(types: List<S>): Flow<RequestResult<List<I>>>
 
-    fun getAllItemTypes():List<S>
-
     fun toItemUi(item: I): U
 }

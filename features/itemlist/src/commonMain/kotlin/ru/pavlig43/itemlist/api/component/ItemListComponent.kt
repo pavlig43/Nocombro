@@ -21,6 +21,7 @@ import ru.pavlig43.itemlist.api.data.ItemUi
 
 class ItemListComponent<I : Item, U : ItemUi, S : ItemType>(
     componentContext: ComponentContext,
+    override val fullListSelection:List<S>,
     private val onCreateScreen: () -> Unit,
     private val repository: IItemListRepository<I, U, S>,
     override val onItemClick: (id: Int) -> Unit,
@@ -74,7 +75,6 @@ class ItemListComponent<I : Item, U : ItemUi, S : ItemType>(
 
 
 
-    override val fullListSelection: List<ItemType> = repository.getAllItemTypes()
     override fun deleteItems(ids: List<Int>) {
 
         coroutineScope.launch {
