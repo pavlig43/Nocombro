@@ -1,4 +1,4 @@
-package ru.pavlig43.database.data.common.data
+package ru.pavlig43.core.data
 
 import ru.pavlig43.core.UTC
 

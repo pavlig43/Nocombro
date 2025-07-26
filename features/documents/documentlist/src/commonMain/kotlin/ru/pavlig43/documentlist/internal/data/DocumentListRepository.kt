@@ -3,8 +3,8 @@ package ru.pavlig43.documentlist.internal.data
 import kotlinx.coroutines.flow.Flow
 import ru.pavlig43.core.RequestResult
 import ru.pavlig43.core.convertToDateTime
-import ru.pavlig43.database.data.common.dbSafeCall
-import ru.pavlig43.database.data.common.dbSafeFlow
+import ru.pavlig43.core.data.dbSafeCall
+import ru.pavlig43.core.data.dbSafeFlow
 import ru.pavlig43.database.data.document.Document
 import ru.pavlig43.database.data.document.DocumentType
 import ru.pavlig43.database.data.document.dao.DocumentDao

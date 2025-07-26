@@ -14,8 +14,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import ru.pavlig43.core.RequestResult
 import ru.pavlig43.core.componentCoroutineScope
-import ru.pavlig43.database.data.common.data.Item
-import ru.pavlig43.database.data.common.data.ItemType
+import ru.pavlig43.core.data.Item
+import ru.pavlig43.core.data.ItemType
 import ru.pavlig43.itemlist.api.data.IItemListRepository
 import ru.pavlig43.itemlist.api.data.ItemUi
 

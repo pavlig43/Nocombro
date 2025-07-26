@@ -7,13 +7,13 @@ import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 import androidx.room.Relation
 import ru.pavlig43.core.UTC
-import ru.pavlig43.database.data.common.data.Item
+import ru.pavlig43.core.data.Item
 
 @Entity("document")
 data class Document(
 
     @ColumnInfo("display_name")
-    override val displayName: String,
+    override val displayName: String = "",
 
     override val type: DocumentType,
 

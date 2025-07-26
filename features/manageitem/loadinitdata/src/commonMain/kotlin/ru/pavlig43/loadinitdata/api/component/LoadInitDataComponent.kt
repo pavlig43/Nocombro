@@ -8,13 +8,12 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import ru.pavlig43.core.RequestResult
 import ru.pavlig43.core.componentCoroutineScope
-import ru.pavlig43.loadinitdata.api.data.IInitDataRepository
 
 class LoadInitDataComponent<I : Any>(
     componentContext: ComponentContext,
-    private val initDataRepository: IInitDataRepository<I>,
-    private val id:Int,
-    private val onSuccessGetInitData:(I)->Unit,
+    private val getInitData: suspend (Int) -> RequestResult<I>,
+    private val id: Int,
+    private val onSuccessGetInitData: (I) -> Unit,
 ) : ComponentContext by componentContext, ILoadInitDataComponent<I> {
 
     private val coroutineScope = componentCoroutineScope()
@@ -36,7 +35,7 @@ class LoadInitDataComponent<I : Any>(
 
         coroutineScope.launch {
             _loadState.update { LoadInitDataState.Loading() }
-            val initData = initDataRepository.loadInitData(id).toLoadInitDataSate()
+            val initData = getInitData(id).toLoadInitDataSate()
             if (initData is LoadInitDataState.Success){
                 onSuccessGetInitData(initData.data)
             }

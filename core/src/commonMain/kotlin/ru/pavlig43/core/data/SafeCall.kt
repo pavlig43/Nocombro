@@ -1,6 +1,5 @@
-package ru.pavlig43.database.data.common
+package ru.pavlig43.core.data
 
-import androidx.sqlite.SQLiteException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
@@ -16,10 +15,8 @@ suspend fun <T> dbSafeCall(
         onSuccess = { RequestResult.Success(it) },
         onFailure = { throwable ->
             val message = "$daoTag $ERROR_DATABASE"
-            when (throwable) {
-                is SQLiteException -> RequestResult.Error(throwable = throwable, message = message)
-                else -> RequestResult.Error(throwable = throwable, message = message)
-            }
+            RequestResult.Error(throwable = throwable, message = message)
+
         }
     )
 }

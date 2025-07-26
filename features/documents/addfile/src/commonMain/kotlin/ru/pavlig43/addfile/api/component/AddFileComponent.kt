@@ -23,6 +23,7 @@ import ru.pavlig43.addfile.api.data.UploadState
 import ru.pavlig43.addfile.internal.di.createAddFileModuleFactory
 import ru.pavlig43.core.componentCoroutineScope
 import ru.pavlig43.corekoin.ComponentKoinContext
+import ru.pavlig43.database.data.document.DocumentFilePath
 import ru.pavlig43.loadinitdata.api.component.ILoadInitDataComponent
 import ru.pavlig43.loadinitdata.api.component.LoadInitDataComponent
 import ru.pavlig43.loadinitdata.api.data.IInitDataRepository
@@ -39,7 +40,7 @@ class AddFileComponent(
     private val scope: Scope =
         koinContext.getOrCreateKoinScope(createAddFileModuleFactory(dependencies))
 
-    private val initDataRepository:IInitDataRepository<List<AddedFile>> = scope.get()
+    private val initDataRepository:IInitDataRepository<List<DocumentFilePath>,List<AddedFile>> = scope.get()
 
 
     override fun addFile(platformFile: PlatformFile) {
@@ -109,11 +110,11 @@ class AddFileComponent(
         }
     }
 
-    private val _addedFiles = MutableStateFlow<List<AddedFile>>(initDataRepository.getInitDataForState())
+    private val _addedFiles = MutableStateFlow(initDataRepository.iniDataForState)
     override val loadInitDataComponent: ILoadInitDataComponent<List<AddedFile>> = LoadInitDataComponent<List<AddedFile>>(
         componentContext = childContext("loadInitData"),
         id = documentId,
-        initDataRepository = initDataRepository,
+        getInitData = initDataRepository::loadInitData,
         onSuccessGetInitData = {files->_addedFiles.update { files }}
     )
 

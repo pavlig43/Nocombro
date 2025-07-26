@@ -1,6 +1,6 @@
 package ru.pavlig43.itemlist.api.data
 
-import ru.pavlig43.database.data.common.data.ItemType
+import ru.pavlig43.core.data.ItemType
 
 interface ItemUi {
     val id:Int

@@ -16,6 +16,7 @@ kotlin{
     commonMainDependencies {
         implementation(libs.decompose)
         implementation(libs.kotlinx.datetime)
+        implementation(kotlin("reflect"))
 
     }
 }
