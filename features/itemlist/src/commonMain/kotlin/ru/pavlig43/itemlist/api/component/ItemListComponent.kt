@@ -16,14 +16,14 @@ import ru.pavlig43.core.RequestResult
 import ru.pavlig43.core.componentCoroutineScope
 import ru.pavlig43.core.data.Item
 import ru.pavlig43.core.data.ItemType
-import ru.pavlig43.itemlist.api.data.IItemListRepository
+import ru.pavlig43.itemlist.api.data.ItemListRepository
 import ru.pavlig43.itemlist.api.data.ItemUi
 
-class ItemListComponent<I : Item, U : ItemUi, S : ItemType>(
+class ItemListComponent<I : Item, S : ItemType>(
     componentContext: ComponentContext,
     override val fullListSelection:List<S>,
     private val onCreateScreen: () -> Unit,
-    private val repository: IItemListRepository<I, U, S>,
+    private val repository: ItemListRepository<I, S>,
     override val onItemClick: (id: Int) -> Unit,
 ) : ComponentContext by componentContext, IItemListComponent {
     private val coroutineScope = componentCoroutineScope()
@@ -43,7 +43,7 @@ class ItemListComponent<I : Item, U : ItemUi, S : ItemType>(
             } else {
                 repository.getItemsByTypes(types)
 
-            }.map { requestResult -> requestResult.toItemListState(repository::toItemUi) }
+            }.map { requestResult -> requestResult.toItemListState() }
         }.stateIn(
             coroutineScope,
             started = Eagerly,
@@ -95,14 +95,12 @@ class ItemListComponent<I : Item, U : ItemUi, S : ItemType>(
 }
 
 
-private fun <I : Item, O : ItemUi> RequestResult<List<I>>.toItemListState(
-    mapper: (I) -> O,
-): ItemListState {
+private fun RequestResult<List<ItemUi>>.toItemListState(): ItemListState {
     return when (this) {
         is RequestResult.Error -> ItemListState.Error(message ?: "unknown error")
         is RequestResult.InProgress -> ItemListState.Loading()
         is RequestResult.Initial -> ItemListState.Initial()
-        is RequestResult.Success<List<I>> -> ItemListState.Success(data.map(mapper))
+        is RequestResult.Success<List<ItemUi>> -> ItemListState.Success(data)
     }
 }
 private fun RequestResult<Unit>.toDeleteState(): DeleteState {

@@ -1,4 +1,4 @@
-package ru.pavlig43.documentlist.api.component
+package ru.pavlig43.productlist.api.component
 
 
 import com.arkivanov.decompose.ComponentContext
@@ -9,19 +9,19 @@ import kotlinx.coroutines.flow.asStateFlow
 import org.koin.core.scope.Scope
 import ru.pavlig43.core.SlotComponent
 import ru.pavlig43.corekoin.ComponentKoinContext
-import ru.pavlig43.database.data.document.Document
-import ru.pavlig43.database.data.document.DocumentType
-import ru.pavlig43.documentlist.api.IDocumentLisDependencies
-import ru.pavlig43.documentlist.internal.di.createModule
+import ru.pavlig43.database.data.product.Product
+import ru.pavlig43.database.data.product.ProductType
+import ru.pavlig43.productlist.internal.di.createModule
 import ru.pavlig43.itemlist.api.component.IItemListComponent
 import ru.pavlig43.itemlist.api.component.ItemListComponent
+import ru.pavlig43.productlist.api.IProductLisDependencies
 
-class DocumentListComponent(
+class ProductListComponent(
     componentContext: ComponentContext,
     onItemClick:(Int)-> Unit,
     onCreateScreen: () -> Unit,
-    dependencies: IDocumentLisDependencies
-) : ComponentContext by componentContext, IDocumentListComponent, SlotComponent {
+    dependencies: IProductLisDependencies
+) : ComponentContext by componentContext, IProductListComponent, SlotComponent {
     private val koinContext = instanceKeeper.getOrCreate {
         ComponentKoinContext()
     }
@@ -36,9 +36,9 @@ class DocumentListComponent(
         const val TAB_TITLE = "Документы"
     }
     override val itemListComponent: IItemListComponent =
-        ItemListComponent<Document, DocumentType>(
+        ItemListComponent<Product,  ProductType>(
             componentContext = componentContext,
-            fullListSelection = DocumentType.entries,
+            fullListSelection = ProductType.entries,
             repository = scope.get(),
             onCreateScreen = onCreateScreen,
             onItemClick = onItemClick

@@ -3,10 +3,23 @@ package ru.pavlig43.documentlist.internal.di
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.bind
 import org.koin.dsl.module
-import ru.pavlig43.documentlist.internal.data.DocumentListRepository
+import ru.pavlig43.database.data.document.Document
+import ru.pavlig43.database.data.document.DocumentType
+import ru.pavlig43.database.data.document.dao.DocumentDao
 import ru.pavlig43.itemlist.api.data.IItemListRepository
+import ru.pavlig43.itemlist.api.data.ItemListRepository
 
 internal val documentListModule = module {
-    singleOf(::DocumentListRepository) bind IItemListRepository::class
+    single<ItemListRepository<Document,DocumentType>> { getDocumentListRepository(get()) }
 
+}
+private fun getDocumentListRepository(
+    documentDao: DocumentDao,
+): ItemListRepository<Document, DocumentType> {
+    return ItemListRepository<Document,DocumentType>(
+        tag = "DocumentRepository",
+        deleteByIds = documentDao::deleteDocuments,
+        observeAllItem = documentDao::observeAllDocuments,
+        observeItemsByTypes = documentDao::observeDocumentsByTypes
+    )
 }
