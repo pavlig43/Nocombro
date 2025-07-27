@@ -39,7 +39,8 @@ internal fun ItemListBody(
 
     require(itemList.all { it.type in fullListSelection }) {
         val invalid = itemList.filter { it.type !in fullListSelection }.map { it.type }.toSet()
-        "Недопустимые типы: $invalid"
+
+        "itemList ${itemList.map { it.type }} Invalid Type: $invalid in types $fullListSelection"
     }
 
 

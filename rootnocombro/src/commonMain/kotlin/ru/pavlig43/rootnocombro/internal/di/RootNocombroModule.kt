@@ -13,11 +13,12 @@ import ru.pavlig43.signroot.api.IRootSignDependencies
 
 
 private val featureDependenciesModule = module {
-    factoryOf(::DocumentListDependencies) bind IDocumentLisDependencies::class
     factoryOf(::DocumentFormDependencies) bind IDocumentFormDependencies::class
     factoryOf(::ProductFormDependencies) bind IProductFormDependencies::class
     factoryOf(::ProductListDependencies) bind IProductLisDependencies::class
+    factoryOf(::DocumentListDependencies) bind IDocumentLisDependencies::class
     factoryOf(::RootSignDependencies) bind IRootSignDependencies::class
+
 
 }
 internal val rootNocombroModule = listOf(

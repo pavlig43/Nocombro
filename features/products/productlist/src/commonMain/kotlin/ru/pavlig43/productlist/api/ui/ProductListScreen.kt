@@ -5,7 +5,7 @@ import ru.pavlig43.productlist.api.component.IProductListComponent
 import ru.pavlig43.itemlist.api.ui.ItemListScreen
 
 @Composable
-fun ProductsScreen(
+fun ProductListScreen(
     component: IProductListComponent
 ){
     ItemListScreen(component.itemListComponent)
