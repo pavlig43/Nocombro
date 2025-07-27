@@ -11,7 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import ru.pavlig43.database.data.common.data.ItemType
+import ru.pavlig43.core.data.ItemType
 import ru.pavlig43.itemlist.internal.ui.CREATE_RECORD
 import ru.pavlig43.coreui.tooltip.IconButtonToolTip
 

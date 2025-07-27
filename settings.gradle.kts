@@ -35,6 +35,7 @@ plugins {
 }
 
 include(":composeApp")
+include(":rootnocombro")
 include(":core")
 include(":coreui")
 include(":corekoin")
@@ -42,26 +43,31 @@ include(":database")
 include(":datastore")
 include(":theme")
 
-include(":features:sign:common")
-include(":features:sign:signin")
-include(":features:sign:signup")
-include(":features:sign:root")
-
-include(":rootnocombro")
 
 
-
-
-
-include(":features:product")
 
 include(":features:itemlist")
-include(":features:manageitem:managebasevaluesitem")
-include(":features:manageitem:loadinitdata")
+
+include(
+    ":features:manageitem:managebasevaluesitem",
+    ":features:manageitem:loadinitdata",
+    ":features:manageitem:upsertitem"
+    )
+
+include(
+    ":features:sign:common",
+    ":features:sign:signin",
+    ":features:sign:signup",
+    ":features:sign:root"
+)
+
+include(
+    ":features:documents:addfile",
+    ":features:documents:documentform",
+    ":features:documents:documentlist"
+)
 
 
+include(":features:products:productform")
 
-include(":features:documents:addfile")
-include(":features:documents:documentform")
-include(":features:documents:documentlist")
 

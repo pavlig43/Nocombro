@@ -5,15 +5,11 @@ import com.arkivanov.decompose.childContext
 import com.arkivanov.essenty.instancekeeper.getOrCreate
 import io.github.vinceglb.filekit.absolutePath
 import io.github.vinceglb.filekit.extension
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 import org.koin.core.scope.Scope
 import ru.pavlig43.addfile.api.component.AddFileComponent
 import ru.pavlig43.addfile.api.component.IAddFileComponent
@@ -22,19 +18,21 @@ import ru.pavlig43.core.SlotComponent
 import ru.pavlig43.core.UTC
 import ru.pavlig43.core.componentCoroutineScope
 import ru.pavlig43.corekoin.ComponentKoinContext
-import ru.pavlig43.documentform.api.IDocumentFormDependencies
-import ru.pavlig43.manageitem.api.component.ManageBaseValueItemComponent
-import ru.pavlig43.manageitem.api.component.IManageBaseValueItemComponent
 import ru.pavlig43.database.data.document.Document
 import ru.pavlig43.database.data.document.DocumentFilePath
 import ru.pavlig43.database.data.document.DocumentType
 import ru.pavlig43.database.data.document.DocumentWithFiles
-import ru.pavlig43.documentform.internal.data.ISaveDocumentRepository
-import ru.pavlig43.documentform.internal.data.toSaveStateDocument
+import ru.pavlig43.documentform.api.IDocumentFormDependencies
 import ru.pavlig43.documentform.internal.di.createDocumentFormModule
 import ru.pavlig43.loadinitdata.api.component.LoadInitDataState
 import ru.pavlig43.loadinitdata.api.data.IInitDataRepository
+import ru.pavlig43.manageitem.api.component.IManageBaseValueItemComponent
+import ru.pavlig43.manageitem.api.component.ManageBaseValueItemComponent
 import ru.pavlig43.manageitem.api.data.RequireValues
+import ru.pavlig43.upsertitem.api.component.ISaveItemComponent
+import ru.pavlig43.upsertitem.api.component.SaveItemComponent
+import ru.pavlig43.upsertitem.api.data.ItemsForUpsert
+import ru.pavlig43.upsertitem.data.ISaveItemRepository
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
@@ -52,8 +50,9 @@ class DocumentFormComponent(
     private val scope: Scope =
         koinContext.getOrCreateKoinScope(createDocumentFormModule(dependencies))
 
-    private val saveRepository: ISaveDocumentRepository = scope.get()
-    private val initBaseValuesRepository: IInitDataRepository<RequireValues> = scope.get()
+
+    private val saveRepository: ISaveItemRepository<DocumentWithFiles> = scope.get()
+    private val initBaseValuesRepository: IInitDataRepository<Document,RequireValues> = scope.get()
 
     override val manageBaseValuesOfComponent: IManageBaseValueItemComponent =
         ManageBaseValueItemComponent(
@@ -61,7 +60,6 @@ class DocumentFormComponent(
             typeVariantList = DocumentType.entries,
             id = documentId,
             initDataRepository = initBaseValuesRepository
-
         )
     override val addFileComponent: IAddFileComponent =
         AddFileComponent(
@@ -69,49 +67,42 @@ class DocumentFormComponent(
             dependencies = scope.get(),
             documentId = documentId
         )
-    private val _saveDocumentState: MutableStateFlow<SaveDocumentState> =
-        MutableStateFlow(SaveDocumentState.Init())
-    override val saveDocumentState: StateFlow<SaveDocumentState> = _saveDocumentState.asStateFlow()
+    private val documentsParamsValidValue: Flow<Boolean> = combine(
+        manageBaseValuesOfComponent.isValidAllValue,
+        addFileComponent.isAllFilesUpload,
+    ){base, isFileUpload-> base && isFileUpload}
 
-    override val isValidAllValue: StateFlow<Boolean> =
-        combine(
-            manageBaseValuesOfComponent.isValidAllValue,
-            addFileComponent.isAllFilesUpload,
-            _saveDocumentState
-        ) { base, isFileUpload, saveState ->
-            base && isFileUpload && (saveState is SaveDocumentState.Init || saveState is SaveDocumentState.Error)
-        }.stateIn(
-            coroutineScope,
-            SharingStarted.Eagerly,
-            false
+    private fun getDocumentsForSave(): ItemsForUpsert<DocumentWithFiles> {
+        val requireValues = manageBaseValuesOfComponent.requireValues.value
+
+        val files = addFileComponent.addedFiles.value
+        val newDocumentWithFiles = createDocumentWithFiles(requireValues, files)
+        val initRequireValues =
+            when (val loadState = manageBaseValuesOfComponent.initComponent.loadState.value) {
+                is LoadInitDataState.Success<RequireValues> -> loadState.data.copy(type = requireValues.type)
+                else -> throw IllegalStateException("Рекомендуемые значения(Имя и тип) при начальной загрузки загрузились с ошибкой ")
+            }
+        val initFiles =
+            when (val loadState = addFileComponent.loadInitDataComponent.loadState.value) {
+                is LoadInitDataState.Success<List<AddedFile>> -> loadState.data
+                else -> throw IllegalStateException("Список файлов не загрузился")
+            }
+        val oldDocumentWithFiles = createDocumentWithFiles(initRequireValues, initFiles)
+        return ItemsForUpsert(
+            newItem = newDocumentWithFiles,
+            initItem = oldDocumentWithFiles,
+
+            )
+    }
+    override val saveDocumentComponent: ISaveItemComponent<DocumentWithFiles> =
+        SaveItemComponent(
+            componentContext = childContext("saveDocumentComponent"),
+            isOtherValidValue = documentsParamsValidValue,
+            getItems = ::getDocumentsForSave,
+            onSuccessAction = closeTab,
+            saveItemRepository = saveRepository
         )
 
-    override fun saveDocument() {
-        _saveDocumentState.update { SaveDocumentState.Loading() }
-        coroutineScope.launch {
-            val requireValues = manageBaseValuesOfComponent.requireValues.value
-
-            val files = addFileComponent.addedFiles.value
-            val newDocumentWithFiles = createDocumentWithFiles(requireValues, files)
-            val initRequireValues =
-                when (val loadState = manageBaseValuesOfComponent.initComponent.loadState.value) {
-                    is LoadInitDataState.Success<RequireValues> -> loadState.data.copy(type = requireValues.type)
-                    else -> return@launch
-                }
-            val initFiles =
-                when (val loadState = addFileComponent.loadInitDataComponent.loadState.value) {
-                    is LoadInitDataState.Success<List<AddedFile>> -> loadState.data
-                    else -> return@launch
-                }
-            val oldDocumentWithFiles = createDocumentWithFiles(initRequireValues, initFiles)
-
-            val result = saveRepository.saveItem(
-                documentForSave = newDocumentWithFiles,
-                initLoadDocument = oldDocumentWithFiles
-            )
-            _saveDocumentState.update { result.toSaveStateDocument() }
-        }
-    }
 
     override fun closeScreen() {
         closeTab()
@@ -122,7 +113,6 @@ class DocumentFormComponent(
         requireValues: RequireValues,
         filesUi: List<AddedFile>
     ): DocumentWithFiles {
-        println("requireValues $requireValues")
         val document = Document(
             id = requireValues.id,
             displayName = requireValues.name,
@@ -139,7 +129,7 @@ class DocumentFormComponent(
 
     override val model = manageBaseValuesOfComponent.requireValues.map {
         val prefix = if (documentId == 0) "* " else ""
-        SlotComponent.TabModel("$prefix ${it.type ?: ""} ${it.name}")
+        SlotComponent.TabModel("$prefix ${it.type?.displayName ?: ""} ${it.name}")
     }.stateIn(
         coroutineScope,
         SharingStarted.Eagerly,

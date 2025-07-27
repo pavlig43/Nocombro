@@ -61,9 +61,7 @@ fun AddFileScreen(
 
                 )
         }
-
     }
-
 
 }
 

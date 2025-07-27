@@ -11,18 +11,19 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import ru.pavlig43.core.componentCoroutineScope
+import ru.pavlig43.core.data.Item
 import ru.pavlig43.corekoin.ComponentKoinContext
-import ru.pavlig43.database.data.common.data.ItemType
+import ru.pavlig43.core.data.ItemType
 import ru.pavlig43.loadinitdata.api.component.ILoadInitDataComponent
 import ru.pavlig43.loadinitdata.api.component.LoadInitDataComponent
 import ru.pavlig43.loadinitdata.api.data.IInitDataRepository
 import ru.pavlig43.manageitem.api.data.RequireValues
 
 
-class ManageBaseValueItemComponent<S : ItemType>(
+class ManageBaseValueItemComponent<I : Item, S : ItemType>(
     componentContext: ComponentContext,
     typeVariantList: List<S>,
-    initDataRepository: IInitDataRepository<RequireValues>,
+    initDataRepository: IInitDataRepository<I, RequireValues>,
     id: Int = 0
 ) : ComponentContext by componentContext, IManageBaseValueItemComponent {
 
@@ -30,20 +31,21 @@ class ManageBaseValueItemComponent<S : ItemType>(
     private val koinContext = instanceKeeper.getOrCreate {
         ComponentKoinContext()
     }
-    private val _requiredValues = MutableStateFlow(initDataRepository.getInitDataForState())
-
-
-    override val requireValues = _requiredValues.asStateFlow()
-
+    private val _requiredValues = MutableStateFlow(initDataRepository.iniDataForState)
     override val initComponent: ILoadInitDataComponent<RequireValues> = LoadInitDataComponent(
         componentContext = childContext("initComponent"),
-        initDataRepository = initDataRepository,
+        getInitData = initDataRepository::loadInitData,
         id = id,
         onSuccessGetInitData = { requireValues ->
             _requiredValues.update { requireValues }
         }
-
     )
+
+
+
+
+    override val requireValues = _requiredValues.asStateFlow()
+
 
     override fun onNameChange(name: String) {
         _requiredValues.update { it.copy(name = name) }

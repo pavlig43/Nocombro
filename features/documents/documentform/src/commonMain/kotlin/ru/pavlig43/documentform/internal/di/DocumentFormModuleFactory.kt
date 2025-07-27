@@ -15,8 +15,5 @@ internal fun createDocumentFormModule(dependencies: IDocumentFormDependencies) =
     baseModule(dependencies),
     createDocumentFormModule
 )
-//internal fun createChangeDocumentModule(dependencies: IDocumentFormDependencies) = listOf(
-//    baseModule(dependencies),
-//    changeDocumentModule
-//)
+
 private class AddFileDependencies(override val documentDao: DocumentDao):IAddFileDependencies

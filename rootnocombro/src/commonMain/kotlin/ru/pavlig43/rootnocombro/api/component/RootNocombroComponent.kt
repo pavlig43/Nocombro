@@ -12,6 +12,7 @@ import kotlinx.serialization.Serializable
 import ru.pavlig43.corekoin.ComponentKoinContext
 import ru.pavlig43.documentform.api.component.DocumentFormComponent
 import ru.pavlig43.documentlist.api.component.DocumentListComponent
+import ru.pavlig43.productform.api.component.ProductFormComponent
 import ru.pavlig43.rootnocombro.api.IRootDependencies
 import ru.pavlig43.rootnocombro.internal.di.createRootNocombroModule
 import ru.pavlig43.rootnocombro.internal.navigation.drawer.component.DrawerDestination
@@ -64,7 +65,6 @@ class RootNocombroComponent(
 
             )
 
-
             Config.Tabs -> IRootNocombroComponent.Child.Tabs(
                 DefaultTabNavigationComponent(
                     componentContext = componentContext,
@@ -96,6 +96,13 @@ class RootNocombroComponent(
                                 closeTab = onCloseTab,
                                 documentId = tabConfig.id
                             )
+
+                            is TabConfig.ProductForm -> ProductFormComponent(
+                                componentContext = context,
+                                dependencies = scope.get(),
+                                closeTab = onCloseTab,
+                                productId = tabConfig.id
+                            )
                         }
                     }
 
@@ -108,6 +115,7 @@ class RootNocombroComponent(
         when (this) {
             is DrawerDestination.CreateDocument -> TabConfig.CreateDocument()
             is DrawerDestination.Documents -> TabConfig.DocumentList()
+            is DrawerDestination.ProductForm -> TabConfig.ProductForm(0)
         }
 
     @Serializable

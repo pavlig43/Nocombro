@@ -1,7 +1,7 @@
 package ru.pavlig43.database.data.product
 
-import ru.pavlig43.database.data.common.data.ItemType
+import ru.pavlig43.core.data.ItemType
 
-enum class ProductType(override val displayName: String):ItemType {
-    BaseProduct("Базовый продукт")
+enum class ProductType(override val displayName: String): ItemType {
+    NOCOMBRO_SPICE("Готовый НОКОМБРО")
 }

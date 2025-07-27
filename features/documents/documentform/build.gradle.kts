@@ -12,6 +12,7 @@ kotlin{
         implementation(projects.features.documents.addfile)
         implementation(projects.features.manageitem.managebasevaluesitem)
         implementation(projects.features.manageitem.loadinitdata)
+        implementation(projects.features.manageitem.upsertitem)
         implementation(projects.database)
         implementation(libs.filekit.dialogs)
 

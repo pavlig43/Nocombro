@@ -11,12 +11,10 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import ru.pavlig43.database.data.common.data.ItemType
+import ru.pavlig43.core.data.ItemType
 import ru.pavlig43.itemlist.api.component.DeleteState
 import ru.pavlig43.itemlist.api.data.ItemUi
 import ru.pavlig43.itemlist.internal.ui.settings.SettingsRow

@@ -12,6 +12,7 @@ import ru.pavlig43.database.data.document.DocumentFilePath
 import ru.pavlig43.database.data.document.DocumentType
 import ru.pavlig43.database.data.document.DocumentWithFiles
 
+@Suppress("TooManyFunctions")
 @Dao
 interface DocumentDao {
 
@@ -30,7 +31,7 @@ interface DocumentDao {
     @Query("SELECT * from document ORDER BY created_at ASC")
     fun observeAllDocuments(): Flow<List<Document>>
 
-    @Query("SELECT * from document WHERE type IN (:types) ORDER BY created_at ASC")
+    @Query("SELECT * from document WHERE type IN (:types) ORDER BY created_at DESC")
     fun observeDocumentsByTypes(types: List<DocumentType>): Flow<List<Document>>
 
     @Insert(onConflict = OnConflictStrategy.ABORT)

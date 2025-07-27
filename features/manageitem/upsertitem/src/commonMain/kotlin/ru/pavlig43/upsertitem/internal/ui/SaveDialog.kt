@@ -1,4 +1,4 @@
-package ru.pavlig43.documentform.internal.ui
+package ru.pavlig43.upsertitem.internal.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -16,7 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.DialogProperties
+import ru.pavlig43.upsertitem.internal.SAVE_DIALOG_MESSAGE
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -54,7 +54,7 @@ internal fun SaveDialog(
                     Text("OK")
                 }
                 Button(onDismissRequest) {
-                    Text(NO)
+                    Text("Нет")
                 }
             }
         }
