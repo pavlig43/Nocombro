@@ -77,25 +77,12 @@ class RootNocombroComponent(
                     slotFactory = { context, tabConfig: TabConfig, openNewTab: (TabConfig) -> Unit, onCloseTab: () -> Unit ->
 
                         when (tabConfig) {
+
                             is TabConfig.DocumentList -> DocumentListComponent(
                                 componentContext = context,
-                                onCreateScreen = { openNewTab(TabConfig.CreateDocument()) },
+                                onCreateScreen = { openNewTab(TabConfig.DocumentForm(0)) },
                                 dependencies = scope.get(),
-                                onItemClick = { openNewTab(TabConfig.ChangeDocument(it)) }
-                            )
-
-                            is TabConfig.CreateDocument -> DocumentFormComponent(
-                                documentId = 0,
-                                closeTab = onCloseTab,
-                                componentContext = context,
-                                dependencies = scope.get()
-                            )
-
-                            is TabConfig.ChangeDocument -> DocumentFormComponent(
-                                componentContext = context,
-                                dependencies = scope.get(),
-                                closeTab = onCloseTab,
-                                documentId = tabConfig.id
+                                onItemClick = { openNewTab(TabConfig.DocumentForm(it)) }
                             )
 
                             is TabConfig.ProductForm -> ProductFormComponent(
@@ -111,6 +98,13 @@ class RootNocombroComponent(
                                 onCreateScreen = { openNewTab(TabConfig.ProductForm(0)) },
                                 dependencies = scope.get()
                             )
+
+                            is TabConfig.DocumentForm -> DocumentFormComponent(
+                                documentId = tabConfig.id,
+                                closeTab = onCloseTab,
+                                componentContext = context,
+                                dependencies = scope.get()
+                            )
                         }
                     }
 
@@ -121,9 +115,9 @@ class RootNocombroComponent(
 
     private fun DrawerDestination.toTabConfig(): TabConfig =
         when (this) {
-            is DrawerDestination.CreateDocument -> TabConfig.CreateDocument()
-            is DrawerDestination.Documents -> TabConfig.DocumentList()
-            is DrawerDestination.ProductForm -> TabConfig.ProductForm(0)
+            is DrawerDestination.CreateDocument -> TabConfig.DocumentForm(0)
+            is DrawerDestination.DocumentList -> TabConfig.DocumentList()
+            is DrawerDestination.CreateProduct -> TabConfig.ProductForm(0)
             is DrawerDestination.ProductList -> TabConfig.ProductList()
         }
 

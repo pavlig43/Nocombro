@@ -7,12 +7,14 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted.Companion.Eagerly
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import ru.pavlig43.core.RequestResult
+import ru.pavlig43.core.SlotComponent
 import ru.pavlig43.core.componentCoroutineScope
 import ru.pavlig43.core.data.Item
 import ru.pavlig43.core.data.ItemType
@@ -32,6 +34,7 @@ class ItemListComponent<I : Item, S : ItemType>(
 //    }
 //    private val scope: Scope =
 //        koinContext.getOrCreateKoinScope(createItemListModule())
+
 
     private val selectedItemTypes = MutableStateFlow<List<S>>(emptyList())
 

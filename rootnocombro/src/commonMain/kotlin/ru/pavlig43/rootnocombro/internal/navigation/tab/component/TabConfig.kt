@@ -7,11 +7,14 @@ sealed interface TabConfig{
     @Serializable
     class DocumentList : TabConfig
 
-    @Serializable
-    class CreateDocument : TabConfig
+//    @Serializable
+//    class CreateDocument : TabConfig
+//
+//    @Serializable
+//    class ChangeDocument(val id:Int) : TabConfig
 
     @Serializable
-    class ChangeDocument(val id:Int) : TabConfig
+    class DocumentForm(val id:Int) : TabConfig
 
     @Serializable
     class ProductForm(val id:Int):TabConfig
