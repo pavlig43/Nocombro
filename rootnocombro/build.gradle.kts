@@ -15,6 +15,7 @@ kotlin{
         implementation(projects.features.documents.documentform)
         implementation(projects.features.documents.documentlist)
         implementation(projects.features.products.productform)
+        implementation(projects.features.products.productlist)
         implementation(projects.database)
         implementation(projects.datastore)
 

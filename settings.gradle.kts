@@ -68,6 +68,9 @@ include(
 )
 
 
-include(":features:products:productform")
+include(
+    ":features:products:productform",
+    ":features:products:productlist"
+    )
 
 

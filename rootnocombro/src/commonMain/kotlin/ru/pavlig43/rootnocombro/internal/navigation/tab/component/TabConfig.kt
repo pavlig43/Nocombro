@@ -16,4 +16,7 @@ sealed interface TabConfig{
     @Serializable
     class ProductForm(val id:Int):TabConfig
 
+    @Serializable
+    class ProductList :TabConfig
+
 }

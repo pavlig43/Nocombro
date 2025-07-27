@@ -25,9 +25,12 @@ import ru.pavlig43.documentform.api.component.DocumentFormComponent
 import ru.pavlig43.documentform.api.ui.DocumentFormScreen
 import ru.pavlig43.documentlist.api.component.DocumentListComponent
 import ru.pavlig43.documentlist.api.ui.DocumentScreen
+import ru.pavlig43.productlist.api.ui.ProductsScreen
 import ru.pavlig43.productform.api.component.ProductFormComponent
 import ru.pavlig43.productform.api.ui.ProductFormScreen
+import ru.pavlig43.productlist.api.component.ProductListComponent
 import ru.pavlig43.rootnocombro.api.component.IRootNocombroComponent
+import ru.pavlig43.rootnocombro.internal.navigation.drawer.component.DrawerDestination
 import ru.pavlig43.rootnocombro.internal.navigation.drawer.ui.NavigationDrawer
 import ru.pavlig43.rootnocombro.internal.navigation.tab.component.TabConfig
 import ru.pavlig43.rootnocombro.internal.navigation.tab.component.TabNavigationComponent
@@ -102,6 +105,7 @@ fun RootNocombroScreen(rootNocombroComponent: IRootNocombroComponent) {
                                             is DocumentListComponent -> DocumentScreen(slotComponent)
                                             is DocumentFormComponent -> DocumentFormScreen(slotComponent)
                                             is ProductFormComponent -> ProductFormScreen(slotComponent)
+                                            is ProductListComponent -> ProductsScreen(slotComponent)
                                             else -> error("$slotComponent SlotComponent not added")
                                         }
                                     }

@@ -13,6 +13,7 @@ import ru.pavlig43.corekoin.ComponentKoinContext
 import ru.pavlig43.documentform.api.component.DocumentFormComponent
 import ru.pavlig43.documentlist.api.component.DocumentListComponent
 import ru.pavlig43.productform.api.component.ProductFormComponent
+import ru.pavlig43.productlist.api.component.ProductListComponent
 import ru.pavlig43.rootnocombro.api.IRootDependencies
 import ru.pavlig43.rootnocombro.internal.di.createRootNocombroModule
 import ru.pavlig43.rootnocombro.internal.navigation.drawer.component.DrawerDestination
@@ -103,6 +104,13 @@ class RootNocombroComponent(
                                 closeTab = onCloseTab,
                                 productId = tabConfig.id
                             )
+
+                            is TabConfig.ProductList -> ProductListComponent(
+                                componentContext = context,
+                                onItemClick = { openNewTab(TabConfig.ProductForm(it)) },
+                                onCreateScreen = { openNewTab(TabConfig.ProductForm(0)) },
+                                dependencies = scope.get()
+                            )
                         }
                     }
 
@@ -116,6 +124,7 @@ class RootNocombroComponent(
             is DrawerDestination.CreateDocument -> TabConfig.CreateDocument()
             is DrawerDestination.Documents -> TabConfig.DocumentList()
             is DrawerDestination.ProductForm -> TabConfig.ProductForm(0)
+            is DrawerDestination.ProductList -> TabConfig.ProductList()
         }
 
     @Serializable
