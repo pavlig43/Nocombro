@@ -6,10 +6,7 @@ import com.arkivanov.essenty.instancekeeper.getOrCreate
 import io.github.vinceglb.filekit.absolutePath
 import io.github.vinceglb.filekit.extension
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -105,13 +102,6 @@ class DocumentFormComponent(
             onSuccessAction = closeTab,
             saveItemRepository = saveRepository
         )
-
-    private val _saveDocumentState: MutableStateFlow<SaveDocumentState> =
-        MutableStateFlow(SaveDocumentState.Init())
-    override val saveDocumentState: StateFlow<SaveDocumentState> = _saveDocumentState.asStateFlow()
-
-
-
 
 
     override fun closeScreen() {

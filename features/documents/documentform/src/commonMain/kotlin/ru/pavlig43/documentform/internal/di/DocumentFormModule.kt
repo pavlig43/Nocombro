@@ -7,7 +7,7 @@ import ru.pavlig43.database.data.document.dao.DocumentDao
 import ru.pavlig43.documentform.internal.ui.INIT_BASE_VALUES
 import ru.pavlig43.documentform.internal.ui.SAVE_REPOSITORY_TAG
 import ru.pavlig43.loadinitdata.api.data.IInitDataRepository
-import ru.pavlig43.loadinitdata.api.data.InitItemRepository
+import ru.pavlig43.manageitem.internal.data.InitItemRepository
 import ru.pavlig43.manageitem.api.data.RequireValues
 import ru.pavlig43.upsertitem.data.ISaveItemRepository
 import ru.pavlig43.upsertitem.data.SaveItemRepository
@@ -29,19 +29,11 @@ private fun getSaveRepository(
 }
 private fun getInitRequireValuesRepository(
     documentDao: DocumentDao
-): InitItemRepository<Document,RequireValues> {
-     fun Document.toRequireValues(): RequireValues {
-        return RequireValues(
-            id = id,
-            name = displayName,
-            type = type,
-            createdAt = createdAt
-        )
-    }
-    return InitItemRepository<Document,RequireValues>(
+): IInitDataRepository<Document,RequireValues> {
+    return InitItemRepository<Document,>(
         tag = INIT_BASE_VALUES,
         iniDataForState = RequireValues(),
         loadData = documentDao::getDocument,
-        mapper = Document::toRequireValues
+
     )
 }

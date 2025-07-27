@@ -26,7 +26,7 @@ interface ProductDao {
     suspend fun updateProduct(product: Product):Unit
 
     @Query("SELECT * from product WHERE id = :id")
-    suspend fun getDocument(id: Int): Product
+    suspend fun getProduct(id: Int): Product
 
     @Query("SELECT * from product ORDER BY created_at ASC")
     fun observeAllProducts(): Flow<List<Product>>
@@ -55,13 +55,13 @@ interface ProductDao {
 //        insertDocumentPaths(documentWithFiles.files.map { it.copy(documentId = documentId) })
 //
 //    }
-    @Query("""
-        SELECT CASE
-            WHEN (SELECT display_name FROM product WHERE id =:id) THEN TRUE
-            ELSE NOT EXISTS (SELECT 1 FROM product WHERE display_name = :name AND id != :id)
-        END
-    """)
-    suspend fun isNameChangeAllowed(id: Int,name: String):Boolean
+//    @Query("""
+//        SELECT CASE
+//            WHEN (SELECT display_name FROM product WHERE id =:id) THEN TRUE
+//            ELSE NOT EXISTS (SELECT 1 FROM product WHERE display_name = :name AND id != :id)
+//        END
+//    """)
+//    suspend fun isNameChangeAllowed(id: Int,name: String):Boolean
 
     @Query("SELECT COUNT(*) > 0 FROM product WHERE display_name =:name")
     suspend fun isNameExist(name: String):Boolean

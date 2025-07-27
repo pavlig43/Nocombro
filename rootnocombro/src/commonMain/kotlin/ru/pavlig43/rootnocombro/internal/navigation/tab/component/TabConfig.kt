@@ -13,4 +13,7 @@ sealed interface TabConfig{
     @Serializable
     class ChangeDocument(val id:Int) : TabConfig
 
+    @Serializable
+    class ProductForm(val id:Int):TabConfig
+
 }

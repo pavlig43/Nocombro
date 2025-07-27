@@ -33,27 +33,19 @@ class ManageBaseValueItemComponent<I : Item, S : ItemType>(
     }
     private val _requiredValues = MutableStateFlow(initDataRepository.iniDataForState)
     override val initComponent: ILoadInitDataComponent<RequireValues> = LoadInitDataComponent(
-            componentContext = childContext("initComponent"),
-            getInitData = initDataRepository::loadInitData,
-            id = id,
-            onSuccessGetInitData = { requireValues ->
-                _requiredValues.update { requireValues }
-            }
-        )
+        componentContext = childContext("initComponent"),
+        getInitData = initDataRepository::loadInitData,
+        id = id,
+        onSuccessGetInitData = { requireValues ->
+            _requiredValues.update { requireValues }
+        }
+    )
+
+
 
 
     override val requireValues = _requiredValues.asStateFlow()
 
-//    override val initComponent: ILoadInitDataComponent<RequireValues> = LoadInitDataComponent(
-//        componentContext = childContext("initComponent"),
-//        getInitData = initDataRepository::loadInitData,
-////        initDataRepository = initDataRepository,
-//        id = id,
-//        onSuccessGetInitData = { requireValues ->
-//            _requiredValues.update { requireValues }
-//        }
-//
-//    )
 
     override fun onNameChange(name: String) {
         _requiredValues.update { it.copy(name = name) }

@@ -14,6 +14,7 @@ kotlin{
         implementation(projects.features.sign.root)
         implementation(projects.features.documents.documentform)
         implementation(projects.features.documents.documentlist)
+        implementation(projects.features.products.productform)
         implementation(projects.database)
         implementation(projects.datastore)
 
