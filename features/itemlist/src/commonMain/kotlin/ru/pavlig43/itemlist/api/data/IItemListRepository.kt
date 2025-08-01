@@ -9,21 +9,6 @@ import ru.pavlig43.core.data.ItemType
 import ru.pavlig43.core.data.dbSafeCall
 import ru.pavlig43.core.data.dbSafeFlow
 import ru.pavlig43.core.mapTo
-import ru.pavlig43.database.data.document.Document
-import ru.pavlig43.database.data.document.DocumentType
-import ru.pavlig43.database.data.document.dao.DocumentDao
-
-interface IItemListRepository<I:Item,U:ItemUi,S: ItemType> {
-
-
-    suspend fun deleteItemsById(ids: List<Int>): RequestResult<Unit>
-
-    fun getAllItem(): Flow<RequestResult<List<I>>>
-
-    fun getItemsByTypes(types: List<S>): Flow<RequestResult<List<I>>>
-
-    fun toItemUi(item: I): U
-}
 
 class ItemListRepository<I:Item, S: ItemType>(
     private val tag:String,
