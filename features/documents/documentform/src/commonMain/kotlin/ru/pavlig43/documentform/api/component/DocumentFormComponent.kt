@@ -80,12 +80,12 @@ class DocumentFormComponent(
         val initRequireValues =
             when (val loadState = manageBaseValuesOfComponent.initComponent.loadState.value) {
                 is LoadInitDataState.Success<RequireValues> -> loadState.data.copy(type = requireValues.type)
-                else -> throw IllegalStateException("Рекомендуемые значения(Имя и тип) при начальной загрузки загрузились с ошибкой ")
+                else -> error("Рекомендуемые значения(Имя и тип) при начальной загрузки загрузились с ошибкой ")
             }
         val initFiles =
             when (val loadState = addFileComponent.loadInitDataComponent.loadState.value) {
                 is LoadInitDataState.Success<List<AddedFile>> -> loadState.data
-                else -> throw IllegalStateException("Список файлов не загрузился")
+                else -> error("Список файлов не загрузился")
             }
         val oldDocumentWithFiles = createDocumentWithFiles(initRequireValues, initFiles)
         return ItemsForUpsert(
