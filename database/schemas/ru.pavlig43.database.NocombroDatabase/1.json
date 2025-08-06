@@ -2,22 +2,17 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "aa526139dd22963532b33bcc6f659221",
+    "identityHash": "7c215a141707af06d60fc54acaca3cc2",
     "entities": [
       {
         "tableName": "product",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`type` TEXT NOT NULL, `declaration_id` INTEGER, `display_name` TEXT NOT NULL, `created_at` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, FOREIGN KEY(`declaration_id`) REFERENCES `document`(`id`) ON UPDATE NO ACTION ON DELETE SET NULL )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`type` TEXT NOT NULL, `display_name` TEXT NOT NULL, `created_at` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL)",
         "fields": [
           {
             "fieldPath": "type",
             "columnName": "type",
             "affinity": "TEXT",
             "notNull": true
-          },
-          {
-            "fieldPath": "declarationId",
-            "columnName": "declaration_id",
-            "affinity": "INTEGER"
           },
           {
             "fieldPath": "displayName",
@@ -43,20 +38,7 @@
           "columnNames": [
             "id"
           ]
-        },
-        "foreignKeys": [
-          {
-            "table": "document",
-            "onDelete": "SET NULL",
-            "onUpdate": "NO ACTION",
-            "columns": [
-              "declaration_id"
-            ],
-            "referencedColumns": [
-              "id"
-            ]
-          }
-        ]
+        }
       },
       {
         "tableName": "document",
@@ -210,8 +192,8 @@
         ]
       },
       {
-        "tableName": "declaration_dependencies",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`product_id` INTEGER NOT NULL, `declaration_id` INTEGER NOT NULL, `is_actual` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, FOREIGN KEY(`product_id`) REFERENCES `product`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`declaration_id`) REFERENCES `document`(`id`) ON UPDATE NO ACTION ON DELETE SET NULL )",
+        "tableName": "declaration",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`product_id` INTEGER NOT NULL, `document_id` INTEGER NOT NULL, `is_actual` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, FOREIGN KEY(`product_id`) REFERENCES `product`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`document_id`) REFERENCES `document`(`id`) ON UPDATE NO ACTION ON DELETE SET NULL )",
         "fields": [
           {
             "fieldPath": "productId",
@@ -220,8 +202,8 @@
             "notNull": true
           },
           {
-            "fieldPath": "declarationId",
-            "columnName": "declaration_id",
+            "fieldPath": "documentId",
+            "columnName": "document_id",
             "affinity": "INTEGER",
             "notNull": true
           },
@@ -261,7 +243,7 @@
             "onDelete": "SET NULL",
             "onUpdate": "NO ACTION",
             "columns": [
-              "declaration_id"
+              "document_id"
             ],
             "referencedColumns": [
               "id"
@@ -321,7 +303,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'aa526139dd22963532b33bcc6f659221')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '7c215a141707af06d60fc54acaca3cc2')"
     ]
   }
 }

@@ -92,7 +92,6 @@ class ProductFormComponent(
     ): Product {
         val product = Product(
             id = requireValues.id,
-            declarationId = null,
             displayName = requireValues.name,
             type = requireValues.type as ProductType,
             createdAt = requireValues.createdAt ?: UTC(Clock.System.now().toEpochMilliseconds()),

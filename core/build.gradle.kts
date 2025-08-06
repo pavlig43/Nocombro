@@ -6,6 +6,7 @@ plugins {
   alias(libs.plugins.pavlig43.decompose)
 
   alias(libs.plugins.pavlig43.coroutines)
+  alias(libs.plugins.pavlig43.serialization)
 
   }
 

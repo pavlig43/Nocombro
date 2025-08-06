@@ -10,22 +10,16 @@ import com.arkivanov.decompose.value.Value
 import com.arkivanov.essenty.instancekeeper.getOrCreate
 import kotlinx.serialization.Serializable
 import ru.pavlig43.corekoin.ComponentKoinContext
-import ru.pavlig43.documentform.api.component.DocumentFormComponent
-import ru.pavlig43.documentlist.api.component.DocumentListComponent
-import ru.pavlig43.productform.api.component.ProductFormComponent
-import ru.pavlig43.productlist.api.component.ProductListComponent
 import ru.pavlig43.rootnocombro.api.IRootDependencies
 import ru.pavlig43.rootnocombro.internal.di.createRootNocombroModule
-import ru.pavlig43.rootnocombro.internal.navigation.drawer.component.DrawerDestination
-import ru.pavlig43.rootnocombro.internal.navigation.tab.component.DefaultTabNavigationComponent
-import ru.pavlig43.rootnocombro.internal.navigation.tab.component.TabConfig
+import ru.pavlig43.rootnocombro.internal.navigation.tab.component.MainNavigationComponent
 import ru.pavlig43.rootnocombro.internal.settings.component.ISettingsComponent
 import ru.pavlig43.rootnocombro.internal.settings.component.SettingsComponent
 import ru.pavlig43.signroot.api.component.RootSignComponent
 
 class RootNocombroComponent(
     componentContext: ComponentContext,
-    rootDependencies: IRootDependencies
+    private val rootDependencies: IRootDependencies
 ) : IRootNocombroComponent, ComponentContext by componentContext {
 
     private val koinContext = instanceKeeper.getOrCreate { ComponentKoinContext() }
@@ -66,66 +60,14 @@ class RootNocombroComponent(
 
             )
 
-            Config.Tabs -> IRootNocombroComponent.Child.Tabs(
-                DefaultTabNavigationComponent(
-                    componentContext = componentContext,
-                    startConfigurations = listOf(
-                        TabConfig.DocumentList(),
-                    ),
-                    addConfigurationFromDrawer = { toTabConfig() },
-                    serializer = TabConfig.serializer(),
-                    slotFactory = { context, tabConfig: TabConfig, openNewTab: (TabConfig) -> Unit, onCloseTab: () -> Unit ->
 
-                        when (tabConfig) {
-                            is TabConfig.DocumentList -> DocumentListComponent(
-                                componentContext = context,
-                                onCreateScreen = { openNewTab(TabConfig.CreateDocument()) },
-                                dependencies = scope.get(),
-                                onItemClick = { openNewTab(TabConfig.ChangeDocument(it)) }
-                            )
-
-                            is TabConfig.CreateDocument -> DocumentFormComponent(
-                                documentId = 0,
-                                closeTab = onCloseTab,
-                                componentContext = context,
-                                dependencies = scope.get()
-                            )
-
-                            is TabConfig.ChangeDocument -> DocumentFormComponent(
-                                componentContext = context,
-                                dependencies = scope.get(),
-                                closeTab = onCloseTab,
-                                documentId = tabConfig.id
-                            )
-
-                            is TabConfig.ProductForm -> ProductFormComponent(
-                                componentContext = context,
-                                dependencies = scope.get(),
-                                closeTab = onCloseTab,
-                                productId = tabConfig.id
-                            )
-
-                            is TabConfig.ProductList -> ProductListComponent(
-                                componentContext = context,
-                                onItemClick = { openNewTab(TabConfig.ProductForm(it)) },
-                                onCreateScreen = { openNewTab(TabConfig.ProductForm(0)) },
-                                dependencies = scope.get()
-                            )
-                        }
-                    }
-
-                )
+            Config.Tabs -> IRootNocombroComponent.Child.Tabs(MainNavigationComponent(
+                componentContext = childContext("tabs"),
+                rootDependencies = rootDependencies
+            )
             )
         }
     }
-
-    private fun DrawerDestination.toTabConfig(): TabConfig =
-        when (this) {
-            is DrawerDestination.CreateDocument -> TabConfig.CreateDocument()
-            is DrawerDestination.Documents -> TabConfig.DocumentList()
-            is DrawerDestination.ProductForm -> TabConfig.ProductForm(0)
-            is DrawerDestination.ProductList -> TabConfig.ProductList()
-        }
 
     @Serializable
     sealed interface Config {
@@ -134,7 +76,7 @@ class RootNocombroComponent(
         data object Sign : Config
 
         @Serializable
-        data object Tabs : Config
+        data object Tabs:Config
 
     }
 }

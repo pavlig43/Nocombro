@@ -6,12 +6,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
-import ru.pavlig43.rootnocombro.internal.navigation.tab.component.TabNavigationComponent
+import ru.pavlig43.core.tabs.ITabNavigationComponent
+import ru.pavlig43.coreui.tab.TabDraggableRow
 
 
 @Composable
 internal fun <TabConfiguration : Any, SlotComponent : Any> TabNavigationContent(
-    navigationComponent: TabNavigationComponent<TabConfiguration, SlotComponent>,
+    navigationComponent: ITabNavigationComponent<TabConfiguration, SlotComponent>,
     tabContent: @Composable (
         index: Int,
         slotComponent: SlotComponent,

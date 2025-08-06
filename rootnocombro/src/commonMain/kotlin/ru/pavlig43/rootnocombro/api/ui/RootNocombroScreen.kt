@@ -21,6 +21,7 @@ import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import kotlinx.coroutines.launch
 import ru.pavlig43.core.SlotComponent
+import ru.pavlig43.core.tabs.ITabNavigationComponent
 import ru.pavlig43.documentform.api.component.DocumentFormComponent
 import ru.pavlig43.documentform.api.ui.DocumentFormScreen
 import ru.pavlig43.documentlist.api.component.DocumentListComponent
@@ -30,10 +31,9 @@ import ru.pavlig43.productform.api.component.ProductFormComponent
 import ru.pavlig43.productform.api.ui.ProductFormScreen
 import ru.pavlig43.productlist.api.component.ProductListComponent
 import ru.pavlig43.rootnocombro.api.component.IRootNocombroComponent
-import ru.pavlig43.rootnocombro.internal.navigation.drawer.component.DrawerDestination
 import ru.pavlig43.rootnocombro.internal.navigation.drawer.ui.NavigationDrawer
+import ru.pavlig43.rootnocombro.internal.navigation.tab.component.IMainNavigationComponent
 import ru.pavlig43.rootnocombro.internal.navigation.tab.component.TabConfig
-import ru.pavlig43.rootnocombro.internal.navigation.tab.component.TabNavigationComponent
 import ru.pavlig43.rootnocombro.internal.navigation.tab.ui.TabContent
 import ru.pavlig43.rootnocombro.internal.navigation.tab.ui.TabNavigationContent
 import ru.pavlig43.rootnocombro.internal.topbar.ui.NocombroAppBar
@@ -63,8 +63,10 @@ fun RootNocombroScreen(rootNocombroComponent: IRootNocombroComponent) {
                     is IRootNocombroComponent.Child.RootSign -> RootSignScreen(instance.component)
 
                     is IRootNocombroComponent.Child.Tabs -> {
-                        val tabNavigationComponent: TabNavigationComponent<TabConfig, SlotComponent> =
+                        val mainNavigationComponent: IMainNavigationComponent<TabConfig, SlotComponent> =
                             instance.component
+                        val tabNavigationComponent: ITabNavigationComponent<TabConfig, SlotComponent> = mainNavigationComponent.tabNavigationComponent
+                        val drawerNavigationComponent = mainNavigationComponent.drawerComponent
                         NocombroAppBar(
                             settingsComponent = rootNocombroComponent.settingsComponent,
                             onOpenDrawer = {
@@ -78,7 +80,7 @@ fun RootNocombroScreen(rootNocombroComponent: IRootNocombroComponent) {
                             }
                         )
                         NavigationDrawer(
-                            drawerComponent = tabNavigationComponent.drawerComponent,
+                            drawerComponent = drawerNavigationComponent,
                             drawerState = drawerState,
                             onCloseNavigationDrawer = {
                                 coroutineScope.launch { drawerState.close() }
@@ -116,7 +118,6 @@ fun RootNocombroScreen(rootNocombroComponent: IRootNocombroComponent) {
 
 
                     }
-
                 }
 
             }

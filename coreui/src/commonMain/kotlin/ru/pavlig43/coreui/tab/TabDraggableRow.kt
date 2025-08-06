@@ -1,4 +1,4 @@
-package ru.pavlig43.rootnocombro.internal.navigation.tab.ui
+package ru.pavlig43.coreui.tab
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.gestures.detectDragGestures
@@ -36,7 +36,7 @@ private val defaultTabPadding = 2.dp
 
 @Suppress("LongParameterList")
 @Composable
-internal fun <T : Any> TabDraggableRow(
+fun <T : Any> TabDraggableRow(
     items: List<T>,
     onMove: (fromIndex: Int, toIndex: Int) -> Unit,
     modifier: Modifier = Modifier,

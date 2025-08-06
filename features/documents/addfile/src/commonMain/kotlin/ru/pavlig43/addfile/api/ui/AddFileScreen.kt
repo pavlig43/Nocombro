@@ -58,6 +58,7 @@ fun AddFileScreen(
                 addFile = component::addFile,
                 removeFile = component::removeFile,
                 retryLoadFile = component::retryLoadFile,
+                modifier = it
 
                 )
         }
