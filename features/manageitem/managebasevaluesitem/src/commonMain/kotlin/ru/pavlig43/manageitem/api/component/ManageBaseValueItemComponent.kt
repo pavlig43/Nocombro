@@ -41,9 +41,6 @@ class ManageBaseValueItemComponent<I : Item, S : ItemType>(
         }
     )
 
-
-
-
     override val requireValues = _requiredValues.asStateFlow()
 
 

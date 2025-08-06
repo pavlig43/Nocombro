@@ -1,8 +1,7 @@
-package ru.pavlig43.rootnocombro.internal.navigation.tab.component
+package ru.pavlig43.core.tabs
 
 import com.arkivanov.decompose.Child
 import com.arkivanov.decompose.ComponentContext
-import com.arkivanov.decompose.childContext
 import com.arkivanov.decompose.router.children.ChildNavState
 import com.arkivanov.decompose.router.children.NavState
 import com.arkivanov.decompose.router.children.SimpleChildNavState
@@ -11,31 +10,10 @@ import com.arkivanov.decompose.router.children.children
 import com.arkivanov.decompose.value.Value
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
-import ru.pavlig43.rootnocombro.internal.navigation.drawer.component.DrawerComponent
-import ru.pavlig43.rootnocombro.internal.navigation.drawer.component.DrawerDestination
-import ru.pavlig43.rootnocombro.internal.navigation.drawer.component.IDrawerComponent
-import ru.pavlig43.rootnocombro.internal.navigation.tab.component.TabNavigationComponent.Children
 
-interface TabNavigationComponent<TabConfiguration : Any, SlotComponent : Any> {
-
-    val drawerComponent: IDrawerComponent
-    val children: Value<Children<*, SlotComponent>>
-    fun onSelectTab(index: Int)
-    fun onMove(fromIndex: Int, toIndex: Int)
-    fun onTabCloseClicked(index: Int)
-    fun addTab(configuration: TabConfiguration)
-    fun openScreenFromDrawer(destination: DrawerDestination)
-
-    class Children<out C : Any, out T : Any>(
-        val items: List<Child.Created<C, T>>,
-        val selectedIndex: Int?,
-    )
-}
-
-internal class DefaultTabNavigationComponent<TabConfiguration : Any, SlotComponent : Any>(
+class DefaultTabNavigationComponent<TabConfiguration : Any, SlotComponent : Any>(
     componentContext: ComponentContext,
     private val startConfigurations: List<TabConfiguration>,
-    private val addConfigurationFromDrawer: DrawerDestination.() -> TabConfiguration,
     serializer: KSerializer<TabConfiguration>,
     private val slotFactory: (
         componentContext: ComponentContext,
@@ -43,24 +21,18 @@ internal class DefaultTabNavigationComponent<TabConfiguration : Any, SlotCompone
         openNewTab: (TabConfiguration) -> Unit,
         closeTab: () -> Unit,
     ) -> SlotComponent
-) : ComponentContext by componentContext, TabNavigationComponent<TabConfiguration, SlotComponent> {
+) : ComponentContext by componentContext, ITabNavigationComponent<TabConfiguration, SlotComponent> {
     private val navigation =
         SimpleNavigation<(NavigationState<TabConfiguration>) -> NavigationState<TabConfiguration>>()
 
-    override val drawerComponent: IDrawerComponent = DrawerComponent(
-        componentContext = childContext("drawer"),
-        openScreen = ::openScreenFromDrawer
-    )
-
-
-    override val children: Value<Children<TabConfiguration, SlotComponent>> =
+    override val children: Value<ITabNavigationComponent.Children<TabConfiguration, SlotComponent>> =
         children<
                 ComponentContext,
                 TabConfiguration,
                 SlotComponent,
                     (NavigationState<TabConfiguration>) -> NavigationState<TabConfiguration>,
                 NavigationState<TabConfiguration>,
-                Children<TabConfiguration, SlotComponent>
+                ITabNavigationComponent.Children<TabConfiguration, SlotComponent>
                 >(
             source = navigation,
             stateSerializer = NavigationState.serializer(serializer),
@@ -68,9 +40,9 @@ internal class DefaultTabNavigationComponent<TabConfiguration : Any, SlotCompone
             initialState = {
                 NavigationState(configurations = startConfigurations, currentIndex = 0)
             },
-            navTransformer = { state, transformer -> transformer(state) },
+            navTransformer = { state, transformer: (NavigationState<TabConfiguration>) -> NavigationState<TabConfiguration> -> transformer(state) },
             stateMapper = { state, children ->
-                Children(
+                ITabNavigationComponent.Children(
                     items = children.map { it as Child.Created },
                     selectedIndex = state.currentIndex,
                 )
@@ -138,11 +110,6 @@ internal class DefaultTabNavigationComponent<TabConfiguration : Any, SlotCompone
         }
     }
 
-    override fun openScreenFromDrawer(destination: DrawerDestination) {
-        val tabConfiguration = addConfigurationFromDrawer(destination)
-        addTab(tabConfiguration)
-    }
-
     override fun addTab(configuration: TabConfiguration) {
         navigation.navigate { state ->
             val updatedConfigurations = state.configurations.toMutableList()
@@ -171,5 +138,3 @@ internal class DefaultTabNavigationComponent<TabConfiguration : Any, SlotCompone
         }
     }
 }
-
-
