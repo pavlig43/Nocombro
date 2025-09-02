@@ -10,11 +10,11 @@ suspend fun <T> dbSafeCall(
     daoTag: String,
     action: suspend () -> T
 
-): RequestResult<T> {
+):RequestResult<T> {
     return runCatching { action() }.fold(
         onSuccess = { RequestResult.Success(it) },
         onFailure = { throwable ->
-            val message = "$daoTag $ERROR_DATABASE"
+            val message = "$daoTag $ERROR_DATABASE ${throwable.message}"
             RequestResult.Error(throwable = throwable, message = message)
 
         }

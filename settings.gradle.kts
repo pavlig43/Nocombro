@@ -46,12 +46,17 @@ include(":theme")
 
 
 
-include(":features:itemlist")
+include(
+    ":features:itemlist",
+    )
 
 include(
-    ":features:manageitem:managebasevaluesitem",
+    ":features:manageitem:require",
+    ":features:manageitem:form",
+    ":features:manageitem:addfile",
     ":features:manageitem:loadinitdata",
-    ":features:manageitem:upsertitem"
+    ":features:manageitem:upsertitem",
+    ":features:manageitem:declaration"
     )
 
 include(
@@ -62,15 +67,12 @@ include(
 )
 
 include(
-    ":features:documents:addfile",
     ":features:documents:documentform",
-    ":features:documents:documentlist"
 )
 
 
 include(
     ":features:products:productform",
-    ":features:products:productlist"
     )
 
 

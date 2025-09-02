@@ -21,22 +21,24 @@ import ru.pavlig43.core.data.ItemType
 import ru.pavlig43.itemlist.api.data.ItemListRepository
 import ru.pavlig43.itemlist.api.data.ItemUi
 
+
+
 class ItemListComponent<I : Item, S : ItemType>(
     componentContext: ComponentContext,
     override val fullListSelection:List<S>,
-    private val onCreateScreen: () -> Unit,
+    tabTitle:String,
+    override val onCreate: () -> Unit,
     private val repository: ItemListRepository<I, S>,
-    override val onItemClick: (id: Int) -> Unit,
-) : ComponentContext by componentContext, IItemListComponent {
+    override val onItemClick: (id: Int,String) -> Unit,
+    override val withCheckbox: Boolean,
+) : ComponentContext by componentContext, IItemListComponent,SlotComponent {
     private val coroutineScope = componentCoroutineScope()
-//    private val koinContext = instanceKeeper.getOrCreate {
-//        ComponentKoinContext()
-//    }
-//    private val scope: Scope =
-//        koinContext.getOrCreateKoinScope(createItemListModule())
+
+private val _model = MutableStateFlow(SlotComponent.TabModel(tabTitle))
+    override val model: StateFlow<SlotComponent.TabModel> = _model.asStateFlow()
 
 
-    private val selectedItemTypes = MutableStateFlow<List<S>>(emptyList())
+    private val selectedItemTypes = MutableStateFlow<List<S>>(fullListSelection)
 
     @OptIn(ExperimentalCoroutinesApi::class)
     override val itemListState: StateFlow<ItemListState> =
@@ -46,7 +48,9 @@ class ItemListComponent<I : Item, S : ItemType>(
             } else {
                 repository.getItemsByTypes(types)
 
-            }.map { requestResult -> requestResult.toItemListState() }
+            }.map {
+                    requestResult ->
+                requestResult.toItemListState() }
         }.stateIn(
             coroutineScope,
             started = Eagerly,
@@ -55,9 +59,7 @@ class ItemListComponent<I : Item, S : ItemType>(
     override val deleteState:MutableStateFlow<DeleteState> = MutableStateFlow(DeleteState.Initial())
 
 
-    override fun onCreate() {
-       onCreateScreen()
-    }
+
 
     @Suppress("UNCHECKED_CAST")
     override fun saveSelection(selection: List<ItemType>) {
@@ -96,8 +98,6 @@ class ItemListComponent<I : Item, S : ItemType>(
         TODO("Not yet implemented")
     }
 }
-
-
 private fun RequestResult<List<ItemUi>>.toItemListState(): ItemListState {
     return when (this) {
         is RequestResult.Error -> ItemListState.Error(message ?: "unknown error")
@@ -114,6 +114,7 @@ private fun RequestResult<Unit>.toDeleteState(): DeleteState {
         is RequestResult.Success<*> -> DeleteState.Success("success")
     }
 }
+
 
 
 

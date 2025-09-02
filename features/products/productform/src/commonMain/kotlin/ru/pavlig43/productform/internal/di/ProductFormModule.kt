@@ -1,39 +1,89 @@
 package ru.pavlig43.productform.internal.di
 
+import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import ru.pavlig43.database.data.product.Product
+import ru.pavlig43.database.data.product.ProductDeclaration
+import ru.pavlig43.database.data.product.ProductDeclarationOutWithDocumentName
+import ru.pavlig43.database.data.product.ProductFile
 import ru.pavlig43.database.data.product.dao.ProductDao
-import ru.pavlig43.productform.internal.ui.INIT_BASE_VALUES
-import ru.pavlig43.productform.internal.ui.SAVE_REPOSITORY_TAG
-import ru.pavlig43.loadinitdata.api.data.IInitDataRepository
-import ru.pavlig43.manageitem.internal.data.InitItemRepository
-import ru.pavlig43.manageitem.api.data.RequireValues
-import ru.pavlig43.upsertitem.data.ISaveItemRepository
-import ru.pavlig43.upsertitem.data.SaveItemRepository
+import ru.pavlig43.database.data.product.dao.ProductDeclarationDao
+import ru.pavlig43.database.data.product.dao.ProductFilesDao
+import ru.pavlig43.form.api.data.IUpdateRepository
+import ru.pavlig43.form.api.data.UpdateItemRepository
+import ru.pavlig43.manageitem.api.data.CreateItemRepository
+import ru.pavlig43.upsertitem.api.data.UpdateCollectionRepository
 
 
-internal val createProductFormModule = module {
-    single<ISaveItemRepository<Product>> { getSaveRepository(get()) }
-    single<IInitDataRepository<Product,RequireValues>> { getInitRequireValuesRepository(get()) }
+internal val productFormModule = module {
+    single<CreateItemRepository<Product>> { getCreateRepository(get()) }
+
+    single<IUpdateRepository<Product>>(named(UpdateRepositoryType.Product.name)) {
+        getInitItemRepository(
+            get()
+        )
+    }
+
+    single<UpdateCollectionRepository<ProductFile, ProductFile>>(
+        named(
+            UpdateCollectionRepositoryType.Files.name
+        )
+    ) { getFilesRepository(get()) }
+
+    single<UpdateCollectionRepository<ProductDeclarationOutWithDocumentName, ProductDeclaration>>(
+        named(UpdateCollectionRepositoryType.Declaration.name)
+    ) { getDeclarationRepository(get()) }
+
 }
-private fun getSaveRepository(
+
+
+private fun getCreateRepository(
     productDao: ProductDao
-): ISaveItemRepository<Product> {
-    return SaveItemRepository(
-        isNameExist = productDao::isNameExist,
-        insertNewItem = productDao::insertProduct,
-        updateItem = productDao::updateProduct,
-        tag = SAVE_REPOSITORY_TAG
+): CreateItemRepository<Product> {
+    return CreateItemRepository(
+        tag = "Create Product Repository",
+        create = productDao::create,
+        isNameExist = productDao::isNameExist
     )
 }
-private fun getInitRequireValuesRepository(
+
+internal enum class UpdateRepositoryType {
+    Product,
+}
+
+internal enum class UpdateCollectionRepositoryType {
+    Files,
+    Declaration
+}
+
+private fun getInitItemRepository(
     productDao: ProductDao
-): IInitDataRepository<Product,RequireValues> {
+): IUpdateRepository<Product> {
+    return UpdateItemRepository<Product>(
+        tag = "Update Product Repository",
+        loadItem = productDao::getProduct,
+        updateItem = productDao::updateProduct
+    )
+}
 
-    return InitItemRepository<Product>(
-        tag = INIT_BASE_VALUES,
-        iniDataForState = RequireValues(),
-        loadData = productDao::getProduct,
+private fun getFilesRepository(
+    fileDao: ProductFilesDao
+): UpdateCollectionRepository<ProductFile, ProductFile> {
+    return UpdateCollectionRepository(
+        tag = "Product FilesRepository",
+        loadCollection = fileDao::getFiles,
+        deleteCollection = fileDao::deleteFiles,
+        upsertCollection = fileDao::upsertProductFiles
+    )
+}
 
+private fun getDeclarationRepository(
+    declarationDao: ProductDeclarationDao
+): UpdateCollectionRepository<ProductDeclarationOutWithDocumentName, ProductDeclaration> {
+    return UpdateCollectionRepository(
+        tag = "Product DeclarationRepository",
+        loadCollection = declarationDao::getProductDeclarationWithDocumentName,
+        deleteCollection = declarationDao::deleteDeclarations,
+        upsertCollection = declarationDao::upsertProductDeclarations
     )
 }

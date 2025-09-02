@@ -26,7 +26,7 @@ fun ItemListScreen(
 
     ItemListScreenState(
         state = itemListState,
-        onCreate = component::onCreate,
+        onCreate = { component.onCreate() },
         actionInSelectedItemIds = component::actionInSelectedItemIds,
         selectedItemIds = selectedItemIds,
         fullListSelection = component.fullListSelection,
@@ -34,7 +34,8 @@ fun ItemListScreen(
         deleteItems = component::deleteItems,
         shareItems = component::shareItems,
         deleteState = deleteState,
-        onItemClick = {component.onItemClick(it)},
+        onItemClick = {ind,name ->component.onItemClick(ind,name)},
+        withCheckbox = component.withCheckbox,
         modifier = modifier)
 }
 
@@ -50,7 +51,8 @@ private fun ItemListScreenState(
     shareItems: (List<Int>) -> Unit,
     fullListSelection: List<ItemType>,
     saveSelection: (List<ItemType>) -> Unit,
-    onItemClick: (Int) -> Unit,
+    onItemClick: (Int,String) -> Unit,
+    withCheckbox: Boolean,
     modifier: Modifier = Modifier,
 ) {
     when (state) {
@@ -68,6 +70,7 @@ private fun ItemListScreenState(
             shareItems = shareItems,
             deleteState = deleteState,
             onItemClick = onItemClick,
+            withCheckbox = withCheckbox,
             modifier = modifier
         )
     }
@@ -85,7 +88,8 @@ private fun ItemList(
     shareItems: (List<Int>) -> Unit,
     fullListSelection: List<ItemType>,
     saveSelection: (List<ItemType>) -> Unit,
-    onItemClick:(Int)->Unit,
+    onItemClick:(Int,String)->Unit,
+    withCheckbox: Boolean,
     modifier: Modifier = Modifier
 ) {
     val verticalScrollState = rememberLazyListState()
@@ -109,7 +113,8 @@ private fun ItemList(
             deleteItems = deleteItems,
             shareItems = shareItems,
             deleteState = deleteState,
-            onClickItem = onItemClick
+            onClickItem = onItemClick,
+            withCheckbox = withCheckbox
         )
     }
 

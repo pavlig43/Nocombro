@@ -4,16 +4,16 @@ import kotlinx.coroutines.flow.StateFlow
 
 interface IDrawerComponent {
     fun onSelect(configuration: DrawerDestination)
-
+    /**
+     * Вкладки для открытия общих вкладок, никаких дополнительных параметров
+     */
     val drawerConfigurationsState: StateFlow<List<DrawerDestination>>
 
-}
-
-sealed class DrawerDestination(val title: String, val intField: Int? = null) {
-    class DocumentList : DrawerDestination("Документы")
-    class CreateDocument : DrawerDestination("Создать документ")
-    class CreateProduct:DrawerDestination("Создать продукт")
-    class ProductList:DrawerDestination("Продукты")
 
 }
-
+enum class DrawerDestination(val title: String) {
+    Documents("Документы"),
+    CreateDocument("Создать документ"),
+    ProductForm("Создать продукт"),
+    ProductList("Продукты")
+}

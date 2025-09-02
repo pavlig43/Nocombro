@@ -18,3 +18,5 @@ fun <I, O> RequestResult<I>.mapTo(mapper: (I) -> O): RequestResult<O> {
         is RequestResult.Initial -> RequestResult.Initial()
     }
 }
+
+

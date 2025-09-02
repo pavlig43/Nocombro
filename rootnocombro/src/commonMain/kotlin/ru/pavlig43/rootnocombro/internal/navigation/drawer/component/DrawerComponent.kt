@@ -4,8 +4,6 @@ import com.arkivanov.decompose.ComponentContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import ru.pavlig43.core.entries
-import kotlin.reflect.KClass
 
 internal class DrawerComponent(
     componentContext: ComponentContext,
@@ -16,7 +14,8 @@ internal class DrawerComponent(
         openScreen(configuration)
     }
 
-    private val _drawerConfigurationsState = MutableStateFlow(DrawerDestination::class.entries())
+    private val _drawerConfigurationsState =
+        MutableStateFlow(DrawerDestination.entries)
 
     override val drawerConfigurationsState: StateFlow<List<DrawerDestination>> =
         _drawerConfigurationsState.asStateFlow()

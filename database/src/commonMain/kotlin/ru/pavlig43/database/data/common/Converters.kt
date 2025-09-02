@@ -8,10 +8,10 @@ import ru.pavlig43.database.data.product.ProductType
 class Converters {
 
     @TypeConverter
-    fun toComponentType(value: String) = enumValueOf<ProductType>(value)
+    fun toProductType(value: String) = enumValueOf<ProductType>(value)
 
     @TypeConverter
-    fun fromComponentType(value: ProductType) = value.name
+    fun fromProductType(value: ProductType) = value.name
 
     @TypeConverter
     fun toDocumentType(value: String) = enumValueOf<DocumentType>(value)

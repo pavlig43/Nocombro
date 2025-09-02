@@ -11,12 +11,19 @@ import ru.pavlig43.core.componentCoroutineScope
 
 class LoadInitDataComponent<I : Any>(
     componentContext: ComponentContext,
-    private val getInitData: suspend (Int) -> RequestResult<I>,
-    private val id: Int,
+    private val getInitData: suspend () -> RequestResult<I>,
     private val onSuccessGetInitData: (I) -> Unit,
 ) : ComponentContext by componentContext, ILoadInitDataComponent<I> {
 
     private val coroutineScope = componentCoroutineScope()
+
+    /**
+     * Первые данные которые загрузились. Нужны, для того чтобы сравнивать первичные данные и те, которые пользователь изменил для записи в бд
+     */
+    private val _firstData = MutableStateFlow<I?>(null)
+    override val firstData = _firstData.asStateFlow()
+
+
 
     private val _loadState: MutableStateFlow<LoadInitDataState<I>> =
         MutableStateFlow(LoadInitDataState.Loading())
@@ -34,14 +41,15 @@ class LoadInitDataComponent<I : Any>(
     private fun loadData() {
 
         coroutineScope.launch {
+
             _loadState.update { LoadInitDataState.Loading() }
-            val initData = getInitData(id).toLoadInitDataSate()
+            val initData =  getInitData().toLoadInitDataSate()
             if (initData is LoadInitDataState.Success){
+                _firstData.update { initData.data }
                 onSuccessGetInitData(initData.data)
             }
             _loadState.update { initData }
         }
-
     }
 }
 

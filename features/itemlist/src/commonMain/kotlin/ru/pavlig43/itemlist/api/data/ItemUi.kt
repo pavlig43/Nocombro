@@ -8,5 +8,6 @@ data class ItemUi(
     val displayName:String,
     val type: ItemType,
     val createdAt:String ,
+    val comment:String = ""
 )
 

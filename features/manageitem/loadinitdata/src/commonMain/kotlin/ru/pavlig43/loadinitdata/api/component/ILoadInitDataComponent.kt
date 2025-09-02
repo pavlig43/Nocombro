@@ -4,6 +4,8 @@ import kotlinx.coroutines.flow.StateFlow
 
 interface ILoadInitDataComponent<I : Any> {
 
+    val firstData:StateFlow<I?>
+
     val loadState: StateFlow<LoadInitDataState<I>>
 
     fun retryLoadInitData()

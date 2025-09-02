@@ -6,3 +6,4 @@ android {
     namespace = "ru.pavlig43.manageitem.loadinitdata"
 }
 
+

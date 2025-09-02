@@ -6,17 +6,24 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import ru.pavlig43.addfile.api.ui.AddFileScreen
-import ru.pavlig43.documentform.api.component.IDocumentFormComponent
-import ru.pavlig43.manageitem.api.ui.ManageBaseValuesOfItem
-import ru.pavlig43.upsertitem.api.ui.SaveScreenState
+import com.arkivanov.decompose.extensions.compose.stack.Children
+import com.arkivanov.decompose.extensions.compose.subscribeAsState
+import ru.pavlig43.addfile.api.ui.FilesScreen
+import ru.pavlig43.documentform.api.component.DocumentFormComponent
+import ru.pavlig43.documentform.internal.component.tabs.DocumentFileTabSlot
+import ru.pavlig43.documentform.internal.component.tabs.DocumentRequiresTabSlot
+import ru.pavlig43.documentform.internal.component.tabs.DocumentTabSlot
+import ru.pavlig43.form.api.ui.ItemTabsUi
+import ru.pavlig43.manageitem.api.ui.CreateScreen
+import ru.pavlig43.manageitem.api.ui.RequireValuesScreen
 
 @Composable
 fun DocumentFormScreen(
-    component: IDocumentFormComponent,
+    component: DocumentFormComponent,
     modifier: Modifier = Modifier,
 ) {
     val scrollState = rememberScrollState()
@@ -29,12 +36,30 @@ fun DocumentFormScreen(
             .padding(horizontal = 8.dp)
             .verticalScroll(scrollState)
     ) {
-
-        ManageBaseValuesOfItem(component = component.manageBaseValuesOfComponent)
-        AddFileScreen(component = component.addFileComponent)
-        SaveScreenState(component = component.saveDocumentComponent)
+        val stack by component.stack.subscribeAsState()
+        Children(
+            stack = stack,
+        ) { child ->
+            when (val instance = child.instance) {
+                is DocumentFormComponent.Child.Create -> CreateScreen(instance.component)
+                is DocumentFormComponent.Child.Update -> ItemTabsUi(
+                    component = instance.component,
+                    slotFactory = { slotForm: DocumentTabSlot? ->
+                        DocumentSlotScreen(slotForm)
+                    })
+            }
+        }
 
     }
 
+}
 
+@Composable
+private fun DocumentSlotScreen(documentSlot: DocumentTabSlot?) {
+    when (documentSlot) {
+        is DocumentRequiresTabSlot -> RequireValuesScreen(documentSlot.requires)
+
+        is DocumentFileTabSlot -> FilesScreen(documentSlot.fileComponent)
+        else -> error("document slot not found $documentSlot")
+    }
 }

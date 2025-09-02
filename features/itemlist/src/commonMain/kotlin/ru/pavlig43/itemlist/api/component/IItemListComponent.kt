@@ -9,13 +9,18 @@ interface IItemListComponent {
     val itemListState: StateFlow<ItemListState>
     val deleteState: StateFlow<DeleteState>
     val selectedItemIds: List<Int>
-    fun onCreate()
+    val onCreate:()->Unit
     fun saveSelection(selection: List<ItemType>)
     val fullListSelection: List<ItemType>
     fun deleteItems(ids: List<Int>)
     fun shareItems(ids: List<Int>)
     fun actionInSelectedItemIds(checked: Boolean, id: Int)
-    val onItemClick:(id:Int) -> Unit
+    val onItemClick:(id:Int,name:String) -> Unit
+
+    /**
+     * Если да, то будет чекбоксы у каждого элемента, при выборе хотя бы одного будет появляться строка с возможностью удаления и поделиться
+     */
+    val withCheckbox:Boolean
 }
 
 sealed interface ItemListState {
@@ -29,5 +34,4 @@ sealed interface DeleteState{
     class Loading : DeleteState
     class Success(val message: String) : DeleteState
     class Error(val message: String) : DeleteState
-
 }
