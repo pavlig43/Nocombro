@@ -16,7 +16,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
-import ru.pavlig43.upsertitem.internal.SAVE_DIALOG_MESSAGE
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,7 +39,7 @@ internal fun SaveDialog(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceEvenly
         ) {
-            Text(SAVE_DIALOG_MESSAGE)
+            Text("Сохранить и закрыть эту вкладку?")
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
