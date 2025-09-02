@@ -6,16 +6,26 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import ru.pavlig43.manageitem.api.ui.ManageBaseValuesOfItem
-import ru.pavlig43.productform.api.component.IProductFormComponent
-import ru.pavlig43.upsertitem.api.ui.SaveScreenState
+import com.arkivanov.decompose.extensions.compose.stack.Children
+import com.arkivanov.decompose.extensions.compose.subscribeAsState
+import ru.pavlig43.addfile.api.ui.FilesScreen
+import ru.pavlig43.declaration.api.ui.DeclarationScreen
+import ru.pavlig43.form.api.ui.ItemTabsUi
+import ru.pavlig43.manageitem.api.ui.CreateScreen
+import ru.pavlig43.manageitem.api.ui.RequireValuesScreen
+import ru.pavlig43.productform.api.component.ProductFormComponent
+import ru.pavlig43.productform.internal.component.ProductDeclarationTabSlot
+import ru.pavlig43.productform.internal.component.ProductFileTabSlot
+import ru.pavlig43.productform.internal.component.ProductRequiresTabSlot
+import ru.pavlig43.productform.internal.component.ProductTabSlot
 
 @Composable
 fun ProductFormScreen(
-    component: IProductFormComponent,
+    component: ProductFormComponent,
     modifier: Modifier = Modifier,
 ) {
     val scrollState = rememberScrollState()
@@ -28,10 +38,33 @@ fun ProductFormScreen(
             .padding(horizontal = 8.dp)
             .verticalScroll(scrollState)
     ) {
-
-        ManageBaseValuesOfItem(component = component.manageBaseValuesOfComponent)
-        SaveScreenState(component = component.saveProductComponent)
+        val stack by component.stack.subscribeAsState()
+        Children(
+            stack = stack,
+        ) { child ->
+            when (val instance = child.instance) {
+                is ProductFormComponent.Child.Create -> CreateScreen(instance.component)
+                is ProductFormComponent.Child.Update -> ItemTabsUi(
+                    component = instance.component,
+                    slotFactory = { slotForm: ProductTabSlot? ->
+                        ProductSlotScreen(slotForm)
+                    })
+            }
+        }
 
     }
 
+}
+
+@Composable
+private fun ProductSlotScreen(productSlot: ProductTabSlot?) {
+    when (productSlot) {
+        is ProductRequiresTabSlot -> RequireValuesScreen(productSlot.requires)
+
+        is ProductFileTabSlot -> FilesScreen(productSlot.fileComponent)
+
+        is ProductDeclarationTabSlot -> DeclarationScreen(productSlot)
+
+        else -> error("product slot not found $productSlot")
+    }
 }

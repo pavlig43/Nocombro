@@ -15,7 +15,7 @@ internal class DrawerComponent(
     }
 
     private val _drawerConfigurationsState =
-        MutableStateFlow(DrawerDestinationTitle.entries.map { it.toDrawerDestination() })
+        MutableStateFlow(DrawerDestination.entries)
 
     override val drawerConfigurationsState: StateFlow<List<DrawerDestination>> =
         _drawerConfigurationsState.asStateFlow()

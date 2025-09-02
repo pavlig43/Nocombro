@@ -23,6 +23,7 @@ import ru.pavlig43.itemlist.internal.ui.settings.SettingsRow
 @Composable
 internal fun ItemListBody(
     itemList: List<ItemUi>,
+    withCheckbox: Boolean,
     selectedItemIds: List<Int>,
     actionInSelectedItemIds: (Boolean, Int) -> Unit,
     deleteState: DeleteState,
@@ -33,16 +34,9 @@ internal fun ItemListBody(
     saveSelection: (List<ItemType>) -> Unit,
     horizontalScrollState: ScrollState,
     verticalScrollState: LazyListState,
-    onClickItem:(Int)->Unit,
+    onClickItem:(id:Int,name:String)->Unit,
     modifier: Modifier = Modifier,
 ) {
-
-    require(itemList.all { it.type in fullListSelection }) {
-        val invalid = itemList.filter { it.type !in fullListSelection }.map { it.type }.toSet()
-        "Недопустимые типы: $invalid"
-    }
-
-
 
     Column(modifier.fillMaxSize()) {
         SettingsRow(
@@ -59,7 +53,7 @@ internal fun ItemListBody(
             )
         }
         TableRow(
-            cells = headersCells,
+            cells = createHeadersCells(withCheckbox),
             scrollState = horizontalScrollState,
             backgroundColor = MaterialTheme.colorScheme.primary.copy(0.5f),
             borderColor = MaterialTheme.colorScheme.onPrimary,
@@ -70,11 +64,14 @@ internal fun ItemListBody(
         ) {
             itemsIndexed(itemList, key = { _, item -> item.id }) { index, item ->
                 Row(Modifier.height(32.dp), verticalAlignment = Alignment.CenterVertically) {
-                    SelectItemCheckBox(
-                        isChecked = item.id in selectedItemIds, onCheckedChange = { isChecked ->
-                            actionInSelectedItemIds(isChecked, item.id)
-                        }
-                    )
+                    if (withCheckbox){
+                        SelectItemCheckBox(
+                            isChecked = item.id in selectedItemIds, onCheckedChange = { isChecked ->
+                                actionInSelectedItemIds(isChecked, item.id)
+                            }
+                        )
+                    }
+
                     TableRow(
                         cells = item.toCell(),
                         scrollState = horizontalScrollState,
@@ -82,7 +79,7 @@ internal fun ItemListBody(
                             alpha = if (index % 2 == 0) 0.3f else 0.5f
                         ),
                         borderColor = MaterialTheme.colorScheme.onSecondary,
-                        modifier = Modifier.height(32.dp).clickable { onClickItem(item.id) }
+                        modifier = Modifier.height(32.dp).clickable { onClickItem(item.id,item.displayName) }
                     )
                 }
 
@@ -98,16 +95,23 @@ private fun ItemUi.toCell(): List<Cell> = listOf(
     Cell(displayName, NAME_WIDTH),
     Cell(type.displayName, TYPE_WIDTH),
     Cell(createdAt, CREATED_AT_WIDTH),
+    Cell(comment, COMMENT_WIDTH)
 )
-
-private val headersCells = listOf(
-    Cell("", CHECKBOX_WIDTH),
-    Cell(ID, ID_WIDTH),
-    Cell(NAME, NAME_WIDTH),
-    Cell(TYPE, TYPE_WIDTH),
-    Cell(CREATED_AT, CREATED_AT_WIDTH),
-
+private fun createHeadersCells(withCheckbox: Boolean = false): List<Cell> {
+    val baseCells = listOf(
+        Cell(ID, ID_WIDTH),
+        Cell(NAME, NAME_WIDTH),
+        Cell(TYPE, TYPE_WIDTH),
+        Cell(CREATED_AT, CREATED_AT_WIDTH),
+        Cell(COMMENT, COMMENT_WIDTH),
     )
+
+    return if (withCheckbox) {
+        listOf(Cell("", CHECKBOX_WIDTH)) + baseCells
+    } else {
+        baseCells
+    }
+}
 
 
 

@@ -1,39 +1,55 @@
 package ru.pavlig43.documentform.internal.di
 
+import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import ru.pavlig43.database.data.document.Document
-import ru.pavlig43.database.data.document.DocumentWithFiles
+import ru.pavlig43.database.data.document.DocumentFile
 import ru.pavlig43.database.data.document.dao.DocumentDao
-import ru.pavlig43.documentform.internal.ui.INIT_BASE_VALUES
-import ru.pavlig43.documentform.internal.ui.SAVE_REPOSITORY_TAG
-import ru.pavlig43.loadinitdata.api.data.IInitDataRepository
-import ru.pavlig43.manageitem.internal.data.InitItemRepository
-import ru.pavlig43.manageitem.api.data.RequireValues
-import ru.pavlig43.upsertitem.data.ISaveItemRepository
-import ru.pavlig43.upsertitem.data.SaveItemRepository
+import ru.pavlig43.database.data.document.dao.DocumentFilesDao
+import ru.pavlig43.form.api.data.IUpdateRepository
+import ru.pavlig43.form.api.data.UpdateItemRepository
+import ru.pavlig43.manageitem.api.data.CreateItemRepository
+import ru.pavlig43.upsertitem.api.data.UpdateCollectionRepository
 
 
-internal val createDocumentFormModule = module {
-    single<ISaveItemRepository<DocumentWithFiles>> { getSaveRepository(get())}
-    single<IInitDataRepository<Document,RequireValues>> { getInitRequireValuesRepository(get()) }
+internal val documentFormModule = module {
+    single<CreateItemRepository<Document>> { getCreateRepository(get()) }
+    single<IUpdateRepository<Document>>(named(UpdateRepositoryType.Document.name)) { getInitItemRepository(get()) }
+    single<UpdateCollectionRepository<DocumentFile,DocumentFile>>{ getFilesRepository(get()) }
 }
-private fun getSaveRepository(
+private fun getCreateRepository(
     documentDao: DocumentDao
-): ISaveItemRepository<DocumentWithFiles> {
-    return SaveItemRepository(
-        isNameExist = documentDao::isNameExist,
-        insertNewItem = documentDao::insertDocumentWithWithFiles,
-        updateItem = documentDao::updateDocumentWithFiles,
-        tag = SAVE_REPOSITORY_TAG
+): CreateItemRepository<Document> {
+    return CreateItemRepository(
+        tag = "Create Document Repository",
+        create = documentDao::create,
+        isNameExist = documentDao::isNameExist
     )
 }
-private fun getInitRequireValuesRepository(
-    documentDao: DocumentDao
-): IInitDataRepository<Document,RequireValues> {
-    return InitItemRepository<Document,>(
-        tag = INIT_BASE_VALUES,
-        iniDataForState = RequireValues(),
-        loadData = documentDao::getDocument,
 
+internal enum class UpdateRepositoryType{
+    Document,
+}
+private fun getInitItemRepository(
+    documentDao: DocumentDao
+): IUpdateRepository<Document> {
+    return UpdateItemRepository<Document>(
+        tag = "Update Document Repository",
+        loadItem = documentDao::getDocument,
+        updateItem = documentDao::updateDocument
     )
 }
+
+private fun getFilesRepository(
+    fileDao: DocumentFilesDao
+): UpdateCollectionRepository<DocumentFile,DocumentFile> {
+    return UpdateCollectionRepository(
+        tag = "Document FilesRepository",
+        loadCollection = fileDao::getFiles,
+        deleteCollection = fileDao::deleteFiles,
+        upsertCollection = fileDao::upsertDocumentFiles
+    )
+}
+
+
+

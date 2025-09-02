@@ -1,5 +1,6 @@
 package ru.pavlig43.rootnocombro.api.ui
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,20 +23,18 @@ import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import kotlinx.coroutines.launch
 import ru.pavlig43.core.SlotComponent
 import ru.pavlig43.core.tabs.ITabNavigationComponent
+import ru.pavlig43.coreui.tab.TabNavigationContent
 import ru.pavlig43.documentform.api.component.DocumentFormComponent
 import ru.pavlig43.documentform.api.ui.DocumentFormScreen
-import ru.pavlig43.documentlist.api.component.DocumentListComponent
-import ru.pavlig43.documentlist.api.ui.DocumentScreen
-import ru.pavlig43.productlist.api.ui.ProductsScreen
+import ru.pavlig43.itemlist.api.component.ItemListComponent
+import ru.pavlig43.itemlist.api.ui.ItemListScreen
 import ru.pavlig43.productform.api.component.ProductFormComponent
 import ru.pavlig43.productform.api.ui.ProductFormScreen
-import ru.pavlig43.productlist.api.component.ProductListComponent
 import ru.pavlig43.rootnocombro.api.component.IRootNocombroComponent
+import ru.pavlig43.rootnocombro.internal.navigation.IMainNavigationComponent
 import ru.pavlig43.rootnocombro.internal.navigation.drawer.ui.NavigationDrawer
-import ru.pavlig43.rootnocombro.internal.navigation.tab.component.IMainNavigationComponent
-import ru.pavlig43.rootnocombro.internal.navigation.tab.component.TabConfig
+import ru.pavlig43.rootnocombro.internal.navigation.tab.TabConfig
 import ru.pavlig43.rootnocombro.internal.navigation.tab.ui.TabContent
-import ru.pavlig43.rootnocombro.internal.navigation.tab.ui.TabNavigationContent
 import ru.pavlig43.rootnocombro.internal.topbar.ui.NocombroAppBar
 import ru.pavlig43.signroot.api.ui.RootSignScreen
 
@@ -65,7 +64,8 @@ fun RootNocombroScreen(rootNocombroComponent: IRootNocombroComponent) {
                     is IRootNocombroComponent.Child.Tabs -> {
                         val mainNavigationComponent: IMainNavigationComponent<TabConfig, SlotComponent> =
                             instance.component
-                        val tabNavigationComponent: ITabNavigationComponent<TabConfig, SlotComponent> = mainNavigationComponent.tabNavigationComponent
+                        val tabNavigationComponent: ITabNavigationComponent<TabConfig, SlotComponent> =
+                            mainNavigationComponent.tabNavigationComponent
                         val drawerNavigationComponent = mainNavigationComponent.drawerComponent
                         NocombroAppBar(
                             settingsComponent = rootNocombroComponent.settingsComponent,
@@ -104,10 +104,13 @@ fun RootNocombroScreen(rootNocombroComponent: IRootNocombroComponent) {
                                                          slotComponent: SlotComponent? ->
                                         innerTabs(Modifier.fillMaxWidth())
                                         when (slotComponent) {
-                                            is DocumentListComponent -> DocumentScreen(slotComponent)
+                                            is ItemListComponent<*,*> -> ItemListScreen(slotComponent)
+
                                             is DocumentFormComponent -> DocumentFormScreen(slotComponent)
+
                                             is ProductFormComponent -> ProductFormScreen(slotComponent)
-                                            is ProductListComponent -> ProductsScreen(slotComponent)
+
+                                            null -> Box(Modifier.fillMaxSize())
                                             else -> error("$slotComponent SlotComponent not added")
                                         }
                                     }

@@ -12,14 +12,14 @@ import kotlinx.serialization.Serializable
 import ru.pavlig43.corekoin.ComponentKoinContext
 import ru.pavlig43.rootnocombro.api.IRootDependencies
 import ru.pavlig43.rootnocombro.internal.di.createRootNocombroModule
-import ru.pavlig43.rootnocombro.internal.navigation.tab.component.MainNavigationComponent
+import ru.pavlig43.rootnocombro.internal.navigation.MainNavigationComponent
 import ru.pavlig43.rootnocombro.internal.settings.component.ISettingsComponent
 import ru.pavlig43.rootnocombro.internal.settings.component.SettingsComponent
 import ru.pavlig43.signroot.api.component.RootSignComponent
 
 class RootNocombroComponent(
     componentContext: ComponentContext,
-    private val rootDependencies: IRootDependencies
+    rootDependencies: IRootDependencies
 ) : IRootNocombroComponent, ComponentContext by componentContext {
 
     private val koinContext = instanceKeeper.getOrCreate { ComponentKoinContext() }
@@ -61,9 +61,10 @@ class RootNocombroComponent(
             )
 
 
-            Config.Tabs -> IRootNocombroComponent.Child.Tabs(MainNavigationComponent(
+            Config.Tabs -> IRootNocombroComponent.Child.Tabs(
+                MainNavigationComponent(
                 componentContext = childContext("tabs"),
-                rootDependencies = rootDependencies
+                scope = scope
             )
             )
         }

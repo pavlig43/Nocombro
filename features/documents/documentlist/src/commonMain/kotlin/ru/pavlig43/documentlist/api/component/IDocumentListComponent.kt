@@ -1,8 +1,0 @@
-package ru.pavlig43.documentlist.api.component
-
-
-import ru.pavlig43.itemlist.api.component.IItemListComponent
-
-interface IDocumentListComponent {
-    val itemListComponent:IItemListComponent
-}

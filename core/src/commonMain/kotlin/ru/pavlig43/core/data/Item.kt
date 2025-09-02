@@ -7,5 +7,6 @@ interface Item {
     val displayName:String
     val type: ItemType
     val createdAt:UTC
+    val comment:String
 
 }

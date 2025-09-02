@@ -2,40 +2,36 @@ package ru.pavlig43.productform.api.component
 
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
+import com.arkivanov.decompose.router.stack.ChildStack
+import com.arkivanov.decompose.router.stack.StackNavigation
+import com.arkivanov.decompose.router.stack.childStack
+import com.arkivanov.decompose.router.stack.replaceAll
+import com.arkivanov.decompose.value.Value
 import com.arkivanov.essenty.instancekeeper.getOrCreate
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.serialization.Serializable
 import org.koin.core.scope.Scope
 import ru.pavlig43.core.SlotComponent
-import ru.pavlig43.core.UTC
-import ru.pavlig43.core.componentCoroutineScope
 import ru.pavlig43.corekoin.ComponentKoinContext
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductType
-import ru.pavlig43.loadinitdata.api.component.LoadInitDataState
-import ru.pavlig43.loadinitdata.api.data.IInitDataRepository
-import ru.pavlig43.manageitem.api.component.IManageBaseValueItemComponent
-import ru.pavlig43.manageitem.api.component.ManageBaseValueItemComponent
+import ru.pavlig43.manageitem.api.component.CreateItemComponent
 import ru.pavlig43.manageitem.api.data.RequireValues
 import ru.pavlig43.productform.api.IProductFormDependencies
+import ru.pavlig43.productform.internal.component.ProductFormTabInnerTabsComponent
 import ru.pavlig43.productform.internal.di.createProductFormModule
-import ru.pavlig43.upsertitem.api.component.ISaveItemComponent
-import ru.pavlig43.upsertitem.api.component.SaveItemComponent
-import ru.pavlig43.upsertitem.api.data.ItemsForUpsert
-import ru.pavlig43.upsertitem.data.ISaveItemRepository
-import kotlin.time.Clock
-import kotlin.time.ExperimentalTime
+import ru.pavlig43.productform.internal.toProduct
 
 class ProductFormComponent(
     productId: Int,
-    private val closeTab: () -> Unit,
+    val closeTab: () -> Unit,
+    private val onOpenDocumentTab:(Int)->Unit,
     componentContext: ComponentContext,
     dependencies: IProductFormDependencies,
-) : ComponentContext by componentContext, IProductFormComponent, SlotComponent {
+) : ComponentContext by componentContext, SlotComponent {
 
-    private val coroutineScope = componentCoroutineScope()
     private val koinContext = instanceKeeper.getOrCreate {
         ComponentKoinContext()
     }
@@ -43,71 +39,72 @@ class ProductFormComponent(
         koinContext.getOrCreateKoinScope(createProductFormModule(dependencies))
 
 
-    private val saveRepository: ISaveItemRepository<Product> = scope.get()
-    private val initBaseValuesRepository: IInitDataRepository<Product,RequireValues> = scope.get()
+    private val _model = MutableStateFlow(SlotComponent.TabModel(""))
+    override val model = _model.asStateFlow()
 
-    override val manageBaseValuesOfComponent: IManageBaseValueItemComponent =
-        ManageBaseValueItemComponent(
-            componentContext = childContext("manageBaseValuesOfComponent"),
-            typeVariantList = ProductType.entries,
-            id = productId,
-            initDataRepository = initBaseValuesRepository
-        )
+    private val stackNavigation = StackNavigation<Config>()
 
-    //TODO c декларацией
-    private val productsParamsValidValue: Flow<Boolean> = manageBaseValuesOfComponent.isValidAllValue
-
-    private fun getProductsForSave(): ItemsForUpsert<Product> {
-        val requireValues = manageBaseValuesOfComponent.requireValues.value
-
-        val newProduct = createProduct(requireValues)
-        val initRequireValues =
-            when (val loadState = manageBaseValuesOfComponent.initComponent.loadState.value) {
-                is LoadInitDataState.Success<RequireValues> -> loadState.data.copy(type = requireValues.type)
-                else -> throw IllegalStateException("Рекомендуемые значения(Имя и тип) при начальной загрузки загрузились с ошибкой ")
-            }
-        val oldProduct = createProduct(initRequireValues)
-        return ItemsForUpsert(
-            newItem = newProduct,
-            initItem = oldProduct,
-
-            )
-    }
-    override val saveProductComponent: ISaveItemComponent<Product> =
-        SaveItemComponent(
-            componentContext = childContext("saveProductComponent"),
-            isOtherValidValue = productsParamsValidValue,
-            getItems = ::getProductsForSave,
-            onSuccessAction = closeTab,
-            saveItemRepository = saveRepository
-        )
-
-    override fun closeScreen() {
-        closeTab()
-    }
-
-    @OptIn(ExperimentalTime::class)
-    private fun createProduct(
-        requireValues: RequireValues,
-    ): Product {
-        val product = Product(
-            id = requireValues.id,
-            displayName = requireValues.name,
-            type = requireValues.type as ProductType,
-            createdAt = requireValues.createdAt ?: UTC(Clock.System.now().toEpochMilliseconds()),
-        )
-        return product
-    }
-
-    override val model = manageBaseValuesOfComponent.requireValues.map {
-        val prefix = if (productId == 0) "* " else ""
-        SlotComponent.TabModel("$prefix ${it.type?.displayName ?: ""} ${it.name}")
-    }.stateIn(
-        coroutineScope,
-        SharingStarted.Eagerly,
-        SlotComponent.TabModel("")
+    internal val stack: Value<ChildStack<Config, Child>> = childStack(
+        source = stackNavigation,
+        serializer = Config.serializer(),
+        initialConfiguration = if (productId == 0) Config.Create else Config.Update(productId),
+        handleBackButton = false,
+        childFactory = ::createChild
     )
 
+
+    private fun createChild(
+        config: Config,
+        componentContext: ComponentContext
+    ): Child {
+        return when (config) {
+            is Config.Create -> Child.Create(
+                CreateItemComponent(
+                    componentContext = componentContext,
+                    typeVariantList = ProductType.entries,
+                    mapper = RequireValues::toProduct,
+                    createItemRepository = scope.get(),
+                    onSuccessCreate = {stackNavigation.replaceAll(Config.Update(it))},
+                    onChangeValueForMainTab = {onChangeValueForMainTab("* $it")}
+                )
+            )
+
+            is Config.Update -> Child.Update(
+                ProductFormTabInnerTabsComponent(
+                    componentContext = childContext("form"),
+                    scope = scope,
+                    productId = config.id,
+                    closeFormScreen = closeTab,
+                    onOpenDocumentTab = onOpenDocumentTab,
+                    onChangeValueForMainTab = {onChangeValueForMainTab(it)}
+                )
+            )
+        }
+    }
+
+
+    private fun onChangeValueForMainTab(title: String) {
+
+        val tabModel = SlotComponent.TabModel(title)
+        _model.update { tabModel }
+    }
+
+
+
+
+    @Serializable
+    sealed interface Config {
+        @Serializable
+        data object Create : Config
+
+        @Serializable
+        data class Update(val id: Int) : Config
+    }
+
+    internal sealed class Child {
+        class Create(val component: CreateItemComponent<Product, ProductType>) : Child()
+        class Update(val component: ProductFormTabInnerTabsComponent) : Child()
+    }
 }
 
 

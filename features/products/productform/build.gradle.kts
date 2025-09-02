@@ -9,9 +9,13 @@ android {
 }
 kotlin{
     commonMainDependencies {
-        implementation(projects.features.manageitem.managebasevaluesitem)
+        implementation(projects.database)
+        implementation(projects.features.manageitem.addfile)
+        implementation(projects.features.manageitem.require)
         implementation(projects.features.manageitem.loadinitdata)
         implementation(projects.features.manageitem.upsertitem)
-        implementation(projects.database)
+        implementation(projects.features.manageitem.form)
+        implementation(projects.features.manageitem.declaration)
+        implementation(projects.features.itemlist)
     }
 }

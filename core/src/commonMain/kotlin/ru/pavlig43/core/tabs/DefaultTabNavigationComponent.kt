@@ -40,7 +40,10 @@ class DefaultTabNavigationComponent<TabConfiguration : Any, SlotComponent : Any>
             initialState = {
                 NavigationState(configurations = startConfigurations, currentIndex = 0)
             },
-            navTransformer = { state, transformer: (NavigationState<TabConfiguration>) -> NavigationState<TabConfiguration> -> transformer(state) },
+            navTransformer = { state, transformer: (NavigationState<TabConfiguration>) ->
+            NavigationState<TabConfiguration> ->
+                transformer(state)
+            },
             stateMapper = { state, children ->
                 ITabNavigationComponent.Children(
                     items = children.map { it as Child.Created },
@@ -72,7 +75,7 @@ class DefaultTabNavigationComponent<TabConfiguration : Any, SlotComponent : Any>
     }
 
     override fun onMove(fromIndex: Int, toIndex: Int) {
-        if (fromIndex !in children.value.items .indices || toIndex !in children.value.items.indices) return
+        if (fromIndex !in children.value.items.indices || toIndex !in children.value.items.indices) return
 
         navigation.navigate { state ->
             val updatedConfigurations = state.configurations.toMutableList()
@@ -99,7 +102,7 @@ class DefaultTabNavigationComponent<TabConfiguration : Any, SlotComponent : Any>
             val newIndex = when {
                 updatedConfigurations.isEmpty() -> null
                 state.currentIndex == null -> null
-                index == state.currentIndex -> index.coerceIn(0,updatedConfigurations.size - 1)
+                index == state.currentIndex -> index.coerceIn(0, updatedConfigurations.size - 1)
                 index > state.currentIndex -> state.currentIndex
                 index < state.currentIndex -> state.currentIndex - 1
                 else -> error("Невозможная ветка")
@@ -128,8 +131,8 @@ class DefaultTabNavigationComponent<TabConfiguration : Any, SlotComponent : Any>
 
         override val children: List<SimpleChildNavState<TabConfiguration>> by lazy {
             configurations.mapIndexed { index, config ->
-                val status =
-                    if (index == this.currentIndex) ChildNavState.Status.RESUMED else ChildNavState.Status.CREATED
+//                val status =
+//                    if (index == this.currentIndex) ChildNavState.Status.RESUMED else ChildNavState.Status.CREATED
                 SimpleChildNavState(
                     configuration = config,
                     status = ChildNavState.Status.RESUMED,
