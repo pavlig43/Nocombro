@@ -4,16 +4,17 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.RawQuery
+import androidx.room.RoomRawQuery
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 import ru.pavlig43.database.data.common.NotificationDTO
 import ru.pavlig43.database.data.product.Product
-import ru.pavlig43.database.data.product.ProductType
 
 @Dao
 interface ProductDao {
     @Insert(onConflict = OnConflictStrategy.ABORT)
-    suspend fun create(product: Product):Long
+    suspend fun create(product: Product): Long
 
     @Update
     suspend fun updateProduct(product: Product)
@@ -24,27 +25,22 @@ interface ProductDao {
     @Query("SELECT * from product WHERE id = :id")
     suspend fun getProduct(id: Int): Product
 
-    @Query("SELECT * from product ORDER BY created_at ASC")
-    fun observeAllProduct(): Flow<List<Product>>
 
-    @Query("SELECT * from product WHERE type IN (:types) ORDER BY created_at DESC")
-    fun observeProductsByTypes(types: List<ProductType>): Flow<List<Product>>
+    @RawQuery(observedEntities = [Product::class])
+    fun observeOnItems(query: RoomRawQuery):Flow<List<Product>>
 
-    @Query("""
+    @Query(
+        """
         SELECT CASE
             WHEN (SELECT display_name FROM product WHERE id =:id) =:name THEN TRUE
             ELSE NOT EXISTS (SELECT 1 FROM product WHERE display_name = :name AND id != :id)
         END
-    """)
-    suspend fun isNameChangeAllowed(id: Int,name: String):Boolean
+    """
+    )
+    suspend fun isNameAllowed(id: Int, name: String): Boolean
 
-    @Query("SELECT COUNT(*) > 0 FROM product WHERE display_name =:name")
-    suspend fun isNameExist(name: String):Boolean
-
-    @Query("SELECT id,display_name AS name FROM product WHERE id NOT IN (SELECT product_id FROM product_declaration)")
-    fun observeOnProductWithoutDeclaration():Flow<List<NotificationDTO>>
-
-    @Query("""
+    @Query(
+        """
     SELECT id, display_name AS name 
     FROM product 
     WHERE id NOT IN (
@@ -52,7 +48,8 @@ interface ProductDao {
         FROM product_declaration
         WHERE is_actual = true
     )
-""")
-    fun observeOnProductWithoutActualDeclaration():Flow<List<NotificationDTO>>
+"""
+    )
+    fun observeOnProductWithoutActualDeclaration(): Flow<List<NotificationDTO>>
 
 }

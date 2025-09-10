@@ -13,6 +13,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 internal fun TableRow(
     cells: List<Cell>,
+    searchText: String,
     scrollState: ScrollState,
     backgroundColor: Color,
     borderColor: Color,
@@ -28,6 +29,7 @@ internal fun TableRow(
         cells.forEach { cell->
             TableCell(
                 cell = cell,
+                searchText = searchText,
                 backgroundColor = backgroundColor,
                 borderColor = borderColor
 

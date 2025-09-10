@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import ru.pavlig43.core.RequestResult
+import ru.pavlig43.core.UTC
 import ru.pavlig43.core.componentCoroutineScope
 import ru.pavlig43.core.data.Item
 import ru.pavlig43.core.data.ItemType
@@ -79,7 +80,7 @@ class RequireValuesSlotComponent<I : Item, S : ItemType>(
             id = id,
             name = displayName,
             type = type,
-            createdAt = createdAt,
+            createdAt = UTC(createdAt),
             comment = comment
         )
     }

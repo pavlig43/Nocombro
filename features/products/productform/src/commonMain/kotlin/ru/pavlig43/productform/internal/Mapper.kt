@@ -12,7 +12,7 @@ internal fun RequireValues.toProduct(): Product {
     return Product(
         displayName = name,
         type = type as ProductType,
-        createdAt = createdAt?: UTC(Clock.System.now().toEpochMilliseconds()),
+        createdAt = createdAt?.value?: Clock.System.now().toEpochMilliseconds(),
         comment = comment,
         id = id
     )

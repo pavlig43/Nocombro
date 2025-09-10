@@ -19,13 +19,4 @@ class Converters {
     @TypeConverter
     fun fromDocumentType(value: DocumentType) = value.name
 
-    @TypeConverter
-    fun toUTC(value: Long) = UTC(value)
-
-    @TypeConverter
-    fun fromUTC(value: UTC) = value.value
-
-
-
-
 }

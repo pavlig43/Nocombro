@@ -4,10 +4,12 @@ package ru.pavlig43.itemlist.api.component
 import androidx.compose.runtime.mutableStateListOf
 import com.arkivanov.decompose.ComponentContext
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted.Companion.Eagerly
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -22,43 +24,45 @@ import ru.pavlig43.itemlist.api.data.ItemListRepository
 import ru.pavlig43.itemlist.api.data.ItemUi
 
 
-
 class ItemListComponent<I : Item, S : ItemType>(
     componentContext: ComponentContext,
-    override val fullListSelection:List<S>,
-    tabTitle:String,
+    override val fullListSelection: List<S>,
+    tabTitle: String,
     override val onCreate: () -> Unit,
     private val repository: ItemListRepository<I, S>,
-    override val onItemClick: (id: Int,String) -> Unit,
+    override val onItemClick: (id: Int, String) -> Unit,
     override val withCheckbox: Boolean,
-) : ComponentContext by componentContext, IItemListComponent,SlotComponent {
+) : ComponentContext by componentContext, IItemListComponent, SlotComponent {
     private val coroutineScope = componentCoroutineScope()
 
-private val _model = MutableStateFlow(SlotComponent.TabModel(tabTitle))
+    private val _model = MutableStateFlow(SlotComponent.TabModel(tabTitle))
     override val model: StateFlow<SlotComponent.TabModel> = _model.asStateFlow()
 
 
     private val selectedItemTypes = MutableStateFlow<List<S>>(fullListSelection)
 
+    private val _searchField = MutableStateFlow("")
+    override val searchField = _searchField.asStateFlow()
+    override fun onSearchChange(value: String) {
+        _searchField.update { value }
+    }
+
     @OptIn(ExperimentalCoroutinesApi::class)
     override val itemListState: StateFlow<ItemListState> =
-        selectedItemTypes.flatMapLatest { types ->
-            if (types.isEmpty()) {
-                repository.getAllItem()
-            } else {
-                repository.getItemsByTypes(types)
+        combine(
+            selectedItemTypes,
+            _searchField
+        ) { types, searchText ->
+            repository.observeItemsByFilter(types, searchText).map { it.toItemListState() }
+        }.flatMapLatest {it }
+            .stateIn(
+                coroutineScope,
+                started = Eagerly,
+                initialValue = ItemListState.Loading()
+            )
 
-            }.map {
-                    requestResult ->
-                requestResult.toItemListState() }
-        }.stateIn(
-            coroutineScope,
-            started = Eagerly,
-            initialValue = ItemListState.Loading()
-        )
-    override val deleteState:MutableStateFlow<DeleteState> = MutableStateFlow(DeleteState.Initial())
-
-
+    override val deleteState: MutableStateFlow<DeleteState> =
+        MutableStateFlow(DeleteState.Initial())
 
 
     @Suppress("UNCHECKED_CAST")
@@ -66,18 +70,18 @@ private val _model = MutableStateFlow(SlotComponent.TabModel(tabTitle))
         selectedItemTypes.update { selection as List<S> }
 
     }
+
     private val _selectedItemIds = mutableStateListOf<Int>()
     override val selectedItemIds: List<Int>
         get() = _selectedItemIds
 
-    override fun actionInSelectedItemIds(checked:Boolean,id:Int) {
+    override fun actionInSelectedItemIds(checked: Boolean, id: Int) {
         if (checked) {
             _selectedItemIds.add(id)
         } else {
             _selectedItemIds.remove(id)
         }
     }
-
 
 
     override fun deleteItems(ids: List<Int>) {
@@ -98,6 +102,7 @@ private val _model = MutableStateFlow(SlotComponent.TabModel(tabTitle))
         TODO("Not yet implemented")
     }
 }
+
 private fun RequestResult<List<ItemUi>>.toItemListState(): ItemListState {
     return when (this) {
         is RequestResult.Error -> ItemListState.Error(message ?: "unknown error")
@@ -106,6 +111,7 @@ private fun RequestResult<List<ItemUi>>.toItemListState(): ItemListState {
         is RequestResult.Success<List<ItemUi>> -> ItemListState.Success(data)
     }
 }
+
 private fun RequestResult<Unit>.toDeleteState(): DeleteState {
     return when (this) {
         is RequestResult.Error<*> -> DeleteState.Error(message ?: "unknown error")

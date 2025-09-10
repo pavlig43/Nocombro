@@ -7,7 +7,7 @@ import ru.pavlig43.core.mapTo
 
 class CreateItemRepository<I : Item>(
     private val tag: String,
-    private val isNameExist: suspend (String) -> Boolean,
+    private val isNameAllowed: suspend (id: Int, name: String) -> Boolean,
     private val create: suspend (I) -> Long
 ) {
     /**
@@ -16,23 +16,21 @@ class CreateItemRepository<I : Item>(
 
     suspend fun createItem(item: I): RequestResult<Int> {
         if (item.displayName.isBlank()) return RequestResult.Error(message = "Имя не должно быть пустым")
-        val isNameExist = dbSafeCall(tag) {
-            isNameExist(item.displayName)
-        }.mapTo { isExist ->
-            if (isExist) 1
-            else 0
+        val isNameAllowed = dbSafeCall(tag){
+            isNameAllowed(item.id,item.displayName)
         }
-        return if (isNameExist is RequestResult.Success) {
-            if (isNameExist.data == 1) RequestResult.Error(message = "Имя уже существует")
+            .mapTo { isAllowed-> if (isAllowed) 1 else 0 }
+
+
+        return if (isNameAllowed is RequestResult.Success) {
+            if (isNameAllowed.data == 0) RequestResult.Error(message = "Имя уже существует")
             else {
                 dbSafeCall(tag) {
                     create(item)
                 }.mapTo { it.toInt() }
             }
         } else {
-            isNameExist
+            isNameAllowed
         }
-
-
     }
 }

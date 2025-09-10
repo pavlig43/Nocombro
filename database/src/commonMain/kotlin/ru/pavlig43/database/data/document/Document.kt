@@ -6,7 +6,9 @@ import androidx.room.PrimaryKey
 import ru.pavlig43.core.UTC
 import ru.pavlig43.core.data.Item
 
-@Entity("document")
+
+const val DOCUMENT_TABLE_NAME = "document"
+@Entity(DOCUMENT_TABLE_NAME)
 data class Document(
 
     @ColumnInfo("display_name")
@@ -15,7 +17,7 @@ data class Document(
     override val type: DocumentType,
 
     @ColumnInfo("created_at")
-    override val createdAt: UTC,
+    override val createdAt: Long,
 
     override val comment:String ="",
 

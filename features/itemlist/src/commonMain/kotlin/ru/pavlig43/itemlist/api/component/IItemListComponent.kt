@@ -16,6 +16,8 @@ interface IItemListComponent {
     fun shareItems(ids: List<Int>)
     fun actionInSelectedItemIds(checked: Boolean, id: Int)
     val onItemClick:(id:Int,name:String) -> Unit
+    val searchField:StateFlow<String>
+    fun onSearchChange(value:String)
 
     /**
      * Если да, то будет чекбоксы у каждого элемента, при выборе хотя бы одного будет появляться строка с возможностью удаления и поделиться
