@@ -2,13 +2,11 @@ package ru.pavlig43.productform.internal.di
 
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
+import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductDeclaration
 import ru.pavlig43.database.data.product.ProductDeclarationOutWithDocumentName
 import ru.pavlig43.database.data.product.ProductFile
-import ru.pavlig43.database.data.product.dao.ProductDao
-import ru.pavlig43.database.data.product.dao.ProductDeclarationDao
-import ru.pavlig43.database.data.product.dao.ProductFilesDao
 import ru.pavlig43.form.api.data.IUpdateRepository
 import ru.pavlig43.form.api.data.UpdateItemRepository
 import ru.pavlig43.manageitem.api.data.CreateItemRepository
@@ -16,6 +14,7 @@ import ru.pavlig43.upsertitem.api.data.UpdateCollectionRepository
 
 
 internal val productFormModule = module {
+
     single<CreateItemRepository<Product>> { getCreateRepository(get()) }
 
     single<IUpdateRepository<Product>>(named(UpdateRepositoryType.Product.name)) {
@@ -38,8 +37,9 @@ internal val productFormModule = module {
 
 
 private fun getCreateRepository(
-    productDao: ProductDao
+    db: NocombroDatabase
 ): CreateItemRepository<Product> {
+    val productDao = db.productDao
     return CreateItemRepository(
         tag = "Create Product Repository",
         create = productDao::create,
@@ -57,8 +57,9 @@ internal enum class UpdateCollectionRepositoryType {
 }
 
 private fun getInitItemRepository(
-    productDao: ProductDao
+    db: NocombroDatabase
 ): IUpdateRepository<Product> {
+    val productDao = db.productDao
     return UpdateItemRepository<Product>(
         tag = "Update Product Repository",
         loadItem = productDao::getProduct,
@@ -67,8 +68,9 @@ private fun getInitItemRepository(
 }
 
 private fun getFilesRepository(
-    fileDao: ProductFilesDao
+    db: NocombroDatabase
 ): UpdateCollectionRepository<ProductFile, ProductFile> {
+    val fileDao = db.productFilesDao
     return UpdateCollectionRepository(
         tag = "Product FilesRepository",
         loadCollection = fileDao::getFiles,
@@ -78,8 +80,9 @@ private fun getFilesRepository(
 }
 
 private fun getDeclarationRepository(
-    declarationDao: ProductDeclarationDao
+    db: NocombroDatabase
 ): UpdateCollectionRepository<ProductDeclarationOutWithDocumentName, ProductDeclaration> {
+    val declarationDao = db.productDeclarationDao
     return UpdateCollectionRepository(
         tag = "Product DeclarationRepository",
         loadCollection = declarationDao::getProductDeclarationWithDocumentName,

@@ -2,12 +2,11 @@ package ru.pavlig43.rootnocombro.internal.di
 
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
+import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.document.Document
 import ru.pavlig43.database.data.document.DocumentType
-import ru.pavlig43.database.data.document.dao.DocumentDao
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductType
-import ru.pavlig43.database.data.product.dao.ProductDao
 import ru.pavlig43.itemlist.api.data.ItemListRepository
 
 internal val itemListRepositoryModule = module {
@@ -21,8 +20,9 @@ internal enum class ItemListType {
 }
 
 private fun getDocumentListRepository(
-    documentDao: DocumentDao,
+    db: NocombroDatabase,
 ): ItemListRepository<Document, DocumentType> {
+    val documentDao = db.documentDao
     return ItemListRepository<Document, DocumentType>(
         tag = "DocumentRepository",
         deleteByIds = documentDao::deleteDocumentsByIds,
@@ -32,8 +32,9 @@ private fun getDocumentListRepository(
 }
 
 private fun getProductListRepository(
-    productDao: ProductDao
+    db: NocombroDatabase
 ): ItemListRepository<Product, ProductType> {
+    val productDao = db.productDao
     return ItemListRepository<Product, ProductType>(
         tag = "Product list Repository",
         deleteByIds = productDao::deleteProductsByIds,

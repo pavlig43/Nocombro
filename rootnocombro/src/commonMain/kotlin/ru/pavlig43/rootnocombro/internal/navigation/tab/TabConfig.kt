@@ -4,6 +4,10 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 sealed interface TabConfig{
+
+    @Serializable
+    class Notification:TabConfig
+
     @Serializable
     class DocumentList : TabConfig
 
@@ -15,6 +19,8 @@ sealed interface TabConfig{
 
     @Serializable
     class ProductForm(val id:Int): TabConfig
+
+
 
 
 

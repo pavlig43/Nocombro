@@ -76,3 +76,5 @@ include(
     )
 
 
+
+include(":features:notification")

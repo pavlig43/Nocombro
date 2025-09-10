@@ -8,6 +8,7 @@ import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 import ru.pavlig43.database.data.document.Document
 import ru.pavlig43.database.data.document.DocumentType
+import ru.pavlig43.database.data.common.NotificationDTO
 
 
 @Dao
@@ -40,5 +41,8 @@ interface DocumentDao {
 
     @Query("SELECT COUNT(*) > 0 FROM document WHERE display_name =:name")
     suspend fun isNameExist(name: String):Boolean
+
+    @Query("SELECT id,display_name AS name FROM document WHERE id NOT IN (SELECT document_id FROM document_file)")
+    fun observeOnDocumentWithoutFiles():Flow<List<NotificationDTO>>
 
 }
