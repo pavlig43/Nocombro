@@ -2,10 +2,9 @@ package ru.pavlig43.documentform.internal.di
 
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
+import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.document.Document
 import ru.pavlig43.database.data.document.DocumentFile
-import ru.pavlig43.database.data.document.dao.DocumentDao
-import ru.pavlig43.database.data.document.dao.DocumentFilesDao
 import ru.pavlig43.form.api.data.IUpdateRepository
 import ru.pavlig43.form.api.data.UpdateItemRepository
 import ru.pavlig43.manageitem.api.data.CreateItemRepository
@@ -13,13 +12,15 @@ import ru.pavlig43.upsertitem.api.data.UpdateCollectionRepository
 
 
 internal val documentFormModule = module {
+
     single<CreateItemRepository<Document>> { getCreateRepository(get()) }
     single<IUpdateRepository<Document>>(named(UpdateRepositoryType.Document.name)) { getInitItemRepository(get()) }
     single<UpdateCollectionRepository<DocumentFile,DocumentFile>>{ getFilesRepository(get()) }
 }
 private fun getCreateRepository(
-    documentDao: DocumentDao
+    db: NocombroDatabase
 ): CreateItemRepository<Document> {
+    val documentDao = db.documentDao
     return CreateItemRepository(
         tag = "Create Document Repository",
         create = documentDao::create,
@@ -31,8 +32,9 @@ internal enum class UpdateRepositoryType{
     Document,
 }
 private fun getInitItemRepository(
-    documentDao: DocumentDao
+    db: NocombroDatabase
 ): IUpdateRepository<Document> {
+    val documentDao = db.documentDao
     return UpdateItemRepository<Document>(
         tag = "Update Document Repository",
         loadItem = documentDao::getDocument,
@@ -41,8 +43,9 @@ private fun getInitItemRepository(
 }
 
 private fun getFilesRepository(
-    fileDao: DocumentFilesDao
+    db: NocombroDatabase
 ): UpdateCollectionRepository<DocumentFile,DocumentFile> {
+    val fileDao = db.documentFilesDao
     return UpdateCollectionRepository(
         tag = "Document FilesRepository",
         loadCollection = fileDao::getFiles,

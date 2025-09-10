@@ -6,6 +6,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
+import ru.pavlig43.database.data.common.NotificationDTO
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductType
 
@@ -39,5 +40,19 @@ interface ProductDao {
 
     @Query("SELECT COUNT(*) > 0 FROM product WHERE display_name =:name")
     suspend fun isNameExist(name: String):Boolean
+
+    @Query("SELECT id,display_name AS name FROM product WHERE id NOT IN (SELECT product_id FROM product_declaration)")
+    fun observeOnProductWithoutDeclaration():Flow<List<NotificationDTO>>
+
+    @Query("""
+    SELECT id, display_name AS name 
+    FROM product 
+    WHERE id NOT IN (
+        SELECT product_id 
+        FROM product_declaration
+        WHERE is_actual = true
+    )
+""")
+    fun observeOnProductWithoutActualDeclaration():Flow<List<NotificationDTO>>
 
 }

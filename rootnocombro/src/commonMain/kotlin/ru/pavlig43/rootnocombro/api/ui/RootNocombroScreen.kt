@@ -28,6 +28,8 @@ import ru.pavlig43.documentform.api.component.DocumentFormComponent
 import ru.pavlig43.documentform.api.ui.DocumentFormScreen
 import ru.pavlig43.itemlist.api.component.ItemListComponent
 import ru.pavlig43.itemlist.api.ui.ItemListScreen
+import ru.pavlig43.notification.api.component.PageNotificationComponent
+import ru.pavlig43.notification.api.ui.NotificationTabs
 import ru.pavlig43.productform.api.component.ProductFormComponent
 import ru.pavlig43.productform.api.ui.ProductFormScreen
 import ru.pavlig43.rootnocombro.api.component.IRootNocombroComponent
@@ -109,6 +111,8 @@ fun RootNocombroScreen(rootNocombroComponent: IRootNocombroComponent) {
                                             is DocumentFormComponent -> DocumentFormScreen(slotComponent)
 
                                             is ProductFormComponent -> ProductFormScreen(slotComponent)
+
+                                            is PageNotificationComponent -> NotificationTabs(slotComponent)
 
                                             null -> Box(Modifier.fillMaxSize())
                                             else -> error("$slotComponent SlotComponent not added")

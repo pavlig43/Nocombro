@@ -15,4 +15,5 @@ interface DocumentFilesDao {
 
     @Query("DELETE FROM document_file WHERE id in(:ids)")
     suspend fun deleteFiles(ids:List<Int>)
+
 }

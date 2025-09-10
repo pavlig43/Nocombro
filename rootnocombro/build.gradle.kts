@@ -12,6 +12,7 @@ android{
 kotlin{
     commonMainDependencies {
         implementation(projects.features.sign.root)
+        implementation(projects.features.notification)
         implementation(projects.features.itemlist)
         implementation(projects.features.documents.documentform)
         implementation(projects.features.products.productform)

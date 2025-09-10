@@ -13,6 +13,9 @@ import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.documentform.api.component.DocumentFormComponent
 import ru.pavlig43.itemlist.api.component.ItemListComponent
+import ru.pavlig43.notification.api.component.PageNotificationComponent
+import ru.pavlig43.notification.api.data.NotificationItem
+//import ru.pavlig43.notification.api.component.NotificationComponent
 import ru.pavlig43.productform.api.component.ProductFormComponent
 import ru.pavlig43.rootnocombro.internal.di.ItemListType
 import ru.pavlig43.rootnocombro.internal.navigation.drawer.component.DrawerComponent
@@ -30,13 +33,21 @@ internal class MainNavigationComponent(
     scope:Scope,
 ) : ComponentContext by componentContext, IMainNavigationComponent<TabConfig, SlotComponent> {
 
+    private val notificationComponent = PageNotificationComponent(
+        componentContext = childContext("notification"),
+        onOpenTab = ::openTabFromNotification,
+        dependencies = scope.get()
+    )
+
     override val drawerComponent: IDrawerComponent = DrawerComponent(
         componentContext = childContext("drawer"),
-        openScreen = ::openScreenFromDrawer
+        openScreen = ::openScreenFromDrawer,
+        onNotificationScreen = {tabNavigationComponent.addTab(TabConfig.Notification())},
+        notificationsState = notificationComponent.notificationsForDrawer
     )
 
     fun openScreenFromDrawer(destination: DrawerDestination) {
-        val tabConfiguration = destination.toTabConfig()
+        val tabConfiguration: TabConfig = destination.toTabConfig()
         tabNavigationComponent.addTab(tabConfiguration)
     }
 
@@ -53,7 +64,6 @@ internal class MainNavigationComponent(
             componentContext = childContext("tab"),
             startConfigurations = listOf(
                 TabConfig.ProductList(),
-//                TabConfig.DocumentList()
             ),
             serializer = TabConfig.serializer(),
             slotFactory = { context, tabConfig: TabConfig, openNewTab: (TabConfig) -> Unit, onCloseTab: () -> Unit ->
@@ -92,14 +102,18 @@ internal class MainNavigationComponent(
                         onOpenDocumentTab = {openNewTab(TabConfig.DocumentForm(it))}
                     )
 
-
-
-
+                    is TabConfig.Notification -> notificationComponent
                 }
             },
         )
 
-
+    private fun openTabFromNotification(item:NotificationItem,id:Int){
+        when(item){
+            NotificationItem.Document -> tabNavigationComponent.addTab(TabConfig.DocumentForm(id))
+            NotificationItem.Product -> tabNavigationComponent.addTab(TabConfig.ProductForm(id))
+        }
+    }
 }
+
 
 
