@@ -12,7 +12,7 @@ internal fun RequireValues.toDocument(): Document {
     return Document(
         displayName = name,
         type = type as DocumentType,
-        createdAt = createdAt?: UTC(Clock.System.now().toEpochMilliseconds()),
+        createdAt = createdAt?.value?: Clock.System.now().toEpochMilliseconds(),
         comment = comment,
         id = id
     )

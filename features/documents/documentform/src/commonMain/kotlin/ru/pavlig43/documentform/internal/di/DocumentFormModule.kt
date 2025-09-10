@@ -23,8 +23,8 @@ private fun getCreateRepository(
     val documentDao = db.documentDao
     return CreateItemRepository(
         tag = "Create Document Repository",
-        create = documentDao::create,
-        isNameExist = documentDao::isNameExist
+        isNameAllowed = documentDao::isNameAllowed,
+        create = documentDao::create
     )
 }
 

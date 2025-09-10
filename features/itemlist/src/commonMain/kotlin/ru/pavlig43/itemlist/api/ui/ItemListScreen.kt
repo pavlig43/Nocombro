@@ -23,6 +23,7 @@ fun ItemListScreen(
     val itemListState by component.itemListState.collectAsState()
     val deleteState by component.deleteState.collectAsState()
     val selectedItemIds = component.selectedItemIds
+    val searchText by component.searchField.collectAsState()
 
     ItemListScreenState(
         state = itemListState,
@@ -35,6 +36,8 @@ fun ItemListScreen(
         shareItems = component::shareItems,
         deleteState = deleteState,
         onItemClick = {ind,name ->component.onItemClick(ind,name)},
+        searchText = searchText,
+        onSearchChange = component::onSearchChange,
         withCheckbox = component.withCheckbox,
         modifier = modifier)
 }
@@ -52,6 +55,8 @@ private fun ItemListScreenState(
     fullListSelection: List<ItemType>,
     saveSelection: (List<ItemType>) -> Unit,
     onItemClick: (Int,String) -> Unit,
+    searchText:String,
+    onSearchChange:(String)->Unit,
     withCheckbox: Boolean,
     modifier: Modifier = Modifier,
 ) {
@@ -71,6 +76,8 @@ private fun ItemListScreenState(
             deleteState = deleteState,
             onItemClick = onItemClick,
             withCheckbox = withCheckbox,
+            searchText = searchText,
+            onSearchChange = onSearchChange,
             modifier = modifier
         )
     }
@@ -89,6 +96,8 @@ private fun ItemList(
     fullListSelection: List<ItemType>,
     saveSelection: (List<ItemType>) -> Unit,
     onItemClick:(Int,String)->Unit,
+    searchText:String,
+    onSearchChange:(String)->Unit,
     withCheckbox: Boolean,
     modifier: Modifier = Modifier
 ) {
@@ -114,6 +123,8 @@ private fun ItemList(
             shareItems = shareItems,
             deleteState = deleteState,
             onClickItem = onItemClick,
+            searchText = searchText,
+            onSearchChange = onSearchChange,
             withCheckbox = withCheckbox
         )
     }

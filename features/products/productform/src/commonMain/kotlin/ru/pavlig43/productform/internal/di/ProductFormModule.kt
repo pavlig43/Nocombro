@@ -42,8 +42,8 @@ private fun getCreateRepository(
     val productDao = db.productDao
     return CreateItemRepository(
         tag = "Create Product Repository",
-        create = productDao::create,
-        isNameExist = productDao::isNameExist
+        isNameAllowed = productDao::isNameAllowed,
+        create = productDao::create
     )
 }
 

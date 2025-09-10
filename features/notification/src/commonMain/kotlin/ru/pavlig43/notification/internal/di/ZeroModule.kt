@@ -1,7 +1,6 @@
 package ru.pavlig43.notification.internal.di
 
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import org.koin.core.qualifier.Qualifier
 import org.koin.dsl.module
@@ -41,25 +40,13 @@ private class ProductNotificationRepository(
     db: NocombroDatabase
 ) : INotificationRepository {
 
-    private val withoutDeclaration = db.productDao.observeOnProductWithoutDeclaration().map { lst->
+    override val notificationFlow: Flow<List<NotificationUi>> = db.productDao.observeOnProductWithoutActualDeclaration().map { lst->
         lst.map { notificationDTO ->
             NotificationUi(
                 id = notificationDTO.id,
-                text = "В продукте ${notificationDTO.name} нет декларации"
+                text = "В продукте ${notificationDTO.name} нет актуальной декларации"
             )
         }
     }
-    private val withoutActualDeclaration = db.productDao.observeOnProductWithoutActualDeclaration().map { lst->
-        lst.map { notificationDTO ->
-            NotificationUi(
-                id = notificationDTO.id,
-                text = "В продукте ${notificationDTO.name} не выбрана актуальная декларация"
-            )
-        }
-    }
-    override val notificationFlow: Flow<List<NotificationUi>> = combine(
-        withoutDeclaration,
-        withoutActualDeclaration
-    ){arrays-> arrays.flatMap { it.toList() }}
 
 }

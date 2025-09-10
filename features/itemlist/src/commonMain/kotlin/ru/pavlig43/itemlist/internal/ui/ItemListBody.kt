@@ -35,6 +35,8 @@ internal fun ItemListBody(
     horizontalScrollState: ScrollState,
     verticalScrollState: LazyListState,
     onClickItem:(id:Int,name:String)->Unit,
+    searchText:String,
+    onSearchChange:(String)->Unit,
     modifier: Modifier = Modifier,
 ) {
 
@@ -42,7 +44,9 @@ internal fun ItemListBody(
         SettingsRow(
             onCreate = onCreate,
             fullListSelection = fullListSelection,
-            saveSelection = saveSelection
+            saveSelection = saveSelection,
+            searchText = searchText,
+            onSearchChange = onSearchChange,
         )
         if (selectedItemIds.isNotEmpty()) {
             ActionRow(
@@ -55,6 +59,7 @@ internal fun ItemListBody(
         TableRow(
             cells = createHeadersCells(withCheckbox),
             scrollState = horizontalScrollState,
+            searchText = "",
             backgroundColor = MaterialTheme.colorScheme.primary.copy(0.5f),
             borderColor = MaterialTheme.colorScheme.onPrimary,
             modifier = Modifier.height(32.dp)
@@ -75,6 +80,7 @@ internal fun ItemListBody(
                     TableRow(
                         cells = item.toCell(),
                         scrollState = horizontalScrollState,
+                        searchText = searchText,
                         backgroundColor = MaterialTheme.colorScheme.secondary.copy(
                             alpha = if (index % 2 == 0) 0.3f else 0.5f
                         ),

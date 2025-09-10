@@ -23,10 +23,10 @@ private val dateFormat = LocalDateTime.Format {
     char(':')
     second()
 }
-fun UTC.convertToDateTime(
+fun Long.convertToDateTime(
     ): String {
     val timezone: TimeZone = TimeZone.currentSystemDefault()
-    val instant = Instant.fromEpochMilliseconds(this.value)
+    val instant = Instant.fromEpochMilliseconds(this)
     val localDateTime = instant.toLocalDateTime(timezone)
     return dateFormat.format(localDateTime)
 }

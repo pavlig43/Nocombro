@@ -3,8 +3,10 @@ package ru.pavlig43.rootnocombro.internal.di
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import ru.pavlig43.database.NocombroDatabase
+import ru.pavlig43.database.data.document.DOCUMENT_TABLE_NAME
 import ru.pavlig43.database.data.document.Document
 import ru.pavlig43.database.data.document.DocumentType
+import ru.pavlig43.database.data.product.PRODUCT_TABLE_NAME
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.itemlist.api.data.ItemListRepository
@@ -24,10 +26,9 @@ private fun getDocumentListRepository(
 ): ItemListRepository<Document, DocumentType> {
     val documentDao = db.documentDao
     return ItemListRepository<Document, DocumentType>(
-        tag = "DocumentRepository",
+        tableName = DOCUMENT_TABLE_NAME,
         deleteByIds = documentDao::deleteDocumentsByIds,
-        observeAllItem = documentDao::observeAllDocument,
-        observeItemsByTypes = documentDao::observeDocumentsByTypes
+        observeOnItems = documentDao::observeOnItems
     )
 }
 
@@ -36,9 +37,8 @@ private fun getProductListRepository(
 ): ItemListRepository<Product, ProductType> {
     val productDao = db.productDao
     return ItemListRepository<Product, ProductType>(
-        tag = "Product list Repository",
+        tableName = PRODUCT_TABLE_NAME,
         deleteByIds = productDao::deleteProductsByIds,
-        observeAllItem = productDao::observeAllProduct,
-        observeItemsByTypes = productDao::observeProductsByTypes
+        observeOnItems = productDao::observeOnItems
     )
 }
