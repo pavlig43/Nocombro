@@ -17,8 +17,6 @@ interface IDrawerComponent {
 }
 enum class DrawerDestination(val title: String) {
     Documents("Документы"),
-    CreateDocument("Создать документ"),
-    ProductForm("Создать продукт"),
     ProductList("Продукты")
 }
 

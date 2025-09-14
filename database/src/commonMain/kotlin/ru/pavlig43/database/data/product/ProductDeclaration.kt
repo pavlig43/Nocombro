@@ -48,7 +48,6 @@ data class ProductDeclarationOutWithDocumentName(
     override val documentId: Int,
     override val isActual: Boolean,
     override val displayName: String,
-
 ) : DeclarationOut
 
 

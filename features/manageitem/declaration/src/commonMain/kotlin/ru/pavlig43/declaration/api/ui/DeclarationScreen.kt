@@ -8,7 +8,7 @@ import ru.pavlig43.core.data.DeclarationIn
 import ru.pavlig43.core.data.DeclarationOut
 import ru.pavlig43.declaration.api.component.DeclarationTabSlot
 import ru.pavlig43.declaration.internal.ui.DeclarationListScreen
-import ru.pavlig43.declaration.internal.ui.MBS
+import ru.pavlig43.itemlist.api.ui.MBS
 
 @Composable
 fun<In: DeclarationIn,Out: DeclarationOut> DeclarationScreen(

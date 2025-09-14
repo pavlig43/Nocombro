@@ -88,7 +88,7 @@ internal fun TabContent(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(text = state.title)
+            Text(text = state.title,Modifier.weight(1f))
             FilledTonalIconButton(modifier = closeButtonModifier, onClick = onClose) {
                 Icon(
                     modifier = closeButtonIconModifier,

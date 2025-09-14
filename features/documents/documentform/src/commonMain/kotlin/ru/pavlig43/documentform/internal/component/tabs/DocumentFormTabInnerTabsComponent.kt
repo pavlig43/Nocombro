@@ -63,6 +63,9 @@ internal class DocumentFormTabInnerTabsComponent(
     private suspend fun update():RequestResult<Unit> {
         val blocks: Value<List<suspend () -> Unit>> = tabNavigationComponent.children.map { children->
             children.items.map { child-> suspend {child.instance.onUpdate()} } }
+        println("blocks $blocks")
+        println("blocks ${blocks.value}")
+        println(tabNavigationComponent.children.map { it.items.map { it.instance.title } })
         return dbSafeCall("document form"){
             dbTransaction.transaction(blocks.value)
         }

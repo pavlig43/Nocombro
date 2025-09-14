@@ -10,12 +10,12 @@ import kotlinx.coroutines.flow.asStateFlow
 import org.koin.core.qualifier.named
 import org.koin.core.scope.Scope
 import ru.pavlig43.core.RequestResult
-import ru.pavlig43.core.componentCoroutineScope
 import ru.pavlig43.core.data.dbSafeCall
 import ru.pavlig43.core.tabs.DefaultTabNavigationComponent
 import ru.pavlig43.core.tabs.ITabNavigationComponent
 import ru.pavlig43.database.DataBaseTransaction
 import ru.pavlig43.form.api.component.IItemFormInnerTabsComponent
+import ru.pavlig43.itemlist.api.data.ItemListType
 import ru.pavlig43.productform.internal.di.UpdateCollectionRepositoryType
 import ru.pavlig43.productform.internal.di.UpdateRepositoryType
 import ru.pavlig43.upsertitem.api.component.IUpdateComponent
@@ -26,13 +26,13 @@ internal class ProductFormTabInnerTabsComponent(
     componentContext: ComponentContext,
     closeFormScreen:()->Unit,
     onOpenDocumentTab:(Int)->Unit,
+    onOpenProductTab:(Int)->Unit,
     scope: Scope,
     productId: Int,
     onChangeValueForMainTab: (String) -> Unit
 ) : ComponentContext by componentContext,
     IItemFormInnerTabsComponent<ProductTab, ProductTabSlot> {
 
-    private val coroutineScope = componentCoroutineScope()
     private val _mainTabTitle = MutableStateFlow("")
     override val mainTabTitle: StateFlow<String> = _mainTabTitle.asStateFlow()
     private val dbTransaction: DataBaseTransaction = scope.get()
@@ -44,7 +44,8 @@ internal class ProductFormTabInnerTabsComponent(
             startConfigurations = listOf(
                 ProductTab.RequireValues,
                 ProductTab.Files,
-                ProductTab.Declaration
+                ProductTab.Declaration,
+                ProductTab.Ingredients
             ),
             serializer = ProductTab.serializer(),
             slotFactory = { context, tabConfig: ProductTab, _: (ProductTab) -> Unit, _: () -> Unit ->
@@ -69,7 +70,15 @@ internal class ProductFormTabInnerTabsComponent(
                         id = productId,
                         updateRepository = scope.get(named(UpdateCollectionRepositoryType.Declaration.name)),
                         onOpenDocumentTab = onOpenDocumentTab,
-                        documentListRepository = scope.get()
+                        documentListRepository = scope.get(named(ItemListType.Document.name))
+                    )
+
+                    ProductTab.Ingredients -> CompositionTabSlot(
+                        componentContext = componentContext,
+                        productId = productId,
+                        productListRepository = scope.get(named(ItemListType.Product.name)),
+                        openProductTab = onOpenProductTab,
+                        updateCompositionRepository = scope.get(named(UpdateCollectionRepositoryType.Composition.name)),
                     )
                 }
 
@@ -78,7 +87,7 @@ internal class ProductFormTabInnerTabsComponent(
     private suspend fun update(): RequestResult<Unit> {
         val blocks: Value<List<suspend () -> Unit>> = tabNavigationComponent.children.map { children->
             children.items.map { child-> suspend {child.instance.onUpdate()} } }
-        return dbSafeCall("document form"){
+        return dbSafeCall("product form"){
             dbTransaction.transaction(blocks.value)
         }
     }

@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "c403b1316b306af191457a191cb9eefd",
+    "identityHash": "67ca248c403c4e467ab79a9a50164650",
     "entities": [
       {
         "tableName": "document",
@@ -179,7 +179,7 @@
         "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`product_id` INTEGER NOT NULL, `document_id` INTEGER NOT NULL, `is_actual` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, FOREIGN KEY(`product_id`) REFERENCES `product`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`document_id`) REFERENCES `document`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
-            "fieldPath": "productId",
+            "fieldPath": "parentId",
             "columnName": "product_id",
             "affinity": "INTEGER",
             "notNull": true
@@ -235,68 +235,13 @@
         ]
       },
       {
-        "tableName": "product_component",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`parent_id` INTEGER NOT NULL, `child_id` INTEGER NOT NULL, `percent` REAL NOT NULL, PRIMARY KEY(`parent_id`, `child_id`), FOREIGN KEY(`parent_id`) REFERENCES `product`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`child_id`) REFERENCES `product`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "tableName": "product_composition",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `product_id` INTEGER NOT NULL, `name` TEXT NOT NULL, FOREIGN KEY(`product_id`) REFERENCES `product`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
-            "fieldPath": "parentId",
-            "columnName": "parent_id",
+            "fieldPath": "id",
+            "columnName": "id",
             "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "childId",
-            "columnName": "child_id",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "percent",
-            "columnName": "percent",
-            "affinity": "REAL",
-            "notNull": true
-          }
-        ],
-        "primaryKey": {
-          "autoGenerate": false,
-          "columnNames": [
-            "parent_id",
-            "child_id"
-          ]
-        },
-        "foreignKeys": [
-          {
-            "table": "product",
-            "onDelete": "CASCADE",
-            "onUpdate": "NO ACTION",
-            "columns": [
-              "parent_id"
-            ],
-            "referencedColumns": [
-              "id"
-            ]
-          },
-          {
-            "table": "product",
-            "onDelete": "CASCADE",
-            "onUpdate": "NO ACTION",
-            "columns": [
-              "child_id"
-            ],
-            "referencedColumns": [
-              "id"
-            ]
-          }
-        ]
-      },
-      {
-        "tableName": "specification",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`name` TEXT NOT NULL, `product_id` INTEGER NOT NULL, `document_id` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, FOREIGN KEY(`product_id`) REFERENCES `product`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`document_id`) REFERENCES `document`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
-        "fields": [
-          {
-            "fieldPath": "name",
-            "columnName": "name",
-            "affinity": "TEXT",
             "notNull": true
           },
           {
@@ -306,8 +251,51 @@
             "notNull": true
           },
           {
-            "fieldPath": "documentId",
-            "columnName": "document_id",
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "foreignKeys": [
+          {
+            "table": "product",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "product_id"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "product_ingredient",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`composition_id` INTEGER NOT NULL, `ingredient_id` INTEGER NOT NULL, `count_grams` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, FOREIGN KEY(`ingredient_id`) REFERENCES `product`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`composition_id`) REFERENCES `product_composition`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "compositionId",
+            "columnName": "composition_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ingredientId",
+            "columnName": "ingredient_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "countGrams",
+            "columnName": "count_grams",
             "affinity": "INTEGER",
             "notNull": true
           },
@@ -330,18 +318,18 @@
             "onDelete": "CASCADE",
             "onUpdate": "NO ACTION",
             "columns": [
-              "product_id"
+              "ingredient_id"
             ],
             "referencedColumns": [
               "id"
             ]
           },
           {
-            "table": "document",
+            "table": "product_composition",
             "onDelete": "CASCADE",
             "onUpdate": "NO ACTION",
             "columns": [
-              "document_id"
+              "composition_id"
             ],
             "referencedColumns": [
               "id"
@@ -352,7 +340,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'c403b1316b306af191457a191cb9eefd')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '67ca248c403c4e467ab79a9a50164650')"
     ]
   }
 }

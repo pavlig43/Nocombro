@@ -18,10 +18,12 @@ import ru.pavlig43.form.api.ui.ItemTabsUi
 import ru.pavlig43.manageitem.api.ui.CreateScreen
 import ru.pavlig43.manageitem.api.ui.RequireValuesScreen
 import ru.pavlig43.productform.api.component.ProductFormComponent
+import ru.pavlig43.productform.internal.component.CompositionTabSlot
 import ru.pavlig43.productform.internal.component.ProductDeclarationTabSlot
 import ru.pavlig43.productform.internal.component.ProductFileTabSlot
 import ru.pavlig43.productform.internal.component.ProductRequiresTabSlot
 import ru.pavlig43.productform.internal.component.ProductTabSlot
+import ru.pavlig43.productform.internal.ui.CompositionScreen
 
 @Composable
 fun ProductFormScreen(
@@ -64,6 +66,8 @@ private fun ProductSlotScreen(productSlot: ProductTabSlot?) {
         is ProductFileTabSlot -> FilesScreen(productSlot.fileComponent)
 
         is ProductDeclarationTabSlot -> DeclarationScreen(productSlot)
+
+        is CompositionTabSlot -> CompositionScreen(productSlot)
 
         else -> error("product slot not found $productSlot")
     }

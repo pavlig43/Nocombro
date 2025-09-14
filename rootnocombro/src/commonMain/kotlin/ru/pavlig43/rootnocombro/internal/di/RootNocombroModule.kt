@@ -8,8 +8,11 @@ import ru.pavlig43.database.DataBaseTransaction
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.document.Document
 import ru.pavlig43.database.data.document.DocumentType
+import ru.pavlig43.database.data.product.Product
+import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.documentform.api.IDocumentFormDependencies
 import ru.pavlig43.itemlist.api.data.ItemListRepository
+import ru.pavlig43.itemlist.api.data.ItemListType
 import ru.pavlig43.notification.api.INotificationDependencies
 import ru.pavlig43.productform.api.IProductFormDependencies
 import ru.pavlig43.signroot.api.IRootSignDependencies
@@ -20,7 +23,8 @@ private val featureDependenciesModule = module {
     factory<IProductFormDependencies> { ProductFormDependencies(
         transaction = get(),
         db = get(),
-        documentListRepository = get(named(ItemListType.Document.name))
+        documentListRepository = get(named(ItemListType.Document.name)),
+        productListRepository = get(named(ItemListType.Product.name))
     ) }
     factoryOf(::RootSignDependencies) bind IRootSignDependencies::class
 
@@ -46,6 +50,7 @@ private class ProductFormDependencies(
     override val db: NocombroDatabase,
     override val transaction: DataBaseTransaction,
     override val documentListRepository: ItemListRepository<Document, DocumentType>,
+    override val productListRepository: ItemListRepository<Product, ProductType>,
 ) : IProductFormDependencies
 
 private class RootSignDependencies : IRootSignDependencies

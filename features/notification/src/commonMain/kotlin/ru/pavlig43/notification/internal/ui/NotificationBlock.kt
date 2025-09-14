@@ -8,6 +8,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import ru.pavlig43.notification.api.data.NotificationLevel
 import ru.pavlig43.notification.internal.component.INotificationItemComponent
@@ -46,6 +47,7 @@ private fun NotificationBlock(
     var isShowFullList by remember { mutableStateOf(false) }
     Column(
         modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         NotificationTitle(
             title = title,

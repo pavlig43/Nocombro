@@ -21,6 +21,7 @@ import ru.pavlig43.core.mapTo
 import ru.pavlig43.database.data.document.Document
 import ru.pavlig43.database.data.document.DocumentType
 import ru.pavlig43.declaration.api.data.DeclarationUi
+import ru.pavlig43.itemlist.api.component.MBSItemListComponent
 import ru.pavlig43.itemlist.api.data.ItemListRepository
 import ru.pavlig43.loadinitdata.api.component.ILoadInitDataComponent
 import ru.pavlig43.loadinitdata.api.component.LoadInitDataComponent
@@ -42,16 +43,18 @@ abstract class DeclarationTabSlot<Out : DeclarationOut, In : DeclarationIn>(
     )
     private val dialogNavigation = SlotNavigation<DialogConfig>()
 
-    internal val dialog: Value<ChildSlot<DialogConfig, DefaultMBSComponent>> = childSlot(
+    internal val dialog: Value<ChildSlot<DialogConfig, MBSItemListComponent<Document, DocumentType>>> = childSlot(
         source = dialogNavigation,
+        key = "document_dialog",
         serializer = DialogConfig.serializer(),
         handleBackButton = true,
     ) { config, context ->
-        DefaultMBSComponent(
+        MBSItemListComponent(
             componentContext = context,
             onDismissed = dialogNavigation::dismiss,
             repository = documentListRepository,
             onCreate = {openDocumentTab(0)},
+            fullListSelection = listOf(DocumentType.Declaration),
             onItemClick = { id, name ->
                 declarationList.addDeclaration(id, name)
                 dialogNavigation.dismiss()

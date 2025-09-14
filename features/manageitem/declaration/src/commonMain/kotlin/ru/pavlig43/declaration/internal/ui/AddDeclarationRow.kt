@@ -39,17 +39,7 @@ internal fun AddDeclarationRow(
             icon = if (declarationUi.isActual) Icons.Default.Check else Icons.Default.DoNotDisturb,
             tint = if (declarationUi.isActual) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
         )
-//        Icon(
-//            imageVector = if (declarationUi.isActual)
-//                Icons.Default.Check
-//            else
-//                Icons.Default.DoNotDisturb,
-//            contentDescription = null,
-//            tint = if (declarationUi.isActual)
-//                MaterialTheme.colorScheme.primary
-//            else
-//                MaterialTheme.colorScheme.error
-//        )
+
         Text(
             text = declarationUi.name,
             textDecoration = TextDecoration.Underline,

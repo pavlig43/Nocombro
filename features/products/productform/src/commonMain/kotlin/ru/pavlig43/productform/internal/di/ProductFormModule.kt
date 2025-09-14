@@ -4,6 +4,8 @@ import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.product.Product
+import ru.pavlig43.database.data.product.ProductCompositionIn
+import ru.pavlig43.database.data.product.ProductCompositionOut
 import ru.pavlig43.database.data.product.ProductDeclaration
 import ru.pavlig43.database.data.product.ProductDeclarationOutWithDocumentName
 import ru.pavlig43.database.data.product.ProductFile
@@ -33,6 +35,9 @@ internal val productFormModule = module {
         named(UpdateCollectionRepositoryType.Declaration.name)
     ) { getDeclarationRepository(get()) }
 
+    single<UpdateCollectionRepository<ProductCompositionOut, ProductCompositionIn>>(
+        named(UpdateCollectionRepositoryType.Composition.name)
+    ) { getUpdateCompositionRepository(get()) }
 }
 
 
@@ -53,7 +58,9 @@ internal enum class UpdateRepositoryType {
 
 internal enum class UpdateCollectionRepositoryType {
     Files,
-    Declaration
+    Declaration,
+    Composition,
+
 }
 
 private fun getInitItemRepository(
@@ -90,3 +97,19 @@ private fun getDeclarationRepository(
         upsertCollection = declarationDao::upsertProductDeclarations
     )
 }
+
+
+
+private fun getUpdateCompositionRepository(
+    db: NocombroDatabase
+): UpdateCollectionRepository<ProductCompositionOut, ProductCompositionIn> {
+    val dao = db.compositionDao
+    return UpdateCollectionRepository(
+        tag = "Product Composition Repository",
+        loadCollection = dao::getCompositions,
+        deleteCollection = dao::deleteCompositions,
+        upsertCollection = dao::upsertCompositions
+    )
+}
+
+

@@ -13,7 +13,7 @@ import ru.pavlig43.database.data.product.Product
 
 @Dao
 interface ProductDao {
-    @Insert(onConflict = OnConflictStrategy.ABORT)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun create(product: Product): Long
 
     @Update
@@ -41,7 +41,7 @@ interface ProductDao {
 
     @Query(
         """
-    SELECT id, display_name AS name 
+    SELECT id, display_name AS displayName 
     FROM product 
     WHERE id NOT IN (
         SELECT product_id 

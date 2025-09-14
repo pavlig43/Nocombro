@@ -28,6 +28,7 @@ class ProductFormComponent(
     productId: Int,
     val closeTab: () -> Unit,
     private val onOpenDocumentTab:(Int)->Unit,
+    private val onOpenProductTab:(Int)->Unit,
     componentContext: ComponentContext,
     dependencies: IProductFormDependencies,
 ) : ComponentContext by componentContext, SlotComponent {
@@ -76,6 +77,7 @@ class ProductFormComponent(
                     productId = config.id,
                     closeFormScreen = closeTab,
                     onOpenDocumentTab = onOpenDocumentTab,
+                    onOpenProductTab = onOpenProductTab,
                     onChangeValueForMainTab = {onChangeValueForMainTab(it)}
                 )
             )

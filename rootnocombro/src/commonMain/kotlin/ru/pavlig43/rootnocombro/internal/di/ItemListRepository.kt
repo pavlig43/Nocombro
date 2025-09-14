@@ -1,5 +1,6 @@
 package ru.pavlig43.rootnocombro.internal.di
 
+import org.koin.core.module.dsl.factoryOf
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import ru.pavlig43.database.NocombroDatabase
@@ -10,16 +11,14 @@ import ru.pavlig43.database.data.product.PRODUCT_TABLE_NAME
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.itemlist.api.data.ItemListRepository
+import ru.pavlig43.itemlist.api.data.ItemListType
 
 internal val itemListRepositoryModule = module {
     factory<ItemListRepository<Document,DocumentType>>(named(ItemListType.Document.name)) { getDocumentListRepository(get()) }
     factory<ItemListRepository<Product, ProductType>>(named(ItemListType.Product.name)) { getProductListRepository(get()) }
 }
 
-internal enum class ItemListType {
-    Document,
-    Product
-}
+
 
 private fun getDocumentListRepository(
     db: NocombroDatabase,

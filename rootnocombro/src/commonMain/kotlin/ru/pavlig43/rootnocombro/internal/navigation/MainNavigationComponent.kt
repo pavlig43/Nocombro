@@ -13,11 +13,11 @@ import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.documentform.api.component.DocumentFormComponent
 import ru.pavlig43.itemlist.api.component.ItemListComponent
+import ru.pavlig43.itemlist.api.data.ItemListType
 import ru.pavlig43.notification.api.component.PageNotificationComponent
 import ru.pavlig43.notification.api.data.NotificationItem
 //import ru.pavlig43.notification.api.component.NotificationComponent
 import ru.pavlig43.productform.api.component.ProductFormComponent
-import ru.pavlig43.rootnocombro.internal.di.ItemListType
 import ru.pavlig43.rootnocombro.internal.navigation.drawer.component.DrawerComponent
 import ru.pavlig43.rootnocombro.internal.navigation.drawer.component.DrawerDestination
 import ru.pavlig43.rootnocombro.internal.navigation.drawer.component.IDrawerComponent
@@ -53,9 +53,7 @@ internal class MainNavigationComponent(
 
     private fun DrawerDestination.toTabConfig(): TabConfig =
         when (this) {
-            DrawerDestination.CreateDocument -> TabConfig.DocumentForm(0)
             DrawerDestination.Documents -> TabConfig.DocumentList()
-            DrawerDestination.ProductForm -> TabConfig.ProductForm(0)
             DrawerDestination.ProductList -> TabConfig.ProductList()
         }
 
@@ -99,7 +97,8 @@ internal class MainNavigationComponent(
                         dependencies = scope.get(),
                         closeTab = onCloseTab,
                         productId = tabConfig.id,
-                        onOpenDocumentTab = {openNewTab(TabConfig.DocumentForm(it))}
+                        onOpenDocumentTab = {openNewTab(TabConfig.DocumentForm(it))},
+                        onOpenProductTab = {openNewTab(TabConfig.ProductForm(it))}
                     )
 
                     is TabConfig.Notification -> notificationComponent

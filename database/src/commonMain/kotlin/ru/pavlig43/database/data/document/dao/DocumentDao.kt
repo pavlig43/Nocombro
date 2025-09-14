@@ -38,7 +38,7 @@ interface DocumentDao {
     suspend fun isNameAllowed(id: Int, name: String):Boolean
 
 
-    @Query("SELECT id,display_name AS name FROM document WHERE id NOT IN (SELECT document_id FROM document_file)")
+    @Query("SELECT id,display_name AS displayName FROM document WHERE id NOT IN (SELECT document_id FROM document_file)")
     fun observeOnDocumentWithoutFiles():Flow<List<NotificationDTO>>
 
 }
