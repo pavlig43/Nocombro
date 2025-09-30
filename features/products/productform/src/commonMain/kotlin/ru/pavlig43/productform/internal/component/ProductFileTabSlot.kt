@@ -9,18 +9,24 @@ import ru.pavlig43.upsertitem.api.data.UpdateCollectionRepository
 internal class ProductFileTabSlot(
     componentContext: ComponentContext,
     productId: Int,
-    updateRepository: UpdateCollectionRepository<ProductFile,ProductFile>
-): UpdateFilesComponent<ProductFile>(
+    updateRepository: UpdateCollectionRepository<ProductFile, ProductFile>
+) : UpdateFilesComponent<ProductFile>(
     componentContext = componentContext,
     id = productId,
     updateRepository = updateRepository,
-    mapper = { toFileData(it)}
+    mapper = { toFileData(it) }
 ), ProductTabSlot
 
-private fun FileUi.toFileData(productId:Int): ProductFile {
+private fun FileUi.toFileData(productId: Int): ProductFile {
     return ProductFile(
         productId = productId,
         path = path,
         id = id
     )
+}
+
+internal class GenerateSpecification(
+    componentContext: ComponentContext,
+) : ComponentContext by componentContext {
+    
 }
