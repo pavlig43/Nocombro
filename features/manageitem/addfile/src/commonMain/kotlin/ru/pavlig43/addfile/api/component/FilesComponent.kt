@@ -45,7 +45,11 @@ class FilesComponent<Files : List<FileData>>(
         }
     }
 
-    //TODO сделать для телефона fileExeption Failure(java.io.FileNotFoundException: content:/com.android.providers.media.documents/document/image%3A1000000034: open failed: ENOENT (No such file or directory))
+    //TODO сделать для телефона fileExeption
+    // Failure(
+    // java.io.FileNotFoundException:
+    // content:/com.android.providers.media.documents/document/image%3A1000000034:
+    // open failed: ENOENT (No such file or directory))
     private suspend fun loadFile(fileUi: FileUi) {
         val innerFile = PlatformFile(FileKit.filesDir, fileUi.platformFile.name)
 

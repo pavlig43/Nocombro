@@ -8,6 +8,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import ru.pavlig43.coreui.ActionIconButton
 
+@Suppress("LongParameterList")
 @Composable
 fun IconButtonToolTip(
     tooltipText: String,

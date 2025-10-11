@@ -32,7 +32,7 @@ import ru.pavlig43.signcommon.social.api.data.SocialItem
 
 @Composable
 fun SocialForm(
-    socialSignComponent: ISocialSignComponent,
+//    socialSignComponent: ISocialSignComponent,
     modifier: Modifier = Modifier
 ) {
     Column(

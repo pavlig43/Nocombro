@@ -22,7 +22,9 @@ import ru.pavlig43.database.data.document.Document
 import ru.pavlig43.database.data.document.DocumentType
 import ru.pavlig43.declaration.api.data.DeclarationUi
 import ru.pavlig43.itemlist.api.component.MBSItemListComponent
-import ru.pavlig43.itemlist.api.data.ItemListRepository
+import ru.pavlig43.itemlist.api.data.DefaultItemFilter
+import ru.pavlig43.itemlist.api.data.DefaultItemListRepository
+import ru.pavlig43.itemlist.api.data.IItemListRepository
 import ru.pavlig43.loadinitdata.api.component.ILoadInitDataComponent
 import ru.pavlig43.loadinitdata.api.component.LoadInitDataComponent
 import ru.pavlig43.upsertitem.api.data.UpdateCollectionRepository
@@ -31,7 +33,7 @@ abstract class DeclarationTabSlot<Out : DeclarationOut, In : DeclarationIn>(
     componentContext: ComponentContext,
     private val id: Int,
     openDocumentTab: (Int) -> Unit,
-    private val documentListRepository: ItemListRepository<Document, DocumentType>,
+    private val documentListRepository: IItemListRepository<Document, DocumentType>,
     private val mapper: DeclarationUi.(id: Int) -> In,
     private val updateRepository: UpdateCollectionRepository<Out, In>,
 ) : ComponentContext by componentContext, FormTabSlot {
@@ -53,12 +55,13 @@ abstract class DeclarationTabSlot<Out : DeclarationOut, In : DeclarationIn>(
             componentContext = context,
             onDismissed = dialogNavigation::dismiss,
             repository = documentListRepository,
-            onCreate = {openDocumentTab(0)},
+            onCreate = { openDocumentTab(0) },
             fullListSelection = listOf(DocumentType.Declaration),
             onItemClick = { id, name ->
                 declarationList.addDeclaration(id, name)
                 dialogNavigation.dismiss()
             },
+            filterFactory = {types,text-> DefaultItemFilter(types,text)},
         )
     }
 

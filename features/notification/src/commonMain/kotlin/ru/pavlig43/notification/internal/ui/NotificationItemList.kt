@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import ru.pavlig43.notification.internal.data.NotificationUi
 
+@Suppress("MagicNumber")
 @Composable
 internal fun NotificationItemList(
     listNotificationUi:List<NotificationUi>,

@@ -21,7 +21,8 @@ import ru.pavlig43.database.data.product.ProductCompositionOut
 import ru.pavlig43.database.data.product.ProductIngredientIn
 import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.itemlist.api.component.MBSItemListComponent
-import ru.pavlig43.itemlist.api.data.ItemListRepository
+import ru.pavlig43.itemlist.api.data.DefaultItemListRepository
+import ru.pavlig43.itemlist.api.data.IItemListRepository
 import ru.pavlig43.loadinitdata.api.component.ILoadInitDataComponent
 import ru.pavlig43.loadinitdata.api.component.LoadInitDataComponent
 import ru.pavlig43.productform.internal.data.CompositionUi
@@ -32,7 +33,7 @@ import ru.pavlig43.upsertitem.api.data.UpdateCollectionRepository
 internal class CompositionTabSlot(
     componentContext: ComponentContext,
     private val productId: Int,
-    private val productListRepository: ItemListRepository<Product, ProductType>,
+    private val productListRepository: IItemListRepository<Product, ProductType>,
     val openProductTab: (Int) -> Unit,
     private val updateCompositionRepository: UpdateCollectionRepository<ProductCompositionOut, ProductCompositionIn>
 ) : ComponentContext by componentContext, ProductTabSlot {

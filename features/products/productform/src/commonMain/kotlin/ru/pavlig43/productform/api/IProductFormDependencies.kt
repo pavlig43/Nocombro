@@ -6,12 +6,13 @@ import ru.pavlig43.database.data.document.Document
 import ru.pavlig43.database.data.document.DocumentType
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductType
-import ru.pavlig43.itemlist.api.data.ItemListRepository
+import ru.pavlig43.itemlist.api.data.DefaultItemListRepository
+import ru.pavlig43.itemlist.api.data.IItemListRepository
 
 interface IProductFormDependencies {
     val db: NocombroDatabase
     val transaction: DataBaseTransaction
-    val documentListRepository: ItemListRepository<Document, DocumentType>
-    val productListRepository: ItemListRepository<Product, ProductType>
+    val documentListRepository: IItemListRepository<Document, DocumentType>
+    val productListRepository: IItemListRepository<Product, ProductType>
 
 }

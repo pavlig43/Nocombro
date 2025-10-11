@@ -39,6 +39,8 @@ import ru.pavlig43.rootnocombro.internal.navigation.tab.TabConfig
 import ru.pavlig43.rootnocombro.internal.navigation.tab.ui.TabContent
 import ru.pavlig43.rootnocombro.internal.topbar.ui.NocombroAppBar
 import ru.pavlig43.signroot.api.ui.RootSignScreen
+import ru.pavlig43.vendor.api.VendorFormComponent
+import ru.pavlig43.vendor.api.ui.VendorFormScreen
 
 @Suppress("LongMethod")
 @Composable
@@ -113,6 +115,8 @@ fun RootNocombroScreen(rootNocombroComponent: IRootNocombroComponent) {
                                             is ProductFormComponent -> ProductFormScreen(slotComponent)
 
                                             is PageNotificationComponent -> NotificationTabs(slotComponent)
+
+                                            is VendorFormComponent -> VendorFormScreen(slotComponent)
 
                                             null -> Box(Modifier.fillMaxSize())
                                             else -> error("$slotComponent SlotComponent not added")

@@ -58,10 +58,7 @@ class PageNotificationComponent(
                     NotificationLevel.Zero -> createLevelComponent(
                         context = context,
                         level = NotificationLevel.Zero,
-                        items = listOf(
-                            NotificationItem.Document,
-                            NotificationItem.Product
-                            )
+                        items = NotificationItem.entries
                     )
 
                     NotificationLevel.One -> createLevelComponent(

@@ -18,7 +18,9 @@ class LoadInitDataComponent<I : Any>(
     private val coroutineScope = componentCoroutineScope()
 
     /**
-     * Первые данные которые загрузились. Нужны, для того чтобы сравнивать первичные данные и те, которые пользователь изменил для записи в бд
+     * Первые данные которые загрузились.
+     * Нужны, для того чтобы сравнивать первичные данные и те,
+     * которые пользователь изменил для записи в бд
      */
     private val _firstData = MutableStateFlow<I?>(null)
     override val firstData = _firstData.asStateFlow()

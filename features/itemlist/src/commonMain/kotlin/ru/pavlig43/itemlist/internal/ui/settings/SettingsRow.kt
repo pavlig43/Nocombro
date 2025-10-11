@@ -24,7 +24,7 @@ import ru.pavlig43.core.data.ItemType
 import ru.pavlig43.coreui.tooltip.IconButtonToolTip
 import ru.pavlig43.itemlist.internal.ui.CREATE_RECORD
 
-
+@Suppress("LongParameterList")
 @Composable
 internal fun SettingsRow(
     onCreate: () -> Unit,

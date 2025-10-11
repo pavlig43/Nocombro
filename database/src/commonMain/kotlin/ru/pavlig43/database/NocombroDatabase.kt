@@ -29,6 +29,10 @@ import ru.pavlig43.database.data.product.dao.ProductDao
 import ru.pavlig43.database.data.product.dao.ProductDeclarationDao
 import ru.pavlig43.database.data.product.dao.ProductFilesDao
 import ru.pavlig43.database.data.product.dao.CompositionDao
+import ru.pavlig43.database.data.vendor.VendorFile
+import ru.pavlig43.database.data.vendor.Vendor
+import ru.pavlig43.database.data.vendor.dao.VendorDao
+import ru.pavlig43.database.data.vendor.dao.VendorFilesDao
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
@@ -36,6 +40,9 @@ import kotlin.time.ExperimentalTime
     entities = [
         Document::class,
         DocumentFile::class,
+
+        Vendor::class,
+        VendorFile::class,
 
         Product::class,
         ProductFile::class,
@@ -52,6 +59,9 @@ import kotlin.time.ExperimentalTime
 abstract class NocombroDatabase : RoomDatabase() {
     abstract val documentDao: DocumentDao
     abstract val documentFilesDao:DocumentFilesDao
+
+    abstract val vendorDao: VendorDao
+    abstract val vendorFilesDao: VendorFilesDao
 
     abstract val productDao: ProductDao
     abstract val productFilesDao: ProductFilesDao
