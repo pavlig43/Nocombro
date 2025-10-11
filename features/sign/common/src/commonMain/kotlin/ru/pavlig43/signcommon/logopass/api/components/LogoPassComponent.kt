@@ -35,6 +35,7 @@ class LogoPassComponent(
     override val login = _login.asStateFlow()
 
     private fun validateLogin(login: String): Boolean {
+        println(login)
         return true
     }
 
@@ -49,6 +50,7 @@ class LogoPassComponent(
     override val password = _password.asStateFlow()
 
     private fun validatePassword(password: String): Boolean {
+        println(password)
         return true
     }
 

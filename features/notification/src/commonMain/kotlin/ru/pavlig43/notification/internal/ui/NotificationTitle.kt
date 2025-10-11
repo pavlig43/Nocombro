@@ -20,6 +20,7 @@ import ru.pavlig43.coreui.tooltip.IconButtonToolTip
 import ru.pavlig43.notification.api.data.NotificationLevel
 import ru.pavlig43.notification.api.ui.NotificationIcon
 
+@Suppress("LongParameterList")
 @Composable
 internal fun NotificationTitle(
     isShowFullList: Boolean,

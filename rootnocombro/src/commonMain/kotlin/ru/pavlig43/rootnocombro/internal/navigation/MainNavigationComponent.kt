@@ -11,6 +11,8 @@ import ru.pavlig43.database.data.document.Document
 import ru.pavlig43.database.data.document.DocumentType
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductType
+import ru.pavlig43.database.data.vendor.Vendor
+import ru.pavlig43.database.data.vendor.VendorType
 import ru.pavlig43.documentform.api.component.DocumentFormComponent
 import ru.pavlig43.itemlist.api.component.ItemListComponent
 import ru.pavlig43.itemlist.api.data.ItemListType
@@ -22,6 +24,7 @@ import ru.pavlig43.rootnocombro.internal.navigation.drawer.component.DrawerCompo
 import ru.pavlig43.rootnocombro.internal.navigation.drawer.component.DrawerDestination
 import ru.pavlig43.rootnocombro.internal.navigation.drawer.component.IDrawerComponent
 import ru.pavlig43.rootnocombro.internal.navigation.tab.TabConfig
+import ru.pavlig43.vendor.api.VendorFormComponent
 
 interface IMainNavigationComponent<TabConfiguration : Any, SlotConfiguration : Any> {
     val drawerComponent: IDrawerComponent
@@ -53,8 +56,9 @@ internal class MainNavigationComponent(
 
     private fun DrawerDestination.toTabConfig(): TabConfig =
         when (this) {
-            DrawerDestination.Documents -> TabConfig.DocumentList()
+            DrawerDestination.DocumentList -> TabConfig.DocumentList()
             DrawerDestination.ProductList -> TabConfig.ProductList()
+            DrawerDestination.VendorList -> TabConfig.VendorList()
         }
 
     override val tabNavigationComponent: ITabNavigationComponent<TabConfig, SlotComponent> =
@@ -102,6 +106,21 @@ internal class MainNavigationComponent(
                     )
 
                     is TabConfig.Notification -> notificationComponent
+                    is TabConfig.VendorForm -> VendorFormComponent(
+                        vendorId = tabConfig.id,
+                        closeTab = onCloseTab,
+                        componentContext = componentContext,
+                        dependencies = scope.get()
+                    )
+                    is TabConfig.VendorList -> ItemListComponent<Vendor,VendorType>(
+                        componentContext = context,
+                        tabTitle = "Поставщики",
+                        onItemClick = { id, _ -> openNewTab(TabConfig.VendorForm(id)) },
+                        onCreate = { openNewTab(TabConfig.VendorForm(0)) },
+                        repository = scope.get(named(ItemListType.Vendor.name)),
+                        fullListSelection = VendorType.entries,
+                        withCheckbox = true
+                    )
                 }
             },
         )

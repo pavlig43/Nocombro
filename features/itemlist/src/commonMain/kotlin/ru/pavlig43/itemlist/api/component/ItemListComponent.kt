@@ -20,17 +20,25 @@ import ru.pavlig43.core.SlotComponent
 import ru.pavlig43.core.componentCoroutineScope
 import ru.pavlig43.core.data.Item
 import ru.pavlig43.core.data.ItemType
-import ru.pavlig43.itemlist.api.data.ItemListRepository
+import ru.pavlig43.itemlist.api.data.DefaultItemFilter
+import ru.pavlig43.itemlist.api.data.IItemListRepository
+import ru.pavlig43.itemlist.api.data.ItemFilter
 import ru.pavlig43.itemlist.api.data.ItemUi
 
-
+@Suppress("LongParameterList")
 class ItemListComponent<I : Item, S : ItemType>(
     componentContext: ComponentContext,
     override val fullListSelection: List<S>,
     tabTitle: String,
     override val onCreate: () -> Unit,
-    private val repository: ItemListRepository<I, S>,
+    private val repository: IItemListRepository<I, S>,
     override val onItemClick: (id: Int, String) -> Unit,
+    private val filterFactory: (types: List<S>, searchText: String) -> ItemFilter<S> = { types, searchText ->
+        DefaultItemFilter(
+            types,
+            searchText
+        )
+    },
     override val withCheckbox: Boolean,
 ) : ComponentContext by componentContext, IItemListComponent, SlotComponent {
     private val coroutineScope = componentCoroutineScope()
@@ -53,8 +61,9 @@ class ItemListComponent<I : Item, S : ItemType>(
             selectedItemTypes,
             _searchField
         ) { types, searchText ->
-            repository.observeItemsByFilter(types, searchText).map { it.toItemListState() }
-        }.flatMapLatest {it }
+            val filter = filterFactory(types, searchText)
+            repository.observeItemsByFilter(filter).map { it.toItemListState() }
+        }.flatMapLatest { it }
             .stateIn(
                 coroutineScope,
                 started = Eagerly,

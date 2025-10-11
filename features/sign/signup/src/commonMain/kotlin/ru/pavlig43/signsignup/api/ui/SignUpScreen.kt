@@ -40,7 +40,7 @@ fun SignUpScreen(
         Spacer(modifier = Modifier.height(48.dp))
 
         SocialForm(
-            signUpComponent.socialSignComponent
+//            signUpComponent.socialSignComponent
         )
 
         Spacer(modifier = Modifier.height(16.dp))

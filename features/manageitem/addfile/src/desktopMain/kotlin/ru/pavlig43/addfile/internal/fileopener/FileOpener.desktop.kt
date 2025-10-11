@@ -3,6 +3,7 @@ package ru.pavlig43.addfile.internal.fileopener
 import java.awt.Desktop
 import java.io.File
 
+@Suppress("MatchingDeclarationName")
 actual class FileOpener {
     actual fun openFile(filePath: String) {
         File(filePath).takeIf { it.exists() }?.let {

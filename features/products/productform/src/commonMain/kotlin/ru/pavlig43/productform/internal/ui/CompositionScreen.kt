@@ -97,7 +97,7 @@ internal fun CompositionScreen(
 
 
 }
-
+@Suppress("LongParameterList")
 @Composable
 private fun CompositionBlock(
     compositionUi: CompositionUi,

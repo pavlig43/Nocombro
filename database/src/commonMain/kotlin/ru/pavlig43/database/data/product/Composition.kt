@@ -52,11 +52,6 @@ data class ProductCompositionOut(
     @Ignore
     override val id: Int = composition.id
 }
-data class CompositionOut(
-    override val id: Int,
-
-
-    ):CollectionObject
 
 
 //////////////////

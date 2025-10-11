@@ -11,11 +11,13 @@ import ru.pavlig43.database.data.document.DocumentType
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.documentform.api.IDocumentFormDependencies
-import ru.pavlig43.itemlist.api.data.ItemListRepository
+import ru.pavlig43.itemlist.api.data.DefaultItemListRepository
+import ru.pavlig43.itemlist.api.data.IItemListRepository
 import ru.pavlig43.itemlist.api.data.ItemListType
 import ru.pavlig43.notification.api.INotificationDependencies
 import ru.pavlig43.productform.api.IProductFormDependencies
 import ru.pavlig43.signroot.api.IRootSignDependencies
+import ru.pavlig43.vendor.api.IVendorFormDependencies
 
 
 private val featureDependenciesModule = module {
@@ -27,8 +29,9 @@ private val featureDependenciesModule = module {
         productListRepository = get(named(ItemListType.Product.name))
     ) }
     factoryOf(::RootSignDependencies) bind IRootSignDependencies::class
+    factoryOf(::VendorFormDependencies) bind IVendorFormDependencies::class
 
-    includes(itemListRepositoryModule)
+    includes(IItemListRepositoryModule)
     factoryOf(::NotificationDependencies) bind INotificationDependencies::class
 
 }
@@ -49,9 +52,13 @@ private class DocumentFormDependencies(
 private class ProductFormDependencies(
     override val db: NocombroDatabase,
     override val transaction: DataBaseTransaction,
-    override val documentListRepository: ItemListRepository<Document, DocumentType>,
-    override val productListRepository: ItemListRepository<Product, ProductType>,
+    override val documentListRepository: IItemListRepository<Document, DocumentType>,
+    override val productListRepository: IItemListRepository<Product, ProductType>,
 ) : IProductFormDependencies
+private class VendorFormDependencies(
+    override val transaction: DataBaseTransaction,
+    override val db: NocombroDatabase
+): IVendorFormDependencies
 
 private class RootSignDependencies : IRootSignDependencies
 

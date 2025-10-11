@@ -7,14 +7,15 @@ import ru.pavlig43.database.data.product.ProductDeclaration
 import ru.pavlig43.database.data.product.ProductDeclarationOutWithDocumentName
 import ru.pavlig43.declaration.api.component.DeclarationTabSlot
 import ru.pavlig43.declaration.api.data.DeclarationUi
-import ru.pavlig43.itemlist.api.data.ItemListRepository
+import ru.pavlig43.itemlist.api.data.DefaultItemListRepository
+import ru.pavlig43.itemlist.api.data.IItemListRepository
 import ru.pavlig43.upsertitem.api.data.UpdateCollectionRepository
 
 class ProductDeclarationTabSlot(
     componentContext: ComponentContext,
     id: Int,
     onOpenDocumentTab: (Int) -> Unit,
-    documentListRepository: ItemListRepository<Document, DocumentType>,
+    documentListRepository: IItemListRepository<Document, DocumentType>,
     updateRepository: UpdateCollectionRepository<ProductDeclarationOutWithDocumentName, ProductDeclaration>,
 ) : DeclarationTabSlot<ProductDeclarationOutWithDocumentName, ProductDeclaration>(
     componentContext = componentContext,
