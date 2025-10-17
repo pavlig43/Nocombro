@@ -10,8 +10,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowDropUp
@@ -24,7 +22,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -33,13 +30,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import ru.pavlig43.core.data.ItemType
+import ru.pavlig43.coreui.itemlist.StringColumnField
 import ru.pavlig43.loadinitdata.api.ui.LoadInitDataScreen
-import ru.pavlig43.manageitem.api.component.IRequireValuesSlotComponent
-import ru.pavlig43.manageitem.api.data.RequireValues
+import ru.pavlig43.manageitem.api.component.DefaultRequireValuesSlotComponent
+import ru.pavlig43.manageitem.api.data.DefaultRequireValues
 import ru.pavlig43.manageitem.internal.ui.COMMENT
 import ru.pavlig43.manageitem.internal.ui.NAME
 import ru.pavlig43.manageitem.internal.ui.OBJECT_TYPE
@@ -48,7 +44,7 @@ import ru.pavlig43.manageitem.internal.ui.OBJECT_TYPE_IS_EMPTY_MESSAGE
 
 @Composable
 fun RequireValuesScreen(
-    component: IRequireValuesSlotComponent,
+    component: DefaultRequireValuesSlotComponent,
     modifier: Modifier = Modifier
 ) {
     val requireValues by component.requireValues.collectAsState()
@@ -74,7 +70,7 @@ fun RequireValuesScreen(
 @Suppress("LongParameterList")
 @Composable
 private fun RequireValuesBody(
-    requireValues: RequireValues,
+    requireValues: DefaultRequireValues,
     onChangeName: (String) -> Unit,
     onChangeComment:(String)->Unit,
     typeVariants: List<ItemType>,
@@ -87,7 +83,7 @@ private fun RequireValuesBody(
             verticalAlignment = Alignment.Top,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            StringField(
+            StringColumnField(
                 value = requireValues.name,
                 onValueChange = onChangeName,
                 headText = NAME
@@ -98,7 +94,7 @@ private fun RequireValuesBody(
                 onSelectType = onSelectType
             )
         }
-        StringField(
+        StringColumnField(
             value = requireValues.comment,
             onValueChange = onChangeComment,
             headText = COMMENT,
@@ -108,34 +104,7 @@ private fun RequireValuesBody(
     }
 }
 
-@Composable
-private fun StringField(
-    value: String,
-    onValueChange: (String) -> Unit,
-    headText:String,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier,
-        verticalArrangement = Arrangement.spacedBy(4.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Text(text = headText)
-        val keyboardController = LocalSoftwareKeyboardController.current
-        TextField(
-            value = value,
-            onValueChange = onValueChange,
-            keyboardOptions = KeyboardOptions(
-                imeAction = ImeAction.Done
-            ),
-            keyboardActions = KeyboardActions(
-                onDone = {
-                    keyboardController?.hide()
-                }
-            )
-        )
-    }
-}
+
 
 
 @OptIn(ExperimentalMaterial3Api::class)

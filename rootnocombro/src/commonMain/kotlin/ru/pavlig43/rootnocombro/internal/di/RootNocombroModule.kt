@@ -10,8 +10,10 @@ import ru.pavlig43.database.data.document.Document
 import ru.pavlig43.database.data.document.DocumentType
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductType
+import ru.pavlig43.database.data.vendor.Vendor
+import ru.pavlig43.database.data.vendor.VendorType
+import ru.pavlig43.declarationform.api.IDeclarationDependencies
 import ru.pavlig43.documentform.api.IDocumentFormDependencies
-import ru.pavlig43.itemlist.api.data.DefaultItemListRepository
 import ru.pavlig43.itemlist.api.data.IItemListRepository
 import ru.pavlig43.itemlist.api.data.ItemListType
 import ru.pavlig43.notification.api.INotificationDependencies
@@ -33,6 +35,11 @@ private val featureDependenciesModule = module {
 
     includes(IItemListRepositoryModule)
     factoryOf(::NotificationDependencies) bind INotificationDependencies::class
+    factory<IDeclarationDependencies> { DeclarationFormDependencies(
+        transaction = get(),
+        db = get(),
+        vendorRepository = get(named(ItemListType.Vendor.name))
+    ) }
 
 }
 internal val rootNocombroModule = listOf(
@@ -59,6 +66,14 @@ private class VendorFormDependencies(
     override val transaction: DataBaseTransaction,
     override val db: NocombroDatabase
 ): IVendorFormDependencies
+
+private class DeclarationFormDependencies(
+    override val transaction: DataBaseTransaction,
+    override val db: NocombroDatabase,
+    override val vendorRepository: IItemListRepository<Vendor, VendorType>
+):IDeclarationDependencies
+
+
 
 private class RootSignDependencies : IRootSignDependencies
 

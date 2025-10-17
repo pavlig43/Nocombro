@@ -5,13 +5,13 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import ru.pavlig43.AppForPreview
+import ru.pavlig43.signcommon.logopass.api.components.FakeLogoPassComponent
+import ru.pavlig43.signcommon.logopass.api.components.ILogoPassComponent
+import ru.pavlig43.signcommon.social.api.components.FakeSocialSignComponent
+import ru.pavlig43.signcommon.social.api.components.ISocialSignComponent
 import ru.pavlig43.signsignin.api.component.ISignInComponent
 import ru.pavlig43.signsignin.api.component.SignInState
 import ru.pavlig43.signsignin.api.ui.SignInScreen
-import ru.pavlig43.signcommon.logopass.api.components.ILogoPassComponent
-import ru.pavlig43.signcommon.logopass.api.components.FakeLogoPassComponent
-import ru.pavlig43.signcommon.social.api.components.FakeSocialSignComponent
-import ru.pavlig43.signcommon.social.api.components.ISocialSignComponent
 
 
 @Suppress("UnusedPrivateMember")

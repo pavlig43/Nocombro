@@ -1,39 +1,38 @@
 package ru.pavlig43.productform.internal.component
 
 import com.arkivanov.decompose.ComponentContext
-import ru.pavlig43.database.data.document.Document
-import ru.pavlig43.database.data.document.DocumentType
 import ru.pavlig43.database.data.product.ProductDeclaration
-import ru.pavlig43.database.data.product.ProductDeclarationOutWithDocumentName
+import ru.pavlig43.database.data.product.ProductDeclarationOutWithNameAndVendor
 import ru.pavlig43.declaration.api.component.DeclarationTabSlot
-import ru.pavlig43.declaration.api.data.DeclarationUi
-import ru.pavlig43.itemlist.api.data.DefaultItemListRepository
-import ru.pavlig43.itemlist.api.data.IItemListRepository
+import ru.pavlig43.declaration.api.data.ProductDeclarationUi
+import ru.pavlig43.declarationlist.internal.data.DeclarationListRepository
 import ru.pavlig43.upsertitem.api.data.UpdateCollectionRepository
 
 class ProductDeclarationTabSlot(
     componentContext: ComponentContext,
-    id: Int,
-    onOpenDocumentTab: (Int) -> Unit,
-    documentListRepository: IItemListRepository<Document, DocumentType>,
-    updateRepository: UpdateCollectionRepository<ProductDeclarationOutWithDocumentName, ProductDeclaration>,
-) : DeclarationTabSlot<ProductDeclarationOutWithDocumentName, ProductDeclaration>(
+    productId: Int,
+    declarationListRepository: DeclarationListRepository,
+    updateRepository: UpdateCollectionRepository<ProductDeclarationOutWithNameAndVendor, ProductDeclaration>,
+    openDeclarationTab: (Int) -> Unit,
+
+    ) : DeclarationTabSlot<ProductDeclarationOutWithNameAndVendor, ProductDeclaration>(
     componentContext = componentContext,
-    id = id,
+    productId = productId,
+    declarationListRepository = declarationListRepository,
     updateRepository = updateRepository,
-    documentListRepository = documentListRepository,
-    openDocumentTab = onOpenDocumentTab,
-    mapper = { toProductDeclaration(it) }
+    openDeclarationTab = openDeclarationTab,
+    mapper = { mapper(productId) },
 ), ProductTabSlot
 
-private fun DeclarationUi.toProductDeclaration(productId: Int): ProductDeclaration {
+private fun ProductDeclarationUi.mapper(productId: Int): ProductDeclaration {
     return ProductDeclaration(
-        parentId = productId,
-        documentId = documentId,
-        isActual = isActual,
+        productId = productId,
+        declarationId = declarationId,
         id = id
     )
 }
+
+
 
 
 

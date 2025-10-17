@@ -7,7 +7,6 @@ import androidx.room.Transaction
 import androidx.room.Update
 import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
 import ru.pavlig43.database.data.common.NotificationDTO
 import ru.pavlig43.database.data.product.ProductComposition
 import ru.pavlig43.database.data.product.ProductCompositionIn

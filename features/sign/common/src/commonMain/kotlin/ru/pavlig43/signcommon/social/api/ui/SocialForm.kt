@@ -21,12 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import nocombro.features.sign.common.generated.resources.Res
-import nocombro.features.sign.common.generated.resources.sign_with
-
 import org.jetbrains.compose.resources.painterResource
-import org.jetbrains.compose.resources.stringResource
-import ru.pavlig43.signcommon.social.api.components.ISocialSignComponent
 import ru.pavlig43.signcommon.social.api.data.SocialItem
 
 

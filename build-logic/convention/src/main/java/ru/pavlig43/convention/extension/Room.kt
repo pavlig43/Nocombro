@@ -5,7 +5,6 @@ import com.google.devtools.ksp.gradle.KspExtension
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.dependencies
-import org.gradle.kotlin.dsl.findByType
 
 internal fun Project.configureRoomKmp(){
     extensions.configure<KspExtension> {

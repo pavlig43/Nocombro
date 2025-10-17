@@ -6,13 +6,29 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import ru.pavlig43.core.DeleteState
 import ru.pavlig43.core.data.ItemType
-import ru.pavlig43.itemlist.api.component.DeleteState
+import ru.pavlig43.coreui.ErrorScreen
+import ru.pavlig43.coreui.LoadingScreen
+import ru.pavlig43.coreui.itemlist.AnyItemListBody
+import ru.pavlig43.coreui.itemlist.Cell
+import ru.pavlig43.coreui.itemlist.IItemUi
+import ru.pavlig43.coreui.itemlist.ItemListBox
 import ru.pavlig43.itemlist.api.component.IItemListComponent
 import ru.pavlig43.itemlist.api.component.ItemListState
 import ru.pavlig43.itemlist.api.data.ItemUi
-import ru.pavlig43.itemlist.internal.ui.ItemListBody
-import ru.pavlig43.itemlist.internal.ui.ItemListBox
+import ru.pavlig43.itemlist.internal.ui.CHECKBOX_WIDTH
+import ru.pavlig43.itemlist.internal.ui.COMMENT
+import ru.pavlig43.itemlist.internal.ui.COMMENT_WIDTH
+import ru.pavlig43.itemlist.internal.ui.CREATED_AT
+import ru.pavlig43.itemlist.internal.ui.CREATED_AT_WIDTH
+import ru.pavlig43.itemlist.internal.ui.ID
+import ru.pavlig43.itemlist.internal.ui.ID_WIDTH
+import ru.pavlig43.itemlist.internal.ui.NAME
+import ru.pavlig43.itemlist.internal.ui.NAME_WIDTH
+import ru.pavlig43.itemlist.internal.ui.TYPE
+import ru.pavlig43.itemlist.internal.ui.TYPE_WIDTH
+import ru.pavlig43.itemlist.internal.ui.settings.SettingsRow
 
 
 @Composable
@@ -35,11 +51,12 @@ fun ItemListScreen(
         deleteItems = component::deleteItems,
         shareItems = component::shareItems,
         deleteState = deleteState,
-        onItemClick = {ind,name ->component.onItemClick(ind,name)},
+        onItemClick = {  component.onItemClick(it) },
         searchText = searchText,
         onSearchChange = component::onSearchChange,
         withCheckbox = component.withCheckbox,
-        modifier = modifier)
+        modifier = modifier
+    )
 }
 
 @Suppress("LongParameterList")
@@ -54,14 +71,14 @@ private fun ItemListScreenState(
     shareItems: (List<Int>) -> Unit,
     fullListSelection: List<ItemType>,
     saveSelection: (List<ItemType>) -> Unit,
-    onItemClick: (Int,String) -> Unit,
-    searchText:String,
-    onSearchChange:(String)->Unit,
+    onItemClick: (IItemUi) -> Unit,
+    searchText: String,
+    onSearchChange: (String) -> Unit,
     withCheckbox: Boolean,
     modifier: Modifier = Modifier,
 ) {
     when (state) {
-        is ItemListState.Error -> ErrorScreen(state.message,modifier)
+        is ItemListState.Error -> ErrorScreen(state.message, modifier)
         is ItemListState.Initial -> LoadingScreen(modifier)
         is ItemListState.Loading -> LoadingScreen(modifier)
         is ItemListState.Success -> ItemList(
@@ -95,9 +112,9 @@ private fun ItemList(
     shareItems: (List<Int>) -> Unit,
     fullListSelection: List<ItemType>,
     saveSelection: (List<ItemType>) -> Unit,
-    onItemClick:(Int,String)->Unit,
-    searchText:String,
-    onSearchChange:(String)->Unit,
+    onItemClick: (IItemUi) -> Unit,
+    searchText: String,
+    onSearchChange: (String) -> Unit,
     withCheckbox: Boolean,
     modifier: Modifier = Modifier
 ) {
@@ -110,27 +127,49 @@ private fun ItemList(
         horizontalScrollState = horizontalScrollState,
         modifier = modifier
     ) {
-        ItemListBody(
+        AnyItemListBody(
             itemList = itemList,
-            selectedItemIds =selectedItemIds,
+            withCheckbox = withCheckbox,
+            selectedItemIds = selectedItemIds,
             actionInSelectedItemIds = actionInSelectedItemIds,
-            horizontalScrollState = horizontalScrollState,
-            verticalScrollState = verticalScrollState,
-            onCreate = onCreate,
-            fullListSelection = fullListSelection,
-            saveSelection = saveSelection,
+            deleteState = deleteState,
             deleteItems = deleteItems,
             shareItems = shareItems,
-            deleteState = deleteState,
+            horizontalScrollState = horizontalScrollState,
+            verticalScrollState = verticalScrollState,
             onClickItem = onItemClick,
             searchText = searchText,
-            onSearchChange = onSearchChange,
-            withCheckbox = withCheckbox
+            settingRow = {
+                SettingsRow(
+                    onCreate = onCreate,
+                    fullListSelection = fullListSelection,
+                    saveSelection = saveSelection,
+                    searchText = searchText,
+                    onSearchChange = onSearchChange,
+                )
+            },
+            baseCells = baseCells,
+            checkBoxWidth = CHECKBOX_WIDTH,
+            mainCellFactory = {(it as ItemUi).toCell()},
         )
+
     }
 
-
 }
+private val baseCells = listOf(
+    Cell(ID, ID_WIDTH),
+    Cell(NAME, NAME_WIDTH),
+    Cell(TYPE, TYPE_WIDTH),
+    Cell(CREATED_AT, CREATED_AT_WIDTH),
+    Cell(COMMENT, COMMENT_WIDTH),
+)
+private fun ItemUi.toCell(): List<Cell> = listOf(
+    Cell(id.toString(), ID_WIDTH),
+    Cell(displayName, NAME_WIDTH),
+    Cell(type.displayName, TYPE_WIDTH),
+    Cell(createdAt, CREATED_AT_WIDTH),
+    Cell(comment, COMMENT_WIDTH)
+)
 
 
 

@@ -64,13 +64,13 @@ class PageNotificationComponent(
                     NotificationLevel.One -> createLevelComponent(
                         context = context,
                         level = NotificationLevel.One,
-                        items = listOf()
+                        items = listOf(NotificationItem.Declaration)
                     )
 
                     NotificationLevel.Two -> createLevelComponent(
                         context = context,
                         level = NotificationLevel.Two,
-                        items = listOf()
+                        items = listOf(NotificationItem.Declaration)
                     )
 
                 }

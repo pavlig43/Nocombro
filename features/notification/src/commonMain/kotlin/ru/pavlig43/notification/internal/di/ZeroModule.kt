@@ -22,6 +22,11 @@ internal val zeroModule = module {
             get()
         )
     }
+    single<INotificationRepository>(zero(NotificationItem.Declaration)) {
+        DeclarationZeroRepository(
+            get()
+        )
+    }
 
 }
 
@@ -43,14 +48,58 @@ private class DocumentNotificationRepository(
         }
 }
 
+private class DeclarationZeroRepository(
+    db: NocombroDatabase
+) : INotificationRepository {
+
+    private val declarationWithoutDocument =
+        db.declarationDao.observeOnDeclarationInWithoutFiles().map { lst ->
+            lst.map { notificationDTO ->
+                NotificationUi(
+                    id = notificationDTO.id,
+                    text = "В декларации ${notificationDTO.displayName} нет файлов"
+                )
+            }
+        }
+    private val getOnExpiredDeclaration =
+        db.declarationDao.observeOnExpiredDeclaration(0).map { lst ->
+            lst.map { notificationDTO ->
+                NotificationUi(
+                    id = notificationDTO.id,
+                    text = "Декларации ${notificationDTO.displayName} просрочена"
+                )
+            }
+        }
+
+
+    override val notificationFlow: Flow<List<NotificationUi>> =
+        combine(
+            declarationWithoutDocument,
+            getOnExpiredDeclaration
+        ) { arrays ->
+            arrays.flatMap { it }
+        }
+
+}
+
 private class ProductNotificationRepository(
     db: NocombroDatabase
 ) : INotificationRepository {
 
+    private val getProductWithExpiredDeclaration =
+        db.productDeclarationDao.observeOnProductWithExpiredDeclaration().map { lst ->
+            lst.map { notificationDTO ->
+                NotificationUi(
+                    id = notificationDTO.id,
+                    text = "В продукте ${notificationDTO.displayName} просрочена декларация"
+                )
+            }
+        }
+
     private val ingredientsNotEquals1000Gram =
         db.compositionDao.observeOnProductWhereIngredientsNotEquals1000gram().map { lst ->
             lst.map { notificationDTO ->
-                val (product,composition) = notificationDTO.displayName.split(" @ ")
+                val (product, composition) = notificationDTO.displayName.split(" @ ")
                 NotificationUi(
                     id = notificationDTO.id,
                     text = "В продукте $product в составе $composition сумма ингредиентов не равна 1 кг "
@@ -66,22 +115,13 @@ private class ProductNotificationRepository(
                 )
             }
         }
-    private val productWithoutActualDeclaration =
-        db.productDao.observeOnProductWithoutActualDeclaration().map { lst ->
-            lst.map { notificationDTO ->
-                NotificationUi(
-                    id = notificationDTO.id,
-                    text = "В продукте ${notificationDTO.displayName} нет актуальной декларации"
-                )
-            }
-        }
 
 
     override val notificationFlow: Flow<List<NotificationUi>> =
         combine(
             ingredientsNotEquals1000Gram,
-            productWithoutActualDeclaration,
-            productWithoutComposition
+            productWithoutComposition,
+            getProductWithExpiredDeclaration
         ) { arrays ->
             arrays.flatMap { it }
         }

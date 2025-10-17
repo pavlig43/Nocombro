@@ -2,7 +2,9 @@ package ru.pavlig43.itemlist.api.component
 
 
 import kotlinx.coroutines.flow.StateFlow
+import ru.pavlig43.core.DeleteState
 import ru.pavlig43.core.data.ItemType
+import ru.pavlig43.coreui.itemlist.IItemUi
 import ru.pavlig43.itemlist.api.data.ItemUi
 
 interface IItemListComponent {
@@ -15,7 +17,7 @@ interface IItemListComponent {
     fun deleteItems(ids: List<Int>)
     fun shareItems(ids: List<Int>)
     fun actionInSelectedItemIds(checked: Boolean, id: Int)
-    val onItemClick:(id:Int,name:String) -> Unit
+    val onItemClick:(IItemUi) -> Unit
     val searchField:StateFlow<String>
     fun onSearchChange(value:String)
 
@@ -31,9 +33,4 @@ sealed interface ItemListState {
     class Success(val data: List<ItemUi>) : ItemListState
     class Error(val message: String) : ItemListState
 }
-sealed interface DeleteState{
-    class Initial : DeleteState
-    class Loading : DeleteState
-    class Success(val message: String) : DeleteState
-    class Error(val message: String) : DeleteState
-}
+

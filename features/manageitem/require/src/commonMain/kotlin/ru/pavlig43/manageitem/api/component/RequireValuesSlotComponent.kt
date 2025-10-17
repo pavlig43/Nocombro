@@ -11,14 +11,13 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import ru.pavlig43.core.RequestResult
-import ru.pavlig43.core.UTC
 import ru.pavlig43.core.componentCoroutineScope
 import ru.pavlig43.core.data.Item
 import ru.pavlig43.core.data.ItemType
 import ru.pavlig43.core.mapTo
 import ru.pavlig43.loadinitdata.api.component.ILoadInitDataComponent
 import ru.pavlig43.loadinitdata.api.component.LoadInitDataComponent
-import ru.pavlig43.manageitem.api.data.RequireValues
+import ru.pavlig43.manageitem.api.data.DefaultRequireValues
 
 class RequireValuesSlotComponent<I : Item, S : ItemType>(
     componentContext: ComponentContext,
@@ -28,10 +27,10 @@ class RequireValuesSlotComponent<I : Item, S : ItemType>(
      */
     private val onChangeValueForMainTab: (String) -> Unit,
     private val getInitData: (suspend () -> RequestResult<I>)?
-) : ComponentContext by componentContext, IRequireValuesSlotComponent {
+) : ComponentContext by componentContext, DefaultRequireValuesSlotComponent {
 
     private val coroutineScope = componentCoroutineScope()
-    private val _requiredValues = MutableStateFlow(RequireValues())
+    private val _requiredValues = MutableStateFlow(DefaultRequireValues())
 
     override val requireValues = _requiredValues.asStateFlow()
 
@@ -43,12 +42,12 @@ class RequireValuesSlotComponent<I : Item, S : ItemType>(
         }.launchIn(coroutineScope)
     }
 
-    override val initComponent: ILoadInitDataComponent<RequireValues> = LoadInitDataComponent(
+    override val initComponent: ILoadInitDataComponent<DefaultRequireValues> = LoadInitDataComponent(
         componentContext = childContext("initComponent"),
         getInitData = {
             getInitData?.invoke()?.mapTo { it.toRequireValues() }
                 ?: RequestResult.Success(
-                    RequireValues()
+                    DefaultRequireValues()
                 )
         },
         onSuccessGetInitData = { requireValues ->
@@ -75,12 +74,12 @@ class RequireValuesSlotComponent<I : Item, S : ItemType>(
 
     override val isValidAllValue: Flow<Boolean> = _requiredValues.map { it.type != null }
 
-    private fun Item.toRequireValues(): RequireValues {
-        return RequireValues(
+    private fun Item.toRequireValues(): DefaultRequireValues {
+        return DefaultRequireValues(
             id = id,
             name = displayName,
             type = type,
-            createdAt = UTC(createdAt),
+            createdAt = createdAt,
             comment = comment
         )
     }

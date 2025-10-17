@@ -18,7 +18,8 @@ interface IDrawerComponent {
 enum class DrawerDestination(val title: String) {
     DocumentList("Документы"),
     ProductList("Продукты"),
-    VendorList("Поставщики")
+    VendorList("Поставщики"),
+    DeclarationList("Декларации")
 
 }
 

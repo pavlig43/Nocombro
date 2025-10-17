@@ -4,6 +4,7 @@ import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
 import ru.pavlig43.core.data.Item
 import ru.pavlig43.core.data.ItemType
+import ru.pavlig43.coreui.itemlist.IItemUi
 import ru.pavlig43.itemlist.api.data.DefaultItemFilter
 import ru.pavlig43.itemlist.api.data.IItemListRepository
 import ru.pavlig43.itemlist.api.data.ItemFilter
@@ -11,7 +12,7 @@ import ru.pavlig43.itemlist.api.data.ItemFilter
 class MBSItemListComponent<I: Item,S: ItemType>(
     private val componentContext: ComponentContext,
     fullListSelection: List<S>,
-    onItemClick: (Int,String) -> Unit,
+    onItemClick: (IItemUi) -> Unit,
     repository: IItemListRepository<I, S>,
     onCreate: () -> Unit,
     filterFactory: (types: List<S>, searchText: String) -> ItemFilter<S> = { types, text -> DefaultItemFilter<S>(types,text) },

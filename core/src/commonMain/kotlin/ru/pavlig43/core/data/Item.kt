@@ -1,12 +1,13 @@
 package ru.pavlig43.core.data
 
-import ru.pavlig43.core.UTC
-
-interface Item {
-    val id:Int
-    val displayName:String
+interface Item:GenericItem {
+    override val id:Int
+    override val displayName:String
     val type: ItemType
     val createdAt:Long
     val comment:String
-
+}
+interface GenericItem{
+    val id:Int
+    val displayName:String
 }

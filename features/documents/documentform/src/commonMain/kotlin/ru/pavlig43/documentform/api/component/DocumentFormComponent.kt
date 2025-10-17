@@ -22,7 +22,7 @@ import ru.pavlig43.documentform.internal.component.tabs.DocumentFormTabInnerTabs
 import ru.pavlig43.documentform.internal.di.createDocumentFormModule
 import ru.pavlig43.documentform.internal.toDocument
 import ru.pavlig43.manageitem.api.component.CreateItemComponent
-import ru.pavlig43.manageitem.api.data.RequireValues
+import ru.pavlig43.manageitem.api.data.DefaultRequireValues
 
 
 class DocumentFormComponent(
@@ -62,7 +62,7 @@ class DocumentFormComponent(
                 CreateItemComponent(
                     componentContext = componentContext,
                     typeVariantList = DocumentType.entries,
-                    mapper = RequireValues::toDocument,
+                    mapper = DefaultRequireValues::toDocument,
                     createItemRepository = scope.get(),
                     onSuccessCreate = {stackNavigation.replaceAll(Config.Update(it))},
                     onChangeValueForMainTab = {onChangeValueForMainTab("* $it")}
@@ -71,7 +71,7 @@ class DocumentFormComponent(
 
             is Config.Update -> Child.Update(
                 DocumentFormTabInnerTabsComponent(
-                    componentContext = childContext("form"),
+                    componentContext = childContext("document_form"),
                     scope = scope,
                     documentId = config.id,
                     closeFormScreen = closeTab,

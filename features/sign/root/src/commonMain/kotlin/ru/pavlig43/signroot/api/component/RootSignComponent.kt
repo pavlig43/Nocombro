@@ -8,11 +8,11 @@ import com.arkivanov.decompose.router.stack.pushToFront
 import com.arkivanov.decompose.value.Value
 import com.arkivanov.essenty.instancekeeper.getOrCreate
 import kotlinx.serialization.Serializable
-import ru.pavlig43.signsignin.api.component.SignInComponent
-import ru.pavlig43.signsignup.api.component.SignUpComponent
 import ru.pavlig43.corekoin.ComponentKoinContext
 import ru.pavlig43.signroot.api.IRootSignDependencies
 import ru.pavlig43.signroot.internal.di.createRootSignModule
+import ru.pavlig43.signsignin.api.component.SignInComponent
+import ru.pavlig43.signsignup.api.component.SignUpComponent
 
 
 class RootSignComponent(

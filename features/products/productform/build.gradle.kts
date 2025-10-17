@@ -15,7 +15,8 @@ kotlin{
         implementation(projects.features.manageitem.loadinitdata)
         implementation(projects.features.manageitem.upsertitem)
         implementation(projects.features.manageitem.form)
-        implementation(projects.features.manageitem.declaration)
+        implementation(projects.features.declaration.declarationtabslot)
+        implementation(projects.features.declaration.declarationlist)
         implementation(projects.features.itemlist)
     }
 }

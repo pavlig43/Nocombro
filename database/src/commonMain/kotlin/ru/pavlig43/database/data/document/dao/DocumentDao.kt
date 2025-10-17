@@ -8,8 +8,8 @@ import androidx.room.RawQuery
 import androidx.room.RoomRawQuery
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
-import ru.pavlig43.database.data.document.Document
 import ru.pavlig43.database.data.common.NotificationDTO
+import ru.pavlig43.database.data.document.Document
 
 
 @Dao
