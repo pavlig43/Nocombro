@@ -7,8 +7,9 @@ import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductCompositionIn
 import ru.pavlig43.database.data.product.ProductCompositionOut
 import ru.pavlig43.database.data.product.ProductDeclaration
-import ru.pavlig43.database.data.product.ProductDeclarationOutWithDocumentName
+import ru.pavlig43.database.data.product.ProductDeclarationOutWithNameAndVendor
 import ru.pavlig43.database.data.product.ProductFile
+import ru.pavlig43.declarationlist.internal.data.DeclarationListRepository
 import ru.pavlig43.form.api.data.IUpdateRepository
 import ru.pavlig43.form.api.data.UpdateItemRepository
 import ru.pavlig43.manageitem.api.data.CreateItemRepository
@@ -31,13 +32,15 @@ internal val productFormModule = module {
         )
     ) { getFilesRepository(get()) }
 
-    single<UpdateCollectionRepository<ProductDeclarationOutWithDocumentName, ProductDeclaration>>(
+    single<UpdateCollectionRepository<ProductDeclarationOutWithNameAndVendor, ProductDeclaration>>(
         named(UpdateCollectionRepositoryType.Declaration.name)
-    ) { getDeclarationRepository(get()) }
+    ) { getUpdateDeclarationRepository(get()) }
 
     single<UpdateCollectionRepository<ProductCompositionOut, ProductCompositionIn>>(
         named(UpdateCollectionRepositoryType.Composition.name)
     ) { getUpdateCompositionRepository(get()) }
+
+    single<DeclarationListRepository> { getDeclarationListRepository(get()) }
 }
 
 
@@ -86,15 +89,22 @@ private fun getFilesRepository(
     )
 }
 
-private fun getDeclarationRepository(
+private fun getDeclarationListRepository(db: NocombroDatabase): DeclarationListRepository {
+    val dao = db.declarationDao
+    return DeclarationListRepository(
+        deleteByIds = dao::deleteDeclarationsByIds,
+        observeOnItems = dao::observeOnItems
+    )
+}
+private fun getUpdateDeclarationRepository(
     db: NocombroDatabase
-): UpdateCollectionRepository<ProductDeclarationOutWithDocumentName, ProductDeclaration> {
-    val declarationDao = db.productDeclarationDao
+):UpdateCollectionRepository<ProductDeclarationOutWithNameAndVendor, ProductDeclaration>{
+    val dao =db.productDeclarationDao
     return UpdateCollectionRepository(
-        tag = "Product DeclarationRepository",
-        loadCollection = declarationDao::getProductDeclarationWithDocumentName,
-        deleteCollection = declarationDao::deleteDeclarations,
-        upsertCollection = declarationDao::upsertProductDeclarations
+        tag = "Update Collection Respository",
+        loadCollection = dao::getProductDeclarationWithDocumentName,
+        deleteCollection = dao::deleteDeclarations,
+        upsertCollection = dao::upsertProductDeclarations
     )
 }
 

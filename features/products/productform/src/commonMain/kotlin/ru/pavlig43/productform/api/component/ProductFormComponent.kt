@@ -18,7 +18,7 @@ import ru.pavlig43.corekoin.ComponentKoinContext
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.manageitem.api.component.CreateItemComponent
-import ru.pavlig43.manageitem.api.data.RequireValues
+import ru.pavlig43.manageitem.api.data.DefaultRequireValues
 import ru.pavlig43.productform.api.IProductFormDependencies
 import ru.pavlig43.productform.internal.component.ProductFormTabInnerTabsComponent
 import ru.pavlig43.productform.internal.di.createProductFormModule
@@ -27,8 +27,8 @@ import ru.pavlig43.productform.internal.toProduct
 class ProductFormComponent(
     productId: Int,
     val closeTab: () -> Unit,
-    private val onOpenDocumentTab:(Int)->Unit,
-    private val onOpenProductTab:(Int)->Unit,
+    private val onOpenProductTab: (Int) -> Unit,
+    private val onOpenDeclarationTab: (Int) -> Unit,
     componentContext: ComponentContext,
     dependencies: IProductFormDependencies,
 ) : ComponentContext by componentContext, SlotComponent {
@@ -63,7 +63,7 @@ class ProductFormComponent(
                 CreateItemComponent(
                     componentContext = componentContext,
                     typeVariantList = ProductType.entries,
-                    mapper = RequireValues::toProduct,
+                    mapper = DefaultRequireValues::toProduct,
                     createItemRepository = scope.get(),
                     onSuccessCreate = {stackNavigation.replaceAll(Config.Update(it))},
                     onChangeValueForMainTab = {onChangeValueForMainTab("* $it")}
@@ -72,11 +72,11 @@ class ProductFormComponent(
 
             is Config.Update -> Child.Update(
                 ProductFormTabInnerTabsComponent(
-                    componentContext = childContext("form"),
+                    componentContext = childContext("product_form"),
                     scope = scope,
                     productId = config.id,
                     closeFormScreen = closeTab,
-                    onOpenDocumentTab = onOpenDocumentTab,
+                    onOpenDeclarationTab = onOpenDeclarationTab,
                     onOpenProductTab = onOpenProductTab,
                     onChangeValueForMainTab = {onChangeValueForMainTab(it)}
                 )

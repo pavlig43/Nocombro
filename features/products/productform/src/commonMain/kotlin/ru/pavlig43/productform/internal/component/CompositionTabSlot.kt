@@ -21,7 +21,6 @@ import ru.pavlig43.database.data.product.ProductCompositionOut
 import ru.pavlig43.database.data.product.ProductIngredientIn
 import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.itemlist.api.component.MBSItemListComponent
-import ru.pavlig43.itemlist.api.data.DefaultItemListRepository
 import ru.pavlig43.itemlist.api.data.IItemListRepository
 import ru.pavlig43.loadinitdata.api.component.ILoadInitDataComponent
 import ru.pavlig43.loadinitdata.api.component.LoadInitDataComponent
@@ -162,8 +161,8 @@ internal class CompositionTabSlot(
                 repository = productListRepository,
                 onCreate = { openProductTab(0) },
                 fullListSelection = ProductType.entries,
-                onItemClick = { id, name ->
-                    addIngredient(config.compositionId, id, name)
+                onItemClick = {
+                    addIngredient(config.compositionId, it.id, it.displayName)
                     dialogNavigation.dismiss()
                 },
             )

@@ -1,5 +1,6 @@
 package ru.pavlig43.rootnocombro.api.ui
 
+import DeclarationListScreen
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
@@ -24,6 +25,9 @@ import kotlinx.coroutines.launch
 import ru.pavlig43.core.SlotComponent
 import ru.pavlig43.core.tabs.ITabNavigationComponent
 import ru.pavlig43.coreui.tab.TabNavigationContent
+import ru.pavlig43.declarationform.api.DeclarationFormComponent
+import ru.pavlig43.declarationform.api.DeclarationFormScreen
+import ru.pavlig43.declarationlist.api.component.DeclarationListComponent
 import ru.pavlig43.documentform.api.component.DocumentFormComponent
 import ru.pavlig43.documentform.api.ui.DocumentFormScreen
 import ru.pavlig43.itemlist.api.component.ItemListComponent
@@ -110,6 +114,8 @@ fun RootNocombroScreen(rootNocombroComponent: IRootNocombroComponent) {
                                         when (slotComponent) {
                                             is ItemListComponent<*,*> -> ItemListScreen(slotComponent)
 
+                                            is DeclarationListComponent -> DeclarationListScreen(slotComponent)
+
                                             is DocumentFormComponent -> DocumentFormScreen(slotComponent)
 
                                             is ProductFormComponent -> ProductFormScreen(slotComponent)
@@ -117,6 +123,8 @@ fun RootNocombroScreen(rootNocombroComponent: IRootNocombroComponent) {
                                             is PageNotificationComponent -> NotificationTabs(slotComponent)
 
                                             is VendorFormComponent -> VendorFormScreen(slotComponent)
+
+                                            is DeclarationFormComponent -> DeclarationFormScreen(slotComponent)
 
                                             null -> Box(Modifier.fillMaxSize())
                                             else -> error("$slotComponent SlotComponent not added")

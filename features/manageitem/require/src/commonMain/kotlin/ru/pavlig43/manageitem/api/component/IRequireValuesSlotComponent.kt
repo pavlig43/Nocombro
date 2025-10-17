@@ -4,11 +4,11 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import ru.pavlig43.core.data.ItemType
 import ru.pavlig43.loadinitdata.api.component.ILoadInitDataComponent
-import ru.pavlig43.manageitem.api.data.RequireValues
+import ru.pavlig43.manageitem.api.data.DefaultRequireValues
 
-interface IRequireValuesSlotComponent {
-    val initComponent: ILoadInitDataComponent<RequireValues>
-    val requireValues: StateFlow<RequireValues>
+interface DefaultRequireValuesSlotComponent {
+    val initComponent: ILoadInitDataComponent<DefaultRequireValues>
+    val requireValues: StateFlow<DefaultRequireValues>
     fun onNameChange(name: String)
     val typeVariants: StateFlow<List<ItemType>>
     fun onSelectType(type: ItemType)

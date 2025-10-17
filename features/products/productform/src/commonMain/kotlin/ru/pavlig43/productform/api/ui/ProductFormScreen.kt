@@ -13,7 +13,7 @@ import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import ru.pavlig43.addfile.api.ui.FilesScreen
-import ru.pavlig43.declaration.api.ui.DeclarationScreen
+import ru.pavlig43.declaration.api.ui.ProductDeclarationScreen
 import ru.pavlig43.form.api.ui.ItemTabsUi
 import ru.pavlig43.manageitem.api.ui.CreateScreen
 import ru.pavlig43.manageitem.api.ui.RequireValuesScreen
@@ -65,7 +65,7 @@ private fun ProductSlotScreen(productSlot: ProductTabSlot?) {
 
         is ProductFileTabSlot -> FilesScreen(productSlot.fileComponent)
 
-        is ProductDeclarationTabSlot -> DeclarationScreen(productSlot)
+        is ProductDeclarationTabSlot -> ProductDeclarationScreen(productSlot)
 
         is CompositionTabSlot -> CompositionScreen(productSlot)
 

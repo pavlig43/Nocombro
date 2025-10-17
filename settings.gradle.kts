@@ -56,7 +56,6 @@ include(
     ":features:manageitem:addfile",
     ":features:manageitem:loadinitdata",
     ":features:manageitem:upsertitem",
-    ":features:manageitem:declaration"
     )
 
 include(
@@ -81,3 +80,9 @@ include(
 
 
 include(":features:notification")
+include(
+    ":features:declaration:declarationlist",
+    ":features:declaration:declarationform",
+    ":features:declaration:declarationtabslot",
+
+    )

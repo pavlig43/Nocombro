@@ -25,7 +25,7 @@ import ru.pavlig43.upsertitem.api.component.UpdateComponent
 internal class ProductFormTabInnerTabsComponent(
     componentContext: ComponentContext,
     closeFormScreen:()->Unit,
-    onOpenDocumentTab:(Int)->Unit,
+    onOpenDeclarationTab:(Int)->Unit,
     onOpenProductTab:(Int)->Unit,
     scope: Scope,
     productId: Int,
@@ -66,11 +66,11 @@ internal class ProductFormTabInnerTabsComponent(
                     )
 
                     ProductTab.Declaration -> ProductDeclarationTabSlot(
-                        componentContext = componentContext,
-                        id = productId,
+                        componentContext = context,
+                        productId = productId,
+                        declarationListRepository = scope.get(),
                         updateRepository = scope.get(named(UpdateCollectionRepositoryType.Declaration.name)),
-                        onOpenDocumentTab = onOpenDocumentTab,
-                        documentListRepository = scope.get(named(ItemListType.Document.name))
+                        openDeclarationTab = onOpenDeclarationTab
                     )
 
                     ProductTab.Ingredients -> CompositionTabSlot(

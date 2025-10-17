@@ -8,9 +8,7 @@ import com.arkivanov.decompose.DefaultComponentContext
 import com.arkivanov.decompose.extensions.compose.lifecycle.LifecycleController
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
 import io.github.vinceglb.filekit.FileKit
-import org.koin.core.context.GlobalContext
 import org.koin.java.KoinJavaComponent.getKoin
-import ru.pavlig43.datastore.SettingsRepository
 import ru.pavlig43.rootnocombro.api.IRootDependencies
 import ru.pavlig43.rootnocombro.api.component.RootNocombroComponent
 

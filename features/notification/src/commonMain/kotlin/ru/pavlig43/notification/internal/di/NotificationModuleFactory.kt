@@ -14,14 +14,10 @@ private fun baseModule(dependencies: INotificationDependencies) = module {
 internal fun createNotificationModule(dependencies: INotificationDependencies) = listOf(
     baseModule(dependencies),
     zeroModule,
+    oneModule,
+    twoModule
 )
 internal fun NotificationLevel.with(unit: NotificationItem): Qualifier {
     return named("${this.name}_${unit.name}")
 }
 
-internal fun one(unit: NotificationItem): Qualifier {
-    return NotificationLevel.One.with(unit)
-}
-internal fun two(unit: NotificationItem): Qualifier {
-    return NotificationLevel.Two.with(unit)
-}

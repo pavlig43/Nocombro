@@ -1,9 +1,5 @@
 package ru.pavlig43.convention.extension
 
-import org.gradle.api.Project
-import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
-import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
-
 
 //@OptIn(ExperimentalWasmDsl::class)
 //fun Project.wasmTarget() {

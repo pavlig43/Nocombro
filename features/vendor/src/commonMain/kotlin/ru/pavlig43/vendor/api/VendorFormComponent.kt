@@ -19,7 +19,7 @@ import ru.pavlig43.database.data.vendor.Vendor
 import ru.pavlig43.database.data.vendor.VendorType
 
 import ru.pavlig43.manageitem.api.component.CreateItemComponent
-import ru.pavlig43.manageitem.api.data.RequireValues
+import ru.pavlig43.manageitem.api.data.DefaultRequireValues
 import ru.pavlig43.vendor.internal.component.VendorFormTabInnerTabsComponent
 import ru.pavlig43.vendor.internal.di.createVendorFormModule
 import ru.pavlig43.vendor.internal.toVendor
@@ -61,7 +61,7 @@ class VendorFormComponent(
                 CreateItemComponent(
                     componentContext = componentContext,
                     typeVariantList = VendorType.entries,
-                    mapper = RequireValues::toVendor,
+                    mapper = DefaultRequireValues::toVendor,
                     createItemRepository = scope.get(),
                     onSuccessCreate = {stackNavigation.replaceAll(Config.Update(it))},
                     onChangeValueForMainTab = {onChangeValueForMainTab("* $it")}
@@ -70,7 +70,7 @@ class VendorFormComponent(
 
             is Config.Update -> Child.Update(
                 VendorFormTabInnerTabsComponent(
-                    componentContext = childContext("form"),
+                    componentContext = childContext("vendor_form"),
                     closeFormScreen = closeTab,
                     scope = scope,
                     vendorId = config.id,

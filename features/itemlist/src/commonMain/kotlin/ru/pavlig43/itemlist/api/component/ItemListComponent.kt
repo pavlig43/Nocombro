@@ -4,7 +4,6 @@ package ru.pavlig43.itemlist.api.component
 import androidx.compose.runtime.mutableStateListOf
 import com.arkivanov.decompose.ComponentContext
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted.Companion.Eagerly
 import kotlinx.coroutines.flow.StateFlow
@@ -15,11 +14,13 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import ru.pavlig43.core.DeleteState
 import ru.pavlig43.core.RequestResult
 import ru.pavlig43.core.SlotComponent
 import ru.pavlig43.core.componentCoroutineScope
 import ru.pavlig43.core.data.Item
 import ru.pavlig43.core.data.ItemType
+import ru.pavlig43.coreui.itemlist.IItemUi
 import ru.pavlig43.itemlist.api.data.DefaultItemFilter
 import ru.pavlig43.itemlist.api.data.IItemListRepository
 import ru.pavlig43.itemlist.api.data.ItemFilter
@@ -32,7 +33,7 @@ class ItemListComponent<I : Item, S : ItemType>(
     tabTitle: String,
     override val onCreate: () -> Unit,
     private val repository: IItemListRepository<I, S>,
-    override val onItemClick: (id: Int, String) -> Unit,
+    override val onItemClick: (IItemUi) -> Unit,
     private val filterFactory: (types: List<S>, searchText: String) -> ItemFilter<S> = { types, searchText ->
         DefaultItemFilter(
             types,

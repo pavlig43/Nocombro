@@ -2,7 +2,7 @@ package ru.pavlig43.form.api.data
 
 import ru.pavlig43.core.RequestResult
 import ru.pavlig43.core.data.ChangeSet
-import ru.pavlig43.core.data.Item
+import ru.pavlig43.core.data.GenericItem
 import ru.pavlig43.core.data.dbSafeCall
 
 interface IUpdateRepository<I : Any> {
@@ -11,7 +11,7 @@ interface IUpdateRepository<I : Any> {
 }
 
 
-class UpdateItemRepository<I : Item>(
+class UpdateItemRepository<I : GenericItem>(
     private val tag: String,
     private val loadItem: suspend (Int) -> I,
     private val updateItem: suspend (I) -> Unit,

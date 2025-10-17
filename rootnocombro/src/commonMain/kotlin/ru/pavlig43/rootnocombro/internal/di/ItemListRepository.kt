@@ -12,8 +12,9 @@ import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.database.data.vendor.VENDOR_TABLE_NAME
 import ru.pavlig43.database.data.vendor.Vendor
 import ru.pavlig43.database.data.vendor.VendorType
-import ru.pavlig43.itemlist.api.data.IItemListRepository
+import ru.pavlig43.declarationlist.internal.data.DeclarationListRepository
 import ru.pavlig43.itemlist.api.data.DefaultItemListRepository
+import ru.pavlig43.itemlist.api.data.IItemListRepository
 import ru.pavlig43.itemlist.api.data.ItemListType
 
 internal val IItemListRepositoryModule = module {
@@ -32,6 +33,8 @@ internal val IItemListRepositoryModule = module {
             get()
         )
     }
+    factory<DeclarationListRepository> { getDeclarationListRepository(get()) }
+
 }
 
 
@@ -65,6 +68,14 @@ private fun getVendorListRepository(
     return DefaultItemListRepository(
         tableName = VENDOR_TABLE_NAME,
         deleteByIds = dao::deleteVendorsByIds,
+        observeOnItems = dao::observeOnItems
+    )
+}
+
+private fun getDeclarationListRepository(db: NocombroDatabase): DeclarationListRepository {
+    val dao = db.declarationDao
+    return DeclarationListRepository(
+        deleteByIds = dao::deleteDeclarationsByIds,
         observeOnItems = dao::observeOnItems
     )
 }

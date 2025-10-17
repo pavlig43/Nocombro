@@ -3,7 +3,6 @@ package ru.pavlig43.database.data.product
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import ru.pavlig43.core.UTC
 import ru.pavlig43.core.data.Item
 
 const val PRODUCT_TABLE_NAME = "product"

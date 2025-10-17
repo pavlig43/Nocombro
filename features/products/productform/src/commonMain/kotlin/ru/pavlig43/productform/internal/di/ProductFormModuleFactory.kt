@@ -8,7 +8,6 @@ import ru.pavlig43.database.data.document.Document
 import ru.pavlig43.database.data.document.DocumentType
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductType
-import ru.pavlig43.itemlist.api.data.DefaultItemListRepository
 import ru.pavlig43.itemlist.api.data.IItemListRepository
 import ru.pavlig43.itemlist.api.data.ItemListType
 import ru.pavlig43.productform.api.IProductFormDependencies

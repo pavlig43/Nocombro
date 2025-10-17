@@ -7,7 +7,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import ru.pavlig43.rootnocombro.api.component.IRootNocombroComponent
-import ru.pavlig43.rootnocombro.internal.settings.component.ISettingsComponent
 import ru.pavlig43.rootnocombro.api.ui.RootNocombroScreen
 import ru.pavlig43.theme.NocombroTheme
 

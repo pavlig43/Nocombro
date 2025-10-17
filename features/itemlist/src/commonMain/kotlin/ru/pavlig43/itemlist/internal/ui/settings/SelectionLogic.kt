@@ -20,8 +20,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import ru.pavlig43.coreui.tooltip.IconButtonToolTip
 import ru.pavlig43.core.data.ItemType
+import ru.pavlig43.coreui.tooltip.IconButtonToolTip
 import ru.pavlig43.itemlist.internal.ui.SAVE_SELECTION
 import ru.pavlig43.itemlist.internal.ui.SELECTION
 

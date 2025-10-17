@@ -61,8 +61,8 @@ internal class VendorFormTabInnerTabsComponent(
                     )
 
                     VendorTab.Information -> VendorInformationTabSlot(
-                        componentContext = componentContext,
-                        vendorId = vendorId
+//                        componentContext = componentContext,
+//                        vendorId = vendorId
                     )
 
                 }

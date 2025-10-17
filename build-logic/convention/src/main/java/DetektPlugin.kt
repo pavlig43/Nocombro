@@ -1,7 +1,6 @@
 import io.gitlab.arturbosch.detekt.Detekt
 import io.gitlab.arturbosch.detekt.DetektGenerateConfigTask
 import io.gitlab.arturbosch.detekt.extensions.DetektExtension
-import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.apply
@@ -9,11 +8,8 @@ import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.withType
 import org.jetbrains.kotlin.gradle.plugin.KotlinBasePlugin
-import ru.pavlig43.convention.extension.commonMainDependencies
 import ru.pavlig43.convention.extension.detektPlugins
-import ru.pavlig43.convention.extension.implementation
 import ru.pavlig43.convention.extension.libs
-import java.io.File
 
 class DetektPlugin : Plugin<Project> {
     override fun apply(target: Project) {

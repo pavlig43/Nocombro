@@ -8,13 +8,13 @@ import ru.pavlig43.core.data.Item
 import ru.pavlig43.core.data.ItemType
 import ru.pavlig43.form.api.data.IUpdateRepository
 import ru.pavlig43.manageitem.api.component.RequireValuesSlotComponent
-import ru.pavlig43.manageitem.api.data.RequireValues
+import ru.pavlig43.manageitem.api.data.DefaultRequireValues
 
 abstract class UpdateItemComponent<I : Item, S : ItemType>(
     componentContext: ComponentContext,
     id: Int,
     typeVariantList: List<S>,
-    private val mapper:RequireValues.()->I,
+    private val mapper: DefaultRequireValues.()->I,
     private val updateRepository: IUpdateRepository<I>,
     onChangeValueForMainTab: (String) -> Unit,
 ) : ComponentContext by componentContext, FormTabSlot {

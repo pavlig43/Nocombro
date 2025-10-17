@@ -13,12 +13,13 @@ import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.database.data.vendor.Vendor
 import ru.pavlig43.database.data.vendor.VendorType
+import ru.pavlig43.declarationform.api.DeclarationFormComponent
+import ru.pavlig43.declarationlist.api.component.DeclarationListComponent
 import ru.pavlig43.documentform.api.component.DocumentFormComponent
 import ru.pavlig43.itemlist.api.component.ItemListComponent
 import ru.pavlig43.itemlist.api.data.ItemListType
 import ru.pavlig43.notification.api.component.PageNotificationComponent
 import ru.pavlig43.notification.api.data.NotificationItem
-//import ru.pavlig43.notification.api.component.NotificationComponent
 import ru.pavlig43.productform.api.component.ProductFormComponent
 import ru.pavlig43.rootnocombro.internal.navigation.drawer.component.DrawerComponent
 import ru.pavlig43.rootnocombro.internal.navigation.drawer.component.DrawerDestination
@@ -59,6 +60,7 @@ internal class MainNavigationComponent(
             DrawerDestination.DocumentList -> TabConfig.DocumentList()
             DrawerDestination.ProductList -> TabConfig.ProductList()
             DrawerDestination.VendorList -> TabConfig.VendorList()
+            DrawerDestination.DeclarationList -> TabConfig.DeclarationList()
         }
 
     override val tabNavigationComponent: ITabNavigationComponent<TabConfig, SlotComponent> =
@@ -77,13 +79,13 @@ internal class MainNavigationComponent(
                         onCreate = { openNewTab(TabConfig.DocumentForm(0)) },
                         repository = scope.get(named(ItemListType.Document.name)),
                         fullListSelection = DocumentType.entries,
-                        onItemClick = {id,_-> openNewTab(TabConfig.DocumentForm(id)) },
+                        onItemClick = { openNewTab(TabConfig.DocumentForm(it.id)) },
                         withCheckbox = true
                     )
                     is TabConfig.ProductList -> ItemListComponent<Product,ProductType>(
                         componentContext = context,
                         tabTitle = "Продукты",
-                        onItemClick = { id, _ -> openNewTab(TabConfig.ProductForm(id)) },
+                        onItemClick = { openNewTab(TabConfig.ProductForm(it.id)) },
                         onCreate = { openNewTab(TabConfig.ProductForm(0)) },
                         repository = scope.get(named(ItemListType.Product.name)),
                         fullListSelection = ProductType.entries,
@@ -101,7 +103,7 @@ internal class MainNavigationComponent(
                         dependencies = scope.get(),
                         closeTab = onCloseTab,
                         productId = tabConfig.id,
-                        onOpenDocumentTab = {openNewTab(TabConfig.DocumentForm(it))},
+                        onOpenDeclarationTab = {openNewTab(TabConfig.DeclarationForm(it))},
                         onOpenProductTab = {openNewTab(TabConfig.ProductForm(it))}
                     )
 
@@ -109,17 +111,33 @@ internal class MainNavigationComponent(
                     is TabConfig.VendorForm -> VendorFormComponent(
                         vendorId = tabConfig.id,
                         closeTab = onCloseTab,
-                        componentContext = componentContext,
+                        componentContext = context,
                         dependencies = scope.get()
                     )
                     is TabConfig.VendorList -> ItemListComponent<Vendor,VendorType>(
                         componentContext = context,
                         tabTitle = "Поставщики",
-                        onItemClick = { id, _ -> openNewTab(TabConfig.VendorForm(id)) },
+                        onItemClick = {  openNewTab(TabConfig.VendorForm(it.id)) },
                         onCreate = { openNewTab(TabConfig.VendorForm(0)) },
                         repository = scope.get(named(ItemListType.Vendor.name)),
                         fullListSelection = VendorType.entries,
                         withCheckbox = true
+                    )
+
+                    is TabConfig.DeclarationForm -> DeclarationFormComponent(
+                        declarationId = tabConfig.id,
+                        closeTab = onCloseTab,
+                        componentContext = context,
+                        dependencies = scope.get(),
+                        onOpenVendorTab = {openNewTab(TabConfig.VendorForm(it))}
+                    )
+                    is TabConfig.DeclarationList -> DeclarationListComponent(
+                        componentContext = context,
+                        tabTitle = "Декларации",
+                        onCreate = { openNewTab(TabConfig.DeclarationForm(0)) },
+                        onItemClick = { openNewTab(TabConfig.DeclarationForm(it.id)) },
+                        withCheckbox = true,
+                        repository = scope.get()
                     )
                 }
             },
@@ -129,6 +147,7 @@ internal class MainNavigationComponent(
         when(item){
             NotificationItem.Document -> tabNavigationComponent.addTab(TabConfig.DocumentForm(id))
             NotificationItem.Product -> tabNavigationComponent.addTab(TabConfig.ProductForm(id))
+            NotificationItem.Declaration -> tabNavigationComponent.addTab(TabConfig.DeclarationForm(id))
         }
     }
 }

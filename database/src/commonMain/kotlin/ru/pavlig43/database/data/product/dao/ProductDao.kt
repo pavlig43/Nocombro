@@ -8,7 +8,6 @@ import androidx.room.RawQuery
 import androidx.room.RoomRawQuery
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
-import ru.pavlig43.database.data.common.NotificationDTO
 import ru.pavlig43.database.data.product.Product
 
 @Dao
@@ -39,17 +38,6 @@ interface ProductDao {
     )
     suspend fun isNameAllowed(id: Int, name: String): Boolean
 
-    @Query(
-        """
-    SELECT id, display_name AS displayName 
-    FROM product 
-    WHERE id NOT IN (
-        SELECT product_id 
-        FROM product_declaration
-        WHERE is_actual = true
-    )
-"""
-    )
-    fun observeOnProductWithoutActualDeclaration(): Flow<List<NotificationDTO>>
+
 
 }

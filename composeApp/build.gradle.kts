@@ -1,9 +1,5 @@
-import ru.pavlig43.convention.extension.composeDesktopApplication
-import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.compose.compiler.gradle.ComposeFeatureFlag
-import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import ru.pavlig43.convention.extension.implementation
+import ru.pavlig43.convention.extension.composeDesktopApplication
 import ru.pavlig43.convention.extension.libs
 
 plugins {

@@ -27,6 +27,12 @@ sealed interface TabConfig{
     @Serializable
     class VendorForm(val id:Int):TabConfig
 
+    @Serializable
+    class DeclarationList:TabConfig
+
+    @Serializable
+    class DeclarationForm(val id:Int):TabConfig
+
 
 
 
