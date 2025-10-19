@@ -29,6 +29,18 @@ import ru.pavlig43.productform.internal.data.ProductIngredientUi
 import ru.pavlig43.upsertitem.api.data.UpdateCollectionRepository
 
 
+/**
+ * Компонент вкладки "Составы" в форме продукта.
+ *
+ * Отвечает за управление составами продукта, включая добавление, удаление и редактирование
+ * составов и их ингредиентов. Также поддерживает загрузку начальных данных и сохранение изменений.
+ *
+ * @param componentContext Контекст компонента Decompose.
+ * @param productId Идентификатор продукта, к которому относятся составы.
+ * @param productListRepository Репозиторий для получения списка продуктов (для выбора ингредиентов).
+ * @param openProductTab Функция открытия вкладки продукта по ID.
+ * @param updateCompositionRepository Репозиторий для обновления составов продукта.
+ */
 internal class CompositionTabSlot(
     componentContext: ComponentContext,
     private val productId: Int,
@@ -39,6 +51,12 @@ internal class CompositionTabSlot(
     override val title: String = "Составы"
 
     private val _compositionList = MutableStateFlow<List<CompositionUi>>(emptyList())
+
+    /**
+     * Состояние списка составов продукта.
+     *
+     * @see CompositionUi
+     */
     val compositionList = _compositionList.asStateFlow()
     private val loadInitDataComponent: ILoadInitDataComponent<List<CompositionUi>> =
         LoadInitDataComponent<List<CompositionUi>>(
@@ -56,6 +74,11 @@ internal class CompositionTabSlot(
         _compositionList.update { updateAction(productCompositions) }
     }
 
+    /**
+     * Удаляет состав по его ключу.
+     *
+     * @param composeKey Уникальный ключ состава для удаления.
+     */
     fun removeComposition(composeKey: Int) {
         updateCompositionList { lst ->
             lst.removeIf { it.composeKey == composeKey }
@@ -63,6 +86,11 @@ internal class CompositionTabSlot(
         }
     }
 
+    /**
+     * Добавляет новый пустой состав в список.
+     *
+     * Новый состав получает уникальный [composeKey], основанный на максимальном значении в списке.
+     */
     fun addNewComposition() {
         val composeKey = _compositionList.value.maxOfOrNull { it.composeKey }?.plus(1) ?: 0
         val composition = CompositionUi(
@@ -76,6 +104,12 @@ internal class CompositionTabSlot(
         }
     }
 
+    /**
+     * Обновляет имя состава по его ключу.
+     *
+     * @param composeKey Уникальный ключ состава.
+     * @param name Новое имя состава.
+     */
     fun onChangeName(composeKey: Int, name: String) {
         updateCompositionList { lst ->
             lst.firstOrNull { it.composeKey == composeKey }
@@ -105,6 +139,12 @@ internal class CompositionTabSlot(
         }
     }
 
+    /**
+     * Удаляет ингредиент из состава по ключам состава и ингредиента.
+     *
+     * @param compositionComposeKey Ключ состава.
+     * @param ingredientComposeKey Ключ ингредиента в составе.
+     */
     fun removeIngredients(compositionComposeKey: Int, ingredientComposeKey: Int) {
         updateIngredientsList(compositionComposeKey) { lst ->
             lst.removeIf { it.composeKey == ingredientComposeKey }
@@ -132,6 +172,13 @@ internal class CompositionTabSlot(
         }
     }
 
+    /**
+     * Изменяет количество граммов ингредиента в составе.
+     *
+     * @param compositionComposeKey Ключ состава.
+     * @param ingredientComposeKey Ключ ингредиента.
+     * @param gram Новое значение в граммах.
+     */
     fun onChangeGram(compositionComposeKey: Int, ingredientComposeKey: Int, gram: Int) {
         val composition =
             _compositionList.value.firstOrNull { it.composeKey == compositionComposeKey } ?: return
@@ -172,11 +219,21 @@ internal class CompositionTabSlot(
         dialogNavigation.activate(MBSIngredientDialog(compositionId))
     }
 
+    /**
+     * Открывает диалог выбора ингредиента для добавления в состав.
+     *
+     * @param compositionId Ключ состава, в который будет добавлен ингредиент.
+     */
     internal fun openDialog(compositionId: Int) {
         showDialog(compositionId)
     }
 
 
+    /**
+     * Выполняет сохранение изменений в составах продукта.
+     *
+     * Сравнивает текущее состояние с исходным и отправляет изменения через репозиторий.
+     */
     override suspend fun onUpdate() {
         val old =
             loadInitDataComponent.firstData.value?.map { it.toProductCompositionIn(productId) }
@@ -187,9 +244,20 @@ internal class CompositionTabSlot(
 
 }
 
+/**
+ * Конфигурация диалога выбора ингредиента.
+ *
+ * @property compositionId Ключ состава, в который будет добавлен ингредиент.
+ */
 @Serializable
 internal data class MBSIngredientDialog(val compositionId: Int)
 
+/**
+ * Преобразует [CompositionUi] в [ProductCompositionIn] для сохранения в репозитории.
+ *
+ * @param productId Идентификатор родительского продукта.
+ * @return Объект [ProductCompositionIn].
+ */
 private fun CompositionUi.toProductCompositionIn(productId: Int): ProductCompositionIn {
 
     val compositionForSave = ProductComposition(
@@ -213,12 +281,25 @@ private fun CompositionUi.toProductCompositionIn(productId: Int): ProductComposi
 }
 
 
+/**
+ * Преобразует список [ProductCompositionOut] в список [CompositionUi].
+ *
+ * Каждый элемент получает уникальный [composeKey] на основе индекса.
+ *
+ * @return Список [CompositionUi].
+ */
 private fun List<ProductCompositionOut>.toCompositionUi(): List<CompositionUi> {
     return this.mapIndexed { index, productCompositionOut ->
         productCompositionOut.toCompositionUi(index)
     }
 }
 
+/**
+ * Преобразует [ProductCompositionOut] в [CompositionUi] с заданным ключом.
+ *
+ * @param composeKey Уникальный ключ состава в UI.
+ * @return Объект [CompositionUi].
+ */
 private fun ProductCompositionOut.toCompositionUi(composeKey: Int): CompositionUi {
     val ingredientsUi = ingredients.mapIndexed { index, productIngredientOut ->
         ProductIngredientUi(
@@ -236,7 +317,3 @@ private fun ProductCompositionOut.toCompositionUi(composeKey: Int): CompositionU
         productIngredients = ingredientsUi
     )
 }
-
-
-
-
