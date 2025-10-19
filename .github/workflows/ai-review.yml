@@ -71,8 +71,8 @@ jobs:
           VCS__HTTP_CLIENT__API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
           # Контекст PR (репозиторий и номер)
-          VCS__PIPELINE__OWNER: ${{ github.repository_owner }}
-          VCS__PIPELINE__REPO: ${{ github.event.repository.name }}
+          VCS__PIPELINE__OWNER: ${{ .github.repository_owner }}
+          VCS__PIPELINE__REPO: ${{ .github.event.repository.name }}
           VCS__PIPELINE__PULL_NUMBER: ${{ inputs.pull-request-number }}
 
         with:
