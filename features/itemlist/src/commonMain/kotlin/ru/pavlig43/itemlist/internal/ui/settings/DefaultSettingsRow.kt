@@ -18,7 +18,7 @@ import ru.pavlig43.itemlist.internal.ui.CREATE_RECORD
 
 @Suppress("LongParameterList")
 @Composable
-internal fun SettingsRow(
+internal fun DefaultSettingsRow(
     onCreate: () -> Unit,
     fullListSelection: List<ItemType>,
     saveSelection: (List<ItemType>) -> Unit,

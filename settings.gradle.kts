@@ -86,3 +86,8 @@ include(
     ":features:declaration:declarationtabslot",
 
     )
+include(":features:storage")
+include(
+    ":features:transaction:transactionform",
+    ":features:transaction:transactionlist"
+    )

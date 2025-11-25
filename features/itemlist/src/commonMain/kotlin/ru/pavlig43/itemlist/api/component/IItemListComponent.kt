@@ -33,4 +33,10 @@ sealed interface ItemListState {
     class Success(val data: List<ItemUi>) : ItemListState
     class Error(val message: String) : ItemListState
 }
+sealed interface ItemListState1<out O : IItemUi> {
+    class Initial : ItemListState1<Nothing>
+    class Loading : ItemListState1<Nothing>
+    class Success<O : IItemUi>(val data: List<O>) : ItemListState1<O>
+    class Error(val message: String) : ItemListState1<Nothing>
+}
 

@@ -13,7 +13,7 @@ import ru.pavlig43.upsertitem.api.data.UpdateCollectionRepository
 internal val vendorFormModule = module {
 
     single<CreateItemRepository<Vendor>> { getCreateRepository(get()) }
-    single<IUpdateRepository<Vendor>>(named(UpdateRepositoryType.Vendor.name)) {
+    single<IUpdateRepository<Vendor, Vendor>>(named(UpdateRepositoryType.Vendor.name)) {
         getInitItemRepository(
             get()
         )
@@ -48,7 +48,7 @@ internal enum class UpdateCollectionRepositoryType {
 
 private fun getInitItemRepository(
     db: NocombroDatabase
-): IUpdateRepository<Vendor> {
+): IUpdateRepository<Vendor, Vendor> {
     val dao = db.vendorDao
     return UpdateItemRepository<Vendor>(
         tag = "Update Vendor Repository",

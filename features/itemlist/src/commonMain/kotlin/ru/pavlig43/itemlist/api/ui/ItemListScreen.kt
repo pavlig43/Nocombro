@@ -28,7 +28,7 @@ import ru.pavlig43.itemlist.internal.ui.NAME
 import ru.pavlig43.itemlist.internal.ui.NAME_WIDTH
 import ru.pavlig43.itemlist.internal.ui.TYPE
 import ru.pavlig43.itemlist.internal.ui.TYPE_WIDTH
-import ru.pavlig43.itemlist.internal.ui.settings.SettingsRow
+import ru.pavlig43.itemlist.internal.ui.settings.DefaultSettingsRow
 
 
 @Composable
@@ -140,7 +140,7 @@ private fun ItemList(
             onClickItem = onItemClick,
             searchText = searchText,
             settingRow = {
-                SettingsRow(
+                DefaultSettingsRow(
                     onCreate = onCreate,
                     fullListSelection = fullListSelection,
                     saveSelection = saveSelection,
@@ -156,6 +156,7 @@ private fun ItemList(
     }
 
 }
+
 private val baseCells = listOf(
     Cell(ID, ID_WIDTH),
     Cell(NAME, NAME_WIDTH),

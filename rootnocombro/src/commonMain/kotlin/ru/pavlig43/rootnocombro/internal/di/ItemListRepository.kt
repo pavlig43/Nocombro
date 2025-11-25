@@ -3,12 +3,15 @@ package ru.pavlig43.rootnocombro.internal.di
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import ru.pavlig43.database.NocombroDatabase
+import ru.pavlig43.database.data.declaration.DeclarationIn
 import ru.pavlig43.database.data.document.DOCUMENT_TABLE_NAME
 import ru.pavlig43.database.data.document.Document
 import ru.pavlig43.database.data.document.DocumentType
 import ru.pavlig43.database.data.product.PRODUCT_TABLE_NAME
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductType
+import ru.pavlig43.database.data.transaction.ProductTransactionIn
+import ru.pavlig43.database.data.transaction.TransactionRow
 import ru.pavlig43.database.data.vendor.VENDOR_TABLE_NAME
 import ru.pavlig43.database.data.vendor.Vendor
 import ru.pavlig43.database.data.vendor.VendorType
@@ -79,3 +82,4 @@ private fun getDeclarationListRepository(db: NocombroDatabase): DeclarationListR
         observeOnItems = dao::observeOnItems
     )
 }
+private fun getTransactionListRepository(db: NocombroDatabase): IItemListRepository<ProductTransactionIn> {}

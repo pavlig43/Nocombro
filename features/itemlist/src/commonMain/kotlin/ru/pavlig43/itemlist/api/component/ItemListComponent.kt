@@ -122,7 +122,7 @@ private fun RequestResult<List<ItemUi>>.toItemListState(): ItemListState {
     }
 }
 
-private fun RequestResult<Unit>.toDeleteState(): DeleteState {
+fun RequestResult<Unit>.toDeleteState(): DeleteState {
     return when (this) {
         is RequestResult.Error<*> -> DeleteState.Error(message ?: "unknown error")
         is RequestResult.InProgress -> DeleteState.Loading()

@@ -16,6 +16,9 @@ data class Product(
     @ColumnInfo("display_name")
     override val displayName: String,
 
+//    @ColumnInfo("unit")
+//    val unit: ProductUnit,
+
     @ColumnInfo("created_at")
     override val createdAt: Long,
 

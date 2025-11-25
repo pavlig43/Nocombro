@@ -30,6 +30,9 @@ import ru.pavlig43.database.data.product.dao.CompositionDao
 import ru.pavlig43.database.data.product.dao.ProductDao
 import ru.pavlig43.database.data.product.dao.ProductDeclarationDao
 import ru.pavlig43.database.data.product.dao.ProductFilesDao
+import ru.pavlig43.database.data.transaction.ProductTransaction
+import ru.pavlig43.database.data.transaction.TransactionRow
+import ru.pavlig43.database.data.transaction.dao.ProductTransactionDao
 import ru.pavlig43.database.data.vendor.Vendor
 import ru.pavlig43.database.data.vendor.VendorFile
 import ru.pavlig43.database.data.vendor.VendorType
@@ -55,15 +58,20 @@ import kotlin.time.ExperimentalTime
         ProductComposition::class,
         ProductIngredientIn::class,
 
-
+//        ProductBatchIn::class,
+//        ProductBatchOperation::class,
+        TransactionRow::class,
+        ProductTransaction::class,
     ],
+
+
     version = 1
 )
 @TypeConverters(Converters::class)
 @ConstructedBy(NocombroDatabaseConstructor::class)
 abstract class NocombroDatabase : RoomDatabase() {
     abstract val documentDao: DocumentDao
-    abstract val documentFilesDao:DocumentFilesDao
+    abstract val documentFilesDao: DocumentFilesDao
 
     abstract val vendorDao: VendorDao
     abstract val vendorFilesDao: VendorFilesDao
@@ -75,6 +83,8 @@ abstract class NocombroDatabase : RoomDatabase() {
     abstract val productFilesDao: ProductFilesDao
     abstract val productDeclarationDao: ProductDeclarationDao
     abstract val compositionDao: CompositionDao
+
+    abstract val productTransactionDao:ProductTransactionDao
 }
 
 
@@ -88,19 +98,20 @@ fun getNocombroDatabase(builder: RoomDatabase.Builder<NocombroDatabase>): Nocomb
         .setDriver(BundledSQLiteDriver())
         .setQueryCoroutineContext(Dispatchers.IO)
         .build()
-    CoroutineScope(Dispatchers.IO).launch{
+    CoroutineScope(Dispatchers.IO).launch {
         initData(database)
     }
     return database
 }
+
 interface DataBaseTransaction {
-    suspend fun transaction(blocks: List<suspend ()->Unit>)
+    suspend fun transaction(blocks: List<suspend () -> Unit>)
 }
 
 class NocombroTransaction(
     private val db: NocombroDatabase
-):DataBaseTransaction {
-    override suspend fun transaction(blocks: List< suspend () -> Unit>) {
+) : DataBaseTransaction {
+    override suspend fun transaction(blocks: List<suspend () -> Unit>) {
         db.useWriterConnection { transactor ->
             transactor.immediateTransaction {
                 blocks.forEach { block ->
@@ -112,11 +123,10 @@ class NocombroTransaction(
 }
 
 @OptIn(ExperimentalTime::class)
-suspend fun initData(db: NocombroDatabase){
+suspend fun initData(db: NocombroDatabase) {
     try {
         db.productDao.getProduct(1)
-    }
-    catch (e:Exception){
+    } catch (e: Exception) {
         val products = listOf(
             Product(
                 type = ProductType.BASE,
@@ -209,7 +219,7 @@ suspend fun initData(db: NocombroDatabase){
                 id = 3
             ),
 
-        )
+            )
         products.forEach {
             db.productDao.create(it)
         }

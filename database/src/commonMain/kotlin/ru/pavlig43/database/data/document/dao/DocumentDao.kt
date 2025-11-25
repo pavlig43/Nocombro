@@ -9,7 +9,9 @@ import androidx.room.RoomRawQuery
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 import ru.pavlig43.database.data.common.NotificationDTO
+import ru.pavlig43.database.data.document.DOCUMENT_TABLE_NAME
 import ru.pavlig43.database.data.document.Document
+import ru.pavlig43.database.data.document.DocumentType
 
 
 @Dao
@@ -28,6 +30,21 @@ interface DocumentDao {
 
     @RawQuery(observedEntities = [Document::class])
     fun observeOnItems(query: RoomRawQuery):Flow<List<Document>>
+
+
+    @Query("""
+    SELECT * FROM $DOCUMENT_TABLE_NAME
+    WHERE type IN (:types)
+    AND (
+        display_name LIKE '%' || :searchText || '%' 
+        OR comment LIKE '%' || :searchText || '%'
+        OR :searchText = ''
+    )
+    ORDER BY created_at DESC
+""")
+    fun observeOnDocuments(
+        searchText: String,
+        types: List<DocumentType>): Flow<List<Document>>
 
     @Query("""
         SELECT CASE
