@@ -27,7 +27,6 @@ import ru.pavlig43.coreui.itemlist.IItemUi
 import ru.pavlig43.coreui.itemlist.SelectItemCheckBox
 import ru.pavlig43.coreui.itemlist.TableRow
 import ru.pavlig43.coreui.itemlist.createHeadersCells
-import ru.pavlig43.itemlist.api.component.ItemListComponent
 import ru.pavlig43.itemlist.api.component.ItemListState1
 
 internal const val CHECKBOX_WIDTH = 48
@@ -45,11 +44,11 @@ internal const val COMMENT = "Комментарий"
 
 
 @Composable
-fun GeneralScreen(
+fun GeneralItemListScreen(
     component: ItemListFactoryComponent,
     modifier: Modifier = Modifier
 ){
-    when(val listComponent = component.a){
+    when(val listComponent = component.listComponent){
         is DeclarationListComponent -> Box(modifier)
         is DocumentsListComponent -> DocumentListScreen(listComponent)
     }
@@ -110,7 +109,7 @@ internal fun <O : GenericItem, U : IItemUi> ItemsListBodyScreen(
         is ItemListState1.Loading -> LoadingScreen()
         is ItemListState1.Success<U> -> {
 
-            val checkBoxWidth = 48
+            val checkBoxWidth = CHECKBOX_WIDTH
             val verticalScrollState = rememberLazyListState()
             val horizontalScrollState = rememberScrollState()
             val itemList = state.data

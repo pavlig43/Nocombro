@@ -82,4 +82,4 @@ private fun getDeclarationListRepository(db: NocombroDatabase): DeclarationListR
         observeOnItems = dao::observeOnItems
     )
 }
-private fun getTransactionListRepository(db: NocombroDatabase): IItemListRepository<ProductTransactionIn> {}
+//private fun getTransactionListRepository(db: NocombroDatabase): IItemListRepository<ProductTransactionIn> {}

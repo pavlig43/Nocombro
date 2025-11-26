@@ -10,7 +10,7 @@ import ru.pavlig43.vendor.internal.toVendor
 internal class VendorRequiresTabSlot(
     componentContext: ComponentContext,
     vendorId: Int,
-    updateRepository: IUpdateRepository<Vendor>,
+    updateRepository: IUpdateRepository<Vendor, Vendor>,
     onChangeValueForMainTab: (String) -> Unit
 ) : UpdateItemComponent<Vendor, VendorType>(
     componentContext = componentContext,

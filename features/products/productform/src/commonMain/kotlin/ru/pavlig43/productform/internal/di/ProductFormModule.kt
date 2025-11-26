@@ -20,7 +20,7 @@ internal val productFormModule = module {
 
     single<CreateItemRepository<Product>> { getCreateRepository(get()) }
 
-    single<IUpdateRepository<Product>>(named(UpdateRepositoryType.Product.name)) {
+    single<IUpdateRepository<Product, Product>>(named(UpdateRepositoryType.Product.name)) {
         getInitItemRepository(
             get()
         )
@@ -68,7 +68,7 @@ internal enum class UpdateCollectionRepositoryType {
 
 private fun getInitItemRepository(
     db: NocombroDatabase
-): IUpdateRepository<Product> {
+): IUpdateRepository<Product, Product> {
     val productDao = db.productDao
     return UpdateItemRepository<Product>(
         tag = "Update Product Repository",

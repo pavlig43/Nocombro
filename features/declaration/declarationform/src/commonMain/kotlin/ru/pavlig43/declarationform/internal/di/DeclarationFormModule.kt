@@ -13,7 +13,7 @@ import ru.pavlig43.upsertitem.api.data.UpdateCollectionRepository
 internal val declarationFormModule = module {
 
     single<CreateItemRepository<DeclarationIn>> { getCreateRepository(get()) }
-    single<IUpdateRepository<DeclarationIn>>(named(UpdateRepositoryType.Declaration.name)) { getInitItemRepository(get()) }
+    single<IUpdateRepository<DeclarationIn, DeclarationIn>>(named(UpdateRepositoryType.Declaration.name)) { getInitItemRepository(get()) }
     single<UpdateCollectionRepository<DeclarationFile, DeclarationFile>>{ getFilesRepository(get()) }
 }
 private fun getCreateRepository(
@@ -32,7 +32,7 @@ internal enum class UpdateRepositoryType{
 }
 private fun getInitItemRepository(
     db: NocombroDatabase
-): IUpdateRepository<DeclarationIn> {
+): IUpdateRepository<DeclarationIn, DeclarationIn> {
     val dao = db.declarationDao
     return UpdateItemRepository<DeclarationIn>(
         tag = "Update Declaration Repository",

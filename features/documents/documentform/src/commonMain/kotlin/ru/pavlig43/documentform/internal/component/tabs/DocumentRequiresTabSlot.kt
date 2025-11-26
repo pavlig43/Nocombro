@@ -10,7 +10,7 @@ import ru.pavlig43.form.api.data.IUpdateRepository
 internal class DocumentRequiresTabSlot(
     componentContext: ComponentContext,
     documentId: Int,
-    updateRepository: IUpdateRepository<Document>,
+    updateRepository: IUpdateRepository<Document, Document>,
     onChangeValueForMainTab: (String) -> Unit
 ) : UpdateItemComponent<Document, DocumentType>(
     componentContext = componentContext,

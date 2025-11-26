@@ -27,13 +27,16 @@ class ItemListFactoryComponent(
     componentContext: ComponentContext,
     itemListDependencies: IItemListDependencies,
     itemListParamProvider: ItemListParamProvider
-): ComponentContext by componentContext{
+): ComponentContext by componentContext, SlotComponent{
+    private val _model = MutableStateFlow(SlotComponent.TabModel("Документы"))
+    override val model: StateFlow<SlotComponent.TabModel> = _model.asStateFlow()
 
     private val koinContext = instanceKeeper.getOrCreate { ComponentKoinContext() }
     private val scope = koinContext.getOrCreateKoinScope(
         createItemListFormModule(itemListDependencies)
     )
-    internal val a: ISettingsComponent<out GenericItem, out IItemUi> = when(itemListParamProvider){
+
+    internal val listComponent:IListComponent<out GenericItem,out IItemUi> = when(itemListParamProvider){
         is DocumentListParamProvider -> DocumentsListComponent(
             componentContext = componentContext,
             paramProvider = itemListParamProvider,
@@ -50,7 +53,6 @@ class ItemListFactoryComponent(
 
 sealed interface ItemListParamProvider
 data class DocumentListParamProvider(
-    val tabTitle: String,
     val fullListDocumentTypes: List<DocumentType>,
     val onCreate: () -> Unit,
     val onItemClick: (IItemUi) -> Unit,
@@ -63,9 +65,10 @@ data class DeclarationListParamProvider(
 internal class DeclarationListComponent(
     componentContext: ComponentContext,
     paramProvider: DeclarationListParamProvider
-): ComponentContext by componentContext,ISettingsComponent<DeclarationIn, DocumentItemUi> {
+): ComponentContext by componentContext,IListComponent<DeclarationIn, DocumentItemUi> {
     override val itemsBodyComponent: ItemsBodyComponent<DeclarationIn, DocumentItemUi>
         get() = TODO("Not yet implemented")
+
 }
 
 internal class DocumentsListComponent(
@@ -73,15 +76,13 @@ internal class DocumentsListComponent(
     paramProvider: DocumentListParamProvider,
     private val documentListRepository: DocumentListRepository,
 
-) : ComponentContext by componentContext, ISettingsComponent<Document, DocumentItemUi>,
-    SlotComponent {
+) : ComponentContext by componentContext, IListComponent<Document, DocumentItemUi>{
 
-    private val _model = MutableStateFlow(SlotComponent.TabModel(paramProvider.tabTitle))
-    override val model: StateFlow<SlotComponent.TabModel> = _model.asStateFlow()
 
-    private val typeComponent = generateComponent(ItemFilter1.Type(paramProvider.fullListDocumentTypes))
 
-    private val searchTextComponent = generateComponent(ItemFilter1.SearchText(""))
+    val typeComponent = generateComponent(ItemFilter1.Type(paramProvider.fullListDocumentTypes))
+
+    val searchTextComponent = generateComponent(ItemFilter1.SearchText(""))
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private val documentListFlow: Flow<RequestResult<List<Document>>> = combine(
@@ -154,7 +155,7 @@ data class DocumentItemUi(
     val comment: String = "",
 ) : IItemUi
 
-sealed interface ISettingsComponent<O : GenericItem, U : IItemUi> {
+sealed interface IListComponent<O : GenericItem, U : IItemUi> {
     val itemsBodyComponent: ItemsBodyComponent<O, U>
 }
 

@@ -14,7 +14,7 @@ internal class UpdateDeclarationTabSlot(
     declarationId: Int,
     onOpenVendorTab: (Int) -> Unit,
     vendorListRepository: IItemListRepository<Vendor, VendorType>,
-    private val updateRepository: IUpdateRepository<DeclarationIn>,
+    private val updateRepository: IUpdateRepository<DeclarationIn, DeclarationIn>,
     onChangeValueForMainTab: (String) -> Unit,
 ) : ComponentContext by componentContext, DeclarationTabSlot {
 

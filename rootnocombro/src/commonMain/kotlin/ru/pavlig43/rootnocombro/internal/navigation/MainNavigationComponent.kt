@@ -17,6 +17,8 @@ import ru.pavlig43.declarationform.api.DeclarationFormComponent
 import ru.pavlig43.declarationlist.api.component.DeclarationListComponent
 import ru.pavlig43.documentform.api.component.DocumentFormComponent
 import ru.pavlig43.itemlist.api.component.ItemListComponent
+import ru.pavlig43.itemlist.api.component.refactoring.DocumentListParamProvider
+import ru.pavlig43.itemlist.api.component.refactoring.ItemListFactoryComponent
 import ru.pavlig43.itemlist.api.data.ItemListType
 import ru.pavlig43.notification.api.component.PageNotificationComponent
 import ru.pavlig43.notification.api.data.NotificationItem
@@ -73,15 +75,25 @@ internal class MainNavigationComponent(
             slotFactory = { context, tabConfig: TabConfig, openNewTab: (TabConfig) -> Unit, onCloseTab: () -> Unit ->
 
                 when (tabConfig) {
-                    is TabConfig.DocumentList -> ItemListComponent<Document,DocumentType>(
+                    is TabConfig.DocumentList -> ItemListFactoryComponent(
                         componentContext = context,
-                        tabTitle = "Документы",
-                        onCreate = { openNewTab(TabConfig.DocumentForm(0)) },
-                        repository = scope.get(named(ItemListType.Document.name)),
-                        fullListSelection = DocumentType.entries,
-                        onItemClick = { openNewTab(TabConfig.DocumentForm(it.id)) },
-                        withCheckbox = true
+                        itemListDependencies = scope.get(),
+                        itemListParamProvider = DocumentListParamProvider(
+                            fullListDocumentTypes = DocumentType.entries,
+                            onCreate = { openNewTab(TabConfig.DocumentForm(0)) },
+                            onItemClick = { openNewTab(TabConfig.DocumentForm(it.id)) },
+                            withCheckbox = true
+                        )
                     )
+//                        ItemListComponent<Document,DocumentType>(
+//                        componentContext = context,
+//                        tabTitle = "Документы",
+//                        onCreate = { openNewTab(TabConfig.DocumentForm(0)) },
+//                        repository = scope.get(named(ItemListType.Document.name)),
+//                        fullListSelection = DocumentType.entries,
+//                        onItemClick = { openNewTab(TabConfig.DocumentForm(it.id)) },
+//                        withCheckbox = true
+//                    )
                     is TabConfig.ProductList -> ItemListComponent<Product,ProductType>(
                         componentContext = context,
                         tabTitle = "Продукты",

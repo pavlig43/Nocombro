@@ -31,6 +31,8 @@ import ru.pavlig43.declarationlist.api.component.DeclarationListComponent
 import ru.pavlig43.documentform.api.component.DocumentFormComponent
 import ru.pavlig43.documentform.api.ui.DocumentFormScreen
 import ru.pavlig43.itemlist.api.component.ItemListComponent
+import ru.pavlig43.itemlist.api.component.refactoring.GeneralItemListScreen
+import ru.pavlig43.itemlist.api.component.refactoring.ItemListFactoryComponent
 import ru.pavlig43.itemlist.api.ui.ItemListScreen
 import ru.pavlig43.notification.api.component.PageNotificationComponent
 import ru.pavlig43.notification.api.ui.NotificationTabs
@@ -112,6 +114,9 @@ fun RootNocombroScreen(rootNocombroComponent: IRootNocombroComponent) {
                                                          slotComponent: SlotComponent? ->
                                         innerTabs(Modifier.fillMaxWidth())
                                         when (slotComponent) {
+
+                                            is ItemListFactoryComponent -> GeneralItemListScreen(slotComponent)
+
                                             is ItemListComponent<*,*> -> ItemListScreen(slotComponent)
 
                                             is DeclarationListComponent -> DeclarationListScreen(slotComponent)

@@ -15,7 +15,7 @@ abstract class UpdateItemComponent<I : Item, S : ItemType>(
     id: Int,
     typeVariantList: List<S>,
     private val mapper: DefaultRequireValues.()->I,
-    private val updateRepository: IUpdateRepository<I>,
+    private val updateRepository: IUpdateRepository<I,I>,
     onChangeValueForMainTab: (String) -> Unit,
 ) : ComponentContext by componentContext, FormTabSlot {
 

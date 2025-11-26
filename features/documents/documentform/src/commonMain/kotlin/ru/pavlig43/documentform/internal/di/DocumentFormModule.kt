@@ -14,7 +14,7 @@ import ru.pavlig43.upsertitem.api.data.UpdateCollectionRepository
 internal val documentFormModule = module {
 
     single<CreateItemRepository<Document>> { getCreateRepository(get()) }
-    single<IUpdateRepository<Document>>(named(UpdateRepositoryType.Document.name)) { getInitItemRepository(get()) }
+    single<IUpdateRepository<Document, Document>>(named(UpdateRepositoryType.Document.name)) { getInitItemRepository(get()) }
     single<UpdateCollectionRepository<DocumentFile,DocumentFile>>{ getFilesRepository(get()) }
 }
 private fun getCreateRepository(
@@ -33,7 +33,7 @@ internal enum class UpdateRepositoryType{
 }
 private fun getInitItemRepository(
     db: NocombroDatabase
-): IUpdateRepository<Document> {
+): IUpdateRepository<Document, Document> {
     val documentDao = db.documentDao
     return UpdateItemRepository<Document>(
         tag = "Update Document Repository",

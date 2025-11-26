@@ -1,6 +1,7 @@
 package ru.pavlig43.rootnocombro.internal.di
 
 import org.koin.core.module.dsl.factoryOf
+import org.koin.core.module.dsl.singleOf
 import org.koin.core.qualifier.named
 import org.koin.dsl.bind
 import org.koin.dsl.module
@@ -14,6 +15,7 @@ import ru.pavlig43.database.data.vendor.Vendor
 import ru.pavlig43.database.data.vendor.VendorType
 import ru.pavlig43.declarationform.api.IDeclarationDependencies
 import ru.pavlig43.documentform.api.IDocumentFormDependencies
+import ru.pavlig43.itemlist.api.component.refactoring.IItemListDependencies
 import ru.pavlig43.itemlist.api.data.IItemListRepository
 import ru.pavlig43.itemlist.api.data.ItemListType
 import ru.pavlig43.notification.api.INotificationDependencies
@@ -32,6 +34,7 @@ private val featureDependenciesModule = module {
     ) }
     factoryOf(::RootSignDependencies) bind IRootSignDependencies::class
     factoryOf(::VendorFormDependencies) bind IVendorFormDependencies::class
+    singleOf(::ItemListDependencies) bind IItemListDependencies::class
 
     includes(IItemListRepositoryModule)
     factoryOf(::NotificationDependencies) bind INotificationDependencies::class
@@ -72,6 +75,7 @@ private class DeclarationFormDependencies(
     override val db: NocombroDatabase,
     override val vendorRepository: IItemListRepository<Vendor, VendorType>
 ):IDeclarationDependencies
+private class ItemListDependencies(override val db: NocombroDatabase): IItemListDependencies
 
 
 

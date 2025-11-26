@@ -11,7 +11,7 @@ import ru.pavlig43.productform.internal.toProduct
 internal class ProductRequiresTabSlot(
     componentContext: ComponentContext,
     productId: Int,
-    updateRepository: IUpdateRepository<Product>,
+    updateRepository: IUpdateRepository<Product, Product>,
     onChangeValueForMainTab: (String) -> Unit
 ) : UpdateItemComponent<Product, ProductType>(
     componentContext = componentContext,
