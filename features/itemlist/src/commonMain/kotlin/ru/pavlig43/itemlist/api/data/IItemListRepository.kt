@@ -5,13 +5,11 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import ru.pavlig43.core.RequestResult
 import ru.pavlig43.core.convertToDateTime
-import ru.pavlig43.core.data.GenericItem
 import ru.pavlig43.core.data.Item
 import ru.pavlig43.core.data.ItemType
 import ru.pavlig43.core.data.dbSafeCall
 import ru.pavlig43.core.data.dbSafeFlow
 import ru.pavlig43.core.mapTo
-import ru.pavlig43.itemlist.api.component.refactoring.ItemFilter1
 
 abstract class IItemListRepository<I : Item, S : ItemType>(
     private val tableName: String,
@@ -49,8 +47,4 @@ abstract class IItemListRepository<I : Item, S : ItemType>(
         return this.map { result -> result.mapTo { list -> list.map { item -> item.toItemUi() } } }
     }
 
-}
-interface ItemListRepository1<O: GenericItem>{
-    suspend fun deleteByIds (ids:List<Int>):RequestResult<Unit>
-    fun observeOnItems(searchText: String,filters:List<ItemFilter1>): Flow<RequestResult<List<O>>>
 }

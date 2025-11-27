@@ -6,6 +6,7 @@ import ru.pavlig43.core.data.dbSafeCall
 import ru.pavlig43.core.data.dbSafeFlow
 import ru.pavlig43.database.data.declaration.DeclarationIn
 
+@Deprecated("")
 class DeclarationListRepository(
     private val deleteByIds: suspend (List<Int>) -> Unit,
     private val observeOnItems: (searchText: String,isFilterByText: Boolean) -> Flow<List<DeclarationIn>>

@@ -7,7 +7,6 @@ import org.koin.core.scope.Scope
 import ru.pavlig43.core.SlotComponent
 import ru.pavlig43.core.tabs.DefaultTabNavigationComponent
 import ru.pavlig43.core.tabs.ITabNavigationComponent
-import ru.pavlig43.database.data.document.Document
 import ru.pavlig43.database.data.document.DocumentType
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductType
@@ -16,8 +15,9 @@ import ru.pavlig43.database.data.vendor.VendorType
 import ru.pavlig43.declarationform.api.DeclarationFormComponent
 import ru.pavlig43.declarationlist.api.component.DeclarationListComponent
 import ru.pavlig43.documentform.api.component.DocumentFormComponent
+import ru.pavlig43.itemlist.api.component.DeclarationListParamProvider
 import ru.pavlig43.itemlist.api.component.ItemListComponent
-import ru.pavlig43.itemlist.api.component.refactoring.DocumentListParamProvider
+import ru.pavlig43.itemlist.api.component.DocumentListParamProvider
 import ru.pavlig43.itemlist.api.component.refactoring.ItemListFactoryComponent
 import ru.pavlig43.itemlist.api.data.ItemListType
 import ru.pavlig43.notification.api.component.PageNotificationComponent
@@ -77,11 +77,11 @@ internal class MainNavigationComponent(
                 when (tabConfig) {
                     is TabConfig.DocumentList -> ItemListFactoryComponent(
                         componentContext = context,
-                        itemListDependencies = scope.get(),
+                        scope = scope,
+                        onCreate = { openNewTab(TabConfig.DocumentForm(0)) },
+                        onItemClick = { openNewTab(TabConfig.DocumentForm(it.id)) },
                         itemListParamProvider = DocumentListParamProvider(
                             fullListDocumentTypes = DocumentType.entries,
-                            onCreate = { openNewTab(TabConfig.DocumentForm(0)) },
-                            onItemClick = { openNewTab(TabConfig.DocumentForm(it.id)) },
                             withCheckbox = true
                         )
                     )
@@ -143,13 +143,14 @@ internal class MainNavigationComponent(
                         dependencies = scope.get(),
                         onOpenVendorTab = {openNewTab(TabConfig.VendorForm(it))}
                     )
-                    is TabConfig.DeclarationList -> DeclarationListComponent(
+                    is TabConfig.DeclarationList -> ItemListFactoryComponent(
                         componentContext = context,
-                        tabTitle = "Декларации",
+                        scope = scope,
                         onCreate = { openNewTab(TabConfig.DeclarationForm(0)) },
                         onItemClick = { openNewTab(TabConfig.DeclarationForm(it.id)) },
-                        withCheckbox = true,
-                        repository = scope.get()
+                        itemListParamProvider = DeclarationListParamProvider(
+                            withCheckbox = true
+                        )
                     )
                 }
             },

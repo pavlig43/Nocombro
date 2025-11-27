@@ -1,7 +1,6 @@
-package ru.pavlig43.itemlist.api.component.refactoring
+package ru.pavlig43.itemlist.internal.ui
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,81 +17,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import ru.pavlig43.core.convertToDateTime
 import ru.pavlig43.core.data.GenericItem
 import ru.pavlig43.coreui.ErrorScreen
 import ru.pavlig43.coreui.LoadingScreen
-import ru.pavlig43.coreui.itemlist.Cell
 import ru.pavlig43.coreui.itemlist.IItemUi
 import ru.pavlig43.coreui.itemlist.SelectItemCheckBox
 import ru.pavlig43.coreui.itemlist.TableRow
 import ru.pavlig43.coreui.itemlist.createHeadersCells
 import ru.pavlig43.itemlist.api.component.ItemListState1
-
-internal const val CHECKBOX_WIDTH = 48
-internal const val ID_WIDTH = 40
-internal const val NAME_WIDTH = 500
-internal const val TYPE_WIDTH = 300
-internal const val CREATED_AT_WIDTH = 300
-internal const val COMMENT_WIDTH = 400
-
-internal const val ID = "ИД"
-internal const val NAME = "Название"
-private const val TYPE_DOCUMENT = "Тип Документа"
-internal const val CREATED_AT = "Время создания"
-internal const val COMMENT = "Комментарий"
-
-
-@Composable
-fun GeneralItemListScreen(
-    component: ItemListFactoryComponent,
-    modifier: Modifier = Modifier
-){
-    when(val listComponent = component.listComponent){
-        is DeclarationListComponent -> Box(modifier)
-        is DocumentsListComponent -> DocumentListScreen(listComponent)
-    }
-
-}
-private val columnDefinition = listOf<ColumnDefinition<DocumentItemUi>>(
-    ColumnDefinition(
-        title = ID,
-        width = ID_WIDTH,
-        valueProvider = {it.id.toString()}
-    ),
-    ColumnDefinition(
-        title = NAME,
-        width = NAME_WIDTH,
-        valueProvider = {it.displayName}
-    ),
-    ColumnDefinition(
-        title = TYPE_DOCUMENT,
-        width = TYPE_WIDTH,
-        valueProvider = {it.type.displayName}
-    ),
-    ColumnDefinition(
-        title = CREATED_AT,
-        width = CREATED_AT_WIDTH,
-        valueProvider = {it.createdAt.convertToDateTime()}
-    ),
-    ColumnDefinition(
-        title = COMMENT,
-        width = COMMENT_WIDTH,
-        valueProvider = {it.comment}
-    )
-)
-@Composable
-internal fun DocumentListScreen(
-    component: DocumentsListComponent,
-    modifier: Modifier= Modifier
-){
-
-    ItemsListBodyScreen(
-        listComponent = component.itemsBodyComponent,
-        columnDefinition = columnDefinition,
-    )
-}
-
+import ru.pavlig43.itemlist.internal.component.ItemsBodyComponent
 
 @Composable
 internal fun <O : GenericItem, U : IItemUi> ItemsListBodyScreen(
@@ -128,15 +61,15 @@ internal fun <O : GenericItem, U : IItemUi> ItemsListBodyScreen(
                     searchText = "",
                     backgroundColor = MaterialTheme.colorScheme.primary.copy(0.5f),
                     borderColor = MaterialTheme.colorScheme.onPrimary,
-                    modifier = Modifier.height(32.dp)
+                    modifier = Modifier.Companion.height(32.dp)
                 )
                 LazyColumn(
-                    Modifier.fillMaxSize(), state = verticalScrollState
+                    Modifier.Companion.fillMaxSize(), state = verticalScrollState
                 ) {
                     itemsIndexed(itemList, key = { _, item -> item.id }) { index, item ->
                         Row(
-                            Modifier.height(32.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                            Modifier.Companion.height(32.dp),
+                            verticalAlignment = Alignment.Companion.CenterVertically
                         ) {
                             if (withCheckbox) {
                                 SelectItemCheckBox(
@@ -152,14 +85,14 @@ internal fun <O : GenericItem, U : IItemUi> ItemsListBodyScreen(
                             }
 
                             TableRow(
-                                cells = columnDefinition.toCells(),
+                                cells = columnDefinition.toCells(item),
                                 scrollState = horizontalScrollState,
                                 searchText = searchText.value,
                                 backgroundColor = MaterialTheme.colorScheme.secondary.copy(
                                     alpha = if (index % 2 == 0) 0.3f else 0.5f
                                 ),
                                 borderColor = MaterialTheme.colorScheme.onSecondary,
-                                modifier = Modifier.height(32.dp)
+                                modifier = Modifier.Companion.height(32.dp)
                                     .clickable { listComponent.onItemClick(item) }
                             )
                         }
@@ -174,17 +107,3 @@ internal fun <O : GenericItem, U : IItemUi> ItemsListBodyScreen(
 }
 
 
-data class ColumnDefinition<O : IItemUi>(
-    val title: String,
-    val width: Int,
-    val valueProvider: (O) -> String
-)
-
-
-private fun <I : IItemUi> List<ColumnDefinition<I>>.toBaseCells() = this.map { Cell(it.title, it.width) }
-
-private fun <I : IItemUi> List<ColumnDefinition<I>>.toCells() = this.map {
-    val provider = it.valueProvider
-    @Suppress("UNCHECKED_CAST")
-    (Cell(provider(this as I), it.width))
-}

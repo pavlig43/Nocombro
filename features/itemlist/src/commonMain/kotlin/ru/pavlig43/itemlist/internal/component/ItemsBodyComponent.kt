@@ -1,11 +1,11 @@
-package ru.pavlig43.itemlist.api.component.refactoring
+package ru.pavlig43.itemlist.internal.component
 
 import androidx.compose.runtime.mutableStateListOf
 import com.arkivanov.decompose.ComponentContext
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -16,10 +16,10 @@ import ru.pavlig43.core.componentCoroutineScope
 import ru.pavlig43.core.data.GenericItem
 import ru.pavlig43.coreui.itemlist.IItemUi
 import ru.pavlig43.itemlist.api.component.ItemListState1
+import ru.pavlig43.itemlist.internal.ItemFilter1
 import ru.pavlig43.itemlist.api.component.toDeleteState
 
-
-class ItemsBodyComponent<O : GenericItem, U : IItemUi>(
+internal class ItemsBodyComponent<O : GenericItem, U : IItemUi>(
     componentContext: ComponentContext,
     dataFlow: Flow<RequestResult<List<O>>>,
     val searchText: StateFlow<ItemFilter1.SearchText>,
@@ -27,9 +27,8 @@ class ItemsBodyComponent<O : GenericItem, U : IItemUi>(
     val withCheckbox: Boolean,
     val onItemClick: (U) -> Unit,
     private val mapper: O.() -> U,
-    val onCreate: () -> Unit
 
-) : ComponentContext by componentContext {
+    ) : ComponentContext by componentContext {
     private val coroutineScope = componentCoroutineScope()
 
 
@@ -55,7 +54,7 @@ class ItemsBodyComponent<O : GenericItem, U : IItemUi>(
     .map { it.toItemListState1(mapper)  }
         .stateIn(
             coroutineScope,
-            started = SharingStarted.Eagerly,
+            started = SharingStarted.Companion.Eagerly,
             initialValue = ItemListState1.Loading()
         )
 
@@ -81,9 +80,7 @@ class ItemsBodyComponent<O : GenericItem, U : IItemUi>(
     }
 
 }
-
-
-internal fun <O : GenericItem,U: IItemUi> RequestResult<List<O>>.toItemListState1(mapper:O.()->U): ItemListState1<U> {
+private fun <O : GenericItem,U: IItemUi> RequestResult<List<O>>.toItemListState1(mapper:O.()->U): ItemListState1<U> {
     return when (this) {
         is RequestResult.Error -> ItemListState1.Error(message ?: "unknown error")
         is RequestResult.InProgress -> ItemListState1.Loading()
@@ -91,6 +88,3 @@ internal fun <O : GenericItem,U: IItemUi> RequestResult<List<O>>.toItemListState
         is RequestResult.Success<List<O>> -> ItemListState1.Success(data.map { it.mapper() })
     }
 }
-
-
-

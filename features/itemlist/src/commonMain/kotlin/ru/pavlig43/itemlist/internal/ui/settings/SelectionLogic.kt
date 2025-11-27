@@ -26,14 +26,14 @@ import ru.pavlig43.itemlist.internal.ui.SAVE_SELECTION
 import ru.pavlig43.itemlist.internal.ui.SELECTION
 
 @Composable
-internal fun SelectionLogic(
-    fullListSelection: List<ItemType>,
-    saveSelection: (List<ItemType>) -> Unit
+internal fun <T: ItemType> SelectionLogic(
+    fullListSelection: List<T>,
+    saveSelection: (List<T>) -> Unit
 ) {
 
     var isMenuOpen by remember { mutableStateOf(false) }
 
-    val selectedItems = remember { mutableStateListOf<ItemType>() }
+    val selectedItems = remember { mutableStateListOf<T>() }
     IconButtonToolTip(
         tooltipText = SELECTION,
         onClick = { isMenuOpen = !isMenuOpen },
@@ -59,11 +59,11 @@ internal fun SelectionLogic(
 }
 @Suppress("LongParameterList")
 @Composable
-private fun DropDownBody(
-    items: List<ItemType>,
-    selectedItems: List<ItemType>,
-    addItemInSelection: (ItemType) -> Unit,
-    removeItemFromSelection: (ItemType) -> Unit,
+private fun<T: ItemType> DropDownBody(
+    items: List<T>,
+    selectedItems: List<T>,
+    addItemInSelection: (T) -> Unit,
+    removeItemFromSelection: (T) -> Unit,
     saveSelection: () -> Unit,
     modifier: Modifier = Modifier
 ) {

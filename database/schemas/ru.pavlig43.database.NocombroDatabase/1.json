@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "55101db9fd17366983a6bd99c9de999d",
+    "identityHash": "4fcaad7642038d2894c9e7489c89f4d1",
     "entities": [
       {
         "tableName": "document",
@@ -527,8 +527,8 @@
         ]
       },
       {
-        "tableName": "transaction_row",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`product_id` INTEGER NOT NULL, `declaration_id` INTEGER NOT NULL, `date_born` INTEGER NOT NULL, `batch` INTEGER NOT NULL, `transaction_id` INTEGER NOT NULL, `count` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, FOREIGN KEY(`product_id`) REFERENCES `product`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION , FOREIGN KEY(`declaration_id`) REFERENCES `declaration`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION , FOREIGN KEY(`transaction_id`) REFERENCES `product_transaction`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
+        "tableName": "product_batch",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`product_id` INTEGER NOT NULL, `declaration_id` INTEGER NOT NULL, `date_born` INTEGER NOT NULL, `date_expire` INTEGER NOT NULL, `batch_number` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, FOREIGN KEY(`product_id`) REFERENCES `product`(`id`) ON UPDATE NO ACTION ON DELETE RESTRICT , FOREIGN KEY(`declaration_id`) REFERENCES `product_declaration`(`id`) ON UPDATE NO ACTION ON DELETE RESTRICT )",
         "fields": [
           {
             "fieldPath": "productId",
@@ -537,7 +537,7 @@
             "notNull": true
           },
           {
-            "fieldPath": "declarationId",
+            "fieldPath": "declarationInt",
             "columnName": "declaration_id",
             "affinity": "INTEGER",
             "notNull": true
@@ -549,8 +549,62 @@
             "notNull": true
           },
           {
-            "fieldPath": "batch",
-            "columnName": "batch",
+            "fieldPath": "dateExpire",
+            "columnName": "date_expire",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "batchNumber",
+            "columnName": "batch_number",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "foreignKeys": [
+          {
+            "table": "product",
+            "onDelete": "RESTRICT",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "product_id"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          },
+          {
+            "table": "product_declaration",
+            "onDelete": "RESTRICT",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "declaration_id"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "product_batch_operation",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`product_batch_id` INTEGER NOT NULL, `transaction_id` INTEGER NOT NULL, `count` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, FOREIGN KEY(`product_batch_id`) REFERENCES `product_batch`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`transaction_id`) REFERENCES `product_transaction`(`id`) ON UPDATE NO ACTION ON DELETE RESTRICT )",
+        "fields": [
+          {
+            "fieldPath": "productBatchId",
+            "columnName": "product_batch_id",
             "affinity": "INTEGER",
             "notNull": true
           },
@@ -581,22 +635,11 @@
         },
         "foreignKeys": [
           {
-            "table": "product",
-            "onDelete": "NO ACTION",
+            "table": "product_batch",
+            "onDelete": "CASCADE",
             "onUpdate": "NO ACTION",
             "columns": [
-              "product_id"
-            ],
-            "referencedColumns": [
-              "id"
-            ]
-          },
-          {
-            "table": "declaration",
-            "onDelete": "NO ACTION",
-            "onUpdate": "NO ACTION",
-            "columns": [
-              "declaration_id"
+              "product_batch_id"
             ],
             "referencedColumns": [
               "id"
@@ -604,7 +647,7 @@
           },
           {
             "table": "product_transaction",
-            "onDelete": "NO ACTION",
+            "onDelete": "RESTRICT",
             "onUpdate": "NO ACTION",
             "columns": [
               "transaction_id"
@@ -617,7 +660,7 @@
       },
       {
         "tableName": "product_transaction",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`transaction_type` TEXT NOT NULL, `operation_type` TEXT NOT NULL, `date` INTEGER NOT NULL, `comment` TEXT NOT NULL, `is_completed` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`transaction_type` TEXT NOT NULL, `operation_type` TEXT NOT NULL, `date` INTEGER NOT NULL, `comment` TEXT NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL)",
         "fields": [
           {
             "fieldPath": "transactionType",
@@ -644,12 +687,6 @@
             "notNull": true
           },
           {
-            "fieldPath": "isCompleted",
-            "columnName": "is_completed",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
             "fieldPath": "id",
             "columnName": "id",
             "affinity": "INTEGER",
@@ -666,7 +703,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '55101db9fd17366983a6bd99c9de999d')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '4fcaad7642038d2894c9e7489c89f4d1')"
     ]
   }
 }

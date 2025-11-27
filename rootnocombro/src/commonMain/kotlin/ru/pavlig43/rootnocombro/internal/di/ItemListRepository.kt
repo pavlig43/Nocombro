@@ -1,26 +1,27 @@
 package ru.pavlig43.rootnocombro.internal.di
 
+import org.koin.core.module.dsl.factoryOf
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import ru.pavlig43.database.NocombroDatabase
-import ru.pavlig43.database.data.declaration.DeclarationIn
 import ru.pavlig43.database.data.document.DOCUMENT_TABLE_NAME
 import ru.pavlig43.database.data.document.Document
 import ru.pavlig43.database.data.document.DocumentType
 import ru.pavlig43.database.data.product.PRODUCT_TABLE_NAME
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductType
-import ru.pavlig43.database.data.transaction.ProductTransactionIn
-import ru.pavlig43.database.data.transaction.TransactionRow
 import ru.pavlig43.database.data.vendor.VENDOR_TABLE_NAME
 import ru.pavlig43.database.data.vendor.Vendor
 import ru.pavlig43.database.data.vendor.VendorType
-import ru.pavlig43.declarationlist.internal.data.DeclarationListRepository
+import ru.pavlig43.itemlist.api.data.DeclarationListRepository
+import ru.pavlig43.itemlist.api.data.DocumentListRepository
 import ru.pavlig43.itemlist.api.data.DefaultItemListRepository
 import ru.pavlig43.itemlist.api.data.IItemListRepository
 import ru.pavlig43.itemlist.api.data.ItemListType
 
 internal val IItemListRepositoryModule = module {
+    factoryOf(::DocumentListRepository)
+    factoryOf(::DeclarationListRepository)
     factory<IItemListRepository<Document,DocumentType>>(named(ItemListType.Document.name)) {
         getDocumentListRepository(
             get()
@@ -36,9 +37,9 @@ internal val IItemListRepositoryModule = module {
             get()
         )
     }
-    factory<DeclarationListRepository> { getDeclarationListRepository(get()) }
 
 }
+
 
 
 
@@ -75,11 +76,4 @@ private fun getVendorListRepository(
     )
 }
 
-private fun getDeclarationListRepository(db: NocombroDatabase): DeclarationListRepository {
-    val dao = db.declarationDao
-    return DeclarationListRepository(
-        deleteByIds = dao::deleteDeclarationsByIds,
-        observeOnItems = dao::observeOnItems
-    )
-}
 //private fun getTransactionListRepository(db: NocombroDatabase): IItemListRepository<ProductTransactionIn> {}
