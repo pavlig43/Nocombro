@@ -17,7 +17,7 @@ import ru.pavlig43.core.SlotComponent
 import ru.pavlig43.corekoin.ComponentKoinContext
 import ru.pavlig43.database.data.document.Document
 import ru.pavlig43.database.data.document.DocumentType
-import ru.pavlig43.documentform.api.IDocumentFormDependencies
+import ru.pavlig43.documentform.api.DocumentFormDependencies
 import ru.pavlig43.documentform.internal.component.tabs.DocumentFormTabInnerTabsComponent
 import ru.pavlig43.documentform.internal.di.createDocumentFormModule
 import ru.pavlig43.documentform.internal.toDocument
@@ -29,7 +29,7 @@ class DocumentFormComponent(
     documentId: Int,
     val closeTab: () -> Unit,
     componentContext: ComponentContext,
-    dependencies: IDocumentFormDependencies,
+    dependencies: DocumentFormDependencies,
 ) : ComponentContext by componentContext, SlotComponent {
 
     private val koinContext = instanceKeeper.getOrCreate {

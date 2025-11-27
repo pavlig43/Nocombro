@@ -10,7 +10,6 @@ internal const val COMMENT_WIDTH = 400
 internal const val CREATE_RECORD = "Создать запись"
 internal const val ID = "ИД"
 internal const val NAME = "Название"
-internal const val TYPE = "Тип объекта"
 internal const val CREATED_AT = "Время создания"
 internal const val COMMENT = "Комментарий"
 internal const val SELECTION = "Отбор"

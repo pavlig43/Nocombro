@@ -6,13 +6,10 @@ import org.koin.core.logger.Level
 import org.koin.core.logger.PrintLogger
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.KoinAppDeclaration
-import org.koin.dsl.bind
 import org.koin.dsl.module
-import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.platformDataBaseModule
-import ru.pavlig43.datastore.SettingsRepository
 import ru.pavlig43.datastore.di.getSettingsRepository
-import ru.pavlig43.rootnocombro.api.IRootDependencies
+import ru.pavlig43.rootnocombro.api.RootDependencies
 
 
 fun initKoin(appDeclaration: KoinAppDeclaration = {}) {
@@ -29,13 +26,9 @@ fun initKoin(appDeclaration: KoinAppDeclaration = {}) {
 }
 
 private val appModule = module {
-    singleOf(::RootDependencies) bind IRootDependencies::class
+    singleOf(::RootDependencies)
 
 
 }
 
-private class RootDependencies(
-    override val database: NocombroDatabase,
-    override val settingsRepository:SettingsRepository
-): IRootDependencies
 

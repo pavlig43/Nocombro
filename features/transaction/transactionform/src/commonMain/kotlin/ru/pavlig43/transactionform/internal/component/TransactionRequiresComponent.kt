@@ -17,24 +17,24 @@ import kotlinx.serialization.Serializable
 import ru.pavlig43.core.RequestResult
 import ru.pavlig43.core.componentCoroutineScope
 import ru.pavlig43.core.mapTo
-import ru.pavlig43.coreui.itemlist.IItemUi
-import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.database.data.transaction.ProductTransactionOut
 import ru.pavlig43.database.data.transaction.TransactionRowOut
+import ru.pavlig43.itemlist.api.ItemListDependencies
+import ru.pavlig43.itemlist.api.ProductListParamProvider
 import ru.pavlig43.itemlist.api.component.MBSItemListComponent
-import ru.pavlig43.itemlist.api.data.IItemListRepository
+import ru.pavlig43.itemlist.api.data.IItemUi
 import ru.pavlig43.loadinitdata.api.component.ILoadInitDataComponent
 import ru.pavlig43.loadinitdata.api.component.LoadInitDataComponent
-import ru.pavlig43.transactionform.internal.data.TransactionRowUi
 import ru.pavlig43.transactionform.internal.data.ProductTransactionUi
+import ru.pavlig43.transactionform.internal.data.TransactionRowUi
 
 internal class TransactionRequiresComponent(
     componentContext: ComponentContext,
     private val onChangeValueForMainTab: (String) -> Unit,
     private val getInitData: (suspend () -> RequestResult<ProductTransactionOut>)?,
+    itemListDependencies: ItemListDependencies,
     openProductTab: (Int) -> Unit,
-    productListRepository: IItemListRepository<Product, ProductType>,
 ) : ComponentContext by componentContext {
 
     private val coroutineScope = componentCoroutineScope()
@@ -67,7 +67,7 @@ internal class TransactionRequiresComponent(
     val transactionRowsComponent = TransactionRowsComponent(
         componentContext = childContext("transaction_rows"),
         openProductTab = openProductTab,
-        productListRepository = productListRepository,
+        itemListDependencies = itemListDependencies,
         initData = _transaction.value.rows,
     )
 
@@ -79,13 +79,13 @@ internal class TransactionRequiresComponent(
 internal class TransactionRowsComponent(
     componentContext: ComponentContext,
     val openProductTab: (Int) -> Unit,
-    private val productListRepository: IItemListRepository<Product, ProductType>,
+    itemListDependencies: ItemListDependencies,
     initData: List<TransactionRowUi>,
 ) : ComponentContext by componentContext {
 
     private val dialogNavigation = SlotNavigation<MBSProductDialog>()
 
-    internal val dialog: Value<ChildSlot<MBSProductDialog, MBSItemListComponent<Product, ProductType>>> =
+    internal val dialog: Value<ChildSlot<MBSProductDialog, MBSItemListComponent>> =
         childSlot(
             source = dialogNavigation,
             key = "product_dialog",
@@ -95,10 +95,13 @@ internal class TransactionRowsComponent(
             MBSItemListComponent(
                 componentContext = context,
                 onDismissed = dialogNavigation::dismiss,
-                repository = productListRepository,
                 onCreate = { openProductTab(0) },
-                fullListSelection = ProductType.entries,
-                onItemClick = { it: IItemUi ->
+                itemListDependencies = itemListDependencies,
+                itemListParamProvider = ProductListParamProvider(
+                    fullListProductTypes = ProductType.entries,
+                    withCheckbox = false
+                ),
+                onItemClick = {
                     addTransactionRow(it.id, it.displayName)
                     dialogNavigation.dismiss()
                 },

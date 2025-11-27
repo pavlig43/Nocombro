@@ -1,12 +1,11 @@
 package ru.pavlig43.declarationform.internal.component
 
 import com.arkivanov.decompose.ComponentContext
-import org.koin.core.scope.Scope
 import ru.pavlig43.core.data.ChangeSet
 import ru.pavlig43.database.data.declaration.DeclarationIn
 import ru.pavlig43.declarationform.internal.toDeclarationIn
 import ru.pavlig43.form.api.data.IUpdateRepository
-import ru.pavlig43.itemlist.api.component.refactoring.ItemListDependencies
+import ru.pavlig43.itemlist.api.ItemListDependencies
 
 internal class UpdateDeclarationTabSlot(
     componentContext: ComponentContext,

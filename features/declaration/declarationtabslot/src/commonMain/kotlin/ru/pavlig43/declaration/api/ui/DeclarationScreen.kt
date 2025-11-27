@@ -1,19 +1,14 @@
 package ru.pavlig43.declaration.api.ui
 
-import DeclarationListScreen
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -26,8 +21,8 @@ import ru.pavlig43.core.data.GenericDeclarationOut
 import ru.pavlig43.coreui.tooltip.IconButtonToolTip
 import ru.pavlig43.declaration.api.component.DeclarationTabSlot
 import ru.pavlig43.declaration.api.component.ProductDeclarationListComponent
-import ru.pavlig43.declaration.internal.component.MBSDeclarationListComponent
 import ru.pavlig43.declaration.internal.ui.AddDeclarationRow
+import ru.pavlig43.itemlist.api.ui.MBSItemList
 
 @Composable
 fun<Out: GenericDeclarationOut,In: GenericDeclarationIn>ProductDeclarationScreen(
@@ -42,7 +37,7 @@ fun<Out: GenericDeclarationOut,In: GenericDeclarationIn>ProductDeclarationScreen
         modifier = modifier
     )
     dialog.child?.instance?.also {
-        MBSDeclaration(it)
+        MBSItemList(it)
     }
 }
 @Composable
@@ -80,15 +75,4 @@ private fun <Out : GenericDeclarationOut> DeclarationBlock(
     }
 
 
-}
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun  MBSDeclaration(component: MBSDeclarationListComponent, modifier: Modifier = Modifier){
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    ModalBottomSheet(
-        onDismissRequest = component::onDismissClicked,
-        sheetState = sheetState,
-        modifier = modifier.fillMaxSize()){
-        DeclarationListScreen(component.declarationList,Modifier.fillMaxSize())
-    }
 }

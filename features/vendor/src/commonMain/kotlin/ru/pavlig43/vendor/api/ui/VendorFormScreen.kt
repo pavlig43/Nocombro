@@ -15,8 +15,6 @@ import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import ru.pavlig43.addfile.api.ui.FilesScreen
 import ru.pavlig43.form.api.ui.ItemTabsUi
-import ru.pavlig43.manageitem.api.ui.CreateScreen
-import ru.pavlig43.manageitem.api.ui.RequireValuesScreen
 import ru.pavlig43.vendor.api.VendorFormComponent
 import ru.pavlig43.vendor.internal.component.VendorFileTabSlot
 import ru.pavlig43.vendor.internal.component.VendorInformationTabSlot

@@ -19,7 +19,7 @@ import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.manageitem.api.component.CreateItemComponent
 import ru.pavlig43.manageitem.api.data.DefaultRequireValues
-import ru.pavlig43.productform.api.IProductFormDependencies
+import ru.pavlig43.productform.api.ProductFormDependencies
 import ru.pavlig43.productform.internal.component.ProductFormTabInnerTabsComponent
 import ru.pavlig43.productform.internal.di.createProductFormModule
 import ru.pavlig43.productform.internal.toProduct
@@ -30,7 +30,7 @@ class ProductFormComponent(
     private val onOpenProductTab: (Int) -> Unit,
     private val onOpenDeclarationTab: (Int) -> Unit,
     componentContext: ComponentContext,
-    dependencies: IProductFormDependencies,
+    dependencies: ProductFormDependencies,
 ) : ComponentContext by componentContext, SlotComponent {
 
     private val koinContext = instanceKeeper.getOrCreate {

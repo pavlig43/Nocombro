@@ -1,6 +1,5 @@
 package ru.pavlig43.rootnocombro.api.ui
 
-import DeclarationListScreen
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
@@ -27,13 +26,10 @@ import ru.pavlig43.core.tabs.ITabNavigationComponent
 import ru.pavlig43.coreui.tab.TabNavigationContent
 import ru.pavlig43.declarationform.api.DeclarationFormComponent
 import ru.pavlig43.declarationform.api.DeclarationFormScreen
-import ru.pavlig43.declarationlist.api.component.DeclarationListComponent
 import ru.pavlig43.documentform.api.component.DocumentFormComponent
 import ru.pavlig43.documentform.api.ui.DocumentFormScreen
-import ru.pavlig43.itemlist.api.component.ItemListComponent
-import ru.pavlig43.itemlist.api.component.refactoring.GeneralItemListScreen
-import ru.pavlig43.itemlist.api.component.refactoring.ItemListFactoryComponent
-import ru.pavlig43.itemlist.api.ui.ItemListScreen
+import ru.pavlig43.itemlist.api.component.ItemListFactoryComponent
+import ru.pavlig43.itemlist.api.ui.GeneralItemListScreen
 import ru.pavlig43.notification.api.component.PageNotificationComponent
 import ru.pavlig43.notification.api.ui.NotificationTabs
 import ru.pavlig43.productform.api.component.ProductFormComponent
@@ -116,10 +112,6 @@ fun RootNocombroScreen(rootNocombroComponent: IRootNocombroComponent) {
                                         when (slotComponent) {
 
                                             is ItemListFactoryComponent -> GeneralItemListScreen(slotComponent)
-
-                                            is ItemListComponent<*,*> -> ItemListScreen(slotComponent)
-
-                                            is DeclarationListComponent -> DeclarationListScreen(slotComponent)
 
                                             is DocumentFormComponent -> DocumentFormScreen(slotComponent)
 

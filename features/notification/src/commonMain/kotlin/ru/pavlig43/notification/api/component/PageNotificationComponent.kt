@@ -19,7 +19,7 @@ import ru.pavlig43.core.tabs.DefaultTabNavigationComponent
 import ru.pavlig43.core.tabs.ITabNavigationComponent
 import ru.pavlig43.core.toStateFlow
 import ru.pavlig43.corekoin.ComponentKoinContext
-import ru.pavlig43.notification.api.INotificationDependencies
+import ru.pavlig43.notification.api.NotificationDependencies
 import ru.pavlig43.notification.api.data.NotificationDrawerUi
 import ru.pavlig43.notification.api.data.NotificationItem
 import ru.pavlig43.notification.api.data.NotificationLevel
@@ -31,7 +31,7 @@ import ru.pavlig43.notification.internal.di.createNotificationModule
 class PageNotificationComponent(
     componentContext: ComponentContext,
     private val onOpenTab: (NotificationItem, Int) -> Unit,
-    dependencies: INotificationDependencies,
+    dependencies: NotificationDependencies,
 ) : ComponentContext by componentContext, SlotComponent {
 
     private val _model = MutableStateFlow(SlotComponent.TabModel("Оповещения"))

@@ -15,13 +15,12 @@ import ru.pavlig43.core.tabs.DefaultTabNavigationComponent
 import ru.pavlig43.core.tabs.ITabNavigationComponent
 import ru.pavlig43.database.DataBaseTransaction
 import ru.pavlig43.form.api.component.IItemFormInnerTabsComponent
-import ru.pavlig43.itemlist.api.data.ItemListType
 import ru.pavlig43.productform.internal.di.UpdateCollectionRepositoryType
 import ru.pavlig43.productform.internal.di.UpdateRepositoryType
 import ru.pavlig43.upsertitem.api.component.IUpdateComponent
 import ru.pavlig43.upsertitem.api.component.UpdateComponent
 
-
+@Suppress("LongParameterList")
 internal class ProductFormTabInnerTabsComponent(
     componentContext: ComponentContext,
     closeFormScreen:()->Unit,
@@ -68,17 +67,17 @@ internal class ProductFormTabInnerTabsComponent(
                     ProductTab.Declaration -> ProductDeclarationTabSlot(
                         componentContext = context,
                         productId = productId,
-                        declarationListRepository = scope.get(),
                         updateRepository = scope.get(named(UpdateCollectionRepositoryType.Declaration.name)),
-                        openDeclarationTab = onOpenDeclarationTab
+                        openDeclarationTab = onOpenDeclarationTab,
+                        itemListDependencies = scope.get()
                     )
 
                     ProductTab.Ingredients -> CompositionTabSlot(
                         componentContext = componentContext,
                         productId = productId,
-                        productListRepository = scope.get(named(ItemListType.Product.name)),
                         openProductTab = onOpenProductTab,
                         updateCompositionRepository = scope.get(named(UpdateCollectionRepositoryType.Composition.name)),
+                        itemListDependencies = scope.get(),
                     )
                 }
 

@@ -7,12 +7,14 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import ru.pavlig43.core.RequestResult
-import ru.pavlig43.coreui.itemlist.IItemUi
+import ru.pavlig43.core.data.dbSafeCall
+import ru.pavlig43.core.data.dbSafeFlow
+import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.document.Document
 import ru.pavlig43.database.data.document.DocumentType
-import ru.pavlig43.itemlist.api.component.DocumentListParamProvider
-import ru.pavlig43.itemlist.api.data.DocumentListRepository
-import ru.pavlig43.itemlist.internal.ItemFilter1
+import ru.pavlig43.itemlist.api.DocumentListParamProvider
+import ru.pavlig43.itemlist.api.data.IItemUi
+import ru.pavlig43.itemlist.internal.ItemFilter
 import ru.pavlig43.itemlist.internal.generateComponent
 
 internal class DocumentsListComponent(
@@ -26,15 +28,15 @@ internal class DocumentsListComponent(
 
 
 
-    val typeComponent = generateComponent(ItemFilter1.Type(paramProvider.fullListDocumentTypes))
+    val typeComponent = generateComponent(ItemFilter.Type(paramProvider.fullListDocumentTypes))
 
-    val searchTextComponent = generateComponent(ItemFilter1.SearchText(""))
+    val searchTextComponent = generateComponent(ItemFilter.SearchText(""))
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private val documentListFlow: Flow<RequestResult<List<Document>>> = combine(
         typeComponent.filterFlow,
         searchTextComponent.filterFlow
-    ) { types: ItemFilter1.Type<DocumentType>, text: ItemFilter1.SearchText ->
+    ) { types: ItemFilter.Type<DocumentType>, text: ItemFilter.SearchText ->
         documentListRepository.observeOnItems(
             searchText = text.value,
             types = types.value
@@ -72,4 +74,28 @@ private fun Document.toUi(): DocumentItemUi {
         createdAt = createdAt,
         comment = comment
     )
+}
+internal class DocumentListRepository(
+    db: NocombroDatabase
+) {
+    private val dao = db.documentDao
+    private val tag = "DocumentListRepository"
+
+    suspend fun deleteByIds(ids: List<Int>): RequestResult<Unit> {
+        return dbSafeCall(tag) {
+            dao.deleteDocumentsByIds(ids)
+        }
+    }
+
+    fun observeOnItems(
+        searchText: String,
+        types: List<DocumentType>,
+    ): Flow<RequestResult<List<Document>>> {
+        return dbSafeFlow(tag) {
+            dao.observeOnDocuments(
+                searchText = searchText,
+                types = types
+            )
+        }
+    }
 }

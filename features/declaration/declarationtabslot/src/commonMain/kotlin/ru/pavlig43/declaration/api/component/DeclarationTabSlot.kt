@@ -17,9 +17,10 @@ import ru.pavlig43.core.data.GenericDeclarationIn
 import ru.pavlig43.core.data.GenericDeclarationOut
 import ru.pavlig43.core.mapTo
 import ru.pavlig43.declaration.api.data.ProductDeclarationUi
-import ru.pavlig43.declaration.internal.component.MBSDeclarationListComponent
-import ru.pavlig43.declarationlist.internal.data.DeclarationItemUi
-import ru.pavlig43.declarationlist.internal.data.DeclarationListRepository
+import ru.pavlig43.itemlist.api.DeclarationListParamProvider
+import ru.pavlig43.itemlist.api.ItemListDependencies
+import ru.pavlig43.itemlist.api.component.MBSItemListComponent
+import ru.pavlig43.itemlist.internal.component.DeclarationItemUi
 import ru.pavlig43.loadinitdata.api.component.ILoadInitDataComponent
 import ru.pavlig43.loadinitdata.api.component.LoadInitDataComponent
 import ru.pavlig43.upsertitem.api.data.UpdateCollectionRepository
@@ -29,7 +30,7 @@ import kotlin.time.ExperimentalTime
 abstract class DeclarationTabSlot<Out : GenericDeclarationOut, In : GenericDeclarationIn>(
     componentContext: ComponentContext,
     private val productId: Int,
-    private val declarationListRepository: DeclarationListRepository,
+    itemListDependencies: ItemListDependencies,
     private val updateRepository: UpdateCollectionRepository<Out, In>,
     openDeclarationTab: (Int) -> Unit,
     private val mapper: ProductDeclarationUi.(id: Int) -> In,
@@ -50,13 +51,14 @@ abstract class DeclarationTabSlot<Out : GenericDeclarationOut, In : GenericDecla
         serializer = DialogConfig.serializer(),
         handleBackButton = true,
     ) { config, context ->
-        MBSDeclarationListComponent(
+        MBSItemListComponent(
             componentContext = context,
             onDismissed = dialogNavigation::dismiss,
             onCreate = { openDeclarationTab(0) },
-            repository = declarationListRepository,
-            onItemClick = {dec: DeclarationItemUi ->
-                productDeclarationList.addDeclaration(dec)
+            itemListDependencies = itemListDependencies,
+            itemListParamProvider = DeclarationListParamProvider(withCheckbox = false),
+            onItemClick = {dec ->
+                productDeclarationList.addDeclaration(dec as DeclarationItemUi)
                 dialogNavigation.dismiss()
             },
         )

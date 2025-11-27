@@ -6,11 +6,13 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapLatest
 import ru.pavlig43.core.RequestResult
-import ru.pavlig43.coreui.itemlist.IItemUi
+import ru.pavlig43.core.data.dbSafeCall
+import ru.pavlig43.core.data.dbSafeFlow
+import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.declaration.DeclarationIn
-import ru.pavlig43.itemlist.api.component.DeclarationListParamProvider
-import ru.pavlig43.itemlist.api.data.DeclarationListRepository
-import ru.pavlig43.itemlist.internal.ItemFilter1
+import ru.pavlig43.itemlist.api.DeclarationListParamProvider
+import ru.pavlig43.itemlist.api.data.IItemUi
+import ru.pavlig43.itemlist.internal.ItemFilter
 import ru.pavlig43.itemlist.internal.generateComponent
 
 internal class DeclarationListComponent(
@@ -21,12 +23,12 @@ internal class DeclarationListComponent(
     paramProvider: DeclarationListParamProvider
 ) : ComponentContext by componentContext, IListComponent<DeclarationIn, DeclarationItemUi> {
 
-    val searchTextComponent = generateComponent(ItemFilter1.SearchText(""))
+    val searchTextComponent = generateComponent(ItemFilter.SearchText(""))
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private val declarationListFlow: Flow<RequestResult<List<DeclarationIn>>> =
         searchTextComponent.filterFlow
-            .flatMapLatest { text: ItemFilter1.SearchText ->
+            .flatMapLatest { text: ItemFilter.SearchText ->
                 declarationListRepository.observeDeclarationByFilter(text.value)
             }
 
@@ -44,7 +46,7 @@ internal class DeclarationListComponent(
 
 
 }
-internal data class DeclarationItemUi(
+data class DeclarationItemUi(
 
     override val displayName: String,
 
@@ -70,6 +72,26 @@ private fun DeclarationIn.toUi(): DeclarationItemUi {
 
         )
 
+}
+internal class DeclarationListRepository(
+    db: NocombroDatabase
+) {
+    private val dao = db.declarationDao
+    private val tag = "Declaration  list repository"
+
+    suspend fun deleteByIds(ids: List<Int>): RequestResult<Unit> {
+        return dbSafeCall(tag) {
+            dao.deleteDeclarationsByIds(ids)
+        }
+    }
+
+
+    fun observeDeclarationByFilter(
+        text: String
+    ): Flow<RequestResult<List<DeclarationIn>>> {
+
+        return dbSafeFlow(tag) { dao.observeOnItems(text, text.isNotBlank()) }
+    }
 }
 
 

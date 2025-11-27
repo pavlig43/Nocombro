@@ -8,7 +8,7 @@ import com.arkivanov.decompose.defaultComponentContext
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.manualFileKitCoreInitialization
 import org.koin.java.KoinJavaComponent.getKoin
-import ru.pavlig43.rootnocombro.api.IRootDependencies
+import ru.pavlig43.rootnocombro.api.RootDependencies
 import ru.pavlig43.rootnocombro.api.component.RootNocombroComponent
 
 class MainActivity : ComponentActivity() {
@@ -18,7 +18,7 @@ class MainActivity : ComponentActivity() {
         FileKit.manualFileKitCoreInitialization(this)
         val rootComponent = RootNocombroComponent(
             componentContext = defaultComponentContext(),
-            rootDependencies = getKoin().get<IRootDependencies>()
+            rootDependencies = getKoin().get<RootDependencies>()
             )
         setContent {
             App(rootComponent)

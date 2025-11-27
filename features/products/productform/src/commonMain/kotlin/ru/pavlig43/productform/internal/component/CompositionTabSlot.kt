@@ -14,14 +14,14 @@ import kotlinx.coroutines.flow.update
 import kotlinx.serialization.Serializable
 import ru.pavlig43.core.data.ChangeSet
 import ru.pavlig43.core.mapTo
-import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductComposition
 import ru.pavlig43.database.data.product.ProductCompositionIn
 import ru.pavlig43.database.data.product.ProductCompositionOut
 import ru.pavlig43.database.data.product.ProductIngredientIn
 import ru.pavlig43.database.data.product.ProductType
+import ru.pavlig43.itemlist.api.ItemListDependencies
+import ru.pavlig43.itemlist.api.ProductListParamProvider
 import ru.pavlig43.itemlist.api.component.MBSItemListComponent
-import ru.pavlig43.itemlist.api.data.IItemListRepository
 import ru.pavlig43.loadinitdata.api.component.ILoadInitDataComponent
 import ru.pavlig43.loadinitdata.api.component.LoadInitDataComponent
 import ru.pavlig43.productform.internal.data.CompositionUi
@@ -37,14 +37,14 @@ import ru.pavlig43.upsertitem.api.data.UpdateCollectionRepository
  *
  * @param componentContext Контекст компонента Decompose.
  * @param productId Идентификатор продукта, к которому относятся составы.
- * @param productListRepository Репозиторий для получения списка продуктов (для выбора ингредиентов).
  * @param openProductTab Функция открытия вкладки продукта по ID.
  * @param updateCompositionRepository Репозиторий для обновления составов продукта.
  */
+@Suppress("TooManyFunctions")
 internal class CompositionTabSlot(
     componentContext: ComponentContext,
     private val productId: Int,
-    private val productListRepository: IItemListRepository<Product, ProductType>,
+    itemListDependencies: ItemListDependencies,
     val openProductTab: (Int) -> Unit,
     private val updateCompositionRepository: UpdateCollectionRepository<ProductCompositionOut, ProductCompositionIn>
 ) : ComponentContext by componentContext, ProductTabSlot {
@@ -151,7 +151,7 @@ internal class CompositionTabSlot(
             lst
         }
     }
-
+@Suppress("ReturnCount")
     private fun addIngredient(compositionComposeKey: Int, productId: Int, productName: String) {
         val composition =
             _compositionList.value.firstOrNull { it.composeKey == compositionComposeKey } ?: return
@@ -195,7 +195,7 @@ internal class CompositionTabSlot(
 
     private val dialogNavigation = SlotNavigation<MBSIngredientDialog>()
 
-    internal val dialog: Value<ChildSlot<MBSIngredientDialog, MBSItemListComponent<Product, ProductType>>> =
+    internal val dialog: Value<ChildSlot<MBSIngredientDialog, MBSItemListComponent>> =
         childSlot(
             source = dialogNavigation,
             key = "product_dialog",
@@ -205,9 +205,12 @@ internal class CompositionTabSlot(
             MBSItemListComponent(
                 componentContext = context,
                 onDismissed = dialogNavigation::dismiss,
-                repository = productListRepository,
+                itemListDependencies = itemListDependencies,
                 onCreate = { openProductTab(0) },
-                fullListSelection = ProductType.entries,
+                itemListParamProvider = ProductListParamProvider(
+                    fullListProductTypes = ProductType.entries,
+                    withCheckbox = false
+                ),
                 onItemClick = {
                     addIngredient(config.compositionId, it.id, it.displayName)
                     dialogNavigation.dismiss()
@@ -265,12 +268,12 @@ private fun CompositionUi.toProductCompositionIn(productId: Int): ProductComposi
         productId = productId,
         name = name
     )
-    val ingredients = this.productIngredients.map { it: ProductIngredientUi ->
+    val ingredients = this.productIngredients.map { ingredient: ProductIngredientUi ->
         ProductIngredientIn(
             compositionId = compositionForSave.id,
-            ingredientId = it.ingredientId,
-            countGrams = it.countGram,
-            id = it.id
+            ingredientId = ingredient.ingredientId,
+            countGrams = ingredient.countGram,
+            id = ingredient.id
         )
     }
     return ProductCompositionIn(

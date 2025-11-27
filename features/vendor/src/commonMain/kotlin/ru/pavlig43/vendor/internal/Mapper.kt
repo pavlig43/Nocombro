@@ -2,7 +2,6 @@ package ru.pavlig43.vendor.internal
 
 import ru.pavlig43.database.data.vendor.Vendor
 import ru.pavlig43.manageitem.api.data.DefaultRequireValues
-import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalTime::class)

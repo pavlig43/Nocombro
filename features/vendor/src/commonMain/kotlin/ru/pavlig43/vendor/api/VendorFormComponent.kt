@@ -5,7 +5,6 @@ import com.arkivanov.decompose.childContext
 import com.arkivanov.decompose.router.stack.ChildStack
 import com.arkivanov.decompose.router.stack.StackNavigation
 import com.arkivanov.decompose.router.stack.childStack
-import com.arkivanov.decompose.router.stack.replaceAll
 import com.arkivanov.decompose.value.Value
 import com.arkivanov.essenty.instancekeeper.getOrCreate
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,20 +14,15 @@ import kotlinx.serialization.Serializable
 import org.koin.core.scope.Scope
 import ru.pavlig43.core.SlotComponent
 import ru.pavlig43.corekoin.ComponentKoinContext
-import ru.pavlig43.database.data.vendor.Vendor
-
-import ru.pavlig43.manageitem.api.component.CreateItemComponent
-import ru.pavlig43.manageitem.api.data.DefaultRequireValues
-import ru.pavlig43.vendor.api.VendorFormComponent.Child.*
+import ru.pavlig43.vendor.api.VendorFormComponent.Child.Update
 import ru.pavlig43.vendor.internal.component.VendorFormTabInnerTabsComponent
 import ru.pavlig43.vendor.internal.di.createVendorFormModule
-import ru.pavlig43.vendor.internal.toVendor
 
 class VendorFormComponent(
     vendorId: Int,
     val closeTab: () -> Unit,
     componentContext: ComponentContext,
-    dependencies: IVendorFormDependencies,
+    dependencies: VendorFormDependencies,
 ) : ComponentContext by componentContext, SlotComponent {
 
     private val koinContext = instanceKeeper.getOrCreate {

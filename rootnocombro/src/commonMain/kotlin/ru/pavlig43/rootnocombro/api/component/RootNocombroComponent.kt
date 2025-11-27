@@ -10,7 +10,7 @@ import com.arkivanov.decompose.value.Value
 import com.arkivanov.essenty.instancekeeper.getOrCreate
 import kotlinx.serialization.Serializable
 import ru.pavlig43.corekoin.ComponentKoinContext
-import ru.pavlig43.rootnocombro.api.IRootDependencies
+import ru.pavlig43.rootnocombro.api.RootDependencies
 import ru.pavlig43.rootnocombro.internal.di.createRootNocombroModule
 import ru.pavlig43.rootnocombro.internal.navigation.MainNavigationComponent
 import ru.pavlig43.rootnocombro.internal.settings.component.ISettingsComponent
@@ -19,7 +19,7 @@ import ru.pavlig43.signroot.api.component.RootSignComponent
 
 class RootNocombroComponent(
     componentContext: ComponentContext,
-    rootDependencies: IRootDependencies
+    rootDependencies: RootDependencies
 ) : IRootNocombroComponent, ComponentContext by componentContext {
 
     private val koinContext = instanceKeeper.getOrCreate { ComponentKoinContext() }

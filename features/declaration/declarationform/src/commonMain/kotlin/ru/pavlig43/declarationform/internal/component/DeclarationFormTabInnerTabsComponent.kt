@@ -16,7 +16,6 @@ import ru.pavlig43.core.tabs.ITabNavigationComponent
 import ru.pavlig43.database.DataBaseTransaction
 import ru.pavlig43.declarationform.internal.di.UpdateRepositoryType
 import ru.pavlig43.form.api.component.IItemFormInnerTabsComponent
-import ru.pavlig43.itemlist.api.component.refactoring.ItemListDependencies
 import ru.pavlig43.upsertitem.api.component.IUpdateComponent
 import ru.pavlig43.upsertitem.api.component.UpdateComponent
 

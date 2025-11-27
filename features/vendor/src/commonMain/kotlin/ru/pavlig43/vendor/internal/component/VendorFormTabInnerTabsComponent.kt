@@ -9,7 +9,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import org.koin.core.qualifier.named
 import org.koin.core.scope.Scope
-import org.koin.core.scope.get
 import ru.pavlig43.core.RequestResult
 import ru.pavlig43.core.data.dbSafeCall
 import ru.pavlig43.core.tabs.DefaultTabNavigationComponent
@@ -19,7 +18,6 @@ import ru.pavlig43.form.api.component.IItemFormInnerTabsComponent
 import ru.pavlig43.upsertitem.api.component.IUpdateComponent
 import ru.pavlig43.upsertitem.api.component.UpdateComponent
 import ru.pavlig43.vendor.internal.di.UpdateCollectionRepositoryType
-import ru.pavlig43.vendor.internal.di.UpdateRepositoryType
 
 internal class VendorFormTabInnerTabsComponent(
     componentContext: ComponentContext,

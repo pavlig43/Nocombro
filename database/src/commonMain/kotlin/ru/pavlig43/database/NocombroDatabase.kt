@@ -122,6 +122,7 @@ class NocombroTransaction(
 }
 
 @OptIn(ExperimentalTime::class)
+@Suppress("LongMethod","TooGenericExceptionCaught","SwallowedException")
 suspend fun initData(db: NocombroDatabase) {
     try {
         db.productDao.getProduct(1)

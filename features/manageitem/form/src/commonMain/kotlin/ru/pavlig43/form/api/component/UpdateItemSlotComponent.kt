@@ -10,7 +10,7 @@ import ru.pavlig43.form.api.data.IUpdateRepository
 import ru.pavlig43.manageitem.api.component.RequireValuesSlotComponent
 import ru.pavlig43.manageitem.api.data.DefaultRequireValues
 
-abstract class UpdateItemComponent<I : Item, S : ItemType>(
+abstract class UpdateItemSlotComponent<I : Item, S : ItemType>(
     componentContext: ComponentContext,
     id: Int,
     typeVariantList: List<S>,

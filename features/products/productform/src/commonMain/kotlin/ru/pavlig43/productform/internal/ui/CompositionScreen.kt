@@ -36,7 +36,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import ru.pavlig43.coreui.tooltip.IconButtonToolTip
-import ru.pavlig43.itemlist.api.ui.MBS
+import ru.pavlig43.itemlist.api.ui.MBSItemList
 import ru.pavlig43.productform.internal.component.CompositionTabSlot
 import ru.pavlig43.productform.internal.data.CompositionUi
 import ru.pavlig43.productform.internal.data.ProductIngredientUi
@@ -86,7 +86,7 @@ internal fun CompositionScreen(
 
         }
         dialog.child?.instance?.also {
-            MBS(it)
+            MBSItemList(it)
         }
 
     }
@@ -151,7 +151,7 @@ private fun CompositionBlock(
 
     }
 }
-
+@Suppress("LongParameterList")
 @Composable
 private fun IngredientsScreen(
     ingredients: List<ProductIngredientUi>,
@@ -191,6 +191,7 @@ private fun IngredientsScreen(
             )
 
         }
+        @Suppress("MagicNumber")
         if (ingredients.sumOf { it.countGram } != 1000) {
             Text(
                 "Сумма всех весов ингредиентов должна быть равна 1000",

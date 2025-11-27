@@ -81,7 +81,6 @@ include(
 
 include(":features:notification")
 include(
-    ":features:declaration:declarationlist",
     ":features:declaration:declarationform",
     ":features:declaration:declarationtabslot",
 

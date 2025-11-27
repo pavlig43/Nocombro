@@ -2,6 +2,7 @@ package ru.pavlig43.productform.internal.di
 
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
+import ru.pavlig43.database.DataBaseTransaction
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductCompositionIn
@@ -9,39 +10,41 @@ import ru.pavlig43.database.data.product.ProductCompositionOut
 import ru.pavlig43.database.data.product.ProductDeclaration
 import ru.pavlig43.database.data.product.ProductDeclarationOutWithNameAndVendor
 import ru.pavlig43.database.data.product.ProductFile
-import ru.pavlig43.declarationlist.internal.data.DeclarationListRepository
 import ru.pavlig43.form.api.data.IUpdateRepository
 import ru.pavlig43.form.api.data.UpdateItemRepository
 import ru.pavlig43.manageitem.api.data.CreateItemRepository
+import ru.pavlig43.productform.api.ProductFormDependencies
 import ru.pavlig43.upsertitem.api.data.UpdateCollectionRepository
 
+internal fun createProductFormModule(dependencies: ProductFormDependencies) = listOf(
+    module {
+        single<NocombroDatabase> { dependencies.db }
+        single<DataBaseTransaction> { dependencies.transaction }
+        single<CreateItemRepository<Product>> { getCreateRepository(get()) }
 
-internal val productFormModule = module {
+        single<IUpdateRepository<Product, Product>>(named(UpdateRepositoryType.Product.name)) {
+            getInitItemRepository(
+                get()
+            )
+        }
 
-    single<CreateItemRepository<Product>> { getCreateRepository(get()) }
+        single<UpdateCollectionRepository<ProductFile, ProductFile>>(
+            named(
+                UpdateCollectionRepositoryType.Files.name
+            )
+        ) { getFilesRepository(get()) }
 
-    single<IUpdateRepository<Product, Product>>(named(UpdateRepositoryType.Product.name)) {
-        getInitItemRepository(
-            get()
-        )
+        single<UpdateCollectionRepository<ProductDeclarationOutWithNameAndVendor, ProductDeclaration>>(
+            named(UpdateCollectionRepositoryType.Declaration.name)
+        ) { getUpdateDeclarationRepository(get()) }
+
+        single<UpdateCollectionRepository<ProductCompositionOut, ProductCompositionIn>>(
+            named(UpdateCollectionRepositoryType.Composition.name)
+        ) { getUpdateCompositionRepository(get()) }
+
     }
 
-    single<UpdateCollectionRepository<ProductFile, ProductFile>>(
-        named(
-            UpdateCollectionRepositoryType.Files.name
-        )
-    ) { getFilesRepository(get()) }
-
-    single<UpdateCollectionRepository<ProductDeclarationOutWithNameAndVendor, ProductDeclaration>>(
-        named(UpdateCollectionRepositoryType.Declaration.name)
-    ) { getUpdateDeclarationRepository(get()) }
-
-    single<UpdateCollectionRepository<ProductCompositionOut, ProductCompositionIn>>(
-        named(UpdateCollectionRepositoryType.Composition.name)
-    ) { getUpdateCompositionRepository(get()) }
-
-    single<DeclarationListRepository> { getDeclarationListRepository(get()) }
-}
+)
 
 
 private fun getCreateRepository(
@@ -89,13 +92,6 @@ private fun getFilesRepository(
     )
 }
 
-private fun getDeclarationListRepository(db: NocombroDatabase): DeclarationListRepository {
-    val dao = db.declarationDao
-    return DeclarationListRepository(
-        deleteByIds = dao::deleteDeclarationsByIds,
-        observeOnItems = dao::observeOnItems
-    )
-}
 private fun getUpdateDeclarationRepository(
     db: NocombroDatabase
 ):UpdateCollectionRepository<ProductDeclarationOutWithNameAndVendor, ProductDeclaration>{

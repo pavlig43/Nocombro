@@ -24,7 +24,7 @@ class DeclarationFormComponent(
     val closeTab: () -> Unit,
     private val onOpenVendorTab: (Int) -> Unit,
     componentContext: ComponentContext,
-    private val dependencies: IDeclarationDependencies,
+    private val dependencies: DeclarationDependencies,
 ) : ComponentContext by componentContext, SlotComponent {
 
     private val koinContext = instanceKeeper.getOrCreate {

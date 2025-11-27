@@ -2,21 +2,26 @@ package ru.pavlig43.documentform.internal.di
 
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
+import ru.pavlig43.database.DataBaseTransaction
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.document.Document
 import ru.pavlig43.database.data.document.DocumentFile
+import ru.pavlig43.documentform.api.DocumentFormDependencies
 import ru.pavlig43.form.api.data.IUpdateRepository
 import ru.pavlig43.form.api.data.UpdateItemRepository
 import ru.pavlig43.manageitem.api.data.CreateItemRepository
 import ru.pavlig43.upsertitem.api.data.UpdateCollectionRepository
 
+internal fun createDocumentFormModule(dependencies: DocumentFormDependencies) = listOf(
+    module {
+        single<NocombroDatabase> { dependencies.db }
+        single<DataBaseTransaction> { dependencies.transaction }
+        single<CreateItemRepository<Document>> { getCreateRepository(get()) }
+        single<IUpdateRepository<Document, Document>>(named(UpdateRepositoryType.Document.name)) { getInitItemRepository(get()) }
+        single<UpdateCollectionRepository<DocumentFile,DocumentFile>>{ getFilesRepository(get()) }
+    }
+)
 
-internal val documentFormModule = module {
-
-    single<CreateItemRepository<Document>> { getCreateRepository(get()) }
-    single<IUpdateRepository<Document, Document>>(named(UpdateRepositoryType.Document.name)) { getInitItemRepository(get()) }
-    single<UpdateCollectionRepository<DocumentFile,DocumentFile>>{ getFilesRepository(get()) }
-}
 private fun getCreateRepository(
     db: NocombroDatabase
 ): CreateItemRepository<Document> {

@@ -1,6 +1,5 @@
 package ru.pavlig43.transactionform.internal.data
 
-import ru.pavlig43.coreui.itemlist.IItemUi
 import ru.pavlig43.database.data.transaction.OperationType
 import ru.pavlig43.database.data.transaction.TransactionType
 

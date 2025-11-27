@@ -13,7 +13,6 @@ dependencies {
         implementation(projects.features.manageitem.loadinitdata)
         implementation(projects.features.manageitem.upsertitem)
         implementation(projects.features.declaration.declarationform)
-        implementation(projects.features.declaration.declarationlist)
         implementation(projects.features.itemlist)
 
     }

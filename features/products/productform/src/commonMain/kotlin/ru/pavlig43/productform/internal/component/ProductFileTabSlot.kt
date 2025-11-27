@@ -25,8 +25,8 @@ private fun FileUi.toFileData(productId: Int): ProductFile {
     )
 }
 
-internal class GenerateSpecification(
-    componentContext: ComponentContext,
-) : ComponentContext by componentContext {
-    
-}
+//internal class GenerateSpecification(
+//    componentContext: ComponentContext,
+//) : ComponentContext by componentContext {
+//
+//}

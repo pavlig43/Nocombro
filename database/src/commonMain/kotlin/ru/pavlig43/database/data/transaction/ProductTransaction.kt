@@ -4,7 +4,6 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Ignore
 import androidx.room.PrimaryKey
-import ru.pavlig43.core.data.CollectionObject
 import ru.pavlig43.core.data.GenericItem
 
 @Entity(

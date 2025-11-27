@@ -8,9 +8,6 @@ import androidx.room.RawQuery
 import androidx.room.RoomRawQuery
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
-import ru.pavlig43.database.data.document.DOCUMENT_TABLE_NAME
-import ru.pavlig43.database.data.document.Document
-import ru.pavlig43.database.data.document.DocumentType
 import ru.pavlig43.database.data.product.PRODUCT_TABLE_NAME
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductType

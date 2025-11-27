@@ -4,7 +4,6 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import ru.pavlig43.core.data.GenericItem
-import ru.pavlig43.core.data.Item
 
 const val VENDOR_TABLE_NAME = "vendor"
 

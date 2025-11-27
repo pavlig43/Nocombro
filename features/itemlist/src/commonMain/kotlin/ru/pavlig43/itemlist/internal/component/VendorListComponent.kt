@@ -6,14 +6,13 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapLatest
 import ru.pavlig43.core.RequestResult
-import ru.pavlig43.coreui.itemlist.IItemUi
-import ru.pavlig43.database.data.declaration.DeclarationIn
+import ru.pavlig43.core.data.dbSafeCall
+import ru.pavlig43.core.data.dbSafeFlow
+import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.vendor.Vendor
-import ru.pavlig43.itemlist.api.component.DeclarationListParamProvider
-import ru.pavlig43.itemlist.api.component.VendorListParamProvider
-import ru.pavlig43.itemlist.api.data.DeclarationListRepository
-import ru.pavlig43.itemlist.api.data.VendorListRepository
-import ru.pavlig43.itemlist.internal.ItemFilter1
+import ru.pavlig43.itemlist.api.VendorListParamProvider
+import ru.pavlig43.itemlist.api.data.IItemUi
+import ru.pavlig43.itemlist.internal.ItemFilter
 import ru.pavlig43.itemlist.internal.generateComponent
 
 
@@ -25,12 +24,12 @@ internal class VendorListComponent(
     paramProvider: VendorListParamProvider
 ) : ComponentContext by componentContext, IListComponent<Vendor, VendorItemUi> {
 
-    val searchTextComponent = generateComponent(ItemFilter1.SearchText(""))
+    val searchTextComponent = generateComponent(ItemFilter.SearchText(""))
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private val vendorListFlow: Flow<RequestResult<List<Vendor>>> =
         searchTextComponent.filterFlow
-            .flatMapLatest { text: ItemFilter1.SearchText ->
+            .flatMapLatest { text: ItemFilter.SearchText ->
                 vendorListRepository.observeVendorByFilter(text.value)
             }
 
@@ -60,6 +59,26 @@ private fun Vendor.toUi(): VendorItemUi {
         displayName = displayName,
         comment = comment
         )
+}
+internal class VendorListRepository(
+    db: NocombroDatabase
+) {
+    private val dao = db.vendorDao
+    private val tag = "Vendor list repository"
+
+    suspend fun deleteByIds(ids: List<Int>): RequestResult<Unit> {
+        return dbSafeCall(tag) {
+            dao.deleteVendorsByIds(ids)
+        }
+    }
+
+
+    fun observeVendorByFilter(
+        text: String
+    ): Flow<RequestResult<List<Vendor>>> {
+
+        return dbSafeFlow(tag) { dao.observeOnVendors(text) }
+    }
 }
 
 

@@ -2,6 +2,7 @@ package ru.pavlig43.vendor.internal.di
 
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
+import ru.pavlig43.database.DataBaseTransaction
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.vendor.Vendor
 import ru.pavlig43.database.data.vendor.VendorFile
@@ -9,22 +10,26 @@ import ru.pavlig43.form.api.data.IUpdateRepository
 import ru.pavlig43.form.api.data.UpdateItemRepository
 import ru.pavlig43.manageitem.api.data.CreateItemRepository
 import ru.pavlig43.upsertitem.api.data.UpdateCollectionRepository
+import ru.pavlig43.vendor.api.VendorFormDependencies
 
-internal val vendorFormModule = module {
+internal fun createVendorFormModule(dependencies: VendorFormDependencies) = listOf(
+    module {
+        single<NocombroDatabase> { dependencies.db }
+        single<DataBaseTransaction> { dependencies.transaction }
+        single<CreateItemRepository<Vendor>> { getCreateRepository(get()) }
+        single<IUpdateRepository<Vendor, Vendor>>(named(UpdateRepositoryType.Vendor.name)) {
+            getInitItemRepository(
+                get()
+            )
+        }
 
-    single<CreateItemRepository<Vendor>> { getCreateRepository(get()) }
-    single<IUpdateRepository<Vendor, Vendor>>(named(UpdateRepositoryType.Vendor.name)) {
-        getInitItemRepository(
-            get()
-        )
+        single<UpdateCollectionRepository<VendorFile, VendorFile>>(named(UpdateCollectionRepositoryType.Files.name)) {
+            getFilesRepository(
+                get()
+            )
+        }
     }
-
-    single<UpdateCollectionRepository<VendorFile, VendorFile>>(named(UpdateCollectionRepositoryType.Files.name)) {
-        getFilesRepository(
-            get()
-        )
-    }
-}
+)
 
 private fun getCreateRepository(
     db: NocombroDatabase
@@ -43,7 +48,6 @@ internal enum class UpdateRepositoryType {
 
 internal enum class UpdateCollectionRepositoryType {
     Files,
-    Declaration,
 }
 
 private fun getInitItemRepository(

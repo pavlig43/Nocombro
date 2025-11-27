@@ -8,18 +8,24 @@ import com.arkivanov.decompose.router.slot.activate
 import com.arkivanov.decompose.router.slot.childSlot
 import com.arkivanov.decompose.router.slot.dismiss
 import com.arkivanov.decompose.value.Value
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.update
 import kotlinx.serialization.Serializable
-import org.koin.core.scope.Scope
 import ru.pavlig43.core.RequestResult
 import ru.pavlig43.core.componentCoroutineScope
 import ru.pavlig43.core.mapTo
 import ru.pavlig43.database.data.declaration.DeclarationIn
 import ru.pavlig43.declarationform.internal.data.RequiresValuesWithDate
 import ru.pavlig43.declarationform.internal.toDeclarationWithDate
-import ru.pavlig43.itemlist.api.component.VendorListParamProvider
-import ru.pavlig43.itemlist.api.component.refactoring.ItemListDependencies
-import ru.pavlig43.itemlist.api.component.refactoring.MBSItemListComponent1
+import ru.pavlig43.itemlist.api.ItemListDependencies
+import ru.pavlig43.itemlist.api.VendorListParamProvider
+import ru.pavlig43.itemlist.api.component.MBSItemListComponent
 import ru.pavlig43.loadinitdata.api.component.ILoadInitDataComponent
 import ru.pavlig43.loadinitdata.api.component.LoadInitDataComponent
 
@@ -37,14 +43,14 @@ internal class DeclarationRequiresComponent(
 
     private val dialogNavigation = SlotNavigation<MBSVendorDialog>()
 
-    internal val dialog: Value<ChildSlot<MBSVendorDialog, MBSItemListComponent1>> =
+    internal val dialog: Value<ChildSlot<MBSVendorDialog, MBSItemListComponent>> =
         childSlot(
             source = dialogNavigation,
             key = "vendor_dialog",
             serializer = MBSVendorDialog.serializer(),
             handleBackButton = true,
         ) { config: MBSVendorDialog, context ->
-            MBSItemListComponent1(
+            MBSItemListComponent(
                 componentContext = context,
                 onDismissed = dialogNavigation::dismiss,
                 itemListDependencies = itemListDependencies,

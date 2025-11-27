@@ -7,12 +7,14 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import ru.pavlig43.core.convertToDateTime
-import ru.pavlig43.coreui.itemlist.SearchTextField
+import ru.pavlig43.coreui.SearchTextField
 import ru.pavlig43.database.data.document.DocumentType
 import ru.pavlig43.itemlist.internal.BaseFilterComponent
-import ru.pavlig43.itemlist.internal.ItemFilter1
+import ru.pavlig43.itemlist.internal.ItemFilter
 import ru.pavlig43.itemlist.internal.component.DocumentItemUi
 import ru.pavlig43.itemlist.internal.component.DocumentsListComponent
+import ru.pavlig43.itemlist.internal.ui.core.ColumnDefinition
+import ru.pavlig43.itemlist.internal.ui.core.ItemListBox
 import ru.pavlig43.itemlist.internal.ui.settings.SelectionLogic
 import ru.pavlig43.itemlist.internal.ui.settings.SettingsRow
 
@@ -21,27 +23,27 @@ private val columnDefinition = listOf<ColumnDefinition<DocumentItemUi>>(
     ColumnDefinition(
         title = ID,
         width = ID_WIDTH,
-        valueProvider = {it.id.toString()}
+        valueProvider = { it.id.toString() }
     ),
     ColumnDefinition(
         title = NAME,
         width = NAME_WIDTH,
-        valueProvider = {it.displayName}
+        valueProvider = { it.displayName }
     ),
     ColumnDefinition(
         title = TYPE_DOCUMENT,
         width = TYPE_WIDTH,
-        valueProvider = {it.type.displayName}
+        valueProvider = { it.type.displayName }
     ),
     ColumnDefinition(
         title = CREATED_AT,
         width = CREATED_AT_WIDTH,
-        valueProvider = {it.createdAt.convertToDateTime()}
+        valueProvider = { it.createdAt.convertToDateTime() }
     ),
     ColumnDefinition(
         title = COMMENT,
         width = COMMENT_WIDTH,
-        valueProvider = {it.comment}
+        valueProvider = { it.comment }
     )
 )
 
@@ -58,7 +60,7 @@ internal fun DocumentListScreen(
                 searchTextComponent = component.searchTextComponent,
             )
         }
-        ItemsListBodyScreen(
+        ItemListBox(
             listComponent = component.itemsBodyComponent,
             columnDefinition = columnDefinition,
         )
@@ -66,18 +68,18 @@ internal fun DocumentListScreen(
 }
 @Composable
 private fun DocumentsFilter(
-    typeComponent: BaseFilterComponent<ItemFilter1.Type<DocumentType>>,
-    searchTextComponent: BaseFilterComponent<ItemFilter1.SearchText>,
+    typeComponent: BaseFilterComponent<ItemFilter.Type<DocumentType>>,
+    searchTextComponent: BaseFilterComponent<ItemFilter.SearchText>,
 ) {
     val types by typeComponent.filterFlow.collectAsState()
     val text by searchTextComponent.filterFlow.collectAsState()
 
     SearchTextField(
         value = text.value,
-        onValueChange = { searchTextComponent.onChangeFilter(ItemFilter1.SearchText(it)) },
+        onValueChange = { searchTextComponent.onChangeFilter(ItemFilter.SearchText(it)) },
     )
     SelectionLogic(
         fullListSelection = types.value,
-        saveSelection = { typeComponent.onChangeFilter(ItemFilter1.Type(it)) }
+        saveSelection = { typeComponent.onChangeFilter(ItemFilter.Type(it)) }
     )
 }
