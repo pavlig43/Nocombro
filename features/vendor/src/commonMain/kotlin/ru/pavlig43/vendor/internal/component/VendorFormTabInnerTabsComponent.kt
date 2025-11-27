@@ -47,12 +47,18 @@ internal class VendorFormTabInnerTabsComponent(
             slotFactory = { context, tabConfig: VendorTab, _: (VendorTab) -> Unit, _: () -> Unit ->
                 when (tabConfig) {
 
-                    VendorTab.RequireValues ->VendorRequiresTabSlot(
-                        componentContext = context,
+                    VendorTab.RequireValues ->VendorFileTabSlot(
                         vendorId = vendorId,
-                        updateRepository = scope.get(named(UpdateRepositoryType.Vendor.name)),
-                        onChangeValueForMainTab = onChangeValueForMainTab
+                        updateRepository = scope.get(named(UpdateCollectionRepositoryType.Files.name)),
+                        componentContext = context
                     )
+                        //TODO
+//                        VendorRequiresTabSlot(
+//                        componentContext = context,
+//                        vendorId = vendorId,
+//                        updateRepository = scope.get(named(UpdateRepositoryType.Vendor.name)),
+//                        onChangeValueForMainTab = onChangeValueForMainTab
+//                    )
 
 
                     VendorTab.Files -> VendorFileTabSlot(

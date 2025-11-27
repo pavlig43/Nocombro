@@ -12,21 +12,19 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.serialization.Serializable
-import org.koin.core.qualifier.named
 import org.koin.core.scope.Scope
 import ru.pavlig43.core.SlotComponent
 import ru.pavlig43.corekoin.ComponentKoinContext
 import ru.pavlig43.declarationform.internal.component.CreateDeclarationComponent
 import ru.pavlig43.declarationform.internal.component.DeclarationFormTabInnerTabsComponent
 import ru.pavlig43.declarationform.internal.di.createDeclarationFormModule
-import ru.pavlig43.itemlist.api.data.ItemListType
 
 class DeclarationFormComponent(
     declarationId: Int,
     val closeTab: () -> Unit,
     private val onOpenVendorTab: (Int) -> Unit,
     componentContext: ComponentContext,
-    dependencies: IDeclarationDependencies,
+    private val dependencies: IDeclarationDependencies,
 ) : ComponentContext by componentContext, SlotComponent {
 
     private val koinContext = instanceKeeper.getOrCreate {
@@ -63,8 +61,8 @@ class DeclarationFormComponent(
                     createItemRepository = scope.get(),
                     onSuccessCreate = { stackNavigation.replaceAll(Config.Update(it)) },
                     onChangeValueForMainTab = { onChangeValueForMainTab("* $it") },
+                    itemListDependencies = dependencies.itemListDependencies,
                     onOpenVendorTab = onOpenVendorTab,
-                    vendorListRepository = scope.get(named(ItemListType.Vendor.name)),
                 )
             )
 

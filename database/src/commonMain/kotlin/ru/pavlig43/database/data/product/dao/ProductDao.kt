@@ -8,7 +8,12 @@ import androidx.room.RawQuery
 import androidx.room.RoomRawQuery
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
+import ru.pavlig43.database.data.document.DOCUMENT_TABLE_NAME
+import ru.pavlig43.database.data.document.Document
+import ru.pavlig43.database.data.document.DocumentType
+import ru.pavlig43.database.data.product.PRODUCT_TABLE_NAME
 import ru.pavlig43.database.data.product.Product
+import ru.pavlig43.database.data.product.ProductType
 
 @Dao
 interface ProductDao {
@@ -23,6 +28,20 @@ interface ProductDao {
 
     @Query("SELECT * from product WHERE id = :id")
     suspend fun getProduct(id: Int): Product
+
+    @Query("""
+    SELECT * FROM $PRODUCT_TABLE_NAME
+    WHERE type IN (:types)
+    AND (
+        display_name LIKE '%' || :searchText || '%' 
+        OR comment LIKE '%' || :searchText || '%'
+        OR :searchText = ''
+    )
+    ORDER BY created_at DESC
+""")
+    fun observeOnProducts(
+        searchText: String,
+        types: List<ProductType>): Flow<List<Product>>
 
 
     @RawQuery(observedEntities = [Product::class])

@@ -6,7 +6,6 @@ import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.database.data.product.ProductUnit
 import ru.pavlig43.database.data.transaction.OperationType
 import ru.pavlig43.database.data.transaction.TransactionType
-import ru.pavlig43.database.data.vendor.VendorType
 
 class Converters {
 
@@ -21,12 +20,6 @@ class Converters {
 
     @TypeConverter
     fun fromDocumentType(value: DocumentType) = value.name
-
-    @TypeConverter
-    fun toVendorType(value: String) = enumValueOf<VendorType>(value)
-
-    @TypeConverter
-    fun fromVendorType(value: VendorType) = value.name
 
     @TypeConverter
     fun toProductUnit(value: String): ProductUnit = enumValueOf<ProductUnit>(value)

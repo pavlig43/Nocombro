@@ -12,11 +12,12 @@ import ru.pavlig43.database.data.document.DocumentType
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.database.data.vendor.Vendor
-import ru.pavlig43.database.data.vendor.VendorType
 import ru.pavlig43.declarationform.api.IDeclarationDependencies
 import ru.pavlig43.documentform.api.IDocumentFormDependencies
+import ru.pavlig43.itemlist.api.component.refactoring.ItemListDependencies
 import ru.pavlig43.itemlist.api.data.IItemListRepository
 import ru.pavlig43.itemlist.api.data.ItemListType
+import ru.pavlig43.itemlist.api.data.VendorListRepository
 import ru.pavlig43.notification.api.INotificationDependencies
 import ru.pavlig43.productform.api.IProductFormDependencies
 import ru.pavlig43.signroot.api.IRootSignDependencies
@@ -24,6 +25,7 @@ import ru.pavlig43.vendor.api.IVendorFormDependencies
 
 
 private val featureDependenciesModule = module {
+    singleOf(::ItemListDependencies)
     factoryOf(::DocumentFormDependencies) bind IDocumentFormDependencies::class
     factory<IProductFormDependencies> { ProductFormDependencies(
         transaction = get(),
@@ -39,7 +41,7 @@ private val featureDependenciesModule = module {
     factory<IDeclarationDependencies> { DeclarationFormDependencies(
         transaction = get(),
         db = get(),
-        vendorRepository = get(named(ItemListType.Vendor.name))
+        itemListDependencies = get()
     ) }
 
 }
@@ -71,7 +73,7 @@ private class VendorFormDependencies(
 private class DeclarationFormDependencies(
     override val transaction: DataBaseTransaction,
     override val db: NocombroDatabase,
-    override val vendorRepository: IItemListRepository<Vendor, VendorType>
+    override val itemListDependencies: ItemListDependencies
 ):IDeclarationDependencies
 
 

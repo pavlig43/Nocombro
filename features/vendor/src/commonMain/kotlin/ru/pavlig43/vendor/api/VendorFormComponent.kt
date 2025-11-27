@@ -16,10 +16,10 @@ import org.koin.core.scope.Scope
 import ru.pavlig43.core.SlotComponent
 import ru.pavlig43.corekoin.ComponentKoinContext
 import ru.pavlig43.database.data.vendor.Vendor
-import ru.pavlig43.database.data.vendor.VendorType
 
 import ru.pavlig43.manageitem.api.component.CreateItemComponent
 import ru.pavlig43.manageitem.api.data.DefaultRequireValues
+import ru.pavlig43.vendor.api.VendorFormComponent.Child.*
 import ru.pavlig43.vendor.internal.component.VendorFormTabInnerTabsComponent
 import ru.pavlig43.vendor.internal.di.createVendorFormModule
 import ru.pavlig43.vendor.internal.toVendor
@@ -57,18 +57,17 @@ class VendorFormComponent(
         componentContext: ComponentContext
     ): Child {
         return when (config) {
-            is Config.Create -> Child.Create(
-                CreateItemComponent(
-                    componentContext = componentContext,
-                    typeVariantList = VendorType.entries,
-                    mapper = DefaultRequireValues::toVendor,
-                    createItemRepository = scope.get(),
-                    onSuccessCreate = {stackNavigation.replaceAll(Config.Update(it))},
-                    onChangeValueForMainTab = {onChangeValueForMainTab("* $it")}
-                )
-            )
+//            is Config.Create -> Child.Create(
+//                CreateItemComponent(
+//                    componentContext = componentContext,
+//                    mapper = DefaultRequireValues::toVendor,
+//                    createItemRepository = scope.get(),
+//                    onSuccessCreate = {stackNavigation.replaceAll(Config.Update(it))},
+//                    onChangeValueForMainTab = {onChangeValueForMainTab("* $it")}
+//                )
+//            )
 
-            is Config.Update -> Child.Update(
+            is Config.Update -> Update(
                 VendorFormTabInnerTabsComponent(
                     componentContext = childContext("vendor_form"),
                     closeFormScreen = closeTab,
@@ -77,6 +76,8 @@ class VendorFormComponent(
                     onChangeValueForMainTab = { onChangeValueForMainTab(it) }
                 )
             )
+
+            Config.Create -> TODO()
         }
     }
 
@@ -100,7 +101,6 @@ class VendorFormComponent(
     }
 
     internal sealed class Child {
-        class Create(val component: CreateItemComponent<Vendor, VendorType>) : Child()
         class Update(val component: VendorFormTabInnerTabsComponent) : Child()
     }
 }

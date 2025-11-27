@@ -8,13 +8,16 @@ import androidx.room.RawQuery
 import androidx.room.RoomRawQuery
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
+import ru.pavlig43.database.data.declaration.DECLARATIONS_TABLE_NAME
+import ru.pavlig43.database.data.declaration.DeclarationIn
+import ru.pavlig43.database.data.document.DOCUMENT_TABLE_NAME
 import ru.pavlig43.database.data.vendor.VENDOR_TABLE_NAME
 import ru.pavlig43.database.data.vendor.Vendor
 
 @Dao
 interface VendorDao {
     @Insert(onConflict = OnConflictStrategy.ABORT)
-    suspend fun create(vendor: Vendor):Long
+    suspend fun create(vendor: Vendor): Long
 
     @Update
     suspend fun updateVendor(vendor: Vendor)
@@ -25,17 +28,26 @@ interface VendorDao {
     @Query("SELECT * from $VENDOR_TABLE_NAME WHERE id = :id")
     suspend fun getVendor(id: Int): Vendor
 
-    @RawQuery(observedEntities = [Vendor::class])
-    fun observeOnItems(query: RoomRawQuery): Flow<List<Vendor>>
+    @Query(
+        """
+    SELECT * FROM $VENDOR_TABLE_NAME
+    WHERE 
+        display_name LIKE '%' || :searchText || '%' 
+        OR comment LIKE '%' || :searchText || '%'
+        OR :searchText = ''
+    """
+    )
+    fun observeOnVendors(searchText: String): Flow<List<Vendor>>
 
-    @Query("""
+    @Query(
+        """
         SELECT CASE
             WHEN (SELECT display_name FROM $VENDOR_TABLE_NAME WHERE id =:id) =:name THEN TRUE
             ELSE NOT EXISTS (SELECT 1 FROM $VENDOR_TABLE_NAME WHERE display_name = :name AND id != :id)
         END
-    """)
-    suspend fun isNameAllowed(id: Int, name: String):Boolean
-
+    """
+    )
+    suspend fun isNameAllowed(id: Int, name: String): Boolean
 
 
 }

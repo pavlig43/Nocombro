@@ -8,34 +8,34 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import ru.pavlig43.core.RequestResult
 import ru.pavlig43.coreui.itemlist.IItemUi
-import ru.pavlig43.database.data.document.Document
-import ru.pavlig43.database.data.document.DocumentType
-import ru.pavlig43.itemlist.api.component.DocumentListParamProvider
-import ru.pavlig43.itemlist.api.data.DocumentListRepository
+import ru.pavlig43.database.data.product.Product
+import ru.pavlig43.database.data.product.ProductType
+import ru.pavlig43.itemlist.api.component.ProductListParamProvider
+import ru.pavlig43.itemlist.api.data.ProductListRepository
 import ru.pavlig43.itemlist.internal.ItemFilter1
 import ru.pavlig43.itemlist.internal.generateComponent
 
-internal class DocumentsListComponent(
+internal class ProductListComponent(
     componentContext: ComponentContext,
     val onCreate: () -> Unit,
     val onItemClick: (IItemUi) -> Unit,
-    paramProvider: DocumentListParamProvider,
-    private val documentListRepository: DocumentListRepository,
+    paramProvider: ProductListParamProvider,
+    private val productListRepository: ProductListRepository,
 
-    ) : ComponentContext by componentContext, IListComponent<Document, DocumentItemUi> {
+    ) : ComponentContext by componentContext, IListComponent<Product, ProductItemUi> {
 
 
 
-    val typeComponent = generateComponent(ItemFilter1.Type(paramProvider.fullListDocumentTypes))
+    val typeComponent = generateComponent(ItemFilter1.Type(paramProvider.fullListProductTypes))
 
     val searchTextComponent = generateComponent(ItemFilter1.SearchText(""))
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    private val documentListFlow: Flow<RequestResult<List<Document>>> = combine(
+    private val productListFlow: Flow<RequestResult<List<Product>>> = combine(
         typeComponent.filterFlow,
         searchTextComponent.filterFlow
-    ) { types: ItemFilter1.Type<DocumentType>, text: ItemFilter1.SearchText ->
-        documentListRepository.observeOnItems(
+    ) { types: ItemFilter1.Type<ProductType>, text: ItemFilter1.SearchText ->
+        productListRepository.observeOnItems(
             searchText = text.value,
             types = types.value
         )
@@ -43,29 +43,29 @@ internal class DocumentsListComponent(
 
 
 
-    override val itemsBodyComponent: ItemsBodyComponent<Document, DocumentItemUi> =
+    override val itemsBodyComponent: ItemsBodyComponent<Product, ProductItemUi> =
         ItemsBodyComponent(
             componentContext = childContext("body"),
-            dataFlow = documentListFlow,
-            deleteItemsById = documentListRepository::deleteByIds,
+            dataFlow = productListFlow,
+            deleteItemsById = productListRepository::deleteByIds,
             searchText = searchTextComponent.filterFlow,
             withCheckbox = paramProvider.withCheckbox,
             onItemClick = onItemClick,
-            mapper = Document::toUi,
+            mapper = Product::toUi,
         )
 
 
 }
-internal data class DocumentItemUi(
+internal data class ProductItemUi(
     override val id: Int,
     override val displayName: String,
-    val type: DocumentType,
+    val type: ProductType,
     val createdAt: Long,
     val comment: String = "",
 ) : IItemUi
 
-private fun Document.toUi(): DocumentItemUi {
-    return DocumentItemUi(
+private fun Product.toUi(): ProductItemUi {
+    return ProductItemUi(
         id = id,
         displayName = displayName,
         type = type,

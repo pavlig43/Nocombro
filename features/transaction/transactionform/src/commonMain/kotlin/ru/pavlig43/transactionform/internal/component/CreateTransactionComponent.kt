@@ -5,7 +5,6 @@ import com.arkivanov.decompose.childContext
 import ru.pavlig43.database.data.declaration.DeclarationIn
 import ru.pavlig43.database.data.transaction.ProductTransaction
 import ru.pavlig43.database.data.vendor.Vendor
-import ru.pavlig43.database.data.vendor.VendorType
 import ru.pavlig43.itemlist.api.data.IItemListRepository
 import ru.pavlig43.manageitem.api.data.CreateItemRepository
 import ru.pavlig43.upsertitem.api.component.CreateComponent

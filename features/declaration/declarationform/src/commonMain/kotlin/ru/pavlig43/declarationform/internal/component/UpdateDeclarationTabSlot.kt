@@ -1,19 +1,18 @@
 package ru.pavlig43.declarationform.internal.component
 
 import com.arkivanov.decompose.ComponentContext
+import org.koin.core.scope.Scope
 import ru.pavlig43.core.data.ChangeSet
 import ru.pavlig43.database.data.declaration.DeclarationIn
-import ru.pavlig43.database.data.vendor.Vendor
-import ru.pavlig43.database.data.vendor.VendorType
 import ru.pavlig43.declarationform.internal.toDeclarationIn
 import ru.pavlig43.form.api.data.IUpdateRepository
-import ru.pavlig43.itemlist.api.data.IItemListRepository
+import ru.pavlig43.itemlist.api.component.refactoring.ItemListDependencies
 
 internal class UpdateDeclarationTabSlot(
     componentContext: ComponentContext,
+    itemListDependencies: ItemListDependencies,
     declarationId: Int,
     onOpenVendorTab: (Int) -> Unit,
-    vendorListRepository: IItemListRepository<Vendor, VendorType>,
     private val updateRepository: IUpdateRepository<DeclarationIn, DeclarationIn>,
     onChangeValueForMainTab: (String) -> Unit,
 ) : ComponentContext by componentContext, DeclarationTabSlot {
@@ -25,8 +24,9 @@ internal class UpdateDeclarationTabSlot(
         onChangeValueForMainTab = onChangeValueForMainTab,
         getInitData = { updateRepository.getInit(declarationId) },
         openVendorTab = onOpenVendorTab,
-        vendorListRepository = vendorListRepository,
+        itemListDependencies = itemListDependencies
     )
+
     override suspend fun onUpdate() {
         val old = requires.initComponent.firstData.value?.toDeclarationIn()
         val new = requires.requiresValuesWithDate.value.toDeclarationIn()

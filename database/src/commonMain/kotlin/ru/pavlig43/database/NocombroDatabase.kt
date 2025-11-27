@@ -35,7 +35,6 @@ import ru.pavlig43.database.data.transaction.TransactionRow
 import ru.pavlig43.database.data.transaction.dao.ProductTransactionDao
 import ru.pavlig43.database.data.vendor.Vendor
 import ru.pavlig43.database.data.vendor.VendorFile
-import ru.pavlig43.database.data.vendor.VendorType
 import ru.pavlig43.database.data.vendor.dao.VendorDao
 import ru.pavlig43.database.data.vendor.dao.VendorFilesDao
 import kotlin.time.Clock
@@ -153,22 +152,16 @@ suspend fun initData(db: NocombroDatabase) {
         val vendors = listOf(
             Vendor(
                 displayName = "Ингре",
-                type = VendorType.Empty,
-                createdAt = Clock.System.now().toEpochMilliseconds(),
                 comment = "",
                 id = 1
             ),
             Vendor(
                 displayName = "Стоинг",
-                type = VendorType.Empty,
-                createdAt = Clock.System.now().toEpochMilliseconds(),
                 comment = "",
                 id = 2
             ),
             Vendor(
                 displayName = "Рустарк",
-                type = VendorType.Empty,
-                createdAt = Clock.System.now().toEpochMilliseconds(),
                 comment = "",
                 id = 3
             ),

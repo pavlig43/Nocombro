@@ -11,8 +11,8 @@ import ru.pavlig43.core.convertToDateTime
 import ru.pavlig43.coreui.itemlist.SearchTextField
 import ru.pavlig43.itemlist.internal.BaseFilterComponent
 import ru.pavlig43.itemlist.internal.ItemFilter1
+import ru.pavlig43.itemlist.internal.component.DeclarationItemUi
 import ru.pavlig43.itemlist.internal.component.DeclarationListComponent
-import ru.pavlig43.itemlist.internal.data.DeclarationItemUi
 import ru.pavlig43.itemlist.internal.ui.settings.SettingsRow
 
 

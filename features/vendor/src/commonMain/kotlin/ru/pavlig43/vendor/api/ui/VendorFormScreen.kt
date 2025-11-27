@@ -20,7 +20,6 @@ import ru.pavlig43.manageitem.api.ui.RequireValuesScreen
 import ru.pavlig43.vendor.api.VendorFormComponent
 import ru.pavlig43.vendor.internal.component.VendorFileTabSlot
 import ru.pavlig43.vendor.internal.component.VendorInformationTabSlot
-import ru.pavlig43.vendor.internal.component.VendorRequiresTabSlot
 import ru.pavlig43.vendor.internal.component.VendorTabSlot
 
 @Composable
@@ -43,7 +42,7 @@ fun VendorFormScreen(
             stack = stack,
         ) { child ->
             when (val instance = child.instance) {
-                is VendorFormComponent.Child.Create -> CreateScreen(instance.component)
+//                is VendorFormComponent.Child.Create -> CreateScreen(instance.component)
                 is VendorFormComponent.Child.Update -> ItemTabsUi(
                     component = instance.component,
                     slotFactory = { slotForm: VendorTabSlot? ->
@@ -59,7 +58,7 @@ fun VendorFormScreen(
 @Composable
 private fun VendorSlotScreen(vendorSlot: VendorTabSlot?) {
     when (vendorSlot) {
-        is VendorRequiresTabSlot -> RequireValuesScreen(vendorSlot.requires)
+//        is VendorRequiresTabSlot -> RequireValuesScreen(vendorSlot.requires)
 
 
         is VendorFileTabSlot -> FilesScreen(vendorSlot.fileComponent)
