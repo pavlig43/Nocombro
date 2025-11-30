@@ -21,7 +21,6 @@ import ru.pavlig43.itemlist.api.DeclarationListParamProvider
 import ru.pavlig43.itemlist.api.ItemListDependencies
 import ru.pavlig43.itemlist.api.component.MBSItemListComponent
 import ru.pavlig43.itemlist.internal.component.DeclarationItemUi
-import ru.pavlig43.loadinitdata.api.component.ILoadInitDataComponent
 import ru.pavlig43.loadinitdata.api.component.LoadInitDataComponent
 import ru.pavlig43.upsertitem.api.data.UpdateCollectionRepository
 import kotlin.time.Clock
@@ -125,7 +124,7 @@ internal class ProductDeclarationListComponent<Out : GenericDeclarationOut>(
 
     private val _productDeclarationUiList = MutableStateFlow<List<ProductDeclarationUi>>(emptyList())
     val declarationUi = _productDeclarationUiList.asStateFlow()
-    val loadInitDataComponent: ILoadInitDataComponent<List<ProductDeclarationUi>> =
+    val loadInitDataComponent: LoadInitDataComponent<List<ProductDeclarationUi>> =
         LoadInitDataComponent<List<ProductDeclarationUi>>(
             componentContext = childContext("loadInitData"),
             getInitData = { getInitData().mapTo { it.toListDeclarationUi() } },

@@ -15,17 +15,14 @@ import kotlinx.serialization.Serializable
 import org.koin.core.scope.Scope
 import ru.pavlig43.core.SlotComponent
 import ru.pavlig43.corekoin.ComponentKoinContext
-import ru.pavlig43.database.data.product.Product
-import ru.pavlig43.database.data.product.ProductType
-import ru.pavlig43.manageitem.api.component.CreateItemComponent
-import ru.pavlig43.manageitem.api.data.DefaultRequireValues
+import ru.pavlig43.manageitem.api.ProductFactoryParam
+import ru.pavlig43.manageitem.api.component.UpsertEssentialsFactoryComponent
 import ru.pavlig43.productform.api.ProductFormDependencies
 import ru.pavlig43.productform.internal.component.ProductFormTabInnerTabsComponent
 import ru.pavlig43.productform.internal.di.createProductFormModule
-import ru.pavlig43.productform.internal.toProduct
 
 class ProductFormComponent(
-    productId: Int,
+    private val productId: Int,
     val closeTab: () -> Unit,
     private val onOpenProductTab: (Int) -> Unit,
     private val onOpenDeclarationTab: (Int) -> Unit,
@@ -60,14 +57,17 @@ class ProductFormComponent(
     ): Child {
         return when (config) {
             is Config.Create -> Child.Create(
-                CreateItemComponent(
+                UpsertEssentialsFactoryComponent(
                     componentContext = componentContext,
-                    typeVariantList = ProductType.entries,
-                    mapper = DefaultRequireValues::toProduct,
-                    createItemRepository = scope.get(),
-                    onSuccessCreate = {stackNavigation.replaceAll(Config.Update(it))},
-                    onChangeValueForMainTab = {onChangeValueForMainTab("* $it")}
+                    upsertEssentialsFactoryParam = ProductFactoryParam(
+                        upsertEssentialsDependencies = scope.get(),
+                        onSuccessUpsert = {stackNavigation.replaceAll(Config.Update(it))},
+                        onChangeValueForMainTab = ::onChangeValueForMainTab,
+                        id = productId
+                    ),
+                    upsertEssentialsDependencies = scope.get(),
                 )
+
             )
 
             is Config.Update -> Child.Update(
@@ -104,7 +104,7 @@ class ProductFormComponent(
     }
 
     internal sealed class Child {
-        class Create(val component: CreateItemComponent<Product, ProductType>) : Child()
+        class Create(val component: UpsertEssentialsFactoryComponent) : Child()
         class Update(val component: ProductFormTabInnerTabsComponent) : Child()
     }
 }

@@ -12,7 +12,8 @@ import ru.pavlig43.database.data.product.ProductDeclarationOutWithNameAndVendor
 import ru.pavlig43.database.data.product.ProductFile
 import ru.pavlig43.form.api.data.IUpdateRepository
 import ru.pavlig43.form.api.data.UpdateItemRepository
-import ru.pavlig43.manageitem.api.data.CreateItemRepository
+import ru.pavlig43.itemlist.api.ItemListDependencies
+import ru.pavlig43.manageitem.api.UpsertEssentialsDependencies
 import ru.pavlig43.productform.api.ProductFormDependencies
 import ru.pavlig43.upsertitem.api.data.UpdateCollectionRepository
 
@@ -20,7 +21,9 @@ internal fun createProductFormModule(dependencies: ProductFormDependencies) = li
     module {
         single<NocombroDatabase> { dependencies.db }
         single<DataBaseTransaction> { dependencies.transaction }
-        single<CreateItemRepository<Product>> { getCreateRepository(get()) }
+        single<ItemListDependencies> { dependencies.itemListDependencies }
+        single<UpsertEssentialsDependencies> { dependencies.upsertEssentialsDependencies }
+//        single<UpdateItemRepository<Product>> { getCreateRepository(get()) }
 
         single<IUpdateRepository<Product, Product>>(named(UpdateRepositoryType.Product.name)) {
             getInitItemRepository(
@@ -47,16 +50,16 @@ internal fun createProductFormModule(dependencies: ProductFormDependencies) = li
 )
 
 
-private fun getCreateRepository(
-    db: NocombroDatabase
-): CreateItemRepository<Product> {
-    val productDao = db.productDao
-    return CreateItemRepository(
-        tag = "Create Product Repository",
-        isNameAllowed = productDao::isNameAllowed,
-        create = productDao::create
-    )
-}
+//private fun getCreateRepository(
+//    db: NocombroDatabase
+//): UpdateItemRepository<Product> {
+//    val productDao = db.productDao
+//    return UpdateItemRepository(
+//        tag = "Create Product Repository",
+//        isNameAllowed = productDao::isNameAllowed,
+//        create = productDao::create
+//    )
+//}
 
 internal enum class UpdateRepositoryType {
     Product,

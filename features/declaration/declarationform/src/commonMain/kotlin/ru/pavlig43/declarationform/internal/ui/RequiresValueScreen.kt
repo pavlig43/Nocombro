@@ -66,7 +66,6 @@ internal fun DeclarationRequireScreen(
         MBSItemList(it)
     }
 
-
 }
 
 
@@ -154,7 +153,6 @@ private fun VendorBlock(
             icon = if (vendorName == null) Icons.Default.AddCircle else Icons.Default.Refresh,
         )
     }
-
 
 }
 

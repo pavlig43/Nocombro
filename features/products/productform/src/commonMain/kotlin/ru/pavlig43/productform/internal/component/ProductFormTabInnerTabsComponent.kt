@@ -17,7 +17,6 @@ import ru.pavlig43.database.DataBaseTransaction
 import ru.pavlig43.form.api.component.IItemFormInnerTabsComponent
 import ru.pavlig43.productform.internal.di.UpdateCollectionRepositoryType
 import ru.pavlig43.productform.internal.di.UpdateRepositoryType
-import ru.pavlig43.upsertitem.api.component.IUpdateComponent
 import ru.pavlig43.upsertitem.api.component.UpdateComponent
 
 @Suppress("LongParameterList")
@@ -90,7 +89,7 @@ internal class ProductFormTabInnerTabsComponent(
             dbTransaction.transaction(blocks.value)
         }
     }
-    override val updateComponent: IUpdateComponent = UpdateComponent(
+    override val updateComponent: UpdateComponent = UpdateComponent(
         componentContext = childContext("update"),
         onUpdateComponent = {update()},
         closeFormScreen = closeFormScreen

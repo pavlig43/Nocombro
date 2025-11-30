@@ -5,6 +5,7 @@ import com.arkivanov.decompose.childContext
 import com.arkivanov.decompose.router.stack.ChildStack
 import com.arkivanov.decompose.router.stack.StackNavigation
 import com.arkivanov.decompose.router.stack.childStack
+import com.arkivanov.decompose.router.stack.replaceAll
 import com.arkivanov.decompose.value.Value
 import com.arkivanov.essenty.instancekeeper.getOrCreate
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,12 +15,14 @@ import kotlinx.serialization.Serializable
 import org.koin.core.scope.Scope
 import ru.pavlig43.core.SlotComponent
 import ru.pavlig43.corekoin.ComponentKoinContext
+import ru.pavlig43.manageitem.api.VendorFactoryParam
+import ru.pavlig43.manageitem.api.component.UpsertEssentialsFactoryComponent
 import ru.pavlig43.vendor.api.VendorFormComponent.Child.Update
 import ru.pavlig43.vendor.internal.component.VendorFormTabInnerTabsComponent
 import ru.pavlig43.vendor.internal.di.createVendorFormModule
 
 class VendorFormComponent(
-    vendorId: Int,
+    private val vendorId: Int,
     val closeTab: () -> Unit,
     componentContext: ComponentContext,
     dependencies: VendorFormDependencies,
@@ -51,15 +54,19 @@ class VendorFormComponent(
         componentContext: ComponentContext
     ): Child {
         return when (config) {
-//            is Config.Create -> Child.Create(
-//                CreateItemComponent(
-//                    componentContext = componentContext,
-//                    mapper = DefaultRequireValues::toVendor,
-//                    createItemRepository = scope.get(),
-//                    onSuccessCreate = {stackNavigation.replaceAll(Config.Update(it))},
-//                    onChangeValueForMainTab = {onChangeValueForMainTab("* $it")}
-//                )
-//            )
+            Config.Create -> Child.Create(
+                UpsertEssentialsFactoryComponent(
+                    componentContext = componentContext,
+                    upsertEssentialsDependencies = scope.get(),
+                    upsertEssentialsFactoryParam = VendorFactoryParam(
+                        upsertEssentialsDependencies = scope.get(),
+                        onSuccessUpsert = {stackNavigation.replaceAll(Config.Update(it))},
+                        onChangeValueForMainTab = ::onChangeValueForMainTab,
+                        id = vendorId
+                    )
+                )
+            )
+
 
             is Config.Update -> Update(
                 VendorFormTabInnerTabsComponent(
@@ -71,7 +78,7 @@ class VendorFormComponent(
                 )
             )
 
-            Config.Create -> TODO()
+
         }
     }
 
@@ -96,5 +103,6 @@ class VendorFormComponent(
 
     internal sealed class Child {
         class Update(val component: VendorFormTabInnerTabsComponent) : Child()
+        class Create(val component: UpsertEssentialsFactoryComponent) : Child()
     }
 }

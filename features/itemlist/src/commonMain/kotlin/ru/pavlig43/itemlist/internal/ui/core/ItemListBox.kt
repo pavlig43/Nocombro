@@ -126,15 +126,15 @@ private fun <O : GenericItem, U : IItemUi> ItemsListBodyScreen(
                     searchText = "",
                     backgroundColor = MaterialTheme.colorScheme.primary.copy(0.5f),
                     borderColor = MaterialTheme.colorScheme.onPrimary,
-                    modifier = Modifier.Companion.height(32.dp)
+                    modifier = Modifier.height(32.dp)
                 )
                 LazyColumn(
-                    Modifier.Companion.fillMaxSize(), state = verticalScrollState
+                    Modifier.fillMaxSize(), state = verticalScrollState
                 ) {
                     itemsIndexed(itemList, key = { _, item -> item.id }) { index, item ->
                         Row(
                             Modifier.Companion.height(32.dp),
-                            verticalAlignment = Alignment.Companion.CenterVertically
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
                             if (withCheckbox) {
                                 SelectItemCheckBox(

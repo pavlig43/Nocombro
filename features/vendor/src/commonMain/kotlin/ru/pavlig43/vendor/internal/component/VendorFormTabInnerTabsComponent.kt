@@ -15,7 +15,6 @@ import ru.pavlig43.core.tabs.DefaultTabNavigationComponent
 import ru.pavlig43.core.tabs.ITabNavigationComponent
 import ru.pavlig43.database.DataBaseTransaction
 import ru.pavlig43.form.api.component.IItemFormInnerTabsComponent
-import ru.pavlig43.upsertitem.api.component.IUpdateComponent
 import ru.pavlig43.upsertitem.api.component.UpdateComponent
 import ru.pavlig43.vendor.internal.di.UpdateCollectionRepositoryType
 
@@ -82,7 +81,7 @@ internal class VendorFormTabInnerTabsComponent(
             dbTransaction.transaction(blocks.value)
         }
     }
-    override val updateComponent: IUpdateComponent = UpdateComponent(
+    override val updateComponent: UpdateComponent = UpdateComponent(
         componentContext = childContext("update"),
         onUpdateComponent = {update()},
         closeFormScreen = closeFormScreen

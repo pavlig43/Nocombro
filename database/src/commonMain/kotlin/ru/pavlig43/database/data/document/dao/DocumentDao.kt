@@ -7,6 +7,7 @@ import androidx.room.Query
 import androidx.room.RawQuery
 import androidx.room.RoomRawQuery
 import androidx.room.Update
+import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
 import ru.pavlig43.database.data.common.NotificationDTO
 import ru.pavlig43.database.data.document.DOCUMENT_TABLE_NAME
@@ -18,6 +19,9 @@ import ru.pavlig43.database.data.document.DocumentType
 interface DocumentDao {
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun create(document: Document):Long
+
+    @Upsert
+    suspend fun upsert(document: Document): Long
 
     @Update
     suspend fun updateDocument(document: Document)

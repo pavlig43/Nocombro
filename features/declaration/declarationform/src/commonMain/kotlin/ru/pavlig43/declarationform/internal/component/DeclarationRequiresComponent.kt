@@ -26,7 +26,6 @@ import ru.pavlig43.declarationform.internal.toDeclarationWithDate
 import ru.pavlig43.itemlist.api.ItemListDependencies
 import ru.pavlig43.itemlist.api.VendorListParamProvider
 import ru.pavlig43.itemlist.api.component.MBSItemListComponent
-import ru.pavlig43.loadinitdata.api.component.ILoadInitDataComponent
 import ru.pavlig43.loadinitdata.api.component.LoadInitDataComponent
 
 
@@ -93,7 +92,7 @@ internal class DeclarationRequiresComponent(
     }
 
 
-    val initComponent: ILoadInitDataComponent<RequiresValuesWithDate> = LoadInitDataComponent(
+    val initComponent: LoadInitDataComponent<RequiresValuesWithDate> = LoadInitDataComponent(
         componentContext = childContext("initComponent"),
         getInitData = {
             getInitData?.invoke()?.mapTo { it.toDeclarationWithDate() } ?: RequestResult.Success(

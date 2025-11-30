@@ -22,7 +22,6 @@ import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.itemlist.api.ItemListDependencies
 import ru.pavlig43.itemlist.api.ProductListParamProvider
 import ru.pavlig43.itemlist.api.component.MBSItemListComponent
-import ru.pavlig43.loadinitdata.api.component.ILoadInitDataComponent
 import ru.pavlig43.loadinitdata.api.component.LoadInitDataComponent
 import ru.pavlig43.productform.internal.data.CompositionUi
 import ru.pavlig43.productform.internal.data.ProductIngredientUi
@@ -58,7 +57,7 @@ internal class CompositionTabSlot(
      * @see CompositionUi
      */
     val compositionList = _compositionList.asStateFlow()
-    private val loadInitDataComponent: ILoadInitDataComponent<List<CompositionUi>> =
+    private val loadInitDataComponent: LoadInitDataComponent<List<CompositionUi>> =
         LoadInitDataComponent<List<CompositionUi>>(
             componentContext = childContext("loadInitData_composition"),
             getInitData = {

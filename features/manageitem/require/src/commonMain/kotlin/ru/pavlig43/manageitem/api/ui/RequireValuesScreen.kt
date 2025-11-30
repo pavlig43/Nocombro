@@ -31,10 +31,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import ru.pavlig43.core.data.Item
 import ru.pavlig43.core.data.ItemType
 import ru.pavlig43.coreui.StringColumnField
 import ru.pavlig43.loadinitdata.api.ui.LoadInitDataScreen
-import ru.pavlig43.manageitem.api.component.DefaultRequireValuesSlotComponent
+import ru.pavlig43.manageitem.api.component.RequireValuesSlotComponent
 import ru.pavlig43.manageitem.api.data.DefaultRequireValues
 import ru.pavlig43.manageitem.internal.ui.COMMENT
 import ru.pavlig43.manageitem.internal.ui.NAME
@@ -44,10 +45,10 @@ import ru.pavlig43.manageitem.internal.ui.OBJECT_TYPE_IS_EMPTY_MESSAGE
 
 @Composable
 fun RequireValuesScreen(
-    component: DefaultRequireValuesSlotComponent,
+    component: RequireValuesSlotComponent<out Item,out ItemType>,
     modifier: Modifier = Modifier
 ) {
-    val requireValues by component.requireValues.collectAsState()
+    val requireValues by component.requireValues .collectAsState()
     val typeVariants by component.typeVariants.collectAsState()
 
     Column(modifier) {

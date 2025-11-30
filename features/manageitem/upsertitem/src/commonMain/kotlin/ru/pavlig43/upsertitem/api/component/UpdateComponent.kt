@@ -20,30 +20,24 @@ sealed interface UpdateState<O : Any> {
     class Error<O : Any>(val message: String) : UpdateState<O>
 }
 
-interface IUpdateComponent {
-    val isValidValue: StateFlow<Boolean>
-    val closeFormScreen:()->Unit
-    fun onUpdate()
-    val updateState:StateFlow<UpdateState<Unit>>
-}
 
 
 class UpdateComponent(
     componentContext: ComponentContext,
     private val onUpdateComponent: suspend () -> RequestResult<Unit>,
     otherValidValue: Flow<Boolean> = flowOf(true),
-    override val closeFormScreen: () -> Unit,
-) : ComponentContext by componentContext, IUpdateComponent {
+    val closeFormScreen: () -> Unit,
+) : ComponentContext by componentContext {
     private val coroutineScope = componentCoroutineScope()
 
-    override val isValidValue: StateFlow<Boolean> = otherValidValue
+    val isValidValue: StateFlow<Boolean> = otherValidValue
         .stateIn(
             coroutineScope,
             SharingStarted.Eagerly,
             false
         )
 
-    override  fun onUpdate() {
+     fun onUpdate() {
         _updateState.update { UpdateState.Loading() }
         coroutineScope.launch {
             val result = onUpdateComponent()
@@ -53,7 +47,7 @@ class UpdateComponent(
     }
 
     private val _updateState: MutableStateFlow<UpdateState<Unit>> = MutableStateFlow(UpdateState.Init<Unit>())
-    override val updateState: StateFlow<UpdateState<Unit>> = _updateState.asStateFlow()
+    val updateState: StateFlow<UpdateState<Unit>> = _updateState.asStateFlow()
 
 
 

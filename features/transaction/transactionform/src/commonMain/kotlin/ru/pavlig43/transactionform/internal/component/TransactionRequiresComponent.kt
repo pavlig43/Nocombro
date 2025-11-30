@@ -23,8 +23,6 @@ import ru.pavlig43.database.data.transaction.TransactionRowOut
 import ru.pavlig43.itemlist.api.ItemListDependencies
 import ru.pavlig43.itemlist.api.ProductListParamProvider
 import ru.pavlig43.itemlist.api.component.MBSItemListComponent
-import ru.pavlig43.itemlist.api.data.IItemUi
-import ru.pavlig43.loadinitdata.api.component.ILoadInitDataComponent
 import ru.pavlig43.loadinitdata.api.component.LoadInitDataComponent
 import ru.pavlig43.transactionform.internal.data.ProductTransactionUi
 import ru.pavlig43.transactionform.internal.data.TransactionRowUi
@@ -40,7 +38,7 @@ internal class TransactionRequiresComponent(
     private val coroutineScope = componentCoroutineScope()
 
 
-    val initComponent: ILoadInitDataComponent<ProductTransactionUi> = LoadInitDataComponent(
+    val initComponent: LoadInitDataComponent<ProductTransactionUi> = LoadInitDataComponent(
         componentContext = childContext("initComponent"),
         getInitData = {
             getInitData?.invoke()?.mapTo { it.toProductTransactionUi() } ?: RequestResult.Success(

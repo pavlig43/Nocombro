@@ -20,6 +20,7 @@ kotlin{
         implementation(projects.features.declaration.declarationform)
         implementation(projects.database)
         implementation(projects.datastore)
+        implementation(projects.features.manageitem.require)
 
     }
 }

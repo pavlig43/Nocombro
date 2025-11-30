@@ -1,0 +1,83 @@
+package ru.pavlig43.manageitem.internal.component
+
+import com.arkivanov.decompose.ComponentContext
+import com.arkivanov.decompose.router.slot.ChildSlot
+import com.arkivanov.decompose.router.slot.SlotNavigation
+import com.arkivanov.decompose.router.slot.activate
+import com.arkivanov.decompose.router.slot.childSlot
+import com.arkivanov.decompose.router.slot.dismiss
+import com.arkivanov.decompose.value.Value
+import kotlinx.serialization.Serializable
+import ru.pavlig43.database.data.declaration.DeclarationIn
+import ru.pavlig43.itemlist.api.VendorListParamProvider
+import ru.pavlig43.itemlist.api.component.MBSItemListComponent
+import ru.pavlig43.manageitem.api.DeclarationFactoryParam
+import ru.pavlig43.manageitem.api.data.CreateEssentialsRepository
+import ru.pavlig43.manageitem.internal.data.DeclarationEssentialsUi
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
+
+@OptIn(ExperimentalTime::class)
+internal class DeclarationComponent(
+    componentContext: ComponentContext,
+    param: DeclarationFactoryParam,
+    createEssentialsRepository: CreateEssentialsRepository<DeclarationIn>,
+) : EssentialsComponent<DeclarationIn, DeclarationEssentialsUi>(
+    componentContext = componentContext,
+    initItem = DeclarationEssentialsUi(),
+    isValidValuesFactory = {
+        displayName.isNotBlank() && vendorId != null && bestBefore != null
+    },
+    mapperToDTO = {
+        DeclarationIn(
+            displayName = displayName,
+            createdAt = createdAt?:Clock.System.now().toEpochMilliseconds(),
+            vendorId = vendorId ?: throw IllegalArgumentException("Vendor ID required"),
+            vendorName = vendorName
+                ?: throw IllegalArgumentException("Vendor Name required"),
+            bestBefore = bestBefore
+                ?: throw IllegalArgumentException("Declaration bestBefore required"),
+            observeFromNotification = isObserveFromNotification,
+            id = id,
+        )
+    },
+    onSuccessUpsert = param.onSuccessUpsert,
+    vendorInfoForTabName = {declaration -> param.onChangeValueForMainTab(("*(Декларация) ${declaration.displayName}"))},
+    upsertEssentialsRepository = createEssentialsRepository,
+) {
+    private val dialogNavigation = SlotNavigation<MBSVendorDialog>()
+
+    internal val dialog: Value<ChildSlot<MBSVendorDialog, MBSItemListComponent>> =
+        childSlot(
+            source = dialogNavigation,
+            key = "vendor_dialog",
+            serializer = MBSVendorDialog.serializer(),
+            handleBackButton = true,
+        ) { config: MBSVendorDialog, context ->
+            MBSItemListComponent(
+                componentContext = context,
+                onDismissed = dialogNavigation::dismiss,
+                itemListDependencies = param.itemListDependencies,
+                onCreate = { param.onOpenVendorTab(0) },
+                itemListParamProvider = VendorListParamProvider(
+                    withCheckbox = false
+                ),
+                onItemClick = {
+                    changeVendor(it.id, it.displayName)
+                    dialogNavigation.dismiss()
+                },
+            )
+        }
+
+
+    fun showDialog() {
+        dialogNavigation.activate(MBSVendorDialog)
+    }
+    private fun changeVendor(vendorId: Int, vendorName: String) {
+        val declaration = itemFields.value.copy(vendorId = vendorId, vendorName = vendorName)
+        onChangeItem(declaration)
+
+    }
+}
+@Serializable
+internal data object MBSVendorDialog

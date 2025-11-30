@@ -3,12 +3,12 @@ package ru.pavlig43.transactionform.internal.component
 import com.arkivanov.decompose.ComponentContext
 import ru.pavlig43.database.data.transaction.ProductTransaction
 import ru.pavlig43.itemlist.api.ItemListDependencies
-import ru.pavlig43.manageitem.api.data.CreateItemRepository
+import ru.pavlig43.manageitem.api.data.CreateEssentialsRepository
 
 internal class CreateTransactionComponent(
     componentContext: ComponentContext,
     itemListDependencies: ItemListDependencies,
-    createItemRepository: CreateItemRepository<ProductTransaction>,
+    updateItemRepository: CreateEssentialsRepository<ProductTransaction>,
 
     onSuccessCreate: (Int) -> Unit,
     onChangeValueForMainTab: (String) -> Unit

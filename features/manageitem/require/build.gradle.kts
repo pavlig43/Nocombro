@@ -10,8 +10,8 @@ android {
 kotlin{
     commonMainDependencies {
         implementation(projects.database)
+        implementation(projects.features.itemlist)
         implementation(projects.features.manageitem.loadinitdata)
         implementation(projects.features.manageitem.upsertitem)
-//        implementation(projects.coreui)
     }
 }

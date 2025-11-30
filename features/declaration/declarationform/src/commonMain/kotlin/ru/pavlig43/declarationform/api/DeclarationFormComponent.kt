@@ -15,16 +15,17 @@ import kotlinx.serialization.Serializable
 import org.koin.core.scope.Scope
 import ru.pavlig43.core.SlotComponent
 import ru.pavlig43.corekoin.ComponentKoinContext
-import ru.pavlig43.declarationform.internal.component.CreateDeclarationComponent
 import ru.pavlig43.declarationform.internal.component.DeclarationFormTabInnerTabsComponent
 import ru.pavlig43.declarationform.internal.di.createDeclarationFormModule
+import ru.pavlig43.manageitem.api.DeclarationFactoryParam
+import ru.pavlig43.manageitem.api.component.UpsertEssentialsFactoryComponent
 
 class DeclarationFormComponent(
-    declarationId: Int,
+    private val declarationId: Int,
     val closeTab: () -> Unit,
     private val onOpenVendorTab: (Int) -> Unit,
     componentContext: ComponentContext,
-    private val dependencies: DeclarationDependencies,
+    dependencies: DeclarationDependencies,
 ) : ComponentContext by componentContext, SlotComponent {
 
     private val koinContext = instanceKeeper.getOrCreate {
@@ -56,14 +57,20 @@ class DeclarationFormComponent(
     ): Child {
         return when (config) {
             is Config.Create -> Child.Create(
-                CreateDeclarationComponent(
+                UpsertEssentialsFactoryComponent(
                     componentContext = componentContext,
-                    createItemRepository = scope.get(),
-                    onSuccessCreate = { stackNavigation.replaceAll(Config.Update(it)) },
-                    onChangeValueForMainTab = { onChangeValueForMainTab("* $it") },
-                    itemListDependencies = dependencies.itemListDependencies,
-                    onOpenVendorTab = onOpenVendorTab,
+                    upsertEssentialsDependencies = scope.get(),
+                    upsertEssentialsFactoryParam = DeclarationFactoryParam(
+                        upsertEssentialsDependencies = scope.get(),
+                        onSuccessUpsert = { stackNavigation.replaceAll(Config.Update(it)) },
+                        onChangeValueForMainTab = { onChangeValueForMainTab("* $it") },
+                        itemListDependencies = scope.get(),
+                        onOpenVendorTab = onOpenVendorTab,
+                        id = declarationId
+                    ),
+                    closeFormScreen = closeTab,
                 )
+
             )
 
             is Config.Update -> Child.Update(
@@ -99,7 +106,7 @@ class DeclarationFormComponent(
     }
 
     internal sealed class Child {
-        class Create(val component: CreateDeclarationComponent) : Child()
+        class Create(val component: UpsertEssentialsFactoryComponent) : Child()
         class Update(val component: DeclarationFormTabInnerTabsComponent) : Child()
     }
 }

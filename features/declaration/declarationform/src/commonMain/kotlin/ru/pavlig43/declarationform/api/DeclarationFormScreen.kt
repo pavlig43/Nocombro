@@ -3,8 +3,6 @@ package ru.pavlig43.declarationform.api
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -16,16 +14,15 @@ import ru.pavlig43.addfile.api.ui.FilesScreen
 import ru.pavlig43.declarationform.internal.component.DeclarationFileTabSlot
 import ru.pavlig43.declarationform.internal.component.DeclarationTabSlot
 import ru.pavlig43.declarationform.internal.component.UpdateDeclarationTabSlot
-import ru.pavlig43.declarationform.internal.ui.CreateDeclarationScreen
 import ru.pavlig43.declarationform.internal.ui.DeclarationRequireScreen
 import ru.pavlig43.form.api.ui.ItemTabsUi
+import ru.pavlig43.manageitem.api.ui.CreateItemScreen
 
 @Composable
 fun DeclarationFormScreen(
     component: DeclarationFormComponent,
     modifier: Modifier = Modifier,
 ) {
-    val scrollState = rememberScrollState()
 
     Column(
         verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -33,14 +30,13 @@ fun DeclarationFormScreen(
 
         modifier = modifier
             .padding(horizontal = 8.dp)
-            .verticalScroll(scrollState)
     ) {
         val stack by component.stack.subscribeAsState()
         Children(
             stack = stack,
         ) { child ->
             when (val instance = child.instance) {
-                is DeclarationFormComponent.Child.Create -> CreateDeclarationScreen(instance.component)
+                is DeclarationFormComponent.Child.Create -> CreateItemScreen(instance.component)
                 is DeclarationFormComponent.Child.Update -> ItemTabsUi(
                     component = instance.component,
                     slotFactory = { slotForm: DeclarationTabSlot? ->

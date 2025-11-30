@@ -9,29 +9,31 @@ import ru.pavlig43.database.data.document.DocumentFile
 import ru.pavlig43.documentform.api.DocumentFormDependencies
 import ru.pavlig43.form.api.data.IUpdateRepository
 import ru.pavlig43.form.api.data.UpdateItemRepository
-import ru.pavlig43.manageitem.api.data.CreateItemRepository
+import ru.pavlig43.manageitem.api.UpsertEssentialsDependencies
 import ru.pavlig43.upsertitem.api.data.UpdateCollectionRepository
 
 internal fun createDocumentFormModule(dependencies: DocumentFormDependencies) = listOf(
     module {
         single<NocombroDatabase> { dependencies.db }
         single<DataBaseTransaction> { dependencies.transaction }
-        single<CreateItemRepository<Document>> { getCreateRepository(get()) }
+        single<UpsertEssentialsDependencies>{dependencies.upsertEssentialsDependencies}
+//        single<UpdateItemRepository<Document>> { getCreateRepository(get()) }
         single<IUpdateRepository<Document, Document>>(named(UpdateRepositoryType.Document.name)) { getInitItemRepository(get()) }
         single<UpdateCollectionRepository<DocumentFile,DocumentFile>>{ getFilesRepository(get()) }
     }
 )
 
-private fun getCreateRepository(
-    db: NocombroDatabase
-): CreateItemRepository<Document> {
-    val documentDao = db.documentDao
-    return CreateItemRepository(
-        tag = "Create Document Repository",
-        isNameAllowed = documentDao::isNameAllowed,
-        create = documentDao::create
-    )
-}
+//private fun getCreateRepository(
+//    db: NocombroDatabase
+//): UpdateItemRepository<Document> {
+//    val documentDao = db.documentDao
+//    return UpdateItemRepository(
+//        tag = "Create Document Repository",
+//        isNameAllowed = documentDao::isNameAllowed,
+//        create = documentDao::create
+//    )
+//}
+
 
 internal enum class UpdateRepositoryType{
     Document,

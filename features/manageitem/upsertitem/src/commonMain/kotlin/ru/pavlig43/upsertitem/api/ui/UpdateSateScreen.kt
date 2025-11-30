@@ -18,14 +18,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import ru.pavlig43.coreui.ProgressIndicator
-import ru.pavlig43.upsertitem.api.component.IUpdateComponent
+import ru.pavlig43.upsertitem.api.component.UpdateComponent
 import ru.pavlig43.upsertitem.api.component.UpdateState
 import ru.pavlig43.upsertitem.internal.RETRY
 import ru.pavlig43.upsertitem.internal.ui.SaveDialog
 
 @Composable
 fun UpdateStateScreen(
-    component: IUpdateComponent,
+    component: UpdateComponent,
     modifier: Modifier = Modifier,
 ) {
     var saveDialogState by remember { mutableStateOf(false) }

@@ -7,16 +7,13 @@ import com.arkivanov.decompose.value.operator.map
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import org.koin.core.qualifier.named
 import org.koin.core.scope.Scope
 import ru.pavlig43.core.RequestResult
 import ru.pavlig43.core.data.dbSafeCall
 import ru.pavlig43.core.tabs.DefaultTabNavigationComponent
 import ru.pavlig43.core.tabs.ITabNavigationComponent
 import ru.pavlig43.database.DataBaseTransaction
-import ru.pavlig43.declarationform.internal.di.UpdateRepositoryType
 import ru.pavlig43.form.api.component.IItemFormInnerTabsComponent
-import ru.pavlig43.upsertitem.api.component.IUpdateComponent
 import ru.pavlig43.upsertitem.api.component.UpdateComponent
 
 internal class DeclarationFormTabInnerTabsComponent(
@@ -48,7 +45,7 @@ internal class DeclarationFormTabInnerTabsComponent(
                         componentContext = context,
                         itemListDependencies = scope.get(),
                         declarationId = declarationId,
-                        updateRepository = scope.get(named(UpdateRepositoryType.Declaration.name)),
+                        updateRepository = scope.get(),
                         onChangeValueForMainTab = onChangeValueForMainTab,
                         onOpenVendorTab = onOpenVendorTab,
                     )
@@ -72,7 +69,7 @@ internal class DeclarationFormTabInnerTabsComponent(
             dbTransaction.transaction(blocks.value)
         }
     }
-    override val updateComponent: IUpdateComponent = UpdateComponent(
+    override val updateComponent: UpdateComponent = UpdateComponent(
         componentContext = childContext("update"),
         onUpdateComponent = {update()},
         closeFormScreen = closeFormScreen

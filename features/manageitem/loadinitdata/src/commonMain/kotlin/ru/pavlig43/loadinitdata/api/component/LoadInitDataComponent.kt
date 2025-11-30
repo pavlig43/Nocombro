@@ -13,7 +13,7 @@ class LoadInitDataComponent<I : Any>(
     componentContext: ComponentContext,
     private val getInitData: suspend () -> RequestResult<I>,
     private val onSuccessGetInitData: (I) -> Unit,
-) : ComponentContext by componentContext, ILoadInitDataComponent<I> {
+) : ComponentContext by componentContext {
 
     private val coroutineScope = componentCoroutineScope()
 
@@ -23,16 +23,16 @@ class LoadInitDataComponent<I : Any>(
      * которые пользователь изменил для записи в бд
      */
     private val _firstData = MutableStateFlow<I?>(null)
-    override val firstData = _firstData.asStateFlow()
+    val firstData = _firstData.asStateFlow()
 
 
 
     private val _loadState: MutableStateFlow<LoadInitDataState<I>> =
         MutableStateFlow(LoadInitDataState.Loading())
 
-    override val loadState: StateFlow<LoadInitDataState<I>> = _loadState.asStateFlow()
+    val loadState: StateFlow<LoadInitDataState<I>> = _loadState.asStateFlow()
 
-    override fun retryLoadInitData() {
+    fun retryLoadInitData() {
         loadData()
     }
 
@@ -62,4 +62,9 @@ private fun <I : Any> RequestResult<I>.toLoadInitDataSate(): LoadInitDataState<I
         is RequestResult.Initial<I> -> LoadInitDataState.Loading()
         is RequestResult.Success<I> -> LoadInitDataState.Success(data)
     }
+}
+sealed interface LoadInitDataState<I : Any> {
+    class Loading<I : Any> : LoadInitDataState<I>
+    class Error<I : Any>(val message: String) : LoadInitDataState<I>
+    class Success<I : Any>(val data:I) : LoadInitDataState<I>
 }

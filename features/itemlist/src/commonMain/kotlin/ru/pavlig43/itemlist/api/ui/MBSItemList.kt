@@ -10,7 +10,7 @@ import ru.pavlig43.itemlist.api.component.MBSItemListComponent
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun  MBSItemList(component: MBSItemListComponent, modifier: Modifier = Modifier.Companion){
+fun  MBSItemList(component: MBSItemListComponent, modifier: Modifier = Modifier){
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     ModalBottomSheet(
         onDismissRequest = component::onDismissClicked,

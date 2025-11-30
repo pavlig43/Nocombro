@@ -15,18 +15,15 @@ import kotlinx.serialization.Serializable
 import org.koin.core.scope.Scope
 import ru.pavlig43.core.SlotComponent
 import ru.pavlig43.corekoin.ComponentKoinContext
-import ru.pavlig43.database.data.document.Document
-import ru.pavlig43.database.data.document.DocumentType
 import ru.pavlig43.documentform.api.DocumentFormDependencies
 import ru.pavlig43.documentform.internal.component.tabs.DocumentFormTabInnerTabsComponent
 import ru.pavlig43.documentform.internal.di.createDocumentFormModule
-import ru.pavlig43.documentform.internal.toDocument
-import ru.pavlig43.manageitem.api.component.CreateItemComponent
-import ru.pavlig43.manageitem.api.data.DefaultRequireValues
+import ru.pavlig43.manageitem.api.DocumentFactoryParam
+import ru.pavlig43.manageitem.api.component.UpsertEssentialsFactoryComponent
 
 
 class DocumentFormComponent(
-    documentId: Int,
+    private val documentId: Int,
     val closeTab: () -> Unit,
     componentContext: ComponentContext,
     dependencies: DocumentFormDependencies,
@@ -59,19 +56,22 @@ class DocumentFormComponent(
     ): Child {
         return when (config) {
             is Config.Create -> Child.Create(
-                CreateItemComponent(
+                UpsertEssentialsFactoryComponent(
                     componentContext = componentContext,
-                    typeVariantList = DocumentType.entries,
-                    mapper = DefaultRequireValues::toDocument,
-                    createItemRepository = scope.get(),
-                    onSuccessCreate = {stackNavigation.replaceAll(Config.Update(it))},
-                    onChangeValueForMainTab = {onChangeValueForMainTab("* $it")}
+                    upsertEssentialsFactoryParam = DocumentFactoryParam(
+                        upsertEssentialsDependencies = scope.get(),
+                        onSuccessUpsert = {stackNavigation.replaceAll(Config.Update(it))},
+                        onChangeValueForMainTab = {onChangeValueForMainTab(it)},
+                        id = documentId
+                    ),
+                    upsertEssentialsDependencies = scope.get(),
                 )
+
             )
 
             is Config.Update -> Child.Update(
                 DocumentFormTabInnerTabsComponent(
-                    componentContext = childContext("document_form"),
+                    componentContext = componentContext,
                     scope = scope,
                     documentId = config.id,
                     closeFormScreen = closeTab,
@@ -101,7 +101,7 @@ class DocumentFormComponent(
     }
 
     internal sealed class Child {
-        class Create(val component: CreateItemComponent<Document,DocumentType>) : Child()
+        class Create(val component: UpsertEssentialsFactoryComponent) : Child()
         class Update(val component: DocumentFormTabInnerTabsComponent) : Child()
     }
 }

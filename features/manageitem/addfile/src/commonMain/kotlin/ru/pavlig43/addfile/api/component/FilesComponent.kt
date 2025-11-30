@@ -21,7 +21,6 @@ import ru.pavlig43.core.RequestResult
 import ru.pavlig43.core.componentCoroutineScope
 import ru.pavlig43.core.data.FileData
 import ru.pavlig43.core.mapTo
-import ru.pavlig43.loadinitdata.api.component.ILoadInitDataComponent
 import ru.pavlig43.loadinitdata.api.component.LoadInitDataComponent
 
 
@@ -105,7 +104,7 @@ class FilesComponent<Files : List<FileData>>(
 
     private val _filesUi = MutableStateFlow<List<FileUi>>(emptyList())
     override val filesUi = _filesUi.asStateFlow()
-    override val loadInitDataComponent: ILoadInitDataComponent<List<FileUi>> =
+    override val loadInitDataComponent: LoadInitDataComponent<List<FileUi>> =
         LoadInitDataComponent<List<FileUi>>(
             componentContext = childContext("loadInitData"),
             getInitData = { getInitData().mapTo { it.toListFileUi() } },

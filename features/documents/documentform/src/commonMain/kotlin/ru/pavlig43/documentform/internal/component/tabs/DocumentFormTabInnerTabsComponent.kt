@@ -7,16 +7,13 @@ import com.arkivanov.decompose.value.operator.map
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import org.koin.core.qualifier.named
 import org.koin.core.scope.Scope
 import ru.pavlig43.core.RequestResult
 import ru.pavlig43.core.data.dbSafeCall
 import ru.pavlig43.core.tabs.DefaultTabNavigationComponent
 import ru.pavlig43.core.tabs.ITabNavigationComponent
 import ru.pavlig43.database.DataBaseTransaction
-import ru.pavlig43.documentform.internal.di.UpdateRepositoryType
 import ru.pavlig43.form.api.component.IItemFormInnerTabsComponent
-import ru.pavlig43.upsertitem.api.component.IUpdateComponent
 import ru.pavlig43.upsertitem.api.component.UpdateComponent
 
 internal class DocumentFormTabInnerTabsComponent(
@@ -36,19 +33,28 @@ internal class DocumentFormTabInnerTabsComponent(
         DefaultTabNavigationComponent(
             componentContext = childContext("tab"),
             startConfigurations = listOf(
-                DocumentTab.RequireValues,
+                DocumentTab.Create,
                 DocumentTab.Files
             ),
             serializer = DocumentTab.serializer(),
             slotFactory = { context, tabConfig: DocumentTab, _: (DocumentTab) -> Unit, _: () -> Unit ->
                 when (tabConfig) {
 
-                    DocumentTab.RequireValues ->DocumentRequiresTabSlot(
+                    DocumentTab.Create -> DocumentComponent(
                         componentContext = context,
                         documentId = documentId,
-                        updateRepository = scope.get(named(UpdateRepositoryType.Document.name)),
-                        onChangeValueForMainTab = onChangeValueForMainTab
+                        onChangeValueForMainTab = onChangeValueForMainTab,
+                        onSuccessUpsert = TODO(),
+                        createEssentialsRepository = scope.get()
                     )
+
+
+//                        DocumentRequiresTabSlot(
+//                        componentContext = context,
+//                        documentId = documentId,
+//                        updateRepository = scope.get(named(UpdateRepositoryType.Document.name)),
+//                        onChangeValueForMainTab = onChangeValueForMainTab
+//                    )
 
 
                     DocumentTab.Files -> DocumentFileTabSlot(
@@ -70,11 +76,12 @@ internal class DocumentFormTabInnerTabsComponent(
             dbTransaction.transaction(blocks.value)
         }
     }
-    override val updateComponent: IUpdateComponent = UpdateComponent(
+    override val updateComponent: UpdateComponent = UpdateComponent(
         componentContext = childContext("update"),
         onUpdateComponent = {update()},
         closeFormScreen = closeFormScreen
     )
+
 
 
 

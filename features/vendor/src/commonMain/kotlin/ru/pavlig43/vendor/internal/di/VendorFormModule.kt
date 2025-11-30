@@ -8,7 +8,7 @@ import ru.pavlig43.database.data.vendor.Vendor
 import ru.pavlig43.database.data.vendor.VendorFile
 import ru.pavlig43.form.api.data.IUpdateRepository
 import ru.pavlig43.form.api.data.UpdateItemRepository
-import ru.pavlig43.manageitem.api.data.CreateItemRepository
+import ru.pavlig43.manageitem.api.UpsertEssentialsDependencies
 import ru.pavlig43.upsertitem.api.data.UpdateCollectionRepository
 import ru.pavlig43.vendor.api.VendorFormDependencies
 
@@ -16,7 +16,8 @@ internal fun createVendorFormModule(dependencies: VendorFormDependencies) = list
     module {
         single<NocombroDatabase> { dependencies.db }
         single<DataBaseTransaction> { dependencies.transaction }
-        single<CreateItemRepository<Vendor>> { getCreateRepository(get()) }
+        single<UpsertEssentialsDependencies> { dependencies.upsertEssentialsDependencies }
+//        single<UpdateItemRepository<Vendor>> { getCreateRepository(get()) }
         single<IUpdateRepository<Vendor, Vendor>>(named(UpdateRepositoryType.Vendor.name)) {
             getInitItemRepository(
                 get()
@@ -31,16 +32,16 @@ internal fun createVendorFormModule(dependencies: VendorFormDependencies) = list
     }
 )
 
-private fun getCreateRepository(
-    db: NocombroDatabase
-): CreateItemRepository<Vendor> {
-    val dao = db.vendorDao
-    return CreateItemRepository(
-        tag = "Create Vendor Repository",
-        isNameAllowed = dao::isNameAllowed,
-        create = dao::create
-    )
-}
+//private fun getCreateRepository(
+//    db: NocombroDatabase
+//): UpdateItemRepository<Vendor> {
+//    val dao = db.vendorDao
+//    return UpdateItemRepository(
+//        tag = "Create Vendor Repository",
+//        isNameAllowed = dao::isNameAllowed,
+//        create = dao::create
+//    )
+//}
 
 internal enum class UpdateRepositoryType {
     Vendor,
