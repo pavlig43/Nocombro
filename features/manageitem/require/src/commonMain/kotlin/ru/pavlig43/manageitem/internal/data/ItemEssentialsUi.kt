@@ -1,6 +1,5 @@
 package ru.pavlig43.manageitem.internal.data
 
-import ru.pavlig43.database.data.document.DocumentType
 import ru.pavlig43.database.data.product.ProductType
 
 interface ItemEssentialsUi{

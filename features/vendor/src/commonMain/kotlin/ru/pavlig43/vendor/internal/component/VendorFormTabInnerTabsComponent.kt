@@ -5,12 +5,9 @@ import com.arkivanov.decompose.childContext
 import com.arkivanov.decompose.value.Value
 import com.arkivanov.decompose.value.operator.map
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import org.koin.core.qualifier.named
 import org.koin.core.scope.Scope
 import ru.pavlig43.core.RequestResult
-import ru.pavlig43.core.data.dbSafeCall
 import ru.pavlig43.core.tabs.DefaultTabNavigationComponent
 import ru.pavlig43.core.tabs.ITabNavigationComponent
 import ru.pavlig43.database.DataBaseTransaction
@@ -28,7 +25,6 @@ internal class VendorFormTabInnerTabsComponent(
     IItemFormInnerTabsComponent<VendorTab, VendorTabSlot> {
 
     private val _mainTabTitle = MutableStateFlow("")
-    override val mainTabTitle: StateFlow<String> = _mainTabTitle.asStateFlow()
     private val dbTransaction: DataBaseTransaction = scope.get()
 
 
@@ -74,12 +70,11 @@ internal class VendorFormTabInnerTabsComponent(
             },
         )
     private suspend fun update(): RequestResult<Unit> {
-        val blocks: Value<List<suspend () -> Unit>> = tabNavigationComponent.children.map { children->
+        val blocks: Value<List<suspend () -> RequestResult<Unit>>> = tabNavigationComponent.children.map { children->
             children.items.map { child-> suspend {child.instance.onUpdate()} } }
         println(tabNavigationComponent.children.map { it.items.map { it.instance.title } })
-        return dbSafeCall("document form"){
-            dbTransaction.transaction(blocks.value)
-        }
+        return dbTransaction.transaction(blocks.value)
+
     }
     override val updateComponent: UpdateComponent = UpdateComponent(
         componentContext = childContext("update"),

@@ -7,8 +7,8 @@ import ru.pavlig43.database.data.declaration.DeclarationIn
 import ru.pavlig43.database.data.document.Document
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.vendor.Vendor
-import ru.pavlig43.manageitem.api.UpsertEssentialsDependencies
 import ru.pavlig43.manageitem.api.CreateItemType
+import ru.pavlig43.manageitem.api.UpsertEssentialsDependencies
 import ru.pavlig43.manageitem.api.data.CreateEssentialsRepository
 
 internal fun moduleFactory(dependencies: UpsertEssentialsDependencies) = listOf(module {

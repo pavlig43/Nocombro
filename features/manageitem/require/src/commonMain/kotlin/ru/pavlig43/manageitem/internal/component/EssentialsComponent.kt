@@ -2,36 +2,47 @@ package ru.pavlig43.manageitem.internal.component
 
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import ru.pavlig43.core.FormTabSlot
 import ru.pavlig43.core.RequestResult
+import ru.pavlig43.core.componentCoroutineScope
+import ru.pavlig43.core.data.ChangeSet
 import ru.pavlig43.core.data.GenericItem
 import ru.pavlig43.core.mapTo
 import ru.pavlig43.loadinitdata.api.component.LoadInitDataComponent
 import ru.pavlig43.manageitem.api.data.CreateEssentialsRepository
+import ru.pavlig43.manageitem.api.data.UpdateEssentialsRepository
 import ru.pavlig43.manageitem.internal.data.ItemEssentialsUi
+
+data class EssentialComponentFactory<I : GenericItem, T : ItemEssentialsUi>(
+    val initItem: T,
+    val isValidValuesFactory: T.() -> Boolean,
+    val mapperToUi: I.() -> T,
+    val vendorInfoForTabName: (T) -> Unit,
+)
 
 abstract class EssentialsComponent<I : GenericItem, T : ItemEssentialsUi>(
     componentContext: ComponentContext,
+    private val componentFactory: EssentialComponentFactory<I,T>,
     getInitData: (suspend () -> RequestResult<I>)?,
-    private val upsertEssential: suspend (I) -> Unit,
-    initItem: T,
-    isValidValuesFactory: T.() -> Boolean,
-    private val mapperToDTO: T.() -> I,
-    private val mapperToUi: I.() -> T,
-    private val vendorInfoForTabName: (T) -> Unit,
 ) : ComponentContext by componentContext {
+    protected val coroutineScope = componentCoroutineScope()
 
-    private val _itemFields = MutableStateFlow(initItem)
+    private val _itemFields = MutableStateFlow(componentFactory.initItem)
     val itemFields = _itemFields.asStateFlow()
 
     val initDataComponent = LoadInitDataComponent<T>(
         componentContext = childContext("init"),
         getInitData = {
-            getInitData?.invoke()?.mapTo { item -> item.mapperToUi() } ?: RequestResult.Success(
-                initItem
+            getInitData?.invoke()?.mapTo { item -> componentFactory.mapperToUi(item) } ?: RequestResult.Success(
+                componentFactory.initItem
             )
 
         },
@@ -42,59 +53,82 @@ abstract class EssentialsComponent<I : GenericItem, T : ItemEssentialsUi>(
 
 
     fun onChangeItem(item: T) {
-        vendorInfoForTabName(item)
+        componentFactory.vendorInfoForTabName(item)
         _itemFields.update { item }
 
     }
 
     val isValidFields = _itemFields.map { item ->
-        item.isValidValuesFactory()
-    }
-
+        componentFactory.isValidValuesFactory(item)
+    }.stateIn(
+        coroutineScope,
+        SharingStarted.Eagerly,
+        false
+    )
 
 
 }
 
-class CreateEssentialsComponent<I : GenericItem, T : ItemEssentialsUi>(
+abstract class CreateEssentialsComponent<I : GenericItem, T : ItemEssentialsUi>(
     componentContext: ComponentContext,
-    private val onSuccessCreate:(Int)-> Unit,
+    val onSuccessCreate: (Int) -> Unit,
+     componentFactory: EssentialComponentFactory<I,T>,
     private val createEssentialsRepository: CreateEssentialsRepository<I>,
-    initItem: T,
-    isValidValuesFactory: T.() -> Boolean,
-    mapperToDTO: T.() -> I,
-    mapperToUi: I.() -> T,
-    vendorInfoForTabName: (T) -> Unit,
+    private val mapperToDTO: T.() -> I,
 ) : EssentialsComponent<I, T>(
     componentContext = componentContext,
+    componentFactory = componentFactory,
     getInitData = null,
-    upsertEssential = {createEssentialsRepository.createEssential(it)},
-    initItem = initItem,
-    isValidValuesFactory = isValidValuesFactory,
-    mapperToDTO = mapperToDTO,
-    mapperToUi = mapperToUi,
-    vendorInfoForTabName = vendorInfoForTabName,
-){
-    private val _upsertState: MutableStateFlow<UpsertState> = MutableStateFlow(UpsertState.Init)
-    internal val createState = _upsertState.asStateFlow()
 
-    suspend fun create(item:I) {
-        _upsertState.update { UpsertState.Loading }
-        val idResult = createEssentialsRepository.createEssential(item)
-        _upsertState.update { idResult.toCreateState() }
+) {
+    private val _createState: MutableStateFlow<CreateState> = MutableStateFlow(CreateState.Init)
+    internal val createState = _createState.asStateFlow()
+
+    fun create() {
+        coroutineScope.launch(Dispatchers.IO) {
+            _createState.update { CreateState.Loading }
+            val item = itemFields.value.mapperToDTO()
+            val idResult = createEssentialsRepository.createEssential(item)
+            _createState.update { idResult.toCreateState() }
+        }
+
     }
 
 }
-internal interface UpsertState {
-    data object Init : UpsertState
-    data object Loading : UpsertState
-    data class Success(val id: Int): UpsertState
-    data class Error(val message: String): UpsertState
+
+internal interface CreateState {
+    data object Init : CreateState
+    data object Loading : CreateState
+    data class Success(val id: Int) : CreateState
+    data class Error(val message: String) : CreateState
 }
-private fun RequestResult<Int>.toCreateState(): UpsertState {
+
+private fun RequestResult<Int>.toCreateState(): CreateState {
     return when (this) {
-        is RequestResult.Error<*> -> UpsertState.Error(this.message ?: "Неизвестная ошибка")
-        is RequestResult.InProgress -> UpsertState.Loading
-        is RequestResult.Initial<*> -> UpsertState.Init
-        is RequestResult.Success<Int> -> UpsertState.Success(data)
+        is RequestResult.Error<*> -> CreateState.Error(this.message ?: "Неизвестная ошибка")
+        is RequestResult.InProgress -> CreateState.Loading
+        is RequestResult.Initial<*> -> CreateState.Init
+        is RequestResult.Success<Int> -> CreateState.Success(data)
     }
+}
+
+abstract class UpdateEssentialsComponent<I : GenericItem, T : ItemEssentialsUi>(
+    componentContext: ComponentContext,
+    componentFactory: EssentialComponentFactory<I,T>,
+    id: Int,
+    private val updateEssentialsRepository: UpdateEssentialsRepository<I>,
+    private val mapperToDTO: T.() -> I,
+) : EssentialsComponent<I, T>(
+    componentContext = componentContext,
+    componentFactory = componentFactory,
+    getInitData = { updateEssentialsRepository.getInit(id) },
+), FormTabSlot {
+    override val title: String = "Основная информация"
+
+    override suspend fun onUpdate(): RequestResult<Unit> {
+        val old = initDataComponent.firstData.value?.mapperToDTO()
+        val new = itemFields.value.mapperToDTO()
+        return updateEssentialsRepository.update(ChangeSet(old, new))
+    }
+
 }

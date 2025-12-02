@@ -16,13 +16,6 @@ internal class VendorComponent(
     componentContext = componentContext,
     initItem = VendorEssentialsUi(),
     isValidValuesFactory = { displayName.isNotBlank() },
-    mapperToDTO = {
-        Vendor(
-            displayName = displayName,
-            comment = comment,
-            id = id
-        )
-    },
     onSuccessUpsert = param.onSuccessUpsert,
     vendorInfoForTabName = { vendor -> param.onChangeValueForMainTab("*(Поставщик) ${vendor.displayName}") },
     upsertEssentialsRepository = createEssentialsRepository,

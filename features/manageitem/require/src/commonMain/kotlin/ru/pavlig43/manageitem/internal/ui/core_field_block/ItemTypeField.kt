@@ -35,7 +35,7 @@ import ru.pavlig43.manageitem.internal.ui.OBJECT_TYPE_IS_EMPTY_MESSAGE
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-internal fun <I: ItemType> ItemTypeField(
+fun <I: ItemType> ItemTypeField(
     currentType:I?,
     typeVariants: List<I>,
     onChangeType:(I?)-> Unit,

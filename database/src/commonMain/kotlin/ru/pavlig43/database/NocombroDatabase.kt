@@ -11,6 +11,7 @@ import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import ru.pavlig43.core.RequestResult
 import ru.pavlig43.database.data.common.Converters
 import ru.pavlig43.database.data.declaration.DeclarationFile
 import ru.pavlig43.database.data.declaration.DeclarationIn
@@ -104,21 +105,47 @@ fun getNocombroDatabase(builder: RoomDatabase.Builder<NocombroDatabase>): Nocomb
 }
 
 interface DataBaseTransaction {
-    suspend fun transaction(blocks: List<suspend () -> Unit>)
+    suspend fun transaction(blocks: List<suspend () -> RequestResult<Unit>>): RequestResult<Unit>
 }
 
 class NocombroTransaction(
     private val db: NocombroDatabase
 ) : DataBaseTransaction {
-    override suspend fun transaction(blocks: List<suspend () -> Unit>) {
-        db.useWriterConnection { transactor ->
-            transactor.immediateTransaction {
-                blocks.forEach { block ->
-                    block()
+//    override suspend fun transaction(blocks: List<suspend () -> Unit>) {
+//        db.useWriterConnection { transactor ->
+//            transactor.immediateTransaction {
+//                blocks.forEach { block ->
+//                    block()
+//                }
+//            }
+//        }
+//    }
+    override suspend fun transaction(blocks: List<suspend () -> RequestResult<Unit>>): RequestResult<Unit> {
+        val errors = mutableListOf<String>()
+
+        return try {
+            db.useWriterConnection { transactor ->
+                transactor.immediateTransaction {
+                    blocks.forEach { block ->
+                        val result = block()
+                        if (result is RequestResult.Error) {
+                            errors.add(result.message?:"какая то ошибка ")
+                            return@immediateTransaction
+                        }
+                    }
                 }
             }
+
+            if (errors.isEmpty()) {
+                RequestResult.Success(Unit)
+            } else {
+                RequestResult.Error(message = errors.joinToString("; "))
+            }
+        } catch (e: Exception) {
+            RequestResult.Error(message = e.message ?: "Transaction failed")
         }
     }
+
 }
 
 @OptIn(ExperimentalTime::class)

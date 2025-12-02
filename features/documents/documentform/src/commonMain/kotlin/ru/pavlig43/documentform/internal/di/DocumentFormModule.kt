@@ -1,15 +1,14 @@
 package ru.pavlig43.documentform.internal.di
 
-import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import ru.pavlig43.database.DataBaseTransaction
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.document.Document
 import ru.pavlig43.database.data.document.DocumentFile
 import ru.pavlig43.documentform.api.DocumentFormDependencies
-import ru.pavlig43.form.api.data.IUpdateRepository
-import ru.pavlig43.form.api.data.UpdateItemRepository
 import ru.pavlig43.manageitem.api.UpsertEssentialsDependencies
+import ru.pavlig43.manageitem.api.data.CreateEssentialsRepository
+import ru.pavlig43.manageitem.api.data.UpdateEssentialsRepository
 import ru.pavlig43.upsertitem.api.data.UpdateCollectionRepository
 
 internal fun createDocumentFormModule(dependencies: DocumentFormDependencies) = listOf(
@@ -17,35 +16,31 @@ internal fun createDocumentFormModule(dependencies: DocumentFormDependencies) = 
         single<NocombroDatabase> { dependencies.db }
         single<DataBaseTransaction> { dependencies.transaction }
         single<UpsertEssentialsDependencies>{dependencies.upsertEssentialsDependencies}
-//        single<UpdateItemRepository<Document>> { getCreateRepository(get()) }
-        single<IUpdateRepository<Document, Document>>(named(UpdateRepositoryType.Document.name)) { getInitItemRepository(get()) }
+        single<CreateEssentialsRepository<Document>> { getCreateRepository(get()) }
+        single<UpdateEssentialsRepository<Document>> { getUpdateRepository(get()) }
         single<UpdateCollectionRepository<DocumentFile,DocumentFile>>{ getFilesRepository(get()) }
     }
 )
 
-//private fun getCreateRepository(
-//    db: NocombroDatabase
-//): UpdateItemRepository<Document> {
-//    val documentDao = db.documentDao
-//    return UpdateItemRepository(
-//        tag = "Create Document Repository",
-//        isNameAllowed = documentDao::isNameAllowed,
-//        create = documentDao::create
-//    )
-//}
-
-
-internal enum class UpdateRepositoryType{
-    Document,
-}
-private fun getInitItemRepository(
+private fun getCreateRepository(
     db: NocombroDatabase
-): IUpdateRepository<Document, Document> {
+): CreateEssentialsRepository<Document> {
     val documentDao = db.documentDao
-    return UpdateItemRepository<Document>(
-        tag = "Update Document Repository",
-        loadItem = documentDao::getDocument,
-        updateItem = documentDao::updateDocument
+    return CreateEssentialsRepository(
+        tag = "Create Document Repository",
+        isNameAllowed = documentDao::isNameAllowed,
+        create = documentDao::create
+    )
+}
+private fun getUpdateRepository(
+    db: NocombroDatabase
+): UpdateEssentialsRepository<Document>{
+    val dao = db.documentDao
+    return UpdateEssentialsRepository(
+        tag = "UpdateEssentialsRepository",
+        isNameAllowed = dao::isNameAllowed,
+        loadItem = dao::getDocument,
+        updateItem = dao::updateDocument
     )
 }
 

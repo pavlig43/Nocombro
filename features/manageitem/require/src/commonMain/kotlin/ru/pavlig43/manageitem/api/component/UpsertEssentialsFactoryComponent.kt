@@ -6,14 +6,13 @@ import org.koin.core.qualifier.named
 import ru.pavlig43.core.FormTabSlot
 import ru.pavlig43.core.data.GenericItem
 import ru.pavlig43.corekoin.ComponentKoinContext
-import ru.pavlig43.manageitem.api.UpsertEssentialsDependencies
 import ru.pavlig43.manageitem.api.DeclarationFactoryParam
 import ru.pavlig43.manageitem.api.DocumentFactoryParam
 import ru.pavlig43.manageitem.api.ProductFactoryParam
+import ru.pavlig43.manageitem.api.UpsertEssentialsDependencies
 import ru.pavlig43.manageitem.api.UpsertEssentialsFactoryParam
 import ru.pavlig43.manageitem.api.VendorFactoryParam
 import ru.pavlig43.manageitem.internal.component.DeclarationComponent
-import ru.pavlig43.manageitem.internal.component.DocumentComponent
 import ru.pavlig43.manageitem.internal.component.EssentialsComponent
 import ru.pavlig43.manageitem.internal.component.ProductComponent
 import ru.pavlig43.manageitem.internal.component.VendorComponent

@@ -9,7 +9,6 @@ import ru.pavlig43.core.data.ItemType
 import ru.pavlig43.form.api.data.IUpdateRepository
 import ru.pavlig43.manageitem.api.component.RequireValuesSlotComponent
 import ru.pavlig43.manageitem.api.data.DefaultRequireValues
-import ru.pavlig43.manageitem.internal.component.EssentialsComponent
 
 abstract class UpdateItemSlotComponent<I : Item, S : ItemType>(
     componentContext: ComponentContext,
@@ -22,7 +21,6 @@ abstract class UpdateItemSlotComponent<I : Item, S : ItemType>(
 
     override val title: String = "Основная информация"
 
-    val essentials = EssentialsComponent
 
     val requires = RequireValuesSlotComponent<I, S>(
         componentContext = childContext("require"),

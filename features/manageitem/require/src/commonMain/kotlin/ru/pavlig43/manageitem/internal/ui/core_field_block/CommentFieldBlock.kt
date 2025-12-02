@@ -6,7 +6,7 @@ import ru.pavlig43.coreui.StringColumnField
 import ru.pavlig43.manageitem.internal.ui.NAME
 
 @Composable
-internal fun CommentFieldBlock(
+fun CommentFieldBlock(
     comment: String,
     onChangeComment:(String)-> Unit,
     modifier: Modifier = Modifier

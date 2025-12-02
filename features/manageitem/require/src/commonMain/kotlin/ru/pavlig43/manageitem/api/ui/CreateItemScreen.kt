@@ -2,7 +2,7 @@ package ru.pavlig43.manageitem.api.ui
 
 import androidx.compose.runtime.Composable
 import ru.pavlig43.manageitem.api.component.UpsertEssentialsFactoryComponent
-import ru.pavlig43.manageitem.internal.ui.ItemFields
+import ru.pavlig43.manageitem.internal.ui.EssentialBlockScreen
 import ru.pavlig43.manageitem.internal.ui.UpsertItemLogicScreen
 
 @Composable
@@ -14,7 +14,7 @@ fun CreateItemScreen(
         isCreate = component.essentialsComponent.isCreate,
         onCloseFormScreen = {component.closeFormScreen()}
     ) {
-        ItemFields(component.essentialsComponent)
+        EssentialBlockScreen(component.essentialsComponent)
     }
 
 }

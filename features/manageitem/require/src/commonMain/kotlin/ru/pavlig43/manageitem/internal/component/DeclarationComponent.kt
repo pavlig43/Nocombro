@@ -14,7 +14,6 @@ import ru.pavlig43.itemlist.api.component.MBSItemListComponent
 import ru.pavlig43.manageitem.api.DeclarationFactoryParam
 import ru.pavlig43.manageitem.api.data.CreateEssentialsRepository
 import ru.pavlig43.manageitem.internal.data.DeclarationEssentialsUi
-import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalTime::class)
@@ -27,19 +26,6 @@ internal class DeclarationComponent(
     initItem = DeclarationEssentialsUi(),
     isValidValuesFactory = {
         displayName.isNotBlank() && vendorId != null && bestBefore != null
-    },
-    mapperToDTO = {
-        DeclarationIn(
-            displayName = displayName,
-            createdAt = createdAt?:Clock.System.now().toEpochMilliseconds(),
-            vendorId = vendorId ?: throw IllegalArgumentException("Vendor ID required"),
-            vendorName = vendorName
-                ?: throw IllegalArgumentException("Vendor Name required"),
-            bestBefore = bestBefore
-                ?: throw IllegalArgumentException("Declaration bestBefore required"),
-            observeFromNotification = isObserveFromNotification,
-            id = id,
-        )
     },
     onSuccessUpsert = param.onSuccessUpsert,
     vendorInfoForTabName = {declaration -> param.onChangeValueForMainTab(("*(Декларация) ${declaration.displayName}"))},

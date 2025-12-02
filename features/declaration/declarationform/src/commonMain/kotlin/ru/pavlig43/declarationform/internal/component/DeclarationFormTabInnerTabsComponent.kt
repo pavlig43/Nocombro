@@ -5,8 +5,6 @@ import com.arkivanov.decompose.childContext
 import com.arkivanov.decompose.value.Value
 import com.arkivanov.decompose.value.operator.map
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import org.koin.core.scope.Scope
 import ru.pavlig43.core.RequestResult
 import ru.pavlig43.core.data.dbSafeCall
@@ -26,7 +24,6 @@ internal class DeclarationFormTabInnerTabsComponent(
 ) : ComponentContext by componentContext, IItemFormInnerTabsComponent<DeclarationTab, DeclarationTabSlot> {
 
     private val _mainTabTitle = MutableStateFlow("")
-    override val mainTabTitle: StateFlow<String> = _mainTabTitle.asStateFlow()
     private val dbTransaction:DataBaseTransaction = scope.get()
 
 

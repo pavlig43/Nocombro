@@ -1,6 +1,7 @@
 package ru.pavlig43.documentform.api.ui
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
@@ -12,12 +13,13 @@ import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import ru.pavlig43.addfile.api.ui.FilesScreen
 import ru.pavlig43.documentform.api.component.DocumentFormComponent
-import ru.pavlig43.documentform.internal.component.tabs.DocumentFileTabSlot
-import ru.pavlig43.documentform.internal.component.tabs.DocumentRequiresTabSlot
-import ru.pavlig43.documentform.internal.component.tabs.DocumentTabSlot
+import ru.pavlig43.documentform.internal.component.tabs.tabslot.DocumentFileTabSlot
+import ru.pavlig43.documentform.internal.component.tabs.tabslot.DocumentTabSlot
+import ru.pavlig43.documentform.internal.component.tabs.tabslot.EssentialTabSlot
+import ru.pavlig43.documentform.internal.ui.CreateDocumentScreen
+import ru.pavlig43.documentform.internal.ui.DocumentFields
 import ru.pavlig43.form.api.ui.ItemTabsUi
-import ru.pavlig43.manageitem.api.ui.CreateItemScreen
-import ru.pavlig43.manageitem.api.ui.RequireValuesScreen
+import ru.pavlig43.manageitem.internal.ui.EssentialBlockScreen
 
 @Composable
 fun DocumentFormScreen(
@@ -37,7 +39,7 @@ fun DocumentFormScreen(
             stack = stack,
         ) { child ->
             when (val instance = child.instance) {
-                is DocumentFormComponent.Child.Create -> CreateItemScreen(instance.component)
+                is DocumentFormComponent.Child.Create -> CreateDocumentScreen(instance.component)
                 is DocumentFormComponent.Child.Update -> ItemTabsUi(
                     component = instance.component,
                     slotFactory = { slotForm: DocumentTabSlot? ->
@@ -53,9 +55,14 @@ fun DocumentFormScreen(
 @Composable
 private fun DocumentSlotScreen(documentSlot: DocumentTabSlot?) {
     when (documentSlot) {
-        is DocumentRequiresTabSlot -> RequireValuesScreen(documentSlot.requires)
-
         is DocumentFileTabSlot -> FilesScreen(documentSlot.fileComponent)
-        else -> error("document slot not found $documentSlot")
+        is EssentialTabSlot -> EssentialBlockScreen(documentSlot) { item, onItemChange ->
+            DocumentFields(
+                item,
+                onItemChange
+            )
+        }
+
+        null -> Box(Modifier)
     }
 }

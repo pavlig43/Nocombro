@@ -1,4 +1,4 @@
-package ru.pavlig43.documentform.internal.component.tabs
+package ru.pavlig43.documentform.internal.component.tabs.tabslot
 
 import com.arkivanov.decompose.ComponentContext
 import ru.pavlig43.addfile.api.component.UpdateFilesComponent

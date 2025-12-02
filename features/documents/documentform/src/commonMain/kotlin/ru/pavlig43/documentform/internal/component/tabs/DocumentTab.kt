@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 internal sealed interface DocumentTab {
     @Serializable
-    data object Create: DocumentTab
+    data object Essentials: DocumentTab
     @Serializable
     data object Files: DocumentTab
 }

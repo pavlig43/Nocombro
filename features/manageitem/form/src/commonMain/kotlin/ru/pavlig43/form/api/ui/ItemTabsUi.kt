@@ -26,7 +26,7 @@ import androidx.compose.ui.unit.dp
 import ru.pavlig43.core.FormTabSlot
 import ru.pavlig43.coreui.tab.TabNavigationContent
 import ru.pavlig43.form.api.component.IItemFormInnerTabsComponent
-import ru.pavlig43.upsertitem.api.ui.UpdateStateScreen
+import ru.pavlig43.upsertitem.api.ui.UpdateButton
 
 
 @Composable
@@ -52,7 +52,7 @@ fun <Tab : Any, Slot : FormTabSlot> ItemTabsUi(
                 slotFactory(formSlot)
             }
         )
-        UpdateStateScreen(component.updateComponent)
+        UpdateButton(component.updateComponent)
     }
 }
 

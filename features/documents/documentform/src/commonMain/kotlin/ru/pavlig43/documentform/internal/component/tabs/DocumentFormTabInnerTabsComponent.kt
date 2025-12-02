@@ -2,30 +2,29 @@ package ru.pavlig43.documentform.internal.component.tabs
 
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
-import com.arkivanov.decompose.value.Value
 import com.arkivanov.decompose.value.operator.map
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import org.koin.core.scope.Scope
 import ru.pavlig43.core.RequestResult
-import ru.pavlig43.core.data.dbSafeCall
 import ru.pavlig43.core.tabs.DefaultTabNavigationComponent
 import ru.pavlig43.core.tabs.ITabNavigationComponent
 import ru.pavlig43.database.DataBaseTransaction
+import ru.pavlig43.database.data.document.Document
+import ru.pavlig43.documentform.internal.component.tabs.tabslot.DocumentFileTabSlot
+import ru.pavlig43.documentform.internal.component.tabs.tabslot.DocumentTabSlot
+import ru.pavlig43.documentform.internal.component.tabs.tabslot.EssentialTabSlot
+import ru.pavlig43.documentform.internal.data.DocumentEssentialsUi
 import ru.pavlig43.form.api.component.IItemFormInnerTabsComponent
+import ru.pavlig43.manageitem.internal.component.EssentialComponentFactory
 import ru.pavlig43.upsertitem.api.component.UpdateComponent
 
 internal class DocumentFormTabInnerTabsComponent(
     componentContext: ComponentContext,
+    essentialFactory: EssentialComponentFactory<Document, DocumentEssentialsUi>,
     closeFormScreen:()->Unit,
     scope: Scope,
-    documentId: Int,
-    onChangeValueForMainTab: (String) -> Unit
+    documentId: Int
 ) : ComponentContext by componentContext, IItemFormInnerTabsComponent<DocumentTab, DocumentTabSlot> {
 
-    private val _mainTabTitle = MutableStateFlow("")
-    override val mainTabTitle: StateFlow<String> = _mainTabTitle.asStateFlow()
     private val dbTransaction:DataBaseTransaction = scope.get()
 
 
@@ -33,28 +32,20 @@ internal class DocumentFormTabInnerTabsComponent(
         DefaultTabNavigationComponent(
             componentContext = childContext("tab"),
             startConfigurations = listOf(
-                DocumentTab.Create,
+                DocumentTab.Essentials,
                 DocumentTab.Files
             ),
             serializer = DocumentTab.serializer(),
             slotFactory = { context, tabConfig: DocumentTab, _: (DocumentTab) -> Unit, _: () -> Unit ->
                 when (tabConfig) {
 
-                    DocumentTab.Create -> DocumentComponent(
+                    DocumentTab.Essentials -> EssentialTabSlot(
                         componentContext = context,
+                        componentFactory = essentialFactory,
                         documentId = documentId,
-                        onChangeValueForMainTab = onChangeValueForMainTab,
-                        onSuccessUpsert = TODO(),
-                        createEssentialsRepository = scope.get()
+                        updateRepository = scope.get(),
                     )
 
-
-//                        DocumentRequiresTabSlot(
-//                        componentContext = context,
-//                        documentId = documentId,
-//                        updateRepository = scope.get(named(UpdateRepositoryType.Document.name)),
-//                        onChangeValueForMainTab = onChangeValueForMainTab
-//                    )
 
 
                     DocumentTab.Files -> DocumentFileTabSlot(
@@ -67,14 +58,10 @@ internal class DocumentFormTabInnerTabsComponent(
             },
         )
     private suspend fun update():RequestResult<Unit> {
-        val blocks: Value<List<suspend () -> Unit>> = tabNavigationComponent.children.map { children->
+        val blocks= tabNavigationComponent.children.map { children->
             children.items.map { child-> suspend {child.instance.onUpdate()} } }
-        println("blocks $blocks")
-        println("blocks ${blocks.value}")
-        println(tabNavigationComponent.children.map { it.items.map { it.instance.title } })
-        return dbSafeCall("document form"){
-            dbTransaction.transaction(blocks.value)
-        }
+        return dbTransaction.transaction(blocks.value)
+
     }
     override val updateComponent: UpdateComponent = UpdateComponent(
         componentContext = childContext("update"),

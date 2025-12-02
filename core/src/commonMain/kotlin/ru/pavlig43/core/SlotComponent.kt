@@ -12,7 +12,7 @@ interface SlotComponent {
 }
 interface FormTabSlot {
     val title: String
-    suspend fun onUpdate()
+    suspend fun onUpdate(): RequestResult<Unit>
 
 }
 

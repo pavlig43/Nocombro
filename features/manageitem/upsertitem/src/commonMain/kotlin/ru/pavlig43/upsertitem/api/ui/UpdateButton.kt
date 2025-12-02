@@ -20,11 +20,10 @@ import androidx.compose.ui.unit.dp
 import ru.pavlig43.coreui.ProgressIndicator
 import ru.pavlig43.upsertitem.api.component.UpdateComponent
 import ru.pavlig43.upsertitem.api.component.UpdateState
-import ru.pavlig43.upsertitem.internal.RETRY
 import ru.pavlig43.upsertitem.internal.ui.SaveDialog
 
 @Composable
-fun UpdateStateScreen(
+fun UpdateButton(
     component: UpdateComponent,
     modifier: Modifier = Modifier,
 ) {
@@ -54,7 +53,7 @@ fun UpdateStateScreen(
         ) {
 
             when (updateState) {
-                is UpdateState.Error -> Text(RETRY)
+                is UpdateState.Error -> Text("Повторить")
                 is UpdateState.Init -> Text("Обновить")
                 is UpdateState.Loading -> ProgressIndicator(Modifier.size(24.dp))
                 is UpdateState.Success -> {

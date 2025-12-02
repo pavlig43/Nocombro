@@ -1,7 +1,6 @@
 package ru.pavlig43.documentform.api.component
 
 import com.arkivanov.decompose.ComponentContext
-import com.arkivanov.decompose.childContext
 import com.arkivanov.decompose.router.stack.ChildStack
 import com.arkivanov.decompose.router.stack.StackNavigation
 import com.arkivanov.decompose.router.stack.childStack
@@ -15,15 +14,18 @@ import kotlinx.serialization.Serializable
 import org.koin.core.scope.Scope
 import ru.pavlig43.core.SlotComponent
 import ru.pavlig43.corekoin.ComponentKoinContext
+import ru.pavlig43.database.data.document.Document
 import ru.pavlig43.documentform.api.DocumentFormDependencies
+import ru.pavlig43.documentform.internal.component.CreateDocumentComponent
 import ru.pavlig43.documentform.internal.component.tabs.DocumentFormTabInnerTabsComponent
+import ru.pavlig43.documentform.internal.data.DocumentEssentialsUi
+import ru.pavlig43.documentform.internal.data.toUi
 import ru.pavlig43.documentform.internal.di.createDocumentFormModule
-import ru.pavlig43.manageitem.api.DocumentFactoryParam
-import ru.pavlig43.manageitem.api.component.UpsertEssentialsFactoryComponent
+import ru.pavlig43.manageitem.internal.component.EssentialComponentFactory
 
 
 class DocumentFormComponent(
-    private val documentId: Int,
+    documentId: Int,
     val closeTab: () -> Unit,
     componentContext: ComponentContext,
     dependencies: DocumentFormDependencies,
@@ -48,6 +50,12 @@ class DocumentFormComponent(
         handleBackButton = false,
         childFactory = ::createChild
     )
+    private val essentialFactory = EssentialComponentFactory<Document, DocumentEssentialsUi>(
+        initItem = DocumentEssentialsUi(),
+        isValidValuesFactory = { displayName.isNotBlank() && type != null },
+        mapperToUi = { toUi() },
+        vendorInfoForTabName = { d -> onChangeValueForMainTab("*Документ ${d.displayName}") }
+    )
 
 
     private fun createChild(
@@ -56,15 +64,11 @@ class DocumentFormComponent(
     ): Child {
         return when (config) {
             is Config.Create -> Child.Create(
-                UpsertEssentialsFactoryComponent(
+                CreateDocumentComponent(
                     componentContext = componentContext,
-                    upsertEssentialsFactoryParam = DocumentFactoryParam(
-                        upsertEssentialsDependencies = scope.get(),
-                        onSuccessUpsert = {stackNavigation.replaceAll(Config.Update(it))},
-                        onChangeValueForMainTab = {onChangeValueForMainTab(it)},
-                        id = documentId
-                    ),
-                    upsertEssentialsDependencies = scope.get(),
+                    onSuccessCreate = { stackNavigation.replaceAll(Config.Update(it)) },
+                    createDocumentRepository = scope.get(),
+                    componentFactory = essentialFactory
                 )
 
             )
@@ -72,10 +76,10 @@ class DocumentFormComponent(
             is Config.Update -> Child.Update(
                 DocumentFormTabInnerTabsComponent(
                     componentContext = componentContext,
+                    essentialFactory = essentialFactory,
                     scope = scope,
                     documentId = config.id,
-                    closeFormScreen = closeTab,
-                    onChangeValueForMainTab = {onChangeValueForMainTab(it)}
+                    closeFormScreen = closeTab
                 )
             )
         }
@@ -89,8 +93,6 @@ class DocumentFormComponent(
     }
 
 
-
-
     @Serializable
     sealed interface Config {
         @Serializable
@@ -101,7 +103,7 @@ class DocumentFormComponent(
     }
 
     internal sealed class Child {
-        class Create(val component: UpsertEssentialsFactoryComponent) : Child()
+        class Create(val component: CreateDocumentComponent) : Child()
         class Update(val component: DocumentFormTabInnerTabsComponent) : Child()
     }
 }

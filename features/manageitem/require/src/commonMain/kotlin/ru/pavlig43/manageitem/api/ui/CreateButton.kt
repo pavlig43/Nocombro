@@ -11,77 +11,40 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import ru.pavlig43.coreui.LoadingScreen
-import ru.pavlig43.manageitem.internal.component.UpsertState
+import ru.pavlig43.manageitem.internal.component.CreateState
+
+
 @Composable
 internal fun CreateButton(
-    onUpsert: () -> Unit,
+    onCreate:()-> Unit,
     enabled: Boolean,
-    isCreate: Boolean,
-    onSuccessUpsert: (Int) -> Unit,
-    upsertState: UpsertState,
-    modifier: Modifier = Modifier
-) {
-    UpsertButton(
-        onUpsert = onUpsert,
-        enabled = enabled,
-        isCreate = isCreate,
-        onSuccess = { onSuccessUpsert((upsertState as UpsertState.Success).id) },
-        upsertState = upsertState,
-        modifier = modifier
-    )
-}
-@Composable
-internal fun UpdateButton(
-    onUpsert: () -> Unit,
-    enabled: Boolean,
-    isCreate: Boolean,
-    onCloseTab: () -> Unit,
-    upsertState: UpsertState,
-    modifier: Modifier = Modifier
-) {
-    UpsertButton(
-        onUpsert = onUpsert,
-        enabled = enabled,
-        isCreate = isCreate,
-        onSuccess = onCloseTab,
-        upsertState = upsertState,
-        modifier = modifier
-    )
-}
-@Composable
-private fun UpsertButton(
-    onUpsert:()-> Unit,
-    enabled: Boolean,
-    isCreate: Boolean,
-    onSuccess:()-> Unit,
-    upsertState: UpsertState,
+    onSuccess:(Int)-> Unit,
+    createState: CreateState,
     modifier: Modifier = Modifier
 ){
     Column(modifier) {
-        Button(onUpsert, enabled = enabled) {
-            when (upsertState) {
-                is UpsertState.Error -> Box(Modifier.background(MaterialTheme.colorScheme.error)) {
+        Button(onCreate, enabled = enabled) {
+            when (createState) {
+                is CreateState.Error -> Box(Modifier.background(MaterialTheme.colorScheme.error)) {
                     Text(
                         "Повторить"
                     )
                 }
 
-                UpsertState.Init -> Text(if (isCreate) "Создать" else " Обновить")
-                UpsertState.Loading -> LoadingScreen()
-                is UpsertState.Success -> {
-                    if (isCreate) {
-                        LaunchedEffect(Unit) { onSuccess() }
-                    }
+                CreateState.Init -> Text( "Создать")
+                CreateState.Loading -> LoadingScreen()
+                is CreateState.Success -> {
+                    LaunchedEffect(Unit) { onSuccess(createState.id) } }
                 }
             }
         }
-        if (upsertState is UpsertState.Error) {
+        if (createState is CreateState.Error) {
 
             TextField(
-                value = upsertState.message,
+                value = createState.message,
                 onValueChange = {},
             )
         }
     }
 
-}
+
