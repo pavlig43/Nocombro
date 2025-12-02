@@ -1,0 +1,65 @@
+package ru.pavlig43.vendor.api.ui
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import com.arkivanov.decompose.extensions.compose.stack.Children
+import com.arkivanov.decompose.extensions.compose.subscribeAsState
+import ru.pavlig43.addfile.api.ui.FilesScreen
+import ru.pavlig43.update.ui.ItemTabsUi
+import ru.pavlig43.core.ui.EssentialBlockScreen
+import ru.pavlig43.vendor.component.VendorFormComponent
+import ru.pavlig43.vendor.internal.component.tabs.tabslot.EssentialTabSlot
+import ru.pavlig43.vendor.internal.component.tabs.tabslot.VendorFileTabSlot
+import ru.pavlig43.vendor.internal.component.tabs.tabslot.VendorTabSlot
+import ru.pavlig43.vendor.internal.ui.CreateVendorScreen
+import ru.pavlig43.vendor.internal.ui.VendorFields
+
+@Composable
+fun VendorFormScreen(
+    component: VendorFormComponent,
+    modifier: Modifier = Modifier,
+) {
+
+    Column(
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+
+        modifier = modifier
+            .padding(horizontal = 8.dp)
+    ) {
+        val stack by component.stack.subscribeAsState()
+        Children(
+            stack = stack,
+        ) { child ->
+            when (val instance = child.instance) {
+                is VendorFormComponent.Child.Create -> CreateVendorScreen(instance.component)
+                is VendorFormComponent.Child.Update -> ItemTabsUi(
+                    component = instance.component,
+                    slotFactory = { slotForm: VendorTabSlot? ->
+                        VendorSlotScreen(slotForm)
+                    })
+            }
+        }
+
+    }
+
+}
+
+@Composable
+private fun VendorSlotScreen(vendorSlot: VendorTabSlot?) {
+    when (vendorSlot) {
+        is EssentialTabSlot -> EssentialBlockScreen(vendorSlot) { item, updateItem ->
+            VendorFields(item, updateItem)
+        }
+
+        is VendorFileTabSlot -> FilesScreen(vendorSlot.fileComponent)
+        null -> Box(Modifier)
+    }
+}

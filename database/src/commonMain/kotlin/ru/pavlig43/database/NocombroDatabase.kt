@@ -8,7 +8,7 @@ import kotlinx.coroutines.launch
 import ru.pavlig43.core.RequestResult
 import ru.pavlig43.database.data.common.Converters
 import ru.pavlig43.database.data.declaration.DeclarationFile
-import ru.pavlig43.database.data.declaration.DeclarationIn
+import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.database.data.declaration.dao.DeclarationDao
 import ru.pavlig43.database.data.declaration.dao.DeclarationFileDao
 import ru.pavlig43.database.data.document.Document
@@ -38,7 +38,7 @@ import kotlin.time.ExperimentalTime
         Vendor::class,
         VendorFile::class,
 
-        DeclarationIn::class,
+        Declaration::class,
         DeclarationFile::class,
 
         Product::class,
@@ -142,7 +142,7 @@ class NocombroTransaction(
 suspend fun initData(db: NocombroDatabase) {
     try {
         db.productDao.getProduct(1)
-    } catch (e: Exception) {
+    } catch (_: Exception) {
         val products = listOf(
             Product(
                 type = ProductType.BASE,
@@ -184,7 +184,7 @@ suspend fun initData(db: NocombroDatabase) {
             ),
         )
         val declaration = listOf(
-            DeclarationIn(
+            Declaration(
                 displayName = "Декларация ингре",
                 createdAt = Clock.System.now().toEpochMilliseconds(),
                 vendorId = 1,
@@ -193,7 +193,7 @@ suspend fun initData(db: NocombroDatabase) {
                 id = 1,
                 observeFromNotification = true
             ),
-            DeclarationIn(
+            Declaration(
                 displayName = "Декларация стоинг",
                 createdAt = Clock.System.now().toEpochMilliseconds(),
                 vendorId = 2,
@@ -202,7 +202,7 @@ suspend fun initData(db: NocombroDatabase) {
                 id = 2,
                 observeFromNotification = true
             ),
-            DeclarationIn(
+            Declaration(
                 displayName = "Декларация рустарк",
                 createdAt = Clock.System.now().toEpochMilliseconds(),
                 vendorId = 3,

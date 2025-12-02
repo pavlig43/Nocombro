@@ -4,7 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
-import ru.pavlig43.database.data.declaration.DeclarationIn
+import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.database.data.product.Product
 
 @Entity(
@@ -16,7 +16,7 @@ import ru.pavlig43.database.data.product.Product
             childColumns = ["product_id"],
         ),
         ForeignKey(
-            entity = DeclarationIn::class,
+            entity = Declaration::class,
             parentColumns = ["id"],
             childColumns = ["declaration_id"],
         ),

@@ -34,10 +34,6 @@ interface ProductDao {
         searchText: String,
         types: List<ProductType>): Flow<List<Product>>
 
-
-    @RawQuery(observedEntities = [Product::class])
-    fun observeOnItems(query: RoomRawQuery):Flow<List<Product>>
-
     @Query(
         """
         SELECT CASE

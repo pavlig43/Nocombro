@@ -13,8 +13,6 @@ interface DocumentDao {
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun create(document: Document):Long
 
-    @Upsert
-    suspend fun upsert(document: Document): Long
 
     @Update
     suspend fun updateDocument(document: Document)
@@ -24,9 +22,6 @@ interface DocumentDao {
 
     @Query("SELECT * from document WHERE id = :id")
     suspend fun getDocument(id: Int):Document
-
-    @RawQuery(observedEntities = [Document::class])
-    fun observeOnItems(query: RoomRawQuery):Flow<List<Document>>
 
 
     @Query("""

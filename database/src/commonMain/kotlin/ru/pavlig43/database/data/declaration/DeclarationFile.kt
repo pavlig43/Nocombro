@@ -9,7 +9,7 @@ import ru.pavlig43.core.data.FileData
 @Entity(
     tableName = "declaration_file",
     foreignKeys = [ForeignKey(
-        entity = DeclarationIn::class,
+        entity = Declaration::class,
         parentColumns = ["id"],
         childColumns = ["declaration_id"],
         onDelete = ForeignKey.CASCADE

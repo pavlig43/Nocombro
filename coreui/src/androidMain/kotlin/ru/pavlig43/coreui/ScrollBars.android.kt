@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
 
+@Suppress("EmptyFunctionBlock")
 @Composable
 actual fun BoxScope.ScrollBars(
     horizontalScrollState: ScrollState,

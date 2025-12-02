@@ -12,8 +12,8 @@ kotlin{
         implementation(projects.database)
         implementation(projects.features.itemlist)
         implementation(projects.features.manageitem.loadinitdata)
-        implementation(projects.features.manageitem.upsertitem)
-        implementation(projects.features.manageitem.require)
-        implementation(projects.features.manageitem.form)
+        
+        implementation(projects.features.manageitem.upsert)
+        
     }
 }

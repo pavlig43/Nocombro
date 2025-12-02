@@ -4,8 +4,7 @@ import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
 import org.koin.core.scope.Scope
 import ru.pavlig43.core.SlotComponent
-import ru.pavlig43.core.tabs.DefaultTabNavigationComponent
-import ru.pavlig43.core.tabs.ITabNavigationComponent
+import ru.pavlig43.core.tabs.TabNavigationComponent
 import ru.pavlig43.database.data.document.DocumentType
 import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.declarationform.api.DeclarationFormComponent
@@ -22,11 +21,11 @@ import ru.pavlig43.rootnocombro.internal.navigation.drawer.component.DrawerCompo
 import ru.pavlig43.rootnocombro.internal.navigation.drawer.component.DrawerDestination
 import ru.pavlig43.rootnocombro.internal.navigation.drawer.component.IDrawerComponent
 import ru.pavlig43.rootnocombro.internal.navigation.tab.TabConfig
-import ru.pavlig43.vendor.api.VendorFormComponent
+import ru.pavlig43.vendor.component.VendorFormComponent
 
 interface IMainNavigationComponent<TabConfiguration : Any, SlotConfiguration : Any> {
     val drawerComponent: IDrawerComponent
-    val tabNavigationComponent: ITabNavigationComponent<TabConfiguration, SlotConfiguration>
+    val tabNavigationComponent: TabNavigationComponent<TabConfiguration, SlotConfiguration>
 }
 
 internal class MainNavigationComponent(
@@ -60,8 +59,8 @@ internal class MainNavigationComponent(
             DrawerDestination.DeclarationList -> TabConfig.DeclarationList()
         }
 
-    override val tabNavigationComponent: ITabNavigationComponent<TabConfig, SlotComponent> =
-        DefaultTabNavigationComponent(
+    override val tabNavigationComponent: TabNavigationComponent<TabConfig, SlotComponent> =
+        TabNavigationComponent(
             componentContext = childContext("tab"),
             startConfigurations = listOf(
                 TabConfig.ProductList(),
@@ -77,7 +76,7 @@ internal class MainNavigationComponent(
                         onItemClick = { openNewTab(TabConfig.DocumentForm(it.id)) },
                         itemListParamProvider = DocumentListParamProvider(
                             fullListDocumentTypes = DocumentType.entries,
-                            withCheckbox = true
+                            withCheckbox = true,
                         )
                     )
 
@@ -88,7 +87,7 @@ internal class MainNavigationComponent(
                         onItemClick = { openNewTab(TabConfig.ProductForm(it.id)) },
                         itemListParamProvider = ProductListParamProvider(
                             fullListProductTypes = ProductType.entries,
-                            withCheckbox = true
+                            withCheckbox = true,
                         )
                     )
                     is TabConfig.DocumentForm -> DocumentFormComponent(
@@ -120,7 +119,7 @@ internal class MainNavigationComponent(
                         onItemClick = { openNewTab(TabConfig.VendorForm(it.id)) },
                         itemListDependencies = scope.get(),
                         itemListParamProvider = VendorListParamProvider(
-                            withCheckbox = true
+                            withCheckbox = true,
                         )
                     )
 
@@ -137,7 +136,7 @@ internal class MainNavigationComponent(
                         onCreate = { openNewTab(TabConfig.DeclarationForm(0)) },
                         onItemClick = { openNewTab(TabConfig.DeclarationForm(it.id)) },
                         itemListParamProvider = DeclarationListParamProvider(
-                            withCheckbox = true
+                            withCheckbox = true,
                         )
                     )
                 }

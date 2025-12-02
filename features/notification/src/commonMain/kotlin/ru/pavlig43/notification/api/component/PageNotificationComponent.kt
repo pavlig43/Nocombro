@@ -8,8 +8,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
 import ru.pavlig43.core.SlotComponent
 import ru.pavlig43.core.componentCoroutineScope
-import ru.pavlig43.core.tabs.DefaultTabNavigationComponent
-import ru.pavlig43.core.tabs.ITabNavigationComponent
+import ru.pavlig43.core.tabs.TabNavigationComponent
 import ru.pavlig43.core.toStateFlow
 import ru.pavlig43.corekoin.ComponentKoinContext
 import ru.pavlig43.notification.api.NotificationDependencies
@@ -37,8 +36,8 @@ class PageNotificationComponent(
     private val coroutineScope = componentCoroutineScope()
 
 
-    internal val tabNavigationComponent: ITabNavigationComponent<NotificationLevel, ILevelNotificationComponent> =
-        DefaultTabNavigationComponent(
+    internal val tabNavigationComponent: TabNavigationComponent<NotificationLevel, ILevelNotificationComponent> =
+        TabNavigationComponent(
             componentContext = childContext("notification_tab"),
             startConfigurations = listOf(
                 NotificationLevel.Zero,

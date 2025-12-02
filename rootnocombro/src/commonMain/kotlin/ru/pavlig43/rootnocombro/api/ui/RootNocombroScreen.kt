@@ -15,7 +15,7 @@ import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import kotlinx.coroutines.launch
 import ru.pavlig43.core.SlotComponent
-import ru.pavlig43.core.tabs.ITabNavigationComponent
+import ru.pavlig43.core.tabs.TabNavigationComponent
 import ru.pavlig43.coreui.tab.TabNavigationContent
 import ru.pavlig43.declarationform.api.DeclarationFormComponent
 import ru.pavlig43.declarationform.api.DeclarationFormScreen
@@ -34,7 +34,7 @@ import ru.pavlig43.rootnocombro.internal.navigation.tab.TabConfig
 import ru.pavlig43.rootnocombro.internal.navigation.tab.ui.TabContent
 import ru.pavlig43.rootnocombro.internal.topbar.ui.NocombroAppBar
 import ru.pavlig43.signroot.api.ui.RootSignScreen
-import ru.pavlig43.vendor.api.VendorFormComponent
+import ru.pavlig43.vendor.component.VendorFormComponent
 import ru.pavlig43.vendor.api.ui.VendorFormScreen
 
 @Suppress("LongMethod")
@@ -63,7 +63,7 @@ fun RootNocombroScreen(rootNocombroComponent: IRootNocombroComponent) {
                     is IRootNocombroComponent.Child.Tabs -> {
                         val mainNavigationComponent: IMainNavigationComponent<TabConfig, SlotComponent> =
                             instance.component
-                        val tabNavigationComponent: ITabNavigationComponent<TabConfig, SlotComponent> =
+                        val tabNavigationComponent: TabNavigationComponent<TabConfig, SlotComponent> =
                             mainNavigationComponent.tabNavigationComponent
                         val drawerNavigationComponent = mainNavigationComponent.drawerComponent
                         NocombroAppBar(

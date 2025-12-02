@@ -9,7 +9,7 @@ import ru.pavlig43.core.RequestResult
 import ru.pavlig43.core.data.dbSafeCall
 import ru.pavlig43.core.data.dbSafeFlow
 import ru.pavlig43.database.NocombroDatabase
-import ru.pavlig43.database.data.declaration.DeclarationIn
+import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.itemlist.api.DeclarationListParamProvider
 import ru.pavlig43.itemlist.api.data.IItemUi
 import ru.pavlig43.itemlist.internal.ItemFilter
@@ -21,12 +21,12 @@ internal class DeclarationListComponent(
     val onItemClick: (IItemUi) -> Unit,
     private val declarationListRepository: DeclarationListRepository,
     paramProvider: DeclarationListParamProvider
-) : ComponentContext by componentContext, IListComponent<DeclarationIn, DeclarationItemUi> {
+) : ComponentContext by componentContext, IListComponent<Declaration, DeclarationItemUi> {
 
     val searchTextComponent = generateComponent(ItemFilter.SearchText(""))
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    private val declarationListFlow: Flow<RequestResult<List<DeclarationIn>>> =
+    private val declarationListFlow: Flow<RequestResult<List<Declaration>>> =
         searchTextComponent.filterFlow
             .flatMapLatest { text: ItemFilter.SearchText ->
                 declarationListRepository.observeDeclarationByFilter(text.value)
@@ -41,7 +41,7 @@ internal class DeclarationListComponent(
             searchText = searchTextComponent.filterFlow,
             withCheckbox = paramProvider.withCheckbox,
             onItemClick = onItemClick,
-            mapper = DeclarationIn::toUi,
+            mapper = Declaration::toUi,
         )
 
 
@@ -61,7 +61,7 @@ data class DeclarationItemUi(
     override val id: Int = 0,
 ): IItemUi
 
-private fun DeclarationIn.toUi(): DeclarationItemUi {
+private fun Declaration.toUi(): DeclarationItemUi {
     return DeclarationItemUi(
         id = id,
         vendorId = vendorId,
@@ -88,7 +88,7 @@ internal class DeclarationListRepository(
 
     fun observeDeclarationByFilter(
         text: String
-    ): Flow<RequestResult<List<DeclarationIn>>> {
+    ): Flow<RequestResult<List<Declaration>>> {
 
         return dbSafeFlow(tag) { dao.observeOnItems(text, text.isNotBlank()) }
     }

@@ -6,11 +6,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
-import ru.pavlig43.core.tabs.ITabNavigationComponent
+import ru.pavlig43.core.tabs.TabNavigationComponent
 
 @Composable
 fun <TabConfiguration : Any, SlotComponent : Any> TabNavigationContent(
-    navigationComponent: ITabNavigationComponent<TabConfiguration, SlotComponent>,
+    navigationComponent: TabNavigationComponent<TabConfiguration, SlotComponent>,
     tabContent: @Composable (
         index: Int,
         slotComponent: SlotComponent,

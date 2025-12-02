@@ -13,7 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
-import ru.pavlig43.core.tabs.ITabNavigationComponent
+import ru.pavlig43.core.tabs.TabNavigationComponent
 import ru.pavlig43.notification.api.component.PageNotificationComponent
 import ru.pavlig43.notification.api.data.NotificationLevel
 import ru.pavlig43.notification.internal.component.ILevelNotificationComponent
@@ -57,7 +57,7 @@ private fun NotificationTabsUi(
 
 @Composable
 private fun TabNavigationContent(
-    navigationComponent: ITabNavigationComponent<NotificationLevel, ILevelNotificationComponent>,
+    navigationComponent: TabNavigationComponent<NotificationLevel, ILevelNotificationComponent>,
     containerContent: @Composable (innerTabs: @Composable (modifier: Modifier) -> Unit, slotComponent: ILevelNotificationComponent?) -> Unit
 ) {
     val children by navigationComponent.children.subscribeAsState()

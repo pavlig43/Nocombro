@@ -4,23 +4,23 @@ import androidx.room.*
 import kotlinx.coroutines.flow.Flow
 import ru.pavlig43.database.data.common.NotificationDTO
 import ru.pavlig43.database.data.declaration.DECLARATIONS_TABLE_NAME
-import ru.pavlig43.database.data.declaration.DeclarationIn
+import ru.pavlig43.database.data.declaration.Declaration
 
 @Dao
 interface DeclarationDao {
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
-    suspend fun create(declaration: DeclarationIn): Long
+    suspend fun create(declaration: Declaration): Long
 
     @Update
-    suspend fun updateDeclaration(declaration: DeclarationIn)
+    suspend fun updateDeclaration(declaration: Declaration)
 
     @Query("DELETE FROM $DECLARATIONS_TABLE_NAME WHERE id IN (:ids)")
     suspend fun deleteDeclarationsByIds(ids: List<Int>)
 
 
     @Query("SELECT * FROM $DECLARATIONS_TABLE_NAME WHERE id = :id")
-    suspend fun getDeclaration(id: Int): DeclarationIn
+    suspend fun getDeclaration(id: Int): Declaration
 
     @Query(
         """
@@ -31,7 +31,7 @@ interface DeclarationDao {
     ORDER BY id DESC
 """
     )
-    fun observeOnItems(searchText: String, isFilterByText: Boolean): Flow<List<DeclarationIn>>
+    fun observeOnItems(searchText: String, isFilterByText: Boolean): Flow<List<Declaration>>
 
     @Query(
         """

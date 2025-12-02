@@ -23,7 +23,7 @@ class ItemListFactoryComponent(
 
     private val koinComponent = instanceKeeper.getOrCreate { ComponentKoinContext() }
     private val scope = koinComponent.getOrCreateKoinScope(moduleFactory(itemListDependencies))
-    private val _model = MutableStateFlow(SlotComponent.TabModel("Изменить"))
+    private val _model = MutableStateFlow(SlotComponent.TabModel(itemListParamProvider.tabTitle))
     override val model: StateFlow<SlotComponent.TabModel> = _model.asStateFlow()
 
     internal val listComponent: IListComponent<out GenericItem, out IItemUi> = when(itemListParamProvider){
