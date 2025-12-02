@@ -16,7 +16,7 @@ import ru.pavlig43.coreui.tooltip.IconButtonToolTip
 
 
 @Composable
-internal fun VendorFieldBlock(
+fun VendorFieldBlock(
     vendorName: String?,
     onOpenVendorDialog: () -> Unit,
     modifier: Modifier = Modifier

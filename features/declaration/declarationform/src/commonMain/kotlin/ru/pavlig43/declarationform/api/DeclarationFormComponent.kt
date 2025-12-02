@@ -1,7 +1,6 @@
 package ru.pavlig43.declarationform.api
 
 import com.arkivanov.decompose.ComponentContext
-import com.arkivanov.decompose.childContext
 import com.arkivanov.decompose.router.stack.ChildStack
 import com.arkivanov.decompose.router.stack.StackNavigation
 import com.arkivanov.decompose.router.stack.childStack
@@ -15,10 +14,13 @@ import kotlinx.serialization.Serializable
 import org.koin.core.scope.Scope
 import ru.pavlig43.core.SlotComponent
 import ru.pavlig43.corekoin.ComponentKoinContext
-import ru.pavlig43.declarationform.internal.component.DeclarationFormTabInnerTabsComponent
+import ru.pavlig43.database.data.declaration.DeclarationIn
+import ru.pavlig43.declarationform.internal.component.CreateDeclarationComponent
+import ru.pavlig43.declarationform.internal.component.tabs.DeclarationFormTabInnerTabsComponent
+import ru.pavlig43.declarationform.internal.data.DeclarationEssentialsUi
+import ru.pavlig43.declarationform.internal.data.toUi
 import ru.pavlig43.declarationform.internal.di.createDeclarationFormModule
-import ru.pavlig43.manageitem.api.DeclarationFactoryParam
-import ru.pavlig43.manageitem.api.component.UpsertEssentialsFactoryComponent
+import ru.pavlig43.manageitem.internal.component.EssentialComponentFactory
 
 class DeclarationFormComponent(
     private val declarationId: Int,
@@ -50,6 +52,12 @@ class DeclarationFormComponent(
         childFactory = ::createChild
     )
 
+    private val componentFactory = EssentialComponentFactory<DeclarationIn, DeclarationEssentialsUi>(
+        initItem = DeclarationEssentialsUi(),
+        isValidValuesFactory = { displayName.isNotBlank() && vendorId != null && bestBefore != null },
+        mapperToUi = { toUi() },
+        vendorInfoForTabName = {onChangeValueForMainTab("Деларация ${it.displayName}")}
+    )
 
     private fun createChild(
         config: Config,
@@ -57,25 +65,20 @@ class DeclarationFormComponent(
     ): Child {
         return when (config) {
             is Config.Create -> Child.Create(
-                UpsertEssentialsFactoryComponent(
+                CreateDeclarationComponent(
                     componentContext = componentContext,
-                    upsertEssentialsDependencies = scope.get(),
-                    upsertEssentialsFactoryParam = DeclarationFactoryParam(
-                        upsertEssentialsDependencies = scope.get(),
-                        onSuccessUpsert = { stackNavigation.replaceAll(Config.Update(it)) },
-                        onChangeValueForMainTab = { onChangeValueForMainTab("* $it") },
-                        itemListDependencies = scope.get(),
-                        onOpenVendorTab = onOpenVendorTab,
-                        id = declarationId
-                    ),
-                    closeFormScreen = closeTab,
+                    onSuccessCreate = { stackNavigation.replaceAll(Config.Update(it)) },
+                    createDeclarationRepository = scope.get(),
+                    itemListDependencies = scope.get(),
+                    onOpenVendorTab = onOpenVendorTab,
+                    componentFactory = componentFactory
                 )
 
             )
 
             is Config.Update -> Child.Update(
                 DeclarationFormTabInnerTabsComponent(
-                    componentContext = childContext("declaration_form"),
+                    componentContext = componentContext,
                     scope = scope,
                     declarationId = config.id,
                     closeFormScreen = closeTab,
@@ -94,8 +97,6 @@ class DeclarationFormComponent(
     }
 
 
-
-
     @Serializable
     sealed interface Config {
         @Serializable
@@ -106,7 +107,7 @@ class DeclarationFormComponent(
     }
 
     internal sealed class Child {
-        class Create(val component: UpsertEssentialsFactoryComponent) : Child()
+        class Create(val component: CreateDeclarationComponent) : Child()
         class Update(val component: DeclarationFormTabInnerTabsComponent) : Child()
     }
 }

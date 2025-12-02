@@ -1,7 +1,6 @@
 package ru.pavlig43.vendor.api
 
 import com.arkivanov.decompose.ComponentContext
-import com.arkivanov.decompose.childContext
 import com.arkivanov.decompose.router.stack.ChildStack
 import com.arkivanov.decompose.router.stack.StackNavigation
 import com.arkivanov.decompose.router.stack.childStack
@@ -15,14 +14,17 @@ import kotlinx.serialization.Serializable
 import org.koin.core.scope.Scope
 import ru.pavlig43.core.SlotComponent
 import ru.pavlig43.corekoin.ComponentKoinContext
-import ru.pavlig43.manageitem.api.VendorFactoryParam
-import ru.pavlig43.manageitem.api.component.UpsertEssentialsFactoryComponent
+import ru.pavlig43.database.data.vendor.Vendor
+import ru.pavlig43.manageitem.internal.component.EssentialComponentFactory
 import ru.pavlig43.vendor.api.VendorFormComponent.Child.Update
-import ru.pavlig43.vendor.internal.component.VendorFormTabInnerTabsComponent
+import ru.pavlig43.vendor.internal.component.CreateVendorComponent
+import ru.pavlig43.vendor.internal.component.tabs.VendorFormTabInnerTabsComponent
+import ru.pavlig43.vendor.internal.data.VendorEssentialsUi
+import ru.pavlig43.vendor.internal.data.toUi
 import ru.pavlig43.vendor.internal.di.createVendorFormModule
 
 class VendorFormComponent(
-    private val vendorId: Int,
+    vendorId: Int,
     val closeTab: () -> Unit,
     componentContext: ComponentContext,
     dependencies: VendorFormDependencies,
@@ -47,6 +49,12 @@ class VendorFormComponent(
         handleBackButton = false,
         childFactory = ::createChild
     )
+    private val componentFactory = EssentialComponentFactory<Vendor, VendorEssentialsUi>(
+        initItem = VendorEssentialsUi(),
+        isValidValuesFactory = {displayName.isNotBlank()},
+        mapperToUi = {toUi()},
+        vendorInfoForTabName = {onChangeValueForMainTab("Поставщик ${it.displayName}")}
+    )
 
 
     private fun createChild(
@@ -55,26 +63,22 @@ class VendorFormComponent(
     ): Child {
         return when (config) {
             Config.Create -> Child.Create(
-                UpsertEssentialsFactoryComponent(
+                CreateVendorComponent(
                     componentContext = componentContext,
-                    upsertEssentialsDependencies = scope.get(),
-                    upsertEssentialsFactoryParam = VendorFactoryParam(
-                        upsertEssentialsDependencies = scope.get(),
-                        onSuccessUpsert = {stackNavigation.replaceAll(Config.Update(it))},
-                        onChangeValueForMainTab = ::onChangeValueForMainTab,
-                        id = vendorId
-                    )
+                    onSuccessCreate = {stackNavigation.replaceAll(Config.Update(it))},
+                    createRepository = scope.get(),
+                    componentFactory = componentFactory
                 )
             )
 
 
             is Config.Update -> Update(
                 VendorFormTabInnerTabsComponent(
-                    componentContext = childContext("vendor_form"),
+                    componentContext = componentContext,
                     closeFormScreen = closeTab,
                     scope = scope,
                     vendorId = config.id,
-                    onChangeValueForMainTab = { onChangeValueForMainTab(it) }
+                    componentFactory = componentFactory
                 )
             )
 
@@ -103,6 +107,6 @@ class VendorFormComponent(
 
     internal sealed class Child {
         class Update(val component: VendorFormTabInnerTabsComponent) : Child()
-        class Create(val component: UpsertEssentialsFactoryComponent) : Child()
+        class Create(val component: CreateVendorComponent) : Child()
     }
 }

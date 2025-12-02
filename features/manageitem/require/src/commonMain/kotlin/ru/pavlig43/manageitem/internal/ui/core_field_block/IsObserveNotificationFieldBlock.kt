@@ -12,7 +12,7 @@ import androidx.compose.ui.unit.dp
 
 
 @Composable
-internal fun IsObserveNotificationFieldBlock(
+fun IsObserveNotificationFieldBlock(
     isObserveFromNotification: Boolean,
     onCheckedNotificationVisible: (Boolean) -> Unit,
     modifier: Modifier = Modifier

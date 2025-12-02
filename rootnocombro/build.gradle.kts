@@ -15,7 +15,7 @@ kotlin{
         implementation(projects.features.notification)
         implementation(projects.features.itemlist)
         implementation(projects.features.documents.documentform)
-        implementation(projects.features.products.productform)
+        implementation(projects.features.product.productform)
         implementation(projects.features.vendor)
         implementation(projects.features.declaration.declarationform)
         implementation(projects.database)

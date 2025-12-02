@@ -71,7 +71,7 @@ include(
 
 
 include(
-    ":features:products:productform",
+    ":features:product:productform",
     )
 include(
     ":features:vendor",

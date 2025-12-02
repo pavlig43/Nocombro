@@ -1,6 +1,7 @@
 package ru.pavlig43.declarationform.api
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
@@ -10,13 +11,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
+import com.arkivanov.decompose.router.slot.child
 import ru.pavlig43.addfile.api.ui.FilesScreen
-import ru.pavlig43.declarationform.internal.component.DeclarationFileTabSlot
-import ru.pavlig43.declarationform.internal.component.DeclarationTabSlot
-import ru.pavlig43.declarationform.internal.component.UpdateDeclarationTabSlot
-import ru.pavlig43.declarationform.internal.ui.DeclarationRequireScreen
+import ru.pavlig43.declarationform.internal.component.tabs.tabslot.DeclarationFileTabSlot
+import ru.pavlig43.declarationform.internal.component.tabs.tabslot.DeclarationTabSlot
+import ru.pavlig43.declarationform.internal.component.tabs.tabslot.EssentialTabSlot
+import ru.pavlig43.declarationform.internal.ui.CreateDeclarationScreen
+import ru.pavlig43.declarationform.internal.ui.DeclarationFields
 import ru.pavlig43.form.api.ui.ItemTabsUi
-import ru.pavlig43.manageitem.api.ui.CreateItemScreen
+import ru.pavlig43.itemlist.api.ui.MBSItemList
+import ru.pavlig43.manageitem.internal.ui.EssentialBlockScreen
 
 @Composable
 fun DeclarationFormScreen(
@@ -36,7 +40,7 @@ fun DeclarationFormScreen(
             stack = stack,
         ) { child ->
             when (val instance = child.instance) {
-                is DeclarationFormComponent.Child.Create -> CreateItemScreen(instance.component)
+                is DeclarationFormComponent.Child.Create -> CreateDeclarationScreen(instance.component)
                 is DeclarationFormComponent.Child.Update -> ItemTabsUi(
                     component = instance.component,
                     slotFactory = { slotForm: DeclarationTabSlot? ->
@@ -52,9 +56,21 @@ fun DeclarationFormScreen(
 @Composable
 private fun DocumentSlotScreen(declarationTabSlot: DeclarationTabSlot?) {
     when (declarationTabSlot) {
-        is UpdateDeclarationTabSlot -> DeclarationRequireScreen(declarationTabSlot.requires)
-
         is DeclarationFileTabSlot -> FilesScreen(declarationTabSlot.fileComponent)
-        else -> error("document slot not found $declarationTabSlot")
+        is EssentialTabSlot -> {
+            EssentialBlockScreen(declarationTabSlot) {item, onItemChange ->
+                DeclarationFields(
+                    declaration = item,
+                    updateDeclaration = onItemChange,
+                    onOpenVendorDialog = { declarationTabSlot.vendorDialogComponent.showDialog() }
+                )
+            }
+            declarationTabSlot.vendorDialogComponent.dialog.child?.instance?.also {
+                MBSItemList(it)
+            }
+
+        }
+
+        null -> Box(Modifier)
     }
 }

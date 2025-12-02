@@ -13,11 +13,13 @@ import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import ru.pavlig43.addfile.api.ui.FilesScreen
 import ru.pavlig43.form.api.ui.ItemTabsUi
-import ru.pavlig43.manageitem.api.ui.CreateItemScreen
+import ru.pavlig43.manageitem.internal.ui.EssentialBlockScreen
 import ru.pavlig43.vendor.api.VendorFormComponent
-import ru.pavlig43.vendor.internal.component.VendorFileTabSlot
-import ru.pavlig43.vendor.internal.component.VendorInformationTabSlot
-import ru.pavlig43.vendor.internal.component.VendorTabSlot
+import ru.pavlig43.vendor.internal.component.tabs.tabslot.EssentialTabSlot
+import ru.pavlig43.vendor.internal.component.tabs.tabslot.VendorFileTabSlot
+import ru.pavlig43.vendor.internal.component.tabs.tabslot.VendorTabSlot
+import ru.pavlig43.vendor.internal.ui.CreateVendorScreen
+import ru.pavlig43.vendor.internal.ui.VendorFields
 
 @Composable
 fun VendorFormScreen(
@@ -37,7 +39,7 @@ fun VendorFormScreen(
             stack = stack,
         ) { child ->
             when (val instance = child.instance) {
-                is VendorFormComponent.Child.Create -> CreateItemScreen(instance.component)
+                is VendorFormComponent.Child.Create -> CreateVendorScreen(instance.component)
                 is VendorFormComponent.Child.Update -> ItemTabsUi(
                     component = instance.component,
                     slotFactory = { slotForm: VendorTabSlot? ->
@@ -53,13 +55,11 @@ fun VendorFormScreen(
 @Composable
 private fun VendorSlotScreen(vendorSlot: VendorTabSlot?) {
     when (vendorSlot) {
-//        is VendorRequiresTabSlot -> RequireValuesScreen(vendorSlot.requires)
-
+        is EssentialTabSlot -> EssentialBlockScreen(vendorSlot) { item, updateItem ->
+            VendorFields(item, updateItem)
+        }
 
         is VendorFileTabSlot -> FilesScreen(vendorSlot.fileComponent)
-
-        is VendorInformationTabSlot -> Box(Modifier)
-
-        else -> error("vendor slot not found $vendorSlot")
+        null -> Box(Modifier)
     }
 }

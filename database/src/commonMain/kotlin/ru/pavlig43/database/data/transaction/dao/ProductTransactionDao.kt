@@ -1,18 +1,9 @@
 package ru.pavlig43.database.data.transaction.dao
 
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.Query
-import androidx.room.Transaction
-import androidx.room.Update
-import androidx.room.Upsert
+import androidx.room.*
 import ru.pavlig43.database.data.declaration.DECLARATIONS_TABLE_NAME
 import ru.pavlig43.database.data.product.PRODUCT_TABLE_NAME
-import ru.pavlig43.database.data.transaction.ProductTransaction
-import ru.pavlig43.database.data.transaction.ProductTransactionIn
-import ru.pavlig43.database.data.transaction.ProductTransactionOut
-import ru.pavlig43.database.data.transaction.TransactionRow
-import ru.pavlig43.database.data.transaction.TransactionRowOut
+import ru.pavlig43.database.data.transaction.*
 
 @Dao
 interface ProductTransactionDao {
