@@ -21,7 +21,7 @@ internal class VendorDialogComponent(
             key = "vendor_dialog",
             serializer = MBSVendorDialog.serializer(),
             handleBackButton = true,
-        ) { config: MBSVendorDialog, context ->
+        ) { _: MBSVendorDialog, context ->
             MBSItemListComponent(
                 componentContext = context,
                 onDismissed = dialogNavigation::dismiss,

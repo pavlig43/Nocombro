@@ -23,14 +23,14 @@ fun <I: ItemType> ItemTypeField(
     var expanded by remember { mutableStateOf(false) }
     ExposedDropdownMenuBox(
         expanded = expanded,
-        onExpandedChange = { !expanded },
+        onExpandedChange = { expanded = !expanded },
         modifier = modifier
     ) {
         Column {
             Text(text = "Тип объекта")
             OutlinedCard(
                 modifier = Modifier.height(56.dp).width(200.dp)
-                    .menuAnchor(MenuAnchorType.PrimaryNotEditable),
+                    .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
                 shape = MaterialTheme.shapes.large,
                 border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
             ) {
@@ -65,7 +65,7 @@ fun <I: ItemType> ItemTypeField(
         ExposedDropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
-            modifier = Modifier.Companion.exposedDropdownSize()
+            modifier = Modifier.exposedDropdownSize()
         ) {
             typeVariants.forEach { type ->
                 DropdownMenuItem(
