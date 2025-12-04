@@ -1,14 +1,6 @@
 package ru.pavlig43.rootnocombro.api.ui
 
-import DeclarationListScreen
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBars
-import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.Surface
 import androidx.compose.material3.rememberDrawerState
@@ -23,15 +15,14 @@ import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import kotlinx.coroutines.launch
 import ru.pavlig43.core.SlotComponent
-import ru.pavlig43.core.tabs.ITabNavigationComponent
+import ru.pavlig43.core.tabs.TabNavigationComponent
 import ru.pavlig43.coreui.tab.TabNavigationContent
 import ru.pavlig43.declarationform.api.DeclarationFormComponent
 import ru.pavlig43.declarationform.api.DeclarationFormScreen
-import ru.pavlig43.declarationlist.api.component.DeclarationListComponent
 import ru.pavlig43.documentform.api.component.DocumentFormComponent
 import ru.pavlig43.documentform.api.ui.DocumentFormScreen
-import ru.pavlig43.itemlist.api.component.ItemListComponent
-import ru.pavlig43.itemlist.api.ui.ItemListScreen
+import ru.pavlig43.itemlist.api.component.ItemListFactoryComponent
+import ru.pavlig43.itemlist.api.ui.GeneralItemListScreen
 import ru.pavlig43.notification.api.component.PageNotificationComponent
 import ru.pavlig43.notification.api.ui.NotificationTabs
 import ru.pavlig43.productform.api.component.ProductFormComponent
@@ -43,7 +34,7 @@ import ru.pavlig43.rootnocombro.internal.navigation.tab.TabConfig
 import ru.pavlig43.rootnocombro.internal.navigation.tab.ui.TabContent
 import ru.pavlig43.rootnocombro.internal.topbar.ui.NocombroAppBar
 import ru.pavlig43.signroot.api.ui.RootSignScreen
-import ru.pavlig43.vendor.api.VendorFormComponent
+import ru.pavlig43.vendor.component.VendorFormComponent
 import ru.pavlig43.vendor.api.ui.VendorFormScreen
 
 @Suppress("LongMethod")
@@ -72,7 +63,7 @@ fun RootNocombroScreen(rootNocombroComponent: IRootNocombroComponent) {
                     is IRootNocombroComponent.Child.Tabs -> {
                         val mainNavigationComponent: IMainNavigationComponent<TabConfig, SlotComponent> =
                             instance.component
-                        val tabNavigationComponent: ITabNavigationComponent<TabConfig, SlotComponent> =
+                        val tabNavigationComponent: TabNavigationComponent<TabConfig, SlotComponent> =
                             mainNavigationComponent.tabNavigationComponent
                         val drawerNavigationComponent = mainNavigationComponent.drawerComponent
                         NocombroAppBar(
@@ -112,9 +103,8 @@ fun RootNocombroScreen(rootNocombroComponent: IRootNocombroComponent) {
                                                          slotComponent: SlotComponent? ->
                                         innerTabs(Modifier.fillMaxWidth())
                                         when (slotComponent) {
-                                            is ItemListComponent<*,*> -> ItemListScreen(slotComponent)
 
-                                            is DeclarationListComponent -> DeclarationListScreen(slotComponent)
+                                            is ItemListFactoryComponent -> GeneralItemListScreen(slotComponent)
 
                                             is DocumentFormComponent -> DocumentFormScreen(slotComponent)
 

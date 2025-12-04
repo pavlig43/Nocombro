@@ -6,7 +6,7 @@ import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 import ru.pavlig43.core.data.GenericDeclarationIn
 import ru.pavlig43.core.data.GenericDeclarationOut
-import ru.pavlig43.database.data.declaration.DeclarationIn
+import ru.pavlig43.database.data.declaration.Declaration
 
 
 @Entity(
@@ -18,7 +18,7 @@ import ru.pavlig43.database.data.declaration.DeclarationIn
         onDelete = ForeignKey.CASCADE
     ),
         ForeignKey(
-            entity = DeclarationIn::class,
+            entity = Declaration::class,
             parentColumns = ["id"],
             childColumns = ["declaration_id"],
             onDelete = ForeignKey.RESTRICT

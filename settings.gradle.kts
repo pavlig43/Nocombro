@@ -42,22 +42,22 @@ include(":corekoin")
 include(":database")
 include(":datastore")
 include(":theme")
-
-
-
+include(":features:itemlist",)
 
 include(
-    ":features:itemlist",
-    )
-
+    ":features:form:document",
+    ":features:form:product",
+    ":features:form:vendor",
+    ":features:form:declaration",
+)
 include(
-    ":features:manageitem:require",
-    ":features:manageitem:form",
+    ":features:form",
+)
+include(
+    ":features:manageitem:upsert",
     ":features:manageitem:addfile",
     ":features:manageitem:loadinitdata",
-    ":features:manageitem:upsertitem",
-    )
-
+)
 include(
     ":features:sign:common",
     ":features:sign:signin",
@@ -65,24 +65,12 @@ include(
     ":features:sign:root"
 )
 
-include(
-    ":features:documents:documentform",
-)
-
-
-include(
-    ":features:products:productform",
-    )
-include(
-    ":features:vendor",
-)
-
-
-
 include(":features:notification")
 include(
-    ":features:declaration:declarationlist",
-    ":features:declaration:declarationform",
-    ":features:declaration:declarationtabslot",
+    ":features:declarationtabslot",
 
     )
+include(":features:storage")
+include(
+    ":features:transaction:transactionform",
+)

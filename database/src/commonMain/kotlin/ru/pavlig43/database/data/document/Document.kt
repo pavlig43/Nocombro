@@ -3,7 +3,7 @@ package ru.pavlig43.database.data.document
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import ru.pavlig43.core.data.Item
+import ru.pavlig43.core.data.GenericItem
 
 
 const val DOCUMENT_TABLE_NAME = "document"
@@ -13,17 +13,17 @@ data class Document(
     @ColumnInfo("display_name")
     override val displayName: String = "",
 
-    override val type: DocumentType,
+    val type: DocumentType,
 
     @ColumnInfo("created_at")
-    override val createdAt: Long,
+     val createdAt: Long,
 
-    override val comment:String ="",
+    val comment:String ="",
 
     @PrimaryKey(autoGenerate = true)
     override val id: Int = 0,
 
-    ) : Item
+    ) : GenericItem
 
 
 

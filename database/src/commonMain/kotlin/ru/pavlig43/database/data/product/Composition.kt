@@ -1,12 +1,6 @@
 package ru.pavlig43.database.data.product
 
-import androidx.room.ColumnInfo
-import androidx.room.Embedded
-import androidx.room.Entity
-import androidx.room.ForeignKey
-import androidx.room.Ignore
-import androidx.room.PrimaryKey
-import androidx.room.Relation
+import androidx.room.*
 import ru.pavlig43.core.data.CollectionObject
 
 @Entity(

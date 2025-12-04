@@ -1,11 +1,11 @@
 package ru.pavlig43.rootnocombro.internal.di
 
 import org.koin.core.module.Module
-import ru.pavlig43.rootnocombro.api.IRootDependencies
+import ru.pavlig43.rootnocombro.api.RootDependencies
 
 internal fun createRootNocombroModule(
-    rootDependencies: IRootDependencies
+    rootDependencies: RootDependencies
 ): List<Module> {
-    return rootNocombroModule + getDatabaseModule(rootDependencies) + settingsModule(rootDependencies)
+    return featureDependenciesModule + getDatabaseModule(rootDependencies) + settingsModule(rootDependencies)
 
 }

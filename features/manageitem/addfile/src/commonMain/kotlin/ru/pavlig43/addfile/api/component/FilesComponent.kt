@@ -3,17 +3,9 @@ package ru.pavlig43.addfile.api.component
 
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
-import io.github.vinceglb.filekit.FileKit
-import io.github.vinceglb.filekit.PlatformFile
-import io.github.vinceglb.filekit.filesDir
-import io.github.vinceglb.filekit.name
-import io.github.vinceglb.filekit.write
+import io.github.vinceglb.filekit.*
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import ru.pavlig43.addfile.api.data.FileUi
 import ru.pavlig43.addfile.api.data.UploadState
@@ -21,7 +13,6 @@ import ru.pavlig43.core.RequestResult
 import ru.pavlig43.core.componentCoroutineScope
 import ru.pavlig43.core.data.FileData
 import ru.pavlig43.core.mapTo
-import ru.pavlig43.loadinitdata.api.component.ILoadInitDataComponent
 import ru.pavlig43.loadinitdata.api.component.LoadInitDataComponent
 
 
@@ -105,7 +96,7 @@ class FilesComponent<Files : List<FileData>>(
 
     private val _filesUi = MutableStateFlow<List<FileUi>>(emptyList())
     override val filesUi = _filesUi.asStateFlow()
-    override val loadInitDataComponent: ILoadInitDataComponent<List<FileUi>> =
+    override val loadInitDataComponent: LoadInitDataComponent<List<FileUi>> =
         LoadInitDataComponent<List<FileUi>>(
             componentContext = childContext("loadInitData"),
             getInitData = { getInitData().mapTo { it.toListFileUi() } },

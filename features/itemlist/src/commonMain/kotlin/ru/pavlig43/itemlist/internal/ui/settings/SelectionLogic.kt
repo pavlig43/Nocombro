@@ -7,17 +7,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.sharp.FilterAlt
 import androidx.compose.material.icons.sharp.FilterAltOff
-import androidx.compose.material3.Badge
-import androidx.compose.material3.Button
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import ru.pavlig43.core.data.ItemType
@@ -26,14 +17,14 @@ import ru.pavlig43.itemlist.internal.ui.SAVE_SELECTION
 import ru.pavlig43.itemlist.internal.ui.SELECTION
 
 @Composable
-internal fun SelectionLogic(
-    fullListSelection: List<ItemType>,
-    saveSelection: (List<ItemType>) -> Unit
+internal fun <T: ItemType> SelectionLogic(
+    fullListSelection: List<T>,
+    saveSelection: (List<T>) -> Unit
 ) {
 
     var isMenuOpen by remember { mutableStateOf(false) }
 
-    val selectedItems = remember { mutableStateListOf<ItemType>() }
+    val selectedItems = remember { mutableStateListOf<T>() }
     IconButtonToolTip(
         tooltipText = SELECTION,
         onClick = { isMenuOpen = !isMenuOpen },
@@ -59,11 +50,11 @@ internal fun SelectionLogic(
 }
 @Suppress("LongParameterList")
 @Composable
-private fun DropDownBody(
-    items: List<ItemType>,
-    selectedItems: List<ItemType>,
-    addItemInSelection: (ItemType) -> Unit,
-    removeItemFromSelection: (ItemType) -> Unit,
+private fun<T: ItemType> DropDownBody(
+    items: List<T>,
+    selectedItems: List<T>,
+    addItemInSelection: (T) -> Unit,
+    removeItemFromSelection: (T) -> Unit,
     saveSelection: () -> Unit,
     modifier: Modifier = Modifier
 ) {

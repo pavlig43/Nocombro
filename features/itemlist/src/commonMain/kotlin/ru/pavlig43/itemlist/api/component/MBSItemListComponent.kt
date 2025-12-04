@@ -2,36 +2,28 @@ package ru.pavlig43.itemlist.api.component
 
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
-import ru.pavlig43.core.data.Item
-import ru.pavlig43.core.data.ItemType
-import ru.pavlig43.coreui.itemlist.IItemUi
-import ru.pavlig43.itemlist.api.data.DefaultItemFilter
-import ru.pavlig43.itemlist.api.data.IItemListRepository
-import ru.pavlig43.itemlist.api.data.ItemFilter
+import ru.pavlig43.itemlist.api.ItemListDependencies
+import ru.pavlig43.itemlist.api.ItemListParamProvider
+import ru.pavlig43.itemlist.api.data.IItemUi
 
-class MBSItemListComponent<I: Item,S: ItemType>(
-    private val componentContext: ComponentContext,
-    fullListSelection: List<S>,
+class MBSItemListComponent(
+    componentContext: ComponentContext,
+    itemListParamProvider: ItemListParamProvider,
     onItemClick: (IItemUi) -> Unit,
-    repository: IItemListRepository<I, S>,
     onCreate: () -> Unit,
-    filterFactory: (types: List<S>, searchText: String) -> ItemFilter<S> = { types, text -> DefaultItemFilter<S>(types,text) },
+    itemListDependencies: ItemListDependencies,
     private val onDismissed: () -> Unit,
 ) : ComponentContext by componentContext {
 
-    val itemList = ItemListComponent<I,S>(
-        componentContext = childContext("itemList"),
-        fullListSelection = fullListSelection,
-        tabTitle = "",
+    val itemListFactoryComponent = ItemListFactoryComponent(
+        componentContext = childContext("itemlist"),
         onCreate = onCreate,
-        repository = repository,
         onItemClick = onItemClick,
-        filterFactory = filterFactory,
-        withCheckbox = false
+        itemListDependencies = itemListDependencies,
+        itemListParamProvider = itemListParamProvider
     )
 
     fun onDismissClicked() {
         onDismissed()
     }
-
 }

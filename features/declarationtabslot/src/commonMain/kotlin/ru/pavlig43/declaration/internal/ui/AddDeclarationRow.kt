@@ -1,0 +1,70 @@
+package ru.pavlig43.declaration.internal.ui
+
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import ru.pavlig43.coreui.tooltip.IconButtonToolTip
+import ru.pavlig43.coreui.tooltip.ProjectToolTip
+import ru.pavlig43.declaration.api.data.ItemDeclarationUi
+
+@Composable
+internal fun AddDeclarationRow(
+    itemDeclarationUi: ItemDeclarationUi,
+    openDeclarationDocument: (Int) -> Unit,
+    removeDeclarationUi: (Int) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier.fillMaxWidth().border(1.dp, MaterialTheme.colorScheme.primary).padding(start = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+
+        Text(
+            text = "${itemDeclarationUi.declarationName}\n от ${itemDeclarationUi.vendorName}",
+            textDecoration = TextDecoration.Underline,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.width(250.dp),
+        )
+        ProjectToolTip(
+            tooltipText = if (itemDeclarationUi.isActual) "Aктуальна" else "Срок истек",
+            content = {
+                Icon(
+                    if (itemDeclarationUi.isActual) Icons.Default.Check else Icons.Default.Close,
+                    contentDescription = null,
+                    tint = if (itemDeclarationUi.isActual) Color.Green else Color.Red
+                )
+            }
+
+        )
+
+        IconButtonToolTip(
+            tooltipText = "Открыть в новой вкладке",
+            onClick =  { openDeclarationDocument(itemDeclarationUi.declarationId) },
+            icon = Icons.Default.Search
+        )
+
+        IconButtonToolTip(
+            tooltipText = "Удалить",
+            onClick = { removeDeclarationUi(itemDeclarationUi.composeKey) },
+            icon = Icons.Default.Close
+        )
+
+
+    }
+
+}

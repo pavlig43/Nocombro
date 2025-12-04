@@ -1,21 +1,18 @@
 package ru.pavlig43.database.data.document.dao
 
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.Query
-import androidx.room.RawQuery
-import androidx.room.RoomRawQuery
-import androidx.room.Update
+import androidx.room.*
 import kotlinx.coroutines.flow.Flow
 import ru.pavlig43.database.data.common.NotificationDTO
+import ru.pavlig43.database.data.document.DOCUMENT_TABLE_NAME
 import ru.pavlig43.database.data.document.Document
+import ru.pavlig43.database.data.document.DocumentType
 
 
 @Dao
 interface DocumentDao {
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun create(document: Document):Long
+
 
     @Update
     suspend fun updateDocument(document: Document)
@@ -26,8 +23,20 @@ interface DocumentDao {
     @Query("SELECT * from document WHERE id = :id")
     suspend fun getDocument(id: Int):Document
 
-    @RawQuery(observedEntities = [Document::class])
-    fun observeOnItems(query: RoomRawQuery):Flow<List<Document>>
+
+    @Query("""
+    SELECT * FROM $DOCUMENT_TABLE_NAME
+    WHERE type IN (:types)
+    AND (
+        display_name LIKE '%' || :searchText || '%' 
+        OR comment LIKE '%' || :searchText || '%'
+        OR :searchText = ''
+    )
+    ORDER BY created_at DESC
+""")
+    fun observeOnDocuments(
+        searchText: String,
+        types: List<DocumentType>): Flow<List<Document>>
 
     @Query("""
         SELECT CASE

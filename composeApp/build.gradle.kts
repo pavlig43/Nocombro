@@ -19,9 +19,7 @@ plugins {
 composeCompiler {
     featureFlags.add(ComposeFeatureFlag.OptimizeNonSkippingGroups)
 }
-
 kotlin {
-
 
     sourceSets {
 

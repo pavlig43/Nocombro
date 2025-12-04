@@ -4,16 +4,17 @@ import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
 import ru.pavlig43.addfile.api.data.FileUi
 import ru.pavlig43.core.FormTabSlot
+import ru.pavlig43.core.RequestResult
 import ru.pavlig43.core.data.ChangeSet
 import ru.pavlig43.core.data.FileData
-import ru.pavlig43.upsertitem.api.data.UpdateCollectionRepository
+import ru.pavlig43.update.data.UpdateCollectionRepository
 
 
 abstract class UpdateFilesComponent<I : FileData>(
     componentContext: ComponentContext,
     private val id: Int,
     private val mapper: FileUi.(id:Int) -> I,
-    private val updateRepository: UpdateCollectionRepository<I,I>,
+    private val updateRepository: UpdateCollectionRepository<I, I>,
 ) : ComponentContext by componentContext, FormTabSlot {
 
     override val title: String = "Файлы"
@@ -22,10 +23,10 @@ abstract class UpdateFilesComponent<I : FileData>(
         getInitData = {updateRepository.getInit(id)}
     )
 
-    override suspend fun onUpdate() {
+    override suspend fun onUpdate(): RequestResult<Unit> {
         val old = fileComponent.loadInitDataComponent.firstData.value?.map{it.mapper(id)}
         val new = fileComponent.filesUi.value.map{it.mapper(id)}
-        updateRepository.update(ChangeSet(old, new))
+        return updateRepository.update(ChangeSet(old, new))
     }
 
 }

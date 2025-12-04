@@ -5,21 +5,13 @@ import com.arkivanov.decompose.childContext
 import com.arkivanov.decompose.value.operator.map
 import com.arkivanov.essenty.instancekeeper.getOrCreate
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.*
 import ru.pavlig43.core.SlotComponent
 import ru.pavlig43.core.componentCoroutineScope
-import ru.pavlig43.core.tabs.DefaultTabNavigationComponent
-import ru.pavlig43.core.tabs.ITabNavigationComponent
+import ru.pavlig43.core.tabs.TabNavigationComponent
 import ru.pavlig43.core.toStateFlow
 import ru.pavlig43.corekoin.ComponentKoinContext
-import ru.pavlig43.notification.api.INotificationDependencies
+import ru.pavlig43.notification.api.NotificationDependencies
 import ru.pavlig43.notification.api.data.NotificationDrawerUi
 import ru.pavlig43.notification.api.data.NotificationItem
 import ru.pavlig43.notification.api.data.NotificationLevel
@@ -31,7 +23,7 @@ import ru.pavlig43.notification.internal.di.createNotificationModule
 class PageNotificationComponent(
     componentContext: ComponentContext,
     private val onOpenTab: (NotificationItem, Int) -> Unit,
-    dependencies: INotificationDependencies,
+    dependencies: NotificationDependencies,
 ) : ComponentContext by componentContext, SlotComponent {
 
     private val _model = MutableStateFlow(SlotComponent.TabModel("Оповещения"))
@@ -44,8 +36,8 @@ class PageNotificationComponent(
     private val coroutineScope = componentCoroutineScope()
 
 
-    internal val tabNavigationComponent: ITabNavigationComponent<NotificationLevel, ILevelNotificationComponent> =
-        DefaultTabNavigationComponent(
+    internal val tabNavigationComponent: TabNavigationComponent<NotificationLevel, ILevelNotificationComponent> =
+        TabNavigationComponent(
             componentContext = childContext("notification_tab"),
             startConfigurations = listOf(
                 NotificationLevel.Zero,

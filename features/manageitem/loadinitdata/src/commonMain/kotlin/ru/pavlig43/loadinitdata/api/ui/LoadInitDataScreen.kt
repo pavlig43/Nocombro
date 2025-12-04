@@ -7,12 +7,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import ru.pavlig43.coreui.ProgressIndicator
 import ru.pavlig43.coreui.RetryLoadInitData
-import ru.pavlig43.loadinitdata.api.component.ILoadInitDataComponent
+import ru.pavlig43.loadinitdata.api.component.LoadInitDataComponent
 import ru.pavlig43.loadinitdata.api.component.LoadInitDataState
 
 @Composable
 fun <I : Any> LoadInitDataScreen(
-    component: ILoadInitDataComponent<I>,
+    component: LoadInitDataComponent<I>,
     successBody:@Composable (modifier:Modifier)->Unit,
 ) {
     val loadInitDataState by component.loadState.collectAsState()
