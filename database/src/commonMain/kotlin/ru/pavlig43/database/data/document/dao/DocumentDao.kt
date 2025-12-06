@@ -13,7 +13,6 @@ interface DocumentDao {
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun create(document: Document):Long
 
-
     @Update
     suspend fun updateDocument(document: Document)
 

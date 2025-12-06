@@ -12,7 +12,6 @@ class KoinPlugin : Plugin<Project> {
                 commonMainDependencies {
                     api(libs.koin.core)
                     implementation(libs.koin.compose)
-                    implementation(libs.koin.compose.viewmodel)
                 }
                 androidMainDependencies {
                     implementation(libs.koin.android)
