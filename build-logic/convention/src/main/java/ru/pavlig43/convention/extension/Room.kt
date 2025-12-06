@@ -31,7 +31,7 @@ internal fun Project.configureRoomKmp(){
         commonMainDependencies {
 
             api(libs.androidx.room.runtime)
-            implementation(libs.androidx.sqlite.bundled)
+            api(libs.androidx.sqlite.bundled)
         }
 
     }

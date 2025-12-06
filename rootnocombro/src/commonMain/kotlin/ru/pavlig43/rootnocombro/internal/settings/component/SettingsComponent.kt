@@ -8,9 +8,7 @@ import kotlinx.coroutines.launch
 import ru.pavlig43.core.componentCoroutineScope
 import ru.pavlig43.datastore.SettingsRepository
 
-/**
- * TODO сделать из dataStore
- */
+
 internal class SettingsComponent(
     componentContext: ComponentContext,
     private val settingsRepository: SettingsRepository
