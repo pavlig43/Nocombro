@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -12,14 +14,18 @@ import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import ru.pavlig43.addfile.api.ui.FilesScreen
-import ru.pavlig43.declaration.api.ui.ProductDeclarationScreen
-import ru.pavlig43.update.ui.ItemTabsUi
 import ru.pavlig43.core.ui.EssentialBlockScreen
+import ru.pavlig43.declaration.api.ui.ProductDeclarationScreen
 import ru.pavlig43.productform.api.component.ProductFormComponent
-import ru.pavlig43.productform.internal.component.tabs.tabslot.*
+import ru.pavlig43.productform.internal.component.tabs.tabslot.CompositionTabSlot
+import ru.pavlig43.productform.internal.component.tabs.tabslot.EssentialTabSlot
+import ru.pavlig43.productform.internal.component.tabs.tabslot.ProductDeclarationTabSlot
+import ru.pavlig43.productform.internal.component.tabs.tabslot.ProductFileTabSlot
+import ru.pavlig43.productform.internal.component.tabs.tabslot.ProductTabSlot
 import ru.pavlig43.productform.internal.ui.CompositionScreen
 import ru.pavlig43.productform.internal.ui.CreateProductScreen
 import ru.pavlig43.productform.internal.ui.ProductFields
+import ru.pavlig43.update.ui.ItemTabsUi
 
 @Composable
 fun ProductFormScreen(
@@ -55,18 +61,31 @@ fun ProductFormScreen(
 
 @Composable
 private fun ProductSlotScreen(productSlot: ProductTabSlot?) {
-    when (productSlot) {
-        is EssentialTabSlot -> EssentialBlockScreen(productSlot) { item, updateItem ->
-            ProductFields(item, updateItem)
+        when (productSlot) {
+            is EssentialTabSlot -> UpdateEssentialsBlock(productSlot)
+
+            is ProductFileTabSlot -> FilesScreen(productSlot.fileComponent)
+
+            is ProductDeclarationTabSlot -> ProductDeclarationScreen(productSlot)
+
+            is CompositionTabSlot -> CompositionScreen(productSlot)
+
+
+            null -> Box(Modifier)
         }
+    }
 
-        is ProductFileTabSlot -> FilesScreen(productSlot.fileComponent)
-
-        is ProductDeclarationTabSlot -> ProductDeclarationScreen(productSlot)
-
-        is CompositionTabSlot -> CompositionScreen(productSlot)
-
-
-        null -> Box(Modifier)
+@Composable
+private fun UpdateEssentialsBlock(
+    essentialTabSlot:EssentialTabSlot,
+    modifier: Modifier = Modifier
+){
+    Column(modifier.verticalScroll(rememberScrollState())){
+        EssentialBlockScreen(essentialTabSlot) { item, onItemChange ->
+            ProductFields(
+                item,
+                onItemChange
+            )
+        }
     }
 }

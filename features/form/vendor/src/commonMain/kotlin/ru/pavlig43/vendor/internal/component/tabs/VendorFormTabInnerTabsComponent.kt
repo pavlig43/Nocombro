@@ -7,11 +7,11 @@ import com.arkivanov.decompose.value.operator.map
 import org.koin.core.qualifier.named
 import org.koin.core.scope.Scope
 import ru.pavlig43.core.RequestResult
+import ru.pavlig43.core.component.EssentialComponentFactory
 import ru.pavlig43.core.tabs.TabNavigationComponent
 import ru.pavlig43.database.DataBaseTransaction
 import ru.pavlig43.database.data.vendor.Vendor
 import ru.pavlig43.update.component.IItemFormInnerTabsComponent
-import ru.pavlig43.core.component.EssentialComponentFactory
 import ru.pavlig43.update.component.UpdateComponent
 import ru.pavlig43.vendor.internal.component.tabs.tabslot.EssentialTabSlot
 import ru.pavlig43.vendor.internal.component.tabs.tabslot.VendorFileTabSlot
@@ -55,8 +55,6 @@ internal class VendorFormTabInnerTabsComponent(
                         updateRepository = scope.get(named(UpdateCollectionRepositoryType.Files.name)),
                         componentContext = context
                     )
-
-
 
                 }
 

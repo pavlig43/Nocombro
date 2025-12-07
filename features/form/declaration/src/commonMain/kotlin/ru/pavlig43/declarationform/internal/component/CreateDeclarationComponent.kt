@@ -2,13 +2,13 @@ package ru.pavlig43.declarationform.internal.component
 
 import com.arkivanov.decompose.ComponentContext
 import kotlinx.serialization.Serializable
+import ru.pavlig43.core.component.EssentialComponentFactory
+import ru.pavlig43.create.component.CreateEssentialsComponent
+import ru.pavlig43.create.data.CreateEssentialsRepository
 import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.declarationform.internal.data.DeclarationEssentialsUi
 import ru.pavlig43.declarationform.internal.data.toDto
 import ru.pavlig43.itemlist.api.ItemListDependencies
-import ru.pavlig43.create.data.CreateEssentialsRepository
-import ru.pavlig43.create.component.CreateEssentialsComponent
-import ru.pavlig43.core.component.EssentialComponentFactory
 
 
 internal class CreateDeclarationComponent(

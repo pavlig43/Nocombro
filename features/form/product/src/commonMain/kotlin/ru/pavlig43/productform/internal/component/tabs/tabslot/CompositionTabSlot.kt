@@ -2,7 +2,11 @@ package ru.pavlig43.productform.internal.component.tabs.tabslot
 
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
-import com.arkivanov.decompose.router.slot.*
+import com.arkivanov.decompose.router.slot.ChildSlot
+import com.arkivanov.decompose.router.slot.SlotNavigation
+import com.arkivanov.decompose.router.slot.activate
+import com.arkivanov.decompose.router.slot.childSlot
+import com.arkivanov.decompose.router.slot.dismiss
 import com.arkivanov.decompose.value.Value
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -11,7 +15,11 @@ import kotlinx.serialization.Serializable
 import ru.pavlig43.core.RequestResult
 import ru.pavlig43.core.data.ChangeSet
 import ru.pavlig43.core.mapTo
-import ru.pavlig43.database.data.product.*
+import ru.pavlig43.database.data.product.ProductComposition
+import ru.pavlig43.database.data.product.ProductCompositionIn
+import ru.pavlig43.database.data.product.ProductCompositionOut
+import ru.pavlig43.database.data.product.ProductIngredientIn
+import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.itemlist.api.ItemListDependencies
 import ru.pavlig43.itemlist.api.ProductListParamProvider
 import ru.pavlig43.itemlist.api.component.MBSItemListComponent

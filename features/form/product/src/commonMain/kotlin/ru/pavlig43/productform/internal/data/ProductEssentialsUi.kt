@@ -1,8 +1,8 @@
 package ru.pavlig43.productform.internal.data
 
+import ru.pavlig43.core.data.ItemEssentialsUi
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductType
-import ru.pavlig43.core.data.ItemEssentialsUi
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 

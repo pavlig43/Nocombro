@@ -1,10 +1,10 @@
 package ru.pavlig43.productform.internal.ui
 
 import androidx.compose.runtime.Composable
-import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.coreui.coreFieldBlock.CommentFieldBlock
 import ru.pavlig43.coreui.coreFieldBlock.ItemTypeField
 import ru.pavlig43.coreui.coreFieldBlock.NameFieldBlock
+import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.productform.internal.data.ProductEssentialsUi
 
 @Composable

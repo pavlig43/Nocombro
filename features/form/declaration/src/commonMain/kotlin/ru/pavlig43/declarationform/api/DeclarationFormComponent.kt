@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.serialization.Serializable
 import org.koin.core.scope.Scope
 import ru.pavlig43.core.SlotComponent
+import ru.pavlig43.core.component.EssentialComponentFactory
 import ru.pavlig43.corekoin.ComponentKoinContext
 import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.declarationform.internal.component.CreateDeclarationComponent
@@ -20,7 +21,6 @@ import ru.pavlig43.declarationform.internal.component.tabs.DeclarationFormTabInn
 import ru.pavlig43.declarationform.internal.data.DeclarationEssentialsUi
 import ru.pavlig43.declarationform.internal.data.toUi
 import ru.pavlig43.declarationform.internal.di.createDeclarationFormModule
-import ru.pavlig43.core.component.EssentialComponentFactory
 
 class DeclarationFormComponent(
     declarationId: Int,
@@ -33,6 +33,7 @@ class DeclarationFormComponent(
     private val koinContext = instanceKeeper.getOrCreate {
         ComponentKoinContext()
     }
+
     private val scope: Scope =
         koinContext.getOrCreateKoinScope(createDeclarationFormModule(dependencies))
 
@@ -80,9 +81,7 @@ class DeclarationFormComponent(
         }
     }
 
-
     private fun onChangeValueForMainTab(title: String) {
-
         val tabModel = SlotComponent.TabModel(title)
         _model.update { tabModel }
     }

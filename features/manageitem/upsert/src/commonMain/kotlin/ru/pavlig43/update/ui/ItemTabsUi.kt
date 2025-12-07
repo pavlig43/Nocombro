@@ -4,10 +4,17 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -28,24 +35,35 @@ fun <Tab : Any, Slot : FormTabSlot> ItemTabsUi(
     slotFactory: @Composable (Slot?) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
-        TabNavigationContent(
-            navigationComponent = component.tabNavigationComponent,
-            tabContent = { index, tabComponent, modifier, isSelected, _, _ ->
-                TabContent(
-                    formTabSlot = tabComponent,
-                    modifier = modifier,
-                    isSelected = isSelected,
-                    onSelect = { component.tabNavigationComponent.onSelectTab(index) },
-                )
-            },
-            containerContent = { innerTabs: @Composable (modifier: Modifier) -> Unit,
-                                 formSlot: Slot? ->
-                innerTabs(Modifier.fillMaxWidth())
-                slotFactory(formSlot)
-            }
-        )
-        UpdateButton(component.updateComponent)
+    Scaffold(
+        modifier = modifier,
+        bottomBar = {
+            UpdateButton(component.updateComponent)
+        },
+
+        ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            TabNavigationContent(
+                navigationComponent = component.tabNavigationComponent,
+                tabContent = { index, tabComponent, modifier, isSelected, _, _ ->
+                    TabContent(
+                        formTabSlot = tabComponent,
+                        modifier = modifier,
+                        isSelected = isSelected,
+                        onSelect = { component.tabNavigationComponent.onSelectTab(index) },
+                    )
+                },
+                containerContent = { innerTabs ->
+                    innerTabs(Modifier.fillMaxWidth())
+                },
+                slotFactory = slotFactory,
+            )
+        }
     }
 }
 

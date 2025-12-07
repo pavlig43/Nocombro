@@ -2,13 +2,18 @@ package ru.pavlig43.core.component
 
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import ru.pavlig43.core.RequestResult
 import ru.pavlig43.core.componentCoroutineScope
 import ru.pavlig43.core.data.GenericItem
+import ru.pavlig43.core.data.ItemEssentialsUi
 import ru.pavlig43.core.mapTo
 import ru.pavlig43.loadinitdata.api.component.LoadInitDataComponent
-import ru.pavlig43.core.data.ItemEssentialsUi
 
 data class EssentialComponentFactory<I : GenericItem, T : ItemEssentialsUi>(
     val initItem: T,

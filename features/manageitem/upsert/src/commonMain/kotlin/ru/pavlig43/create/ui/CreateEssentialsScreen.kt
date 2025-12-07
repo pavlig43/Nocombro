@@ -3,7 +3,8 @@ package ru.pavlig43.create.ui
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -12,13 +13,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import ru.pavlig43.core.data.GenericItem
-import ru.pavlig43.coreui.LoadingScreen
-import ru.pavlig43.core.ui.EssentialBlockScreen
-import ru.pavlig43.create.component.CreateEssentialsComponent
 import ru.pavlig43.core.component.CreateState
+import ru.pavlig43.core.data.GenericItem
 import ru.pavlig43.core.data.ItemEssentialsUi
+import ru.pavlig43.core.ui.EssentialBlockScreen
+import ru.pavlig43.coreui.LoadingScreen
+import ru.pavlig43.create.component.CreateEssentialsComponent
 
 @Composable
 fun<I: ItemEssentialsUi> CreateEssentialsScreen(
@@ -29,7 +31,7 @@ fun<I: ItemEssentialsUi> CreateEssentialsScreen(
     ){
     val enabled by component.isValidFields.collectAsState()
     val createState by component.createState.collectAsState()
-    Column(modifier.fillMaxSize()) {
+    Column(modifier.verticalScroll(rememberScrollState())) {
         EssentialBlockScreen(
             component = component,
             fieldsBody = fieldsBody
@@ -39,6 +41,7 @@ fun<I: ItemEssentialsUi> CreateEssentialsScreen(
             enabled = enabled,
             onSuccess = { component.onSuccessCreate(it) },
             createState = createState,
+            modifier = Modifier.align(Alignment.CenterHorizontally)
         )
     }
 }

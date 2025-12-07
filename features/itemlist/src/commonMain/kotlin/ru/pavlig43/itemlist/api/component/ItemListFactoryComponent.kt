@@ -8,9 +8,18 @@ import kotlinx.coroutines.flow.asStateFlow
 import ru.pavlig43.core.SlotComponent
 import ru.pavlig43.core.data.GenericItem
 import ru.pavlig43.corekoin.ComponentKoinContext
-import ru.pavlig43.itemlist.api.*
+import ru.pavlig43.itemlist.api.DeclarationListParamProvider
+import ru.pavlig43.itemlist.api.DocumentListParamProvider
+import ru.pavlig43.itemlist.api.ItemListDependencies
+import ru.pavlig43.itemlist.api.ItemListParamProvider
+import ru.pavlig43.itemlist.api.ProductListParamProvider
+import ru.pavlig43.itemlist.api.VendorListParamProvider
 import ru.pavlig43.itemlist.api.data.IItemUi
-import ru.pavlig43.itemlist.internal.component.*
+import ru.pavlig43.itemlist.internal.component.DeclarationListComponent
+import ru.pavlig43.itemlist.internal.component.DocumentsListComponent
+import ru.pavlig43.itemlist.internal.component.IListComponent
+import ru.pavlig43.itemlist.internal.component.ProductListComponent
+import ru.pavlig43.itemlist.internal.component.VendorListComponent
 import ru.pavlig43.itemlist.internal.di.moduleFactory
 
 class ItemListFactoryComponent(

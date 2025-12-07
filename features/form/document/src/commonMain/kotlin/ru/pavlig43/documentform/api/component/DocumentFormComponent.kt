@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.serialization.Serializable
 import org.koin.core.scope.Scope
 import ru.pavlig43.core.SlotComponent
+import ru.pavlig43.core.component.EssentialComponentFactory
 import ru.pavlig43.corekoin.ComponentKoinContext
 import ru.pavlig43.database.data.document.Document
 import ru.pavlig43.documentform.api.DocumentFormDependencies
@@ -21,7 +22,6 @@ import ru.pavlig43.documentform.internal.component.tabs.DocumentFormTabInnerTabs
 import ru.pavlig43.documentform.internal.data.DocumentEssentialsUi
 import ru.pavlig43.documentform.internal.data.toUi
 import ru.pavlig43.documentform.internal.di.createDocumentFormModule
-import ru.pavlig43.core.component.EssentialComponentFactory
 
 
 class DocumentFormComponent(

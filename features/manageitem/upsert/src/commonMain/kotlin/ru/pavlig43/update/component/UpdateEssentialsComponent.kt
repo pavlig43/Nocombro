@@ -7,8 +7,8 @@ import ru.pavlig43.core.component.EssentialComponentFactory
 import ru.pavlig43.core.component.EssentialsComponent
 import ru.pavlig43.core.data.ChangeSet
 import ru.pavlig43.core.data.GenericItem
-import ru.pavlig43.update.data.UpdateEssentialsRepository
 import ru.pavlig43.core.data.ItemEssentialsUi
+import ru.pavlig43.update.data.UpdateEssentialsRepository
 
 abstract class UpdateEssentialsComponent<I : GenericItem, T : ItemEssentialsUi>(
     componentContext: ComponentContext,

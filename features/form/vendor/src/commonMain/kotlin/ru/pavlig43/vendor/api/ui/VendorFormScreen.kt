@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -12,8 +14,8 @@ import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import ru.pavlig43.addfile.api.ui.FilesScreen
-import ru.pavlig43.update.ui.ItemTabsUi
 import ru.pavlig43.core.ui.EssentialBlockScreen
+import ru.pavlig43.update.ui.ItemTabsUi
 import ru.pavlig43.vendor.component.VendorFormComponent
 import ru.pavlig43.vendor.internal.component.tabs.tabslot.EssentialTabSlot
 import ru.pavlig43.vendor.internal.component.tabs.tabslot.VendorFileTabSlot
@@ -54,12 +56,25 @@ fun VendorFormScreen(
 
 @Composable
 private fun VendorSlotScreen(vendorSlot: VendorTabSlot?) {
-    when (vendorSlot) {
-        is EssentialTabSlot -> EssentialBlockScreen(vendorSlot) { item, updateItem ->
-            VendorFields(item, updateItem)
-        }
+        when (vendorSlot) {
+            is EssentialTabSlot -> UpdateEssentialsBlock(vendorSlot)
 
-        is VendorFileTabSlot -> FilesScreen(vendorSlot.fileComponent)
-        null -> Box(Modifier)
+            is VendorFileTabSlot -> FilesScreen(vendorSlot.fileComponent)
+            null -> Box(Modifier)
+
+        }
+}
+@Composable
+private fun UpdateEssentialsBlock(
+    essentials: EssentialTabSlot,
+    modifier: Modifier = Modifier
+){
+    Column(modifier.verticalScroll(rememberScrollState())){
+        EssentialBlockScreen(essentials) { item, onItemChange ->
+            VendorFields(
+                item,
+                onItemChange
+            )
+        }
     }
 }

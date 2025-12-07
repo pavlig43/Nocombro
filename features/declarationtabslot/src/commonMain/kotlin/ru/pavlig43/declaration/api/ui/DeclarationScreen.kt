@@ -1,6 +1,12 @@
 package ru.pavlig43.declaration.api.ui
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material3.MaterialTheme
@@ -27,10 +33,11 @@ fun<Out: GenericDeclarationOut,In: GenericDeclarationIn>ProductDeclarationScreen
 ){
     val dialog by component.dialog.subscribeAsState()
 
+
     DeclarationBlock(
         component = component.productDeclarationList,
         onChooseDeclaration = component::openDialog,
-        modifier = modifier
+        modifier = modifier.verticalScroll(rememberScrollState())
     )
     dialog.child?.instance?.also {
         MBSItemList(it)

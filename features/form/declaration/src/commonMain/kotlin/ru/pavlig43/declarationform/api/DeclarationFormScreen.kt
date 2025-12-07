@@ -4,23 +4,26 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
-import com.arkivanov.decompose.router.slot.child
 import ru.pavlig43.addfile.api.ui.FilesScreen
+import ru.pavlig43.core.ui.EssentialBlockScreen
 import ru.pavlig43.declarationform.internal.component.tabs.tabslot.DeclarationFileTabSlot
 import ru.pavlig43.declarationform.internal.component.tabs.tabslot.DeclarationTabSlot
 import ru.pavlig43.declarationform.internal.component.tabs.tabslot.EssentialTabSlot
 import ru.pavlig43.declarationform.internal.ui.CreateDeclarationScreen
 import ru.pavlig43.declarationform.internal.ui.DeclarationFields
-import ru.pavlig43.update.ui.ItemTabsUi
 import ru.pavlig43.itemlist.api.ui.MBSItemList
-import ru.pavlig43.core.ui.EssentialBlockScreen
+import ru.pavlig43.update.ui.ItemTabsUi
 
 @Composable
 fun DeclarationFormScreen(
@@ -36,6 +39,7 @@ fun DeclarationFormScreen(
             .padding(horizontal = 8.dp)
     ) {
         val stack by component.stack.subscribeAsState()
+
         Children(
             stack = stack,
         ) { child ->
@@ -44,7 +48,7 @@ fun DeclarationFormScreen(
                 is DeclarationFormComponent.Child.Update -> ItemTabsUi(
                     component = instance.component,
                     slotFactory = { slotForm: DeclarationTabSlot? ->
-                        DocumentSlotScreen(slotForm)
+                        DeclarationSlotScreen(slotForm)
                     })
             }
         }
@@ -54,23 +58,42 @@ fun DeclarationFormScreen(
 }
 
 @Composable
-private fun DocumentSlotScreen(declarationTabSlot: DeclarationTabSlot?) {
+private fun DeclarationSlotScreen(
+    declarationTabSlot: DeclarationTabSlot?,
+) {
     when (declarationTabSlot) {
         is DeclarationFileTabSlot -> FilesScreen(declarationTabSlot.fileComponent)
-        is EssentialTabSlot -> {
-            EssentialBlockScreen(declarationTabSlot) {item, onItemChange ->
-                DeclarationFields(
-                    declaration = item,
-                    updateDeclaration = onItemChange,
-                    onOpenVendorDialog = { declarationTabSlot.vendorDialogComponent.showDialog() }
-                )
-            }
-            declarationTabSlot.vendorDialogComponent.dialog.child?.instance?.also {
-                MBSItemList(it)
-            }
-
-        }
-
+        is EssentialTabSlot -> UpdateEssentialsBlock(declarationTabSlot)
         null -> Box(Modifier)
     }
 }
+
+@Composable
+private fun UpdateEssentialsBlock(
+    declarationTabSlot: EssentialTabSlot,
+    modifier: Modifier = Modifier
+) {
+    val dialog by declarationTabSlot.vendorDialogComponent.dialog.subscribeAsState()
+    val state by declarationTabSlot.stateScroll.collectAsState()
+    val stateScroll = rememberScrollState(state)
+    LaunchedEffect(stateScroll.value){
+        declarationTabSlot.updateScroll(stateScroll.value)
+    }
+
+    Column(modifier.verticalScroll(stateScroll)) {
+        EssentialBlockScreen(declarationTabSlot) { item, onItemChange ->
+            DeclarationFields(
+                declaration = item,
+                updateDeclaration = onItemChange,
+                onOpenVendorDialog = {
+                    declarationTabSlot.vendorDialogComponent.showDialog() }
+            )
+        }
+        dialog.child?.instance?.also {
+            MBSItemList(it)
+        }
+    }
+
+}
+
+

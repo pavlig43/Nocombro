@@ -1,13 +1,12 @@
 package ru.pavlig43.documentform.internal.component.tabs.tabslot
 
 import com.arkivanov.decompose.ComponentContext
+import ru.pavlig43.core.component.EssentialComponentFactory
 import ru.pavlig43.database.data.document.Document
 import ru.pavlig43.documentform.internal.data.DocumentEssentialsUi
 import ru.pavlig43.documentform.internal.data.toDto
-import ru.pavlig43.update.data.UpdateEssentialsRepository
-import ru.pavlig43.core.component.EssentialComponentFactory
 import ru.pavlig43.update.component.UpdateEssentialsComponent
-
+import ru.pavlig43.update.data.UpdateEssentialsRepository
 
 
 internal class EssentialTabSlot(

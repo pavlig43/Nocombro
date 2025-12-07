@@ -1,12 +1,12 @@
 package ru.pavlig43.documentform.internal.component
 
 import com.arkivanov.decompose.ComponentContext
+import ru.pavlig43.core.component.EssentialComponentFactory
+import ru.pavlig43.create.component.CreateEssentialsComponent
+import ru.pavlig43.create.data.CreateEssentialsRepository
 import ru.pavlig43.database.data.document.Document
 import ru.pavlig43.documentform.internal.data.DocumentEssentialsUi
 import ru.pavlig43.documentform.internal.data.toDto
-import ru.pavlig43.create.data.CreateEssentialsRepository
-import ru.pavlig43.create.component.CreateEssentialsComponent
-import ru.pavlig43.core.component.EssentialComponentFactory
 
 internal class CreateDocumentComponent(
     componentContext: ComponentContext,

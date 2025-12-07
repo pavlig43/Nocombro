@@ -1,6 +1,13 @@
 package ru.pavlig43.rootnocombro.api.ui
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.Surface
 import androidx.compose.material3.rememberDrawerState
@@ -34,8 +41,8 @@ import ru.pavlig43.rootnocombro.internal.navigation.tab.TabConfig
 import ru.pavlig43.rootnocombro.internal.navigation.tab.ui.TabContent
 import ru.pavlig43.rootnocombro.internal.topbar.ui.NocombroAppBar
 import ru.pavlig43.signroot.api.ui.RootSignScreen
-import ru.pavlig43.vendor.component.VendorFormComponent
 import ru.pavlig43.vendor.api.ui.VendorFormScreen
+import ru.pavlig43.vendor.component.VendorFormComponent
 
 @Suppress("LongMethod")
 @Composable
@@ -99,30 +106,13 @@ fun RootNocombroScreen(rootNocombroComponent: IRootNocombroComponent) {
                                             onSelect = { tabNavigationComponent.onSelectTab(index) },
                                         )
                                     },
-                                    containerContent = { innerTabs: @Composable (modifier: Modifier) -> Unit,
-                                                         slotComponent: SlotComponent? ->
+                                    containerContent = { innerTabs: @Composable (modifier: Modifier) -> Unit ->
                                         innerTabs(Modifier.fillMaxWidth())
-                                        when (slotComponent) {
 
-                                            is ItemListFactoryComponent -> GeneralItemListScreen(slotComponent)
-
-                                            is DocumentFormComponent -> DocumentFormScreen(slotComponent)
-
-                                            is ProductFormComponent -> ProductFormScreen(slotComponent)
-
-                                            is PageNotificationComponent -> NotificationTabs(slotComponent)
-
-                                            is VendorFormComponent -> VendorFormScreen(slotComponent)
-
-                                            is DeclarationFormComponent -> DeclarationFormScreen(slotComponent)
-
-                                            null -> Box(Modifier.fillMaxSize())
-                                            else -> error("$slotComponent SlotComponent not added")
-                                        }
-                                    }
+                                    },
+                                    slotFactory = {slotComponent -> SlotFactory(slotComponent)}
                                 )
                             }
-
                         }
 
 
@@ -133,6 +123,26 @@ fun RootNocombroScreen(rootNocombroComponent: IRootNocombroComponent) {
         }
     }
 
+}
+@Composable
+private fun SlotFactory(slotComponent: SlotComponent?){
+    when (slotComponent) {
+
+        is ItemListFactoryComponent -> GeneralItemListScreen(slotComponent)
+
+        is DocumentFormComponent -> DocumentFormScreen(slotComponent)
+
+        is ProductFormComponent -> ProductFormScreen(slotComponent)
+
+        is PageNotificationComponent -> NotificationTabs(slotComponent)
+
+        is VendorFormComponent -> VendorFormScreen(slotComponent)
+
+        is DeclarationFormComponent -> DeclarationFormScreen(slotComponent)
+
+        null -> Box(Modifier.fillMaxSize())
+        else -> error("$slotComponent SlotComponent not added")
+    }
 }
 
 

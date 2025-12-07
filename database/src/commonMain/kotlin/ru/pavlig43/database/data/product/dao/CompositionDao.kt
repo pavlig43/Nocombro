@@ -1,6 +1,11 @@
 package ru.pavlig43.database.data.product.dao
 
-import androidx.room.*
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.Query
+import androidx.room.Transaction
+import androidx.room.Update
+import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
 import ru.pavlig43.database.data.common.NotificationDTO
 import ru.pavlig43.database.data.product.ProductComposition

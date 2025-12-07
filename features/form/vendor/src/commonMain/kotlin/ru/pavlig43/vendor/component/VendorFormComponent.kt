@@ -13,9 +13,9 @@ import kotlinx.coroutines.flow.update
 import kotlinx.serialization.Serializable
 import org.koin.core.scope.Scope
 import ru.pavlig43.core.SlotComponent
+import ru.pavlig43.core.component.EssentialComponentFactory
 import ru.pavlig43.corekoin.ComponentKoinContext
 import ru.pavlig43.database.data.vendor.Vendor
-import ru.pavlig43.core.component.EssentialComponentFactory
 import ru.pavlig43.vendor.api.VendorFormDependencies
 import ru.pavlig43.vendor.internal.component.CreateVendorComponent
 import ru.pavlig43.vendor.internal.component.tabs.VendorFormTabInnerTabsComponent

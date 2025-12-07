@@ -1,14 +1,14 @@
 package ru.pavlig43.documentform.internal.di
 
 import org.koin.dsl.module
+import ru.pavlig43.create.data.CreateEssentialsRepository
 import ru.pavlig43.database.DataBaseTransaction
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.document.Document
 import ru.pavlig43.database.data.document.DocumentFile
 import ru.pavlig43.documentform.api.DocumentFormDependencies
-import ru.pavlig43.create.data.CreateEssentialsRepository
-import ru.pavlig43.update.data.UpdateEssentialsRepository
 import ru.pavlig43.update.data.UpdateCollectionRepository
+import ru.pavlig43.update.data.UpdateEssentialsRepository
 
 internal fun createDocumentFormModule(dependencies: DocumentFormDependencies) = listOf(
     module {

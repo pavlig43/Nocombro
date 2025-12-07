@@ -3,9 +3,17 @@ package ru.pavlig43.addfile.api.component
 
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
-import io.github.vinceglb.filekit.*
+import io.github.vinceglb.filekit.FileKit
+import io.github.vinceglb.filekit.PlatformFile
+import io.github.vinceglb.filekit.filesDir
+import io.github.vinceglb.filekit.name
+import io.github.vinceglb.filekit.write
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import ru.pavlig43.addfile.api.data.FileUi
 import ru.pavlig43.addfile.api.data.UploadState

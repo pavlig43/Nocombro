@@ -1,11 +1,11 @@
 package ru.pavlig43.declarationform.internal.ui
 
 import androidx.compose.runtime.Composable
-import ru.pavlig43.declarationform.internal.data.DeclarationEssentialsUi
 import ru.pavlig43.coreui.coreFieldBlock.BestBeforeFieldBlock
 import ru.pavlig43.coreui.coreFieldBlock.IsObserveNotificationFieldBlock
 import ru.pavlig43.coreui.coreFieldBlock.NameFieldBlock
 import ru.pavlig43.coreui.coreFieldBlock.VendorFieldBlock
+import ru.pavlig43.declarationform.internal.data.DeclarationEssentialsUi
 
 @Composable
 internal fun DeclarationFields(

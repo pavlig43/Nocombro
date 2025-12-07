@@ -2,14 +2,19 @@ package ru.pavlig43.productform.internal.di
 
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
+import ru.pavlig43.create.data.CreateEssentialsRepository
 import ru.pavlig43.database.DataBaseTransaction
 import ru.pavlig43.database.NocombroDatabase
-import ru.pavlig43.database.data.product.*
+import ru.pavlig43.database.data.product.Product
+import ru.pavlig43.database.data.product.ProductCompositionIn
+import ru.pavlig43.database.data.product.ProductCompositionOut
+import ru.pavlig43.database.data.product.ProductDeclaration
+import ru.pavlig43.database.data.product.ProductDeclarationOutWithNameAndVendor
+import ru.pavlig43.database.data.product.ProductFile
 import ru.pavlig43.itemlist.api.ItemListDependencies
-import ru.pavlig43.create.data.CreateEssentialsRepository
-import ru.pavlig43.update.data.UpdateEssentialsRepository
 import ru.pavlig43.productform.api.ProductFormDependencies
 import ru.pavlig43.update.data.UpdateCollectionRepository
+import ru.pavlig43.update.data.UpdateEssentialsRepository
 
 internal fun createProductFormModule(dependencies: ProductFormDependencies) = listOf(
     module {

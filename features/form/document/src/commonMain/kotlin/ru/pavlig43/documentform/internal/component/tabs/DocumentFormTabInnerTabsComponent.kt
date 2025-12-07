@@ -5,6 +5,7 @@ import com.arkivanov.decompose.childContext
 import com.arkivanov.decompose.value.operator.map
 import org.koin.core.scope.Scope
 import ru.pavlig43.core.RequestResult
+import ru.pavlig43.core.component.EssentialComponentFactory
 import ru.pavlig43.core.tabs.TabNavigationComponent
 import ru.pavlig43.database.DataBaseTransaction
 import ru.pavlig43.database.data.document.Document
@@ -13,7 +14,6 @@ import ru.pavlig43.documentform.internal.component.tabs.tabslot.DocumentTabSlot
 import ru.pavlig43.documentform.internal.component.tabs.tabslot.EssentialTabSlot
 import ru.pavlig43.documentform.internal.data.DocumentEssentialsUi
 import ru.pavlig43.update.component.IItemFormInnerTabsComponent
-import ru.pavlig43.core.component.EssentialComponentFactory
 import ru.pavlig43.update.component.UpdateComponent
 
 internal class DocumentFormTabInnerTabsComponent(

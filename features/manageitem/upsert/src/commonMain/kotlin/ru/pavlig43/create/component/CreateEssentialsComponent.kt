@@ -11,8 +11,8 @@ import ru.pavlig43.core.component.EssentialComponentFactory
 import ru.pavlig43.core.component.EssentialsComponent
 import ru.pavlig43.core.component.toCreateState
 import ru.pavlig43.core.data.GenericItem
-import ru.pavlig43.create.data.CreateEssentialsRepository
 import ru.pavlig43.core.data.ItemEssentialsUi
+import ru.pavlig43.create.data.CreateEssentialsRepository
 
 abstract class CreateEssentialsComponent<I : GenericItem, T : ItemEssentialsUi>(
     componentContext: ComponentContext,

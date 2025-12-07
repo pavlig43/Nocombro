@@ -6,14 +6,18 @@ import com.arkivanov.decompose.value.operator.map
 import org.koin.core.qualifier.named
 import org.koin.core.scope.Scope
 import ru.pavlig43.core.RequestResult
+import ru.pavlig43.core.component.EssentialComponentFactory
 import ru.pavlig43.core.tabs.TabNavigationComponent
 import ru.pavlig43.database.DataBaseTransaction
 import ru.pavlig43.database.data.product.Product
-import ru.pavlig43.update.component.IItemFormInnerTabsComponent
-import ru.pavlig43.core.component.EssentialComponentFactory
-import ru.pavlig43.productform.internal.component.tabs.tabslot.*
+import ru.pavlig43.productform.internal.component.tabs.tabslot.CompositionTabSlot
+import ru.pavlig43.productform.internal.component.tabs.tabslot.EssentialTabSlot
+import ru.pavlig43.productform.internal.component.tabs.tabslot.ProductDeclarationTabSlot
+import ru.pavlig43.productform.internal.component.tabs.tabslot.ProductFileTabSlot
+import ru.pavlig43.productform.internal.component.tabs.tabslot.ProductTabSlot
 import ru.pavlig43.productform.internal.data.ProductEssentialsUi
 import ru.pavlig43.productform.internal.di.UpdateCollectionRepositoryType
+import ru.pavlig43.update.component.IItemFormInnerTabsComponent
 import ru.pavlig43.update.component.UpdateComponent
 
 @Suppress("LongParameterList")

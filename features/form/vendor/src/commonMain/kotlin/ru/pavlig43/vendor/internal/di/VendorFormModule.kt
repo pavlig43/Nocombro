@@ -2,13 +2,13 @@ package ru.pavlig43.vendor.internal.di
 
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
+import ru.pavlig43.create.data.CreateEssentialsRepository
 import ru.pavlig43.database.DataBaseTransaction
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.vendor.Vendor
 import ru.pavlig43.database.data.vendor.VendorFile
-import ru.pavlig43.create.data.CreateEssentialsRepository
-import ru.pavlig43.update.data.UpdateEssentialsRepository
 import ru.pavlig43.update.data.UpdateCollectionRepository
+import ru.pavlig43.update.data.UpdateEssentialsRepository
 import ru.pavlig43.vendor.api.VendorFormDependencies
 
 internal fun createVendorFormModule(dependencies: VendorFormDependencies) = listOf(
