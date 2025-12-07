@@ -11,7 +11,7 @@ const val DOCUMENT_TABLE_NAME = "document"
 data class Document(
 
     @ColumnInfo("display_name")
-    override val displayName: String = "",
+    val displayName: String = "",
 
     val type: DocumentType,
 

@@ -26,14 +26,14 @@ import ru.pavlig43.core.tabs.TabNavigationComponent
 import ru.pavlig43.coreui.tab.TabNavigationContent
 import ru.pavlig43.declarationform.api.DeclarationFormComponent
 import ru.pavlig43.declarationform.api.DeclarationFormScreen
-import ru.pavlig43.documentform.api.component.DocumentFormComponent
-import ru.pavlig43.documentform.api.ui.DocumentFormScreen
+import ru.pavlig43.document.api.component.DocumentFormComponent
+import ru.pavlig43.document.api.ui.DocumentFormScreen
 import ru.pavlig43.itemlist.api.component.ItemListFactoryComponent
 import ru.pavlig43.itemlist.api.ui.GeneralItemListScreen
 import ru.pavlig43.notification.api.component.PageNotificationComponent
 import ru.pavlig43.notification.api.ui.NotificationTabs
-import ru.pavlig43.productform.api.component.ProductFormComponent
-import ru.pavlig43.productform.api.ui.ProductFormScreen
+import ru.pavlig43.product.api.component.ProductFormComponent
+import ru.pavlig43.product.api.ui.ProductFormScreen
 import ru.pavlig43.rootnocombro.api.component.IRootNocombroComponent
 import ru.pavlig43.rootnocombro.internal.navigation.IMainNavigationComponent
 import ru.pavlig43.rootnocombro.internal.navigation.drawer.ui.NavigationDrawer
@@ -41,6 +41,8 @@ import ru.pavlig43.rootnocombro.internal.navigation.tab.TabConfig
 import ru.pavlig43.rootnocombro.internal.navigation.tab.ui.TabContent
 import ru.pavlig43.rootnocombro.internal.topbar.ui.NocombroAppBar
 import ru.pavlig43.signroot.api.ui.RootSignScreen
+import ru.pavlig43.transaction.api.component.TransactionFormComponent
+import ru.pavlig43.transaction.api.ui.TransactionFormScreen
 import ru.pavlig43.vendor.api.ui.VendorFormScreen
 import ru.pavlig43.vendor.component.VendorFormComponent
 
@@ -139,6 +141,8 @@ private fun SlotFactory(slotComponent: SlotComponent?){
         is VendorFormComponent -> VendorFormScreen(slotComponent)
 
         is DeclarationFormComponent -> DeclarationFormScreen(slotComponent)
+
+        is TransactionFormComponent -> TransactionFormScreen(slotComponent)
 
         null -> Box(Modifier.fillMaxSize())
         else -> error("$slotComponent SlotComponent not added")

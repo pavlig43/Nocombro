@@ -1,9 +1,6 @@
 package ru.pavlig43.declarationform.internal.component.tabs.tabslot
 
 import com.arkivanov.decompose.ComponentContext
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
 import ru.pavlig43.core.component.EssentialComponentFactory
 import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.declarationform.internal.component.VendorDialogComponent
@@ -27,11 +24,7 @@ internal class EssentialTabSlot(
     componentFactory = componentFactory,
     mapperToDTO = {toDto()}
 ), DeclarationTabSlot{
-     private val _stateScroll = MutableStateFlow(0)
-    val stateScroll = _stateScroll.asStateFlow()
-    fun updateScroll(value: Int){
-        _stateScroll.update { value }
-    }
+
 
     val vendorDialogComponent = VendorDialogComponent(
         parentComponentContext = componentContext,

@@ -6,12 +6,12 @@ import ru.pavlig43.database.DataBaseTransaction
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.database.data.declaration.DeclarationFile
-import ru.pavlig43.declarationform.api.DeclarationDependencies
+import ru.pavlig43.declarationform.api.DeclarationFormDependencies
 import ru.pavlig43.itemlist.api.ItemListDependencies
 import ru.pavlig43.update.data.UpdateCollectionRepository
 import ru.pavlig43.update.data.UpdateEssentialsRepository
 
-internal fun createDeclarationFormModule(dependencies: DeclarationDependencies) = listOf(
+internal fun createDeclarationFormModule(dependencies: DeclarationFormDependencies) = listOf(
     module {
         single<NocombroDatabase> { dependencies.db }
         single<DataBaseTransaction> { dependencies.transaction }
@@ -34,8 +34,8 @@ private fun getCreateRepository(
     val dao = db.declarationDao
     return CreateEssentialsRepository(
         tag = "Create Declaration Repository",
-        isNameAllowed = dao::isNameAllowed,
-        create = dao::create
+        create = dao::create,
+        isCanSave = dao::isCanSave
     )
 }
 private fun getUpdateRepository(
@@ -44,7 +44,7 @@ private fun getUpdateRepository(
     val dao = db.declarationDao
     return UpdateEssentialsRepository(
         tag = "UpdateEssentialsRepository",
-        isNameAllowed = dao::isNameAllowed,
+        isCanSave = dao::isCanSave,
         loadItem = dao::getDeclaration,
         updateItem = dao::updateDeclaration
     )

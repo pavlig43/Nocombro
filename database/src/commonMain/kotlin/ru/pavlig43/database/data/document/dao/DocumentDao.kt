@@ -6,6 +6,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
+import ru.pavlig43.database.data.common.IsCanUpsertResult
 import ru.pavlig43.database.data.common.NotificationDTO
 import ru.pavlig43.database.data.document.DOCUMENT_TABLE_NAME
 import ru.pavlig43.database.data.document.Document
@@ -48,6 +49,12 @@ interface DocumentDao {
         END
     """)
     suspend fun isNameAllowed(id: Int, name: String):Boolean
+
+    suspend fun isCanSave(document: Document): IsCanUpsertResult{
+        if (document.displayName.isBlank()) return IsCanUpsertResult.NameBlank()
+        if (!isNameAllowed(document.id,document.displayName)) return IsCanUpsertResult.NameExists()
+        return IsCanUpsertResult.Ok()
+    }
 
 
     @Query("SELECT id,display_name AS displayName FROM document WHERE id NOT IN (SELECT document_id FROM document_file)")

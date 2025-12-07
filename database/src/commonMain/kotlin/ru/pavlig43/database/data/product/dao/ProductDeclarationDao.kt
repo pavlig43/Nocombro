@@ -8,7 +8,7 @@ import ru.pavlig43.database.data.common.NotificationDTO
 import ru.pavlig43.database.data.declaration.DECLARATIONS_TABLE_NAME
 import ru.pavlig43.database.data.product.PRODUCT_TABLE_NAME
 import ru.pavlig43.database.data.product.ProductDeclaration
-import ru.pavlig43.database.data.product.ProductDeclarationOutWithNameAndVendor
+import ru.pavlig43.database.data.product.ProductDeclarationOut
 import ru.pavlig43.database.data.vendor.VENDOR_TABLE_NAME
 
 @Dao
@@ -35,7 +35,7 @@ interface ProductDeclarationDao {
     WHERE pd.product_id = :productId AND d.best_before < datetime('now')
     """
     )
-    suspend fun getProductDeclarationWithDocumentName(productId: Int): List<ProductDeclarationOutWithNameAndVendor>
+    suspend fun getProductDeclarationWithDocumentName(productId: Int): List<ProductDeclarationOut>
 
 
     @Query("""

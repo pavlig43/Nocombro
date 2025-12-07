@@ -18,7 +18,11 @@ internal fun createVendorFormModule(dependencies: VendorFormDependencies) = list
         single<CreateEssentialsRepository<Vendor>> { getCreateRepository(get()) }
         single<UpdateEssentialsRepository<Vendor>> { getUpdateRepository(get()) }
 
-        single<UpdateCollectionRepository<VendorFile, VendorFile>>(named(UpdateCollectionRepositoryType.Files.name)) {
+        single<UpdateCollectionRepository<VendorFile, VendorFile>>(
+            named(
+                UpdateCollectionRepositoryType.Files.name
+            )
+        ) {
             getFilesRepository(
                 get()
             )
@@ -32,8 +36,8 @@ private fun getCreateRepository(
     val dao = db.vendorDao
     return CreateEssentialsRepository(
         tag = "Create Vendor Repository",
-        isNameAllowed = dao::isNameAllowed,
-        create = dao::create
+        create = dao::create,
+        isCanSave = dao::isCanSave
     )
 }
 
@@ -43,7 +47,7 @@ private fun getUpdateRepository(
     val dao = db.vendorDao
     return UpdateEssentialsRepository(
         tag = "Update vendor sRepository",
-        isNameAllowed = dao::isNameAllowed,
+        isCanSave = dao::isCanSave,
         loadItem = dao::getVendor,
         updateItem = dao::updateVendor
     )

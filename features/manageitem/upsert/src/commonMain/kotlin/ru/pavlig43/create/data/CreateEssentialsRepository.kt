@@ -4,41 +4,40 @@ import ru.pavlig43.core.RequestResult
 import ru.pavlig43.core.data.GenericItem
 import ru.pavlig43.core.data.dbSafeCall
 import ru.pavlig43.core.mapTo
+import ru.pavlig43.database.data.common.IsCanUpsertResult
 
 class CreateEssentialsRepository<I : GenericItem>(
     private val tag: String,
-    private val isNameAllowed: suspend (id: Int, name: String) -> Boolean,
-    private val create:suspend (I) -> Long,
+    private val isCanSave: suspend (I) -> IsCanUpsertResult,
+    private val create: suspend (I) -> Long,
 ) {
-    private suspend fun isNameAllowed(
+    private suspend fun isCanSave(
         item: I,
-        upsert: suspend (I) -> RequestResult<Int>
+        createItem: suspend (I) -> RequestResult<Int>
     ): RequestResult<Int> {
-        if (item.displayName.isBlank()) return RequestResult.Error(message = "Имя не должно быть пустым")
-        val isNameAllowed = dbSafeCall(tag) {
-            isNameAllowed(item.id, item.displayName)
-        }
-            .mapTo { isAllowed -> if (isAllowed) 1 else -1 }
-        return if (isNameAllowed is RequestResult.Success) {
-            if (isNameAllowed.data == -1) RequestResult.Error(message = "Имя уже существует")
-            else {
-                upsert(item)
-
+        val isCanUpsertResult = dbSafeCall(tag) {
+            isCanSave(item)
+        }.mapTo { isCanCreateResult ->
+            when(isCanCreateResult){
+                is IsCanUpsertResult.Ok -> ""
+                else -> isCanCreateResult.message
             }
+        }
+        return if (isCanUpsertResult is RequestResult.Success){
+            if (!isCanUpsertResult.data.isBlank()) RequestResult.Error<Int>(message = isCanUpsertResult.data)
+            else createItem(item)
         } else {
-            isNameAllowed
+            RequestResult.Error(message = isCanUpsertResult.data)
         }
     }
 
 
-
     suspend fun createEssential(item: I): RequestResult<Int> {
-        return isNameAllowed(item) {
+        return isCanSave(item) {
             dbSafeCall(tag) {
                 create(item)
             }.mapTo { it.toInt() }
         }
     }
-
 
 }

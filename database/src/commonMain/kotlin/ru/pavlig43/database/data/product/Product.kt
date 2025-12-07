@@ -15,7 +15,7 @@ data class Product(
     val type: ProductType,
 
     @ColumnInfo("display_name")
-    override val displayName: String,
+    val displayName: String,
 
 //    @ColumnInfo("unit")
 //    val unit: ProductUnit,

@@ -5,10 +5,11 @@ import ru.pavlig43.core.data.ChangeSet
 import ru.pavlig43.core.data.GenericItem
 import ru.pavlig43.core.data.dbSafeCall
 import ru.pavlig43.core.mapTo
+import ru.pavlig43.database.data.common.IsCanUpsertResult
 
 class UpdateEssentialsRepository<I : GenericItem>(
     private val tag: String,
-    private val isNameAllowed: suspend (id: Int, name: String) -> Boolean,
+    private val isCanSave: suspend (I) -> IsCanUpsertResult,
     private val loadItem: suspend (Int) -> I,
     private val updateItem: suspend (I) -> Unit,
 )  {
@@ -16,21 +17,23 @@ class UpdateEssentialsRepository<I : GenericItem>(
         item: I,
         update: suspend (I) -> RequestResult<Unit>
     ): RequestResult<Unit> {
-        if (item.displayName.isBlank()) return RequestResult.Error(message = "Имя не должно быть пустым")
-        val isNameAllowed = dbSafeCall(tag) {
-            isNameAllowed(item.id, item.displayName)
-        }
 
-        return if (isNameAllowed is RequestResult.Success) {
-            if (!isNameAllowed.data) RequestResult.Error(message = "Имя уже существует")
-            else {
-                update(item)
+        val isCanUpdateResult = dbSafeCall(tag) {
+            isCanSave(item)
+        }.mapTo { isCanUpdate ->
+            when(isCanUpdate){
+                is IsCanUpsertResult.Ok -> ""
+                else -> isCanUpdate.message
             }
         }
-        else{
-            isNameAllowed.mapTo {  }
+        return if (isCanUpdateResult is RequestResult.Success){
+            if (!isCanUpdateResult.data.isBlank()) RequestResult.Error<Unit>(message = isCanUpdateResult.data)
+            else update(item)
+        } else {
+            RequestResult.Error(message = isCanUpdateResult.data)
         }
     }
+
     suspend fun getInit(id: Int): RequestResult<I> {
         return dbSafeCall(tag) {
             loadItem(id)

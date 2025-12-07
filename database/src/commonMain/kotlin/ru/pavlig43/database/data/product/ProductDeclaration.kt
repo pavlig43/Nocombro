@@ -39,7 +39,7 @@ data class ProductDeclaration(
 ):GenericDeclarationIn
 
 
-data class ProductDeclarationOutWithNameAndVendor(
+data class ProductDeclarationOut(
     override val id: Int,
     override val productId: Int,
     override val declarationId: Int,

@@ -42,6 +42,7 @@ include(":corekoin")
 include(":database")
 include(":datastore")
 include(":theme")
+
 include(":features:itemlist",)
 
 include(
@@ -49,10 +50,9 @@ include(
     ":features:form:product",
     ":features:form:vendor",
     ":features:form:declaration",
+    ":features:form:transaction",
 )
-include(
-    ":features:form",
-)
+
 include(
     ":features:manageitem:upsert",
     ":features:manageitem:addfile",
@@ -66,11 +66,5 @@ include(
 )
 
 include(":features:notification")
-include(
-    ":features:declarationtabslot",
+include(":features:declarationtabslot",)
 
-    )
-include(":features:storage")
-include(
-    ":features:transaction:transactionform",
-)

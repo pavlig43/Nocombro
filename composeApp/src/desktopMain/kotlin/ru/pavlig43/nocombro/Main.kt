@@ -34,7 +34,7 @@ fun main() {
 
         Window(
             onCloseRequest = ::exitApplication,
-//            alwaysOnTop = true,
+            alwaysOnTop = true,
             title = "Nocombro",
             state = windowState
         ) {

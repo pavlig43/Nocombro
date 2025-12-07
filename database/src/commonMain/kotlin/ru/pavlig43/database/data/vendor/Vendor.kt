@@ -11,7 +11,7 @@ const val VENDOR_TABLE_NAME = "vendor"
 data class Vendor(
 
     @ColumnInfo("display_name")
-    override val displayName: String = "",
+    val displayName: String = "",
 
     val comment:String ="",
 

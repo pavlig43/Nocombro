@@ -2,7 +2,6 @@ package ru.pavlig43.database.data.transaction
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
-import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import ru.pavlig43.core.data.GenericItem
 
@@ -17,8 +16,8 @@ data class ProductTransaction(
     @ColumnInfo("operation_type")
     val operationType: OperationType,
 
-    @ColumnInfo("date")
-    val date: Long,
+    @ColumnInfo("created_at")
+    val createdAt: Long,
 
     @ColumnInfo("comment")
     val comment: String,
@@ -29,10 +28,7 @@ data class ProductTransaction(
     @PrimaryKey(autoGenerate = true)
     override val id: Int = 0,
 
-):GenericItem{
-    @Ignore
-    override val displayName: String = "stub"
-}
+    ):GenericItem
 
 data class ProductTransactionIn(
     val transactionForSave:ProductTransaction,

@@ -52,7 +52,7 @@ class PageNotificationComponent(
                 NotificationLevel.Two,
             ),
             serializer = NotificationLevel.serializer(),
-            slotFactory = { context, tabConfig: NotificationLevel, _: (NotificationLevel) -> Unit, _: () -> Unit ->
+            slotFactory = { context, tabConfig: NotificationLevel, _: () -> Unit ->
                 when (tabConfig) {
                     NotificationLevel.Zero -> createLevelComponent(
                         context = context,

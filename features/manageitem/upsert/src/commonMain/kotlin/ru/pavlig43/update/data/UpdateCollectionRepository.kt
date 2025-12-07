@@ -5,19 +5,19 @@ import ru.pavlig43.core.data.ChangeSet
 import ru.pavlig43.core.data.CollectionObject
 import ru.pavlig43.core.data.dbSafeCall
 
-class UpdateCollectionRepository<Out: CollectionObject,In : CollectionObject>(
+class UpdateCollectionRepository<DBOut: CollectionObject,DBIn : CollectionObject>(
     private val tag: String,
-    private val loadCollection: suspend (parentId: Int) -> List<Out>,
+    private val loadCollection: suspend (parentId: Int) -> List<DBOut>,
     private val deleteCollection: suspend (ids: List<Int>) -> Unit,
-    private val upsertCollection: suspend (collection: List<In>) -> Unit
+    private val upsertCollection: suspend (collection: List<DBIn>) -> Unit
 )  {
-    suspend fun getInit(id: Int): RequestResult<List<Out>> {
+    suspend fun getInit(id: Int): RequestResult<List<DBOut>> {
         return dbSafeCall(tag) {
             loadCollection(id)
         }
     }
 
-    suspend fun update(changeSet: ChangeSet<List<In>>): RequestResult<Unit> {
+    suspend fun update(changeSet: ChangeSet<List<DBIn>>): RequestResult<Unit> {
         return dbSafeCall(tag) {
             val (old, new) = changeSet
             val newById = new.associateBy { it.id }

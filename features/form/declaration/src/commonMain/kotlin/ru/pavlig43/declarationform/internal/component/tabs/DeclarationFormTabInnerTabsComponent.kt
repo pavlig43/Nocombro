@@ -36,7 +36,7 @@ internal class DeclarationFormTabInnerTabsComponent(
                 DeclarationTab.Files
             ),
             serializer = DeclarationTab.serializer(),
-            slotFactory = { context, tabConfig: DeclarationTab, _: (DeclarationTab) -> Unit, _: () -> Unit ->
+            slotFactory = { context, tabConfig: DeclarationTab,  _: () -> Unit ->
                 when (tabConfig) {
 
                     DeclarationTab.Essentials -> EssentialTabSlot(

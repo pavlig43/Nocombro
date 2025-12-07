@@ -19,7 +19,6 @@ class TabNavigationComponent<TabConfiguration : Any, SlotComponent : Any>(
     private val slotFactory: (
         componentContext: ComponentContext,
         config: TabConfiguration,
-        openNewTab: (TabConfiguration) -> Unit,
         closeTab: () -> Unit,
     ) -> SlotComponent
 ) : ComponentContext by componentContext {
@@ -66,7 +65,6 @@ class TabNavigationComponent<TabConfiguration : Any, SlotComponent : Any>(
                 slotFactory(
                     componentContext,
                     configuration,
-                    ::addTab,
                     { onCloseTab(configuration) }
                 )
             },

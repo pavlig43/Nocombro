@@ -1,8 +1,9 @@
 package ru.pavlig43.declarationform.internal.ui
 
 import androidx.compose.runtime.Composable
-import ru.pavlig43.coreui.coreFieldBlock.BestBeforeFieldBlock
-import ru.pavlig43.coreui.coreFieldBlock.IsObserveNotificationFieldBlock
+import ru.pavlig43.core.convertToDate
+import ru.pavlig43.coreui.coreFieldBlock.DateFieldBlock
+import ru.pavlig43.coreui.coreFieldBlock.LabelCheckBoxFieldBlock
 import ru.pavlig43.coreui.coreFieldBlock.NameFieldBlock
 import ru.pavlig43.coreui.coreFieldBlock.VendorFieldBlock
 import ru.pavlig43.declarationform.internal.data.DeclarationEssentialsUi
@@ -21,13 +22,16 @@ internal fun DeclarationFields(
         declaration.vendorName,
         onOpenVendorDialog = onOpenVendorDialog
     )
-    BestBeforeFieldBlock(
+    DateFieldBlock(
         date = declaration.bestBefore,
-        onSelectDate = { updateDeclaration(declaration.copy(bestBefore = it)) }
+        onSelectDate = { updateDeclaration(declaration.copy(bestBefore = it)) },
+        dateName = "Истекает",
+        convertDateToUi = { this.convertToDate()}
     )
-    IsObserveNotificationFieldBlock(
-        isObserveFromNotification = declaration.isObserveFromNotification,
-        onCheckedNotificationVisible = {updateDeclaration(declaration.copy(isObserveFromNotification = it))},
+    LabelCheckBoxFieldBlock(
+        checked = declaration.isObserveFromNotification,
+        onChangeChecked = {updateDeclaration(declaration.copy(isObserveFromNotification = it))},
+        label = "Отслеживать в оповещениях"
     )
 
 }

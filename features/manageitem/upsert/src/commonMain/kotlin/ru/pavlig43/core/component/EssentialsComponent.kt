@@ -24,7 +24,7 @@ data class EssentialComponentFactory<I : GenericItem, T : ItemEssentialsUi>(
 
 abstract class EssentialsComponent<I : GenericItem, T : ItemEssentialsUi>(
     componentContext: ComponentContext,
-    private val componentFactory: EssentialComponentFactory<I,T>,
+    private val componentFactory: EssentialComponentFactory<I, T>,
     getInitData: (suspend () -> RequestResult<I>)?,
 ) : ComponentContext by componentContext {
     protected val coroutineScope = componentCoroutineScope()
@@ -35,7 +35,12 @@ abstract class EssentialsComponent<I : GenericItem, T : ItemEssentialsUi>(
     val initDataComponent = LoadInitDataComponent<T>(
         componentContext = childContext("init"),
         getInitData = {
-            getInitData?.invoke()?.mapTo { item -> componentFactory.mapperToUi(item) } ?: RequestResult.Success(
+            getInitData?.invoke()?.mapTo { item ->
+                componentFactory.mapperToUi(item).also {
+                    componentFactory.vendorInfoForTabName(it)
+                }
+
+            } ?: RequestResult.Success(
                 componentFactory.initItem
             )
 
@@ -59,7 +64,6 @@ abstract class EssentialsComponent<I : GenericItem, T : ItemEssentialsUi>(
         SharingStarted.Eagerly,
         false
     )
-
 
 }
 

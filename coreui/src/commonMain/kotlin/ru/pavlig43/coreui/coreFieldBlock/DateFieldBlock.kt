@@ -24,13 +24,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
-import ru.pavlig43.core.convertToDate
 import ru.pavlig43.coreui.tooltip.IconButtonToolTip
 
 @Composable
-fun BestBeforeFieldBlock(
+fun DateFieldBlock(
     date: Long?,
     onSelectDate: (Long?) -> Unit,
+    dateName: String,
+    convertDateToUi: Long.()-> String,
     modifier: Modifier = Modifier
 ) {
 
@@ -40,9 +41,9 @@ fun BestBeforeFieldBlock(
         horizontalArrangement = Arrangement.spacedBy(4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text("Истекает")
+        Text(dateName)
         if (date != null) {
-            Text(date.convertToDate(), textDecoration = TextDecoration.Underline)
+            Text(date.convertDateToUi(), textDecoration = TextDecoration.Underline)
         }
         var isDatePickerVisible by remember { mutableStateOf(false) }
         IconButtonToolTip(

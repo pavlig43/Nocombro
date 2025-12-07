@@ -39,7 +39,7 @@ internal class VendorFormTabInnerTabsComponent(
                 VendorTab.Files,
             ),
             serializer = VendorTab.serializer(),
-            slotFactory = { context, tabConfig: VendorTab, _: (VendorTab) -> Unit, _: () -> Unit ->
+            slotFactory = { context, tabConfig: VendorTab,  _: () -> Unit ->
                 when (tabConfig) {
 
                     VendorTab.Essentials -> EssentialTabSlot(

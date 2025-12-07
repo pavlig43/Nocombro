@@ -7,31 +7,42 @@ sealed interface TabConfig{
 
     @Serializable
     class Notification:TabConfig
+    @Serializable
+    sealed interface ItemList: TabConfig{
+        @Serializable
+        class DocumentList : ItemList
+
+        @Serializable
+        class ProductList : ItemList
+
+        @Serializable
+        class VendorList:ItemList
+
+        @Serializable
+        class DeclarationList:ItemList
+    }
+
 
     @Serializable
-    class DocumentList : TabConfig
+    sealed interface ItemForm: TabConfig{
+        @Serializable
+        class DocumentForm(val id:Int):ItemForm
 
-    @Serializable
-    class DocumentForm(val id:Int):TabConfig
+        @Serializable
+        class ProductForm(val id:Int): ItemForm
 
-    @Serializable
-    class ProductList : TabConfig
-
-    @Serializable
-    class ProductForm(val id:Int): TabConfig
+        @Serializable
+        class VendorForm(val id:Int):ItemForm
 
 
-    @Serializable
-    class VendorList:TabConfig
 
-    @Serializable
-    class VendorForm(val id:Int):TabConfig
+        @Serializable
+        class DeclarationForm(val id:Int):ItemForm
 
-    @Serializable
-    class DeclarationList:TabConfig
+        @Serializable
+        class TransactionForm(val id:Int):ItemForm
+    }
 
-    @Serializable
-    class DeclarationForm(val id:Int):TabConfig
 
 
 

@@ -23,7 +23,7 @@ const val DECLARATIONS_TABLE_NAME = "declaration"
 data class Declaration(
 
     @ColumnInfo("display_name")
-    override val displayName: String,
+    val displayName: String,
 
     @ColumnInfo("created_at")
      val createdAt: Long,

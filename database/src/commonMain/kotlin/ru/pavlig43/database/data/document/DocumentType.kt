@@ -7,7 +7,4 @@ enum class DocumentType(override val displayName: String): ItemType {
     GOST("ГОСТ"),
     SPECIFICATION("Спецификация");
 
-    override val bdName: String = name
-
-
 }

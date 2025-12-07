@@ -6,7 +6,4 @@ enum class ProductType(override val displayName: String): ItemType {
     NOCOMBRO_SPICE("Готовый НОКОМБРО"),
     BASE("Базовый продукт")
 
-    ;
-
-    override val bdName: String = name
 }
