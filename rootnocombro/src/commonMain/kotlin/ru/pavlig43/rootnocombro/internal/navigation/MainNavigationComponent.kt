@@ -7,11 +7,13 @@ import ru.pavlig43.core.SlotComponent
 import ru.pavlig43.core.tabs.TabNavigationComponent
 import ru.pavlig43.database.data.document.DocumentType
 import ru.pavlig43.database.data.product.ProductType
+import ru.pavlig43.database.data.transaction.TransactionType
 import ru.pavlig43.declarationform.api.DeclarationFormComponent
 import ru.pavlig43.document.api.component.DocumentFormComponent
 import ru.pavlig43.itemlist.api.DeclarationListParamProvider
 import ru.pavlig43.itemlist.api.DocumentListParamProvider
 import ru.pavlig43.itemlist.api.ProductListParamProvider
+import ru.pavlig43.itemlist.api.TransactionListParamProvider
 import ru.pavlig43.itemlist.api.VendorListParamProvider
 import ru.pavlig43.itemlist.api.component.ItemListFactoryComponent
 import ru.pavlig43.notification.api.component.PageNotificationComponent
@@ -22,7 +24,9 @@ import ru.pavlig43.rootnocombro.internal.navigation.drawer.component.DrawerDesti
 import ru.pavlig43.rootnocombro.internal.navigation.drawer.component.IDrawerComponent
 import ru.pavlig43.rootnocombro.internal.navigation.tab.TabConfig
 import ru.pavlig43.rootnocombro.internal.navigation.tab.TabConfig.ItemForm
+import ru.pavlig43.rootnocombro.internal.navigation.tab.TabConfig.ItemForm.*
 import ru.pavlig43.rootnocombro.internal.navigation.tab.TabConfig.ItemList
+import ru.pavlig43.rootnocombro.internal.navigation.tab.TabConfig.ItemList.*
 import ru.pavlig43.rootnocombro.internal.navigation.tab.TabConfig.Notification
 import ru.pavlig43.transaction.api.component.TransactionFormComponent
 import ru.pavlig43.vendor.component.VendorFormComponent
@@ -57,10 +61,11 @@ internal class MainNavigationComponent(
 
     private fun DrawerDestination.toTabConfig(): TabConfig =
         when (this) {
-            DrawerDestination.DocumentList -> ItemList.DocumentList()
-            DrawerDestination.ProductList -> ItemList.ProductList()
-            DrawerDestination.VendorList -> ItemList.VendorList()
-            DrawerDestination.DeclarationList -> ItemList.DeclarationList()
+            DrawerDestination.DocumentList -> DocumentList()
+            DrawerDestination.ProductList -> ProductList()
+            DrawerDestination.VendorList -> VendorList()
+            DrawerDestination.DeclarationList -> DeclarationList()
+            DrawerDestination.ProductTransactionList -> ProductTransactionList()
         }
 
     override val tabNavigationComponent: TabNavigationComponent<TabConfig, SlotComponent> =
@@ -90,9 +95,9 @@ internal class MainNavigationComponent(
 
     private fun openTabFromNotification(item: NotificationItem, id: Int) {
         val tab = when (item) {
-            NotificationItem.Document -> ItemForm.DocumentForm(id)
-            NotificationItem.Product -> ItemForm.ProductForm(id)
-            NotificationItem.Declaration -> ItemForm.DeclarationForm(id)
+            NotificationItem.Document -> DocumentForm(id)
+            NotificationItem.Product -> ProductForm(id)
+            NotificationItem.Declaration -> DeclarationForm(id)
         }
         tabNavigationComponent.addTab(tab)
     }
@@ -116,13 +121,18 @@ internal class MainNavigationComponent(
             )
 
             is ItemList.VendorList -> VendorListParamProvider(withCheckbox = true)
+            is ItemList.ProductTransactionList -> TransactionListParamProvider(
+                fullListTransactionTypes = TransactionType.entries,
+                withCheckbox = true
+            )
         }
 
         fun itemForm(id: Int) = when (tabConfig) {
-            is ItemList.DeclarationList -> ItemForm.DeclarationForm(id)
-            is ItemList.DocumentList -> ItemForm.DocumentForm(id)
-            is ItemList.ProductList -> ItemForm.ProductForm(id)
-            is ItemList.VendorList -> ItemForm.VendorForm(id)
+            is ItemList.DeclarationList -> DeclarationForm(id)
+            is ItemList.DocumentList -> DocumentForm(id)
+            is ItemList.ProductList -> ProductForm(id)
+            is ItemList.VendorList -> VendorForm(id)
+            is ItemList.ProductTransactionList -> TransactionForm(id)
         }
         return ItemListFactoryComponent(
             componentContext = context,

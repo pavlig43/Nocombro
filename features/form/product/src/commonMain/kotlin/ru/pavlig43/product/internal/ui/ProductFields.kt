@@ -13,7 +13,6 @@ internal fun ProductFields(
     product: ProductEssentialsUi,
     updateProduct: (ProductEssentialsUi) -> Unit,
 ) {
-    Text("ffs4856")
     NameFieldBlock(
         product.displayName,
         { updateProduct(product.copy(displayName = it)) }

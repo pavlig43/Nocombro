@@ -12,7 +12,7 @@ detektCompose = "0.5.1"
 detektDecompose = "0.2.0"
 kotlinxDatetime = "0.7.1"
 buildkonfig = "6.0.6"
-composeHotReload= "1.1.0-alpha02"
+composeHotReload= "1.0.0"
 compose-multiplatform = "1.9.3"
 datastore = "1.2.0"
 decompose = "3.4.0"
@@ -26,6 +26,7 @@ kotlin = "2.2.21"
 kotlinx-coroutines = "1.10.2"
 ksp = "2.3.3"
 ktor = "3.3.3"
+datetimeWheelPicker = "1.1.0-alpha05-compose1.9"
 
 logback = "1.5.21"
 room = "2.8.4"
@@ -97,6 +98,7 @@ decompose-compose = { module = "com.arkivanov.decompose:extensions-compose", ver
 
 #time
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinxDatetime" }
+datetime-wheel-picker = { module = "io.github.darkokoa:datetime-wheel-picker", version.ref = "datetimeWheelPicker" }
 
 #lint
 detekt-formatting = { module = "io.gitlab.arturbosch.detekt:detekt-formatting", version.ref = "detekt" }

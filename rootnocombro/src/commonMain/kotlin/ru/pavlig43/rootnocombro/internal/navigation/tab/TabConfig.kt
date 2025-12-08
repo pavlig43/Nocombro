@@ -20,6 +20,9 @@ sealed interface TabConfig{
 
         @Serializable
         class DeclarationList:ItemList
+
+        @Serializable
+        class ProductTransactionList:ItemList
     }
 
 

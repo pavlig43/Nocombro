@@ -13,12 +13,14 @@ import ru.pavlig43.itemlist.api.DocumentListParamProvider
 import ru.pavlig43.itemlist.api.ItemListDependencies
 import ru.pavlig43.itemlist.api.ItemListParamProvider
 import ru.pavlig43.itemlist.api.ProductListParamProvider
+import ru.pavlig43.itemlist.api.TransactionListParamProvider
 import ru.pavlig43.itemlist.api.VendorListParamProvider
 import ru.pavlig43.itemlist.api.data.IItemUi
 import ru.pavlig43.itemlist.internal.component.DeclarationListComponent
 import ru.pavlig43.itemlist.internal.component.DocumentsListComponent
 import ru.pavlig43.itemlist.internal.component.IListComponent
 import ru.pavlig43.itemlist.internal.component.ProductListComponent
+import ru.pavlig43.itemlist.internal.component.TransactionListComponent
 import ru.pavlig43.itemlist.internal.component.VendorListComponent
 import ru.pavlig43.itemlist.internal.di.moduleFactory
 
@@ -66,6 +68,14 @@ class ItemListFactoryComponent(
             onItemClick = onItemClick,
             vendorListRepository = scope.get(),
             paramProvider = itemListParamProvider
+        )
+
+        is TransactionListParamProvider -> TransactionListComponent(
+            componentContext = componentContext,
+            onCreate = onCreate,
+            onItemClick = onItemClick,
+            paramProvider = itemListParamProvider,
+            listRepository = scope.get()
         )
     }
 

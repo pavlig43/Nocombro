@@ -2,6 +2,7 @@ package ru.pavlig43.transaction.internal.di
 
 import org.koin.dsl.module
 import ru.pavlig43.create.data.CreateEssentialsRepository
+import ru.pavlig43.database.DataBaseTransaction
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.transaction.ProductTransaction
@@ -12,9 +13,10 @@ import ru.pavlig43.update.data.UpdateEssentialsRepository
 internal fun createTransactionFormModule(dependencies: TransactionFormDependencies) = listOf(
     module {
         single<NocombroDatabase> { dependencies.db }
+        single<DataBaseTransaction> { dependencies.dbTransaction }
         single<ItemListDependencies> { dependencies.itemListDependencies }
         single<CreateEssentialsRepository<ProductTransaction>> { getCreateRepository(get()) }
-        single<UpdateEssentialsRepository<Product>> { getUpdateRepository(get()) }
+        single<UpdateEssentialsRepository<ProductTransaction>> { getUpdateRepository(get()) }
 
 
 
@@ -50,13 +52,13 @@ private fun getCreateRepository(
 
 private fun getUpdateRepository(
     db: NocombroDatabase
-): UpdateEssentialsRepository<Product> {
-    val dao = db.productDao
+): UpdateEssentialsRepository<ProductTransaction> {
+    val dao = db.productTransactionDao
     return UpdateEssentialsRepository(
-        tag = "Update Product sRepository",
+        tag = "Update Transaction Repository",
         isCanSave = dao::isCanSave,
-        loadItem = dao::getProduct,
-        updateItem = dao::updateProduct
+        loadItem = dao::getProductTransaction,
+        updateItem = dao::updateTransaction
     )
 }
 

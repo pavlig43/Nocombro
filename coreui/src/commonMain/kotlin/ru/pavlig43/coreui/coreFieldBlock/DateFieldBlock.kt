@@ -13,6 +13,7 @@ import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TimePickerDialog
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -53,13 +54,14 @@ fun DateFieldBlock(
         )
 
         if (isDatePickerVisible) {
-            DatePickerDialogSample(
-                date = date,
-                onSelectDate = onSelectDate,
-                isShowDialog = isDatePickerVisible,
-                onDismissRequest = { isDatePickerVisible = false },
-
-                )
+            DateTimePicker()
+//            DatePickerDialogSample(
+//                date = date,
+//                onSelectDate = onSelectDate,
+//                isShowDialog = isDatePickerVisible,
+//                onDismissRequest = { isDatePickerVisible = false },
+//
+//                )
         }
 
 

@@ -30,12 +30,3 @@ data class ProductTransaction(
 
     ):GenericItem
 
-data class ProductTransactionIn(
-    val transactionForSave:ProductTransaction,
-    val products:List<TransactionRow>
-):GenericItem by transactionForSave
-
-data class ProductTransactionOut(
-    val transaction:ProductTransaction,
-    val productRows:List<TransactionRowOut>
-):GenericItem by transaction

@@ -7,6 +7,7 @@ import ru.pavlig43.itemlist.api.ItemListDependencies
 import ru.pavlig43.itemlist.internal.component.DeclarationListRepository
 import ru.pavlig43.itemlist.internal.component.DocumentListRepository
 import ru.pavlig43.itemlist.internal.component.ProductListRepository
+import ru.pavlig43.itemlist.internal.component.TransactionListRepository
 import ru.pavlig43.itemlist.internal.component.VendorListRepository
 
 internal fun moduleFactory(dependencies: ItemListDependencies) = listOf(
@@ -16,5 +17,6 @@ internal fun moduleFactory(dependencies: ItemListDependencies) = listOf(
         factoryOf(::DeclarationListRepository)
         factoryOf(::ProductListRepository)
         factoryOf(::VendorListRepository)
+        factoryOf(::TransactionListRepository)
     }
 )
