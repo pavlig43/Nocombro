@@ -3,7 +3,6 @@ package ru.pavlig43.declarationform.internal.data
 import ru.pavlig43.core.data.ItemEssentialsUi
 import ru.pavlig43.core.getUTCNow
 import ru.pavlig43.database.data.declaration.Declaration
-import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
 data class DeclarationEssentialsUi(

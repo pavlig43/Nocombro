@@ -1,6 +1,5 @@
 package ru.pavlig43.product.internal.ui
 
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import ru.pavlig43.coreui.coreFieldBlock.CommentFieldBlock
 import ru.pavlig43.coreui.coreFieldBlock.ItemTypeField

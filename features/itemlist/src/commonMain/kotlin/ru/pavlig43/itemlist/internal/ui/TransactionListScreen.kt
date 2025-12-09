@@ -6,19 +6,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.room.ColumnInfo
-import androidx.room.PrimaryKey
 import ru.pavlig43.core.DateFieldKind
 import ru.pavlig43.core.convertToDateOrDateTimeString
-
 import ru.pavlig43.coreui.SearchTextField
-import ru.pavlig43.database.data.document.DocumentType
-import ru.pavlig43.database.data.transaction.OperationType
 import ru.pavlig43.database.data.transaction.TransactionType
 import ru.pavlig43.itemlist.internal.BaseFilterComponent
 import ru.pavlig43.itemlist.internal.ItemFilter
-import ru.pavlig43.itemlist.internal.component.DocumentItemUi
-import ru.pavlig43.itemlist.internal.component.DocumentsListComponent
 import ru.pavlig43.itemlist.internal.component.TransactionItemUi
 import ru.pavlig43.itemlist.internal.component.TransactionListComponent
 import ru.pavlig43.itemlist.internal.ui.core.ColumnDefinition

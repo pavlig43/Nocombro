@@ -4,7 +4,6 @@ import org.koin.dsl.module
 import ru.pavlig43.create.data.CreateEssentialsRepository
 import ru.pavlig43.database.DataBaseTransaction
 import ru.pavlig43.database.NocombroDatabase
-import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.transaction.ProductTransaction
 import ru.pavlig43.itemlist.api.ItemListDependencies
 import ru.pavlig43.transaction.api.TransactionFormDependencies

@@ -39,7 +39,6 @@ import ru.pavlig43.database.data.vendor.Vendor
 import ru.pavlig43.database.data.vendor.VendorFile
 import ru.pavlig43.database.data.vendor.dao.VendorDao
 import ru.pavlig43.database.data.vendor.dao.VendorFilesDao
-import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
 @Database(

@@ -2,10 +2,10 @@ package ru.pavlig43.declarationform.internal.ui
 
 import androidx.compose.runtime.Composable
 import ru.pavlig43.core.DateFieldKind
-import ru.pavlig43.coreui.coreFieldBlock.datetime.DateFieldBlock
 import ru.pavlig43.coreui.coreFieldBlock.LabelCheckBoxFieldBlock
 import ru.pavlig43.coreui.coreFieldBlock.NameFieldBlock
 import ru.pavlig43.coreui.coreFieldBlock.VendorFieldBlock
+import ru.pavlig43.coreui.coreFieldBlock.datetime.DateFieldBlock
 import ru.pavlig43.declarationform.internal.data.DeclarationEssentialsUi
 
 @Composable

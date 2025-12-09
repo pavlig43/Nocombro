@@ -4,7 +4,6 @@ import ru.pavlig43.core.data.ItemEssentialsUi
 import ru.pavlig43.core.getUTCNow
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductType
-import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
 internal data class ProductEssentialsUi(

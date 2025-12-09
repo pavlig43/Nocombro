@@ -5,7 +5,6 @@ import ru.pavlig43.core.getUTCNow
 import ru.pavlig43.database.data.transaction.OperationType
 import ru.pavlig43.database.data.transaction.ProductTransaction
 import ru.pavlig43.database.data.transaction.TransactionType
-import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalTime::class)

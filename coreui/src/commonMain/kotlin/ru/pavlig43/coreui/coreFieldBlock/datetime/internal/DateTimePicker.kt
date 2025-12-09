@@ -27,12 +27,12 @@ internal fun DateTimePicker(
     onDateTimeChange: (Long) -> Unit
 ) {
     WheelDateTimePicker(
-        startDateTime = Instant.Companion.fromEpochMilliseconds(dateTime)
+        startDateTime = Instant.fromEpochMilliseconds(dateTime)
             .toLocalDateTime(timeZone),
         dateFormatter = dateFormatter(
-            locale = Locale.Companion.current,
+            locale = Locale.current,
             monthDisplayStyle = MonthDisplayStyle.SHORT,
-            cjkSuffixConfig = CjkSuffixConfig.Companion.HideAll
+            cjkSuffixConfig = CjkSuffixConfig.HideAll
         ),
         timeFormatter = timeFormatter(
             timeFormat = TimeFormat.HOUR_24

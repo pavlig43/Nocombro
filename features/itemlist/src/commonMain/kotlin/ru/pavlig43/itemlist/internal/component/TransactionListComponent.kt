@@ -10,8 +10,6 @@ import ru.pavlig43.core.RequestResult
 import ru.pavlig43.core.data.dbSafeCall
 import ru.pavlig43.core.data.dbSafeFlow
 import ru.pavlig43.database.NocombroDatabase
-import ru.pavlig43.database.data.document.Document
-import ru.pavlig43.database.data.document.DocumentType
 import ru.pavlig43.database.data.transaction.OperationType
 import ru.pavlig43.database.data.transaction.ProductTransaction
 import ru.pavlig43.database.data.transaction.TransactionType

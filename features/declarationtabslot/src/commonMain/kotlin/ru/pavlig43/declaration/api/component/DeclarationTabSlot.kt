@@ -24,7 +24,6 @@ import ru.pavlig43.itemlist.api.component.MBSItemListComponent
 import ru.pavlig43.itemlist.internal.component.DeclarationItemUi
 import ru.pavlig43.loadinitdata.api.component.LoadInitDataComponent
 import ru.pavlig43.update.data.UpdateCollectionRepository
-import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
 abstract class DeclarationTabSlot<Out : GenericDeclarationOut, In : GenericDeclarationIn>(
