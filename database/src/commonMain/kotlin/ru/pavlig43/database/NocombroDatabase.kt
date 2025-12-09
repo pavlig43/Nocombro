@@ -12,6 +12,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import ru.pavlig43.core.RequestResult
+import ru.pavlig43.core.getUTCNow
 import ru.pavlig43.database.data.common.Converters
 import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.database.data.declaration.DeclarationFile
@@ -158,21 +159,21 @@ suspend fun initData(db: NocombroDatabase) {
             Product(
                 type = ProductType.BASE,
                 displayName = "Соль",
-                createdAt = Clock.System.now().toEpochMilliseconds(),
+                createdAt = getUTCNow(),
                 comment = "",
                 id = 1
             ),
             Product(
                 type = ProductType.NOCOMBRO_SPICE,
                 displayName = "БАварские",
-                createdAt = Clock.System.now().toEpochMilliseconds(),
+                createdAt = getUTCNow(),
                 comment = "",
                 id = 2
             ),
             Product(
                 type = ProductType.BASE,
                 displayName = "Декстроза",
-                createdAt = Clock.System.now().toEpochMilliseconds(),
+                createdAt = getUTCNow(),
                 comment = "",
                 id = 3
             )
@@ -197,7 +198,7 @@ suspend fun initData(db: NocombroDatabase) {
         val declaration = listOf(
             Declaration(
                 displayName = "Декларация ингре",
-                createdAt = Clock.System.now().toEpochMilliseconds(),
+                createdAt = getUTCNow(),
                 vendorId = 1,
                 vendorName = "Ингре",
                 bestBefore = 0,
@@ -206,7 +207,7 @@ suspend fun initData(db: NocombroDatabase) {
             ),
             Declaration(
                 displayName = "Декларация стоинг",
-                createdAt = Clock.System.now().toEpochMilliseconds(),
+                createdAt = getUTCNow(),
                 vendorId = 2,
                 vendorName = "Стоинг",
                 bestBefore = 0,
@@ -215,7 +216,7 @@ suspend fun initData(db: NocombroDatabase) {
             ),
             Declaration(
                 displayName = "Декларация рустарк",
-                createdAt = Clock.System.now().toEpochMilliseconds(),
+                createdAt = getUTCNow(),
                 vendorId = 3,
                 vendorName = "Рустарк",
                 bestBefore = 0,

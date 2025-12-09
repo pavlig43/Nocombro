@@ -1,9 +1,9 @@
 package ru.pavlig43.transaction.internal.ui
 
 import androidx.compose.runtime.Composable
-import ru.pavlig43.core.convertToDateTime
+import ru.pavlig43.core.DateFieldKind
 import ru.pavlig43.coreui.coreFieldBlock.CommentFieldBlock
-import ru.pavlig43.coreui.coreFieldBlock.DateFieldBlock
+import ru.pavlig43.coreui.coreFieldBlock.datetime.DateFieldBlock
 import ru.pavlig43.coreui.coreFieldBlock.ItemTypeField
 import ru.pavlig43.coreui.coreFieldBlock.LabelCheckBoxFieldBlock
 import ru.pavlig43.database.data.transaction.OperationType
@@ -17,10 +17,10 @@ internal fun TransactionFields(
 ) {
 
     DateFieldBlock(
-        date = transaction.createdAt,
+        dateTime = transaction.createdAt,
         onSelectDate = { updateTransaction(transaction.copy(createdAt = it)) },
         dateName = "Дата время проведения",
-        convertDateToUi = {this.convertToDateTime()}
+        dateFieldKind = DateFieldKind.DateTime
     )
     ItemTypeField(
         typeVariants = OperationType.entries,

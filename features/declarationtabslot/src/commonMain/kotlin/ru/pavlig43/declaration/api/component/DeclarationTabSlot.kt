@@ -15,6 +15,7 @@ import ru.pavlig43.core.RequestResult
 import ru.pavlig43.core.data.ChangeSet
 import ru.pavlig43.core.data.GenericDeclarationIn
 import ru.pavlig43.core.data.GenericDeclarationOut
+import ru.pavlig43.core.getUTCNow
 import ru.pavlig43.core.mapTo
 import ru.pavlig43.declaration.api.data.ItemDeclarationUi
 import ru.pavlig43.itemlist.api.DeclarationListParamProvider
@@ -147,7 +148,7 @@ private fun <D : GenericDeclarationOut> D.toDeclarationUi(composeKey: Int): Item
     return ItemDeclarationUi(
         id = id,
         declarationId = declarationId,
-        isActual = bestBefore > Clock.System.now().toEpochMilliseconds(),
+        isActual = bestBefore > getUTCNow(),
         composeKey = composeKey,
         declarationName = declarationName,
         vendorName = vendorName,

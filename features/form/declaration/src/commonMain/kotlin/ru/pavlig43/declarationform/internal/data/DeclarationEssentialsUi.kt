@@ -1,6 +1,7 @@
 package ru.pavlig43.declarationform.internal.data
 
 import ru.pavlig43.core.data.ItemEssentialsUi
+import ru.pavlig43.core.getUTCNow
 import ru.pavlig43.database.data.declaration.Declaration
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
@@ -20,7 +21,7 @@ data class DeclarationEssentialsUi(
 internal fun DeclarationEssentialsUi.toDto(): Declaration {
     return Declaration(
         displayName = displayName,
-        createdAt = createdAt ?: Clock.System.now().toEpochMilliseconds(),
+        createdAt = createdAt ?: getUTCNow(),
         id = id,
         vendorId = vendorId ?: throw IllegalArgumentException("VendorId  required"),
         vendorName = vendorName ?: throw IllegalArgumentException("Vendor name required"),

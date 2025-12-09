@@ -6,8 +6,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import ru.pavlig43.core.convertToDate
-import ru.pavlig43.core.convertToDateTime
+import ru.pavlig43.core.DateFieldKind
+import ru.pavlig43.core.convertToDateOrDateTimeString
+
+
 import ru.pavlig43.coreui.SearchTextField
 import ru.pavlig43.itemlist.internal.BaseFilterComponent
 import ru.pavlig43.itemlist.internal.ItemFilter
@@ -39,12 +41,12 @@ private val columnDefinition = listOf<ColumnDefinition<DeclarationItemUi>>(
     ColumnDefinition(
         title = CREATED_AT,
         width = CREATED_AT_WIDTH,
-        valueProvider = { it.createdAt.convertToDateTime() }
+        valueProvider = { it.createdAt.convertToDateOrDateTimeString(DateFieldKind.Date) }
     ),
     ColumnDefinition(
         title = BEST_BEFORE_AT,
         width = CREATED_AT_WIDTH,
-        valueProvider = { it.bestBefore.convertToDate() }
+        valueProvider = { it.bestBefore.convertToDateOrDateTimeString(DateFieldKind.Date) }
     ),
 
 )

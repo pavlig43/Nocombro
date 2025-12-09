@@ -1,8 +1,8 @@
 package ru.pavlig43.declarationform.internal.ui
 
 import androidx.compose.runtime.Composable
-import ru.pavlig43.core.convertToDate
-import ru.pavlig43.coreui.coreFieldBlock.DateFieldBlock
+import ru.pavlig43.core.DateFieldKind
+import ru.pavlig43.coreui.coreFieldBlock.datetime.DateFieldBlock
 import ru.pavlig43.coreui.coreFieldBlock.LabelCheckBoxFieldBlock
 import ru.pavlig43.coreui.coreFieldBlock.NameFieldBlock
 import ru.pavlig43.coreui.coreFieldBlock.VendorFieldBlock
@@ -23,10 +23,10 @@ internal fun DeclarationFields(
         onOpenVendorDialog = onOpenVendorDialog
     )
     DateFieldBlock(
-        date = declaration.bestBefore,
+        dateTime = declaration.bestBefore,
         onSelectDate = { updateDeclaration(declaration.copy(bestBefore = it)) },
         dateName = "Истекает",
-        convertDateToUi = { this.convertToDate()}
+        dateFieldKind = DateFieldKind.Date
     )
     LabelCheckBoxFieldBlock(
         checked = declaration.isObserveFromNotification,

@@ -1,6 +1,7 @@
 package ru.pavlig43.transaction.internal.data
 
 import ru.pavlig43.core.data.ItemEssentialsUi
+import ru.pavlig43.core.getUTCNow
 import ru.pavlig43.database.data.transaction.OperationType
 import ru.pavlig43.database.data.transaction.ProductTransaction
 import ru.pavlig43.database.data.transaction.TransactionType
@@ -13,7 +14,7 @@ internal data class TransactionEssentialsUi(
 
     val operationType: OperationType? = null,
 
-    val createdAt: Long? = Clock.System.now().toEpochMilliseconds(),
+    val createdAt: Long? = getUTCNow(),
 
     val comment: String ="",
 

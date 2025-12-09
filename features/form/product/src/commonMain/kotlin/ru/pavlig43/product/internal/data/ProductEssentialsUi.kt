@@ -1,6 +1,7 @@
 package ru.pavlig43.product.internal.data
 
 import ru.pavlig43.core.data.ItemEssentialsUi
+import ru.pavlig43.core.getUTCNow
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductType
 import kotlin.time.Clock
@@ -31,7 +32,7 @@ internal fun ProductEssentialsUi.toDto(): Product {
     return Product(
         type = type?: throw IllegalArgumentException("product type require") ,
         displayName = displayName,
-        createdAt = createdAt?: Clock.System.now().toEpochMilliseconds(),
+        createdAt = createdAt?: getUTCNow(),
         comment = comment,
         id = id
     )

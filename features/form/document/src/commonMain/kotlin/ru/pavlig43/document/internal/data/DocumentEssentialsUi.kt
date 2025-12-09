@@ -1,6 +1,7 @@
 package ru.pavlig43.document.internal.data
 
 import ru.pavlig43.core.data.ItemEssentialsUi
+import ru.pavlig43.core.getUTCNow
 import ru.pavlig43.database.data.document.Document
 import ru.pavlig43.database.data.document.DocumentType
 import kotlin.time.Clock
@@ -22,7 +23,7 @@ internal fun DocumentEssentialsUi.toDto(): Document {
     return Document(
         displayName = displayName,
         type = type ?: throw IllegalArgumentException("Document type required"),
-        createdAt = createdAt ?: Clock.System.now().toEpochMilliseconds(),
+        createdAt = createdAt ?: getUTCNow(),
         comment = comment,
         id = id
     )

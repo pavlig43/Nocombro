@@ -8,7 +8,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.room.ColumnInfo
 import androidx.room.PrimaryKey
-import ru.pavlig43.core.convertToDateTime
+import ru.pavlig43.core.DateFieldKind
+import ru.pavlig43.core.convertToDateOrDateTimeString
+
 import ru.pavlig43.coreui.SearchTextField
 import ru.pavlig43.database.data.document.DocumentType
 import ru.pavlig43.database.data.transaction.OperationType
@@ -41,7 +43,7 @@ private val columnDefinition = listOf<ColumnDefinition<TransactionItemUi>>(
     ColumnDefinition(
         title = CREATED_AT,
         width = CREATED_AT_WIDTH,
-        valueProvider = { it.createdAt.convertToDateTime() }
+        valueProvider = { it.createdAt.convertToDateOrDateTimeString(DateFieldKind.Date) }
     ),
 
     ColumnDefinition(
