@@ -64,7 +64,7 @@ internal fun DeclarationListScreen(
             )
         }
         ItemListBox(
-            listComponent = component.itemsBodyComponent,
+            listComponent = component.staticItemsBodyComponent,
             columnDefinition = columnDefinition,
         )
     }

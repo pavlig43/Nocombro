@@ -8,7 +8,7 @@ import ru.pavlig43.transaction.internal.data.toDto
 import ru.pavlig43.update.component.UpdateEssentialsComponent
 import ru.pavlig43.update.data.UpdateEssentialsRepository
 
-internal class EssentialTabSlot(
+internal class EssentialFormSlot(
     componentContext: ComponentContext,
     documentId: Int,
     updateRepository: UpdateEssentialsRepository<ProductTransaction>,
@@ -19,4 +19,4 @@ internal class EssentialTabSlot(
     updateEssentialsRepository = updateRepository,
     componentFactory = componentFactory,
     mapperToDTO = { toDto() }
-), TransactionTabSlot
+), TransactionFormSlot

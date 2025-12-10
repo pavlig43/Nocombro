@@ -63,7 +63,7 @@ internal fun ProductListScreen(
             )
         }
         ItemListBox(
-            listComponent = component.itemsBodyComponent,
+            listComponent = component.staticItemsBodyComponent,
             columnDefinition = columnDefinition,
         )
     }

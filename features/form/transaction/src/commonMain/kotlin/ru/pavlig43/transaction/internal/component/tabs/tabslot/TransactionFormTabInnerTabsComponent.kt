@@ -20,12 +20,12 @@ internal class TransactionFormTabInnerTabsComponent(
     closeFormScreen:()->Unit,
     scope: Scope,
     id: Int
-) : ComponentContext by componentContext, IItemFormInnerTabsComponent<TransactionTab, TransactionTabSlot> {
+) : ComponentContext by componentContext, IItemFormInnerTabsComponent<TransactionTab, TransactionFormSlot> {
 
     private val dbTransaction:DataBaseTransaction = scope.get()
 
 
-    override val tabNavigationComponent: TabNavigationComponent<TransactionTab, TransactionTabSlot> =
+    override val tabNavigationComponent: TabNavigationComponent<TransactionTab, TransactionFormSlot> =
         TabNavigationComponent(
             componentContext = childContext("tab"),
             startConfigurations = listOf(
@@ -35,7 +35,7 @@ internal class TransactionFormTabInnerTabsComponent(
             slotFactory = { context, tabConfig: TransactionTab,  _: () -> Unit ->
                 when (tabConfig) {
 
-                    TransactionTab.Essentials -> EssentialTabSlot(
+                    TransactionTab.Essentials -> EssentialFormSlot(
                         componentContext = context,
                         componentFactory = essentialFactory,
                         documentId = id,

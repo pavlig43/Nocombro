@@ -10,6 +10,7 @@ import com.arkivanov.decompose.value.Value
 import ru.pavlig43.itemlist.api.ItemListDependencies
 import ru.pavlig43.itemlist.api.VendorListParamProvider
 import ru.pavlig43.itemlist.api.component.MBSItemListComponent
+import ru.pavlig43.itemlist.internal.component.VendorItemUi
 
 internal class VendorDialogComponent(
     parentComponentContext: ComponentContext,
@@ -19,14 +20,14 @@ internal class VendorDialogComponent(
 ) {
     private val dialogNavigation = SlotNavigation<MBSVendorDialog>()
 
-    val dialog: Value<ChildSlot<MBSVendorDialog, MBSItemListComponent>> =
+    val dialog =
         parentComponentContext.childSlot(
             source = dialogNavigation,
             key = "vendor_dialog",
             serializer = MBSVendorDialog.serializer(),
             handleBackButton = true,
         ) { _: MBSVendorDialog, context ->
-            MBSItemListComponent(
+            MBSItemListComponent<VendorItemUi>(
                 componentContext = context,
                 onDismissed = dialogNavigation::dismiss,
                 itemListDependencies = itemListDependencies,

@@ -23,6 +23,7 @@ import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.itemlist.api.ItemListDependencies
 import ru.pavlig43.itemlist.api.ProductListParamProvider
 import ru.pavlig43.itemlist.api.component.MBSItemListComponent
+import ru.pavlig43.itemlist.internal.component.ProductItemUi
 import ru.pavlig43.loadinitdata.api.component.LoadInitDataComponent
 import ru.pavlig43.product.internal.data.CompositionUi
 import ru.pavlig43.product.internal.data.ProductIngredientUi
@@ -195,14 +196,14 @@ internal class CompositionTabSlot(
 
     private val dialogNavigation = SlotNavigation<MBSIngredientDialog>()
 
-    internal val dialog: Value<ChildSlot<MBSIngredientDialog, MBSItemListComponent>> =
+    internal val dialog =
         childSlot(
             source = dialogNavigation,
             key = "product_dialog",
             serializer = MBSIngredientDialog.serializer(),
             handleBackButton = true,
         ) { config: MBSIngredientDialog, context ->
-            MBSItemListComponent(
+            MBSItemListComponent<ProductItemUi>(
                 componentContext = context,
                 onDismissed = dialogNavigation::dismiss,
                 itemListDependencies = itemListDependencies,

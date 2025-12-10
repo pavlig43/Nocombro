@@ -47,7 +47,7 @@ internal fun VendorListScreen(
             )
         }
         ItemListBox(
-            listComponent = component.itemsBodyComponent,
+            listComponent = component.staticItemsBodyComponent,
             columnDefinition = columnDefinition,
         )
     }

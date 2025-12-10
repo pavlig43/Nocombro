@@ -7,10 +7,11 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import ru.pavlig43.itemlist.api.component.MBSItemListComponent
+import ru.pavlig43.itemlist.api.data.IItemUi
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun  MBSItemList(component: MBSItemListComponent, modifier: Modifier = Modifier){
+fun  MBSItemList(component: MBSItemListComponent<out IItemUi>, modifier: Modifier = Modifier){
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     ModalBottomSheet(
         onDismissRequest = component::onDismissClicked,

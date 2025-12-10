@@ -22,6 +22,7 @@ import ru.pavlig43.itemlist.api.DeclarationListParamProvider
 import ru.pavlig43.itemlist.api.ItemListDependencies
 import ru.pavlig43.itemlist.api.component.MBSItemListComponent
 import ru.pavlig43.itemlist.internal.component.DeclarationItemUi
+import ru.pavlig43.itemlist.internal.component.DocumentItemUi
 import ru.pavlig43.loadinitdata.api.component.LoadInitDataComponent
 import ru.pavlig43.update.data.UpdateCollectionRepository
 import kotlin.time.ExperimentalTime
@@ -50,14 +51,14 @@ abstract class DeclarationTabSlot<Out : GenericDeclarationOut, In : GenericDecla
         serializer = DialogConfig.serializer(),
         handleBackButton = true,
     ) { _, context ->
-        MBSItemListComponent(
+        MBSItemListComponent<DeclarationItemUi>(
             componentContext = context,
             onDismissed = dialogNavigation::dismiss,
             onCreate = { openDeclarationTab(0) },
             itemListDependencies = itemListDependencies,
             itemListParamProvider = DeclarationListParamProvider(withCheckbox = false),
             onItemClick = {dec ->
-                productDeclarationList.addDeclaration(dec as DeclarationItemUi)
+                productDeclarationList.addDeclaration(dec)
                 dialogNavigation.dismiss()
             },
         )

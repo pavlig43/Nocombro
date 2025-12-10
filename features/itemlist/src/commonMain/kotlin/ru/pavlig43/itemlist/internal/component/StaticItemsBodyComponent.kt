@@ -17,14 +17,14 @@ import ru.pavlig43.itemlist.api.data.IItemUi
 import ru.pavlig43.itemlist.internal.ItemFilter
 
 @Suppress("LongParameterList")
-internal class ItemsBodyComponent<O : GenericItem, U : IItemUi>(
+internal class StaticItemsBodyComponent<BDOut : GenericItem, UI : IItemUi>(
     componentContext: ComponentContext,
-    dataFlow: Flow<RequestResult<List<O>>>,
+    dataFlow: Flow<RequestResult<List<BDOut>>>,
     val searchText: StateFlow<ItemFilter.SearchText>,
     private val deleteItemsById: suspend (List<Int>) -> RequestResult<Unit>,
     val withCheckbox: Boolean,
-    val onItemClick: (U) -> Unit,
-    private val mapper: O.() -> U,
+    val onItemClick: (UI) -> Unit,
+    private val mapper: BDOut.() -> UI,
 
     ) : ComponentContext by componentContext {
     private val coroutineScope = componentCoroutineScope()
@@ -47,12 +47,11 @@ internal class ItemsBodyComponent<O : GenericItem, U : IItemUi>(
     }
 
 
-
-    val itemListState: StateFlow<ItemListState<U>> = dataFlow
+    val itemListState: StateFlow<ItemListState<UI>> = dataFlow
     .map { it.toItemListState(mapper)  }
         .stateIn(
             coroutineScope,
-            started = SharingStarted.Companion.Eagerly,
+            started = SharingStarted.Eagerly,
             initialValue = ItemListState.Loading()
         )
 

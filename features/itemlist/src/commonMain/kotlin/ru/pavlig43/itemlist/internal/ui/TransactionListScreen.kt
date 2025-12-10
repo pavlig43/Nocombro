@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import ru.pavlig43.core.DateFieldKind
 import ru.pavlig43.core.convertToDateOrDateTimeString
 import ru.pavlig43.coreui.SearchTextField
@@ -31,7 +32,8 @@ private val columnDefinition = listOf<ColumnDefinition<TransactionItemUi>>(
     ColumnDefinition(
         title = "V",
         width = ID_WIDTH,
-        valueProvider = { it.isCompleted.toString() }
+        valueProvider = { if (it.isCompleted) "V" else "Ø" },
+        colorProvider = { if (it.isCompleted) Color.Green else Color.Red }
     ),
     ColumnDefinition(
         title = CREATED_AT,
@@ -71,7 +73,7 @@ internal fun TransactionListScreen(
             )
         }
         ItemListBox(
-            listComponent = component.itemsBodyComponent,
+            listComponent = component.staticItemsBodyComponent,
             columnDefinition = columnDefinition,
         )
     }

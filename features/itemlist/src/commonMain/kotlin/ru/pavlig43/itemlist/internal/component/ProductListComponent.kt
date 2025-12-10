@@ -45,8 +45,8 @@ internal class ProductListComponent(
 
 
 
-    override val itemsBodyComponent: ItemsBodyComponent<Product, ProductItemUi> =
-        ItemsBodyComponent(
+    override val staticItemsBodyComponent: StaticItemsBodyComponent<Product, ProductItemUi> =
+        StaticItemsBodyComponent(
             componentContext = childContext("body"),
             dataFlow = productListFlow,
             deleteItemsById = productListRepository::deleteByIds,
@@ -58,9 +58,9 @@ internal class ProductListComponent(
 
 
 }
-internal data class ProductItemUi(
+data class ProductItemUi(
     override val id: Int,
-    override val displayName: String,
+    val displayName: String,
     val type: ProductType,
     val createdAt: Long,
     val comment: String = "",

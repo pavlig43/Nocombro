@@ -34,8 +34,8 @@ internal class VendorListComponent(
             }
 
 
-    override val itemsBodyComponent =
-        ItemsBodyComponent(
+    override val staticItemsBodyComponent =
+        StaticItemsBodyComponent(
             componentContext = childContext("body"),
             dataFlow = vendorListFlow,
             deleteItemsById = vendorListRepository::deleteByIds,
@@ -47,8 +47,8 @@ internal class VendorListComponent(
 
 
 }
-internal data class VendorItemUi(
-    override val displayName: String,
+data class VendorItemUi(
+    val displayName: String,
     val comment: String,
     override val id: Int = 0,
 ): IItemUi

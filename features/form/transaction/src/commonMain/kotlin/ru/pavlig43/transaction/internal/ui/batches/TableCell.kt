@@ -1,4 +1,4 @@
-package ru.pavlig43.itemlist.internal.ui.core
+package ru.pavlig43.transaction.internal.ui.batches
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border

@@ -20,7 +20,7 @@ import ru.pavlig43.itemlist.internal.generateComponent
 internal class DocumentsListComponent(
     componentContext: ComponentContext,
     val onCreate: () -> Unit,
-    val onItemClick: (IItemUi) -> Unit,
+    val onItemClick: (DocumentItemUi) -> Unit,
     paramProvider: DocumentListParamProvider,
     private val documentListRepository: DocumentListRepository,
 
@@ -45,8 +45,8 @@ internal class DocumentsListComponent(
 
 
 
-    override val itemsBodyComponent: ItemsBodyComponent<Document, DocumentItemUi> =
-        ItemsBodyComponent(
+    override val staticItemsBodyComponent: StaticItemsBodyComponent<Document, DocumentItemUi> =
+        StaticItemsBodyComponent(
             componentContext = childContext("body"),
             dataFlow = documentListFlow,
             deleteItemsById = documentListRepository::deleteByIds,
@@ -58,9 +58,9 @@ internal class DocumentsListComponent(
 
 
 }
-internal data class DocumentItemUi(
+data class DocumentItemUi(
     override val id: Int,
-    override val displayName: String,
+    val displayName: String,
     val type: DocumentType,
     val createdAt: Long,
     val comment: String = "",

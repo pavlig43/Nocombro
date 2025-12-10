@@ -10,5 +10,6 @@ android {
 kotlin{
     commonMainDependencies {
         implementation(projects.database)
+        implementation(projects.features.manageitem.loadinitdata)
     }
 }

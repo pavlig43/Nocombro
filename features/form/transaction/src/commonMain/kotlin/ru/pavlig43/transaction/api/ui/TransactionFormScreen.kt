@@ -15,8 +15,9 @@ import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import ru.pavlig43.core.ui.EssentialBlockScreen
 import ru.pavlig43.transaction.api.component.TransactionFormComponent
-import ru.pavlig43.transaction.internal.component.tabs.tabslot.EssentialTabSlot
-import ru.pavlig43.transaction.internal.component.tabs.tabslot.TransactionTabSlot
+import ru.pavlig43.transaction.internal.component.tabs.tabslot.EssentialFormSlot
+import ru.pavlig43.transaction.internal.component.tabs.tabslot.ProductBatchTabSlot
+import ru.pavlig43.transaction.internal.component.tabs.tabslot.TransactionFormSlot
 import ru.pavlig43.transaction.internal.ui.CreateTransactionScreen
 import ru.pavlig43.transaction.internal.ui.TransactionFields
 import ru.pavlig43.update.ui.ItemTabsUi
@@ -54,17 +55,19 @@ fun TransactionFormScreen(
 
 @Composable
 private fun SlotScreen(
-    slot: TransactionTabSlot?,
+    slot: TransactionFormSlot?,
 ) {
     when (slot) {
-        is EssentialTabSlot -> UpdateEssentialsBlock(slot)
+        is EssentialFormSlot -> UpdateEssentialsBlock(slot)
+        is ProductBatchTabSlot -> Box(){}
 
         null -> Box(Modifier)
+
     }
 }
 @Composable
 private fun UpdateEssentialsBlock(
-    documentSlot: EssentialTabSlot,
+    documentSlot: EssentialFormSlot,
     modifier: Modifier = Modifier
 ){
     Column(modifier.verticalScroll(rememberScrollState())){

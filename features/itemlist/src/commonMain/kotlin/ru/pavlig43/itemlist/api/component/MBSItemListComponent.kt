@@ -6,10 +6,11 @@ import ru.pavlig43.itemlist.api.ItemListDependencies
 import ru.pavlig43.itemlist.api.ItemListParamProvider
 import ru.pavlig43.itemlist.api.data.IItemUi
 
-class MBSItemListComponent(
+@Suppress("UNCHECKED_CAST")
+class MBSItemListComponent<I: IItemUi>(
     componentContext: ComponentContext,
     itemListParamProvider: ItemListParamProvider,
-    onItemClick: (IItemUi) -> Unit,
+    onItemClick: (I) -> Unit,
     onCreate: () -> Unit,
     itemListDependencies: ItemListDependencies,
     private val onDismissed: () -> Unit,
@@ -18,7 +19,7 @@ class MBSItemListComponent(
     val itemListFactoryComponent = ItemListFactoryComponent(
         componentContext = childContext("itemlist"),
         onCreate = onCreate,
-        onItemClick = onItemClick,
+        onItemClick = { ui: IItemUi -> onItemClick(ui as I) },
         itemListDependencies = itemListDependencies,
         itemListParamProvider = itemListParamProvider
     )

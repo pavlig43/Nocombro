@@ -33,8 +33,8 @@ internal class DeclarationListComponent(
             }
 
 
-    override val itemsBodyComponent =
-        ItemsBodyComponent(
+    override val staticItemsBodyComponent =
+        StaticItemsBodyComponent(
             componentContext = childContext("body"),
             dataFlow = declarationListFlow,
             deleteItemsById = declarationListRepository::deleteByIds,
@@ -48,7 +48,7 @@ internal class DeclarationListComponent(
 }
 data class DeclarationItemUi(
 
-    override val displayName: String,
+    val displayName: String,
 
     val createdAt: Long,
 

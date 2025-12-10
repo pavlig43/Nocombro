@@ -1,12 +1,18 @@
 package ru.pavlig43.transaction.internal.di
 
+import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import ru.pavlig43.create.data.CreateEssentialsRepository
 import ru.pavlig43.database.DataBaseTransaction
 import ru.pavlig43.database.NocombroDatabase
+import ru.pavlig43.database.data.product.ProductDeclaration
+import ru.pavlig43.database.data.product.ProductDeclarationOut
+import ru.pavlig43.database.data.transaction.ProductBatchTransactionBDIn
+import ru.pavlig43.database.data.transaction.ProductBatchTransactionBDOut
 import ru.pavlig43.database.data.transaction.ProductTransaction
 import ru.pavlig43.itemlist.api.ItemListDependencies
 import ru.pavlig43.transaction.api.TransactionFormDependencies
+import ru.pavlig43.update.data.UpdateCollectionRepository
 import ru.pavlig43.update.data.UpdateEssentialsRepository
 
 internal fun createTransactionFormModule(dependencies: TransactionFormDependencies) = listOf(
@@ -16,7 +22,9 @@ internal fun createTransactionFormModule(dependencies: TransactionFormDependenci
         single<ItemListDependencies> { dependencies.itemListDependencies }
         single<CreateEssentialsRepository<ProductTransaction>> { getCreateRepository(get()) }
         single<UpdateEssentialsRepository<ProductTransaction>> { getUpdateRepository(get()) }
-
+        single<UpdateCollectionRepository<ProductBatchTransactionBDOut, ProductBatchTransactionBDIn>>(
+            named(UpdateCollectionRepositoryType.BatchesRow.name)
+        ) { getUpdateDeclarationRepository(get()) }
 
 
 //        single<UpdateCollectionRepository<ProductFile, ProductFile>>(
@@ -25,9 +33,7 @@ internal fun createTransactionFormModule(dependencies: TransactionFormDependenci
 //            )
 //        ) { getFilesRepository(get()) }
 //
-//        single<UpdateCollectionRepository<ProductDeclarationOut, ProductDeclaration>>(
-//            named(UpdateCollectionRepositoryType.Declaration.name)
-//        ) { getUpdateDeclarationRepository(get()) }
+
 //
 //        single<UpdateCollectionRepository<ProductCompositionOut, ProductCompositionIn>>(
 //            named(UpdateCollectionRepositoryType.Composition.name)
@@ -61,11 +67,20 @@ private fun getUpdateRepository(
     )
 }
 
-//internal enum class UpdateCollectionRepositoryType {
-//    Files,
-//    Declaration,
-//    Composition,
-//
-//}
+internal enum class UpdateCollectionRepositoryType {
+    BatchesRow,
+}
+
+private fun getUpdateDeclarationRepository(
+    db: NocombroDatabase
+): UpdateCollectionRepository<ProductBatchTransactionBDOut, ProductBatchTransactionBDIn> {
+    val dao = db.productBatchDao
+    return UpdateCollectionRepository(
+        tag = "Update Product Batch Respository",
+        loadCollection = dao::getProductBatchesRow,
+        deleteCollection = dao::deleteBatchesRows,
+        upsertCollection = dao::upsert
+    )
+}
 
 

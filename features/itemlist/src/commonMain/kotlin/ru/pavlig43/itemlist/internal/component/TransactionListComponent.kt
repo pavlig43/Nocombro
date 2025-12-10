@@ -44,8 +44,8 @@ internal class TransactionListComponent(
     }.flatMapLatest { it }
 
 
-    override val itemsBodyComponent: ItemsBodyComponent<ProductTransaction, TransactionItemUi> =
-        ItemsBodyComponent(
+    override val staticItemsBodyComponent: StaticItemsBodyComponent<ProductTransaction, TransactionItemUi> =
+        StaticItemsBodyComponent(
             componentContext = childContext("body"),
             dataFlow = listFlow,
             deleteItemsById = listRepository::deleteByIds,
@@ -58,7 +58,7 @@ internal class TransactionListComponent(
 
 }
 
-internal data class TransactionItemUi(
+data class TransactionItemUi(
 
     val transactionType: TransactionType,
 
@@ -73,11 +73,7 @@ internal data class TransactionItemUi(
     override val id: Int = 0,
 
 
-) : IItemUi{
-    override val displayName: String
-        get() = "затычка"
-
-}
+) : IItemUi
 
 private fun ProductTransaction.toUi(): TransactionItemUi {
     return TransactionItemUi(
