@@ -64,7 +64,9 @@ data class ProductItemUi(
     val type: ProductType,
     val createdAt: Long,
     val comment: String = "",
-) : IItemUi
+) : IItemUi{
+    override val composeKey: Int = id
+}
 
 private fun Product.toUi(): ProductItemUi {
     return ProductItemUi(

@@ -73,7 +73,9 @@ data class TransactionItemUi(
     override val id: Int = 0,
 
 
-) : IItemUi
+) : IItemUi{
+    override val composeKey: Int = id
+}
 
 private fun ProductTransaction.toUi(): TransactionItemUi {
     return TransactionItemUi(

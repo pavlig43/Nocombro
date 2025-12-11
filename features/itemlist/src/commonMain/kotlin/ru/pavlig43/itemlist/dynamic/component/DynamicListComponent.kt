@@ -64,12 +64,9 @@ import ru.pavlig43.loadinitdata.api.component.LoadInitDataComponent
 //        TODO("Not yet implemented")
 //    }
 //}
-interface DynamicIItemUi: IItemUi{
-    override val id: Int
-    val composeKey: Int
-}
 
-internal class DynamicListComponent<BDOut: GenericItem,UI: DynamicIItemUi>(
+
+internal class DynamicListComponent<BDOut: GenericItem,UI: IItemUi>(
     componentContext: ComponentContext,
     private val getInitData: suspend () -> RequestResult<List<BDOut>>,
     private val generateEmptyUi:(composeKey:Int)-> UI,

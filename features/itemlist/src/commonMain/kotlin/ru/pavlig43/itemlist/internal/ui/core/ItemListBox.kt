@@ -32,12 +32,10 @@ import ru.pavlig43.coreui.ErrorScreen
 import ru.pavlig43.coreui.LoadingScreen
 import ru.pavlig43.coreui.ScrollBars
 import ru.pavlig43.itemlist.api.data.IItemUi
-import ru.pavlig43.itemlist.dynamic.component.DynamicIItemUi
-import ru.pavlig43.itemlist.dynamic.component.DynamicListComponent
 import ru.pavlig43.itemlist.internal.component.ItemListState
 import ru.pavlig43.itemlist.internal.component.StaticItemsBodyComponent
+import ru.pavlig43.itemlist.internal.component.StaticItemsBodyComponent1
 import ru.pavlig43.itemlist.internal.ui.CHECKBOX_WIDTH
-import ru.pavlig43.loadinitdata.api.ui.LoadInitDataScreen
 
 
 @Composable
@@ -80,6 +78,51 @@ internal fun <O : GenericItem, U : IItemUi> ItemListBox(
             horizontalScrollState = horizontalScrollState,
             verticalScrollState = verticalScrollState
         )
+        ScrollBars(horizontalScrollState, verticalScrollState)
+
+
+    }
+}
+
+@Composable
+internal fun <O : GenericItem, U : IItemUi> ItemListBox1(
+    listComponent: StaticItemsBodyComponent1<O, U>,
+    modifier: Modifier = Modifier,
+
+    ) {
+    val coroutineScope = rememberCoroutineScope()
+    val verticalScrollState = rememberLazyListState()
+    val horizontalScrollState = rememberScrollState()
+
+
+    val horizontallyDraggableModifier = Modifier.draggable(
+        orientation = Orientation.Horizontal,
+        state = rememberDraggableState { delta ->
+            coroutineScope.launch {
+                horizontalScrollState.scrollBy(-delta)
+            }
+        }
+    )
+    val verticalDraggableModifier = Modifier.draggable(
+        orientation = Orientation.Vertical,
+        state = rememberDraggableState { delta ->
+            coroutineScope.launch {
+                verticalScrollState.scrollBy(-delta)
+            }
+        }
+    )
+    Box(
+        modifier
+            .fillMaxSize()
+            .then(horizontallyDraggableModifier)
+            .then(verticalDraggableModifier)
+    ) {
+        StaticItemsListBodyScreen1(
+            listComponent = listComponent,
+            horizontalScrollState = horizontalScrollState,
+            verticalScrollState = verticalScrollState,
+
+            )
         ScrollBars(horizontalScrollState, verticalScrollState)
 
 
@@ -138,7 +181,7 @@ private fun <O : GenericItem, U : IItemUi> StaticItemsListBodyScreen(
                 ) {
                     itemsIndexed(itemList, key = { _, item -> item.id }) { index, item ->
                         Row(
-                            Modifier.Companion.height(32.dp),
+                            Modifier.height(32.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             if (withCheckbox) {
@@ -162,7 +205,7 @@ private fun <O : GenericItem, U : IItemUi> StaticItemsListBodyScreen(
                                     alpha = if (index % 2 == 0) 0.3f else 0.5f
                                 ),
                                 borderColor = MaterialTheme.colorScheme.onSecondary,
-                                modifier = Modifier.Companion.height(32.dp)
+                                modifier = Modifier.height(32.dp)
                                     .clickable { listComponent.onItemClick(item) }
                             )
                         }
@@ -188,84 +231,121 @@ private fun createHeadersCells(
     }
 }
 
+private fun createHeadersCells1(
+    withCheckbox: Boolean = false,
+    checkBoxWidth: Int,
+    baseCells: List<TextCellElement>
+): List<TextCellElement> {
+
+    return if (withCheckbox) {
+        listOf(
+            TextCellElement(
+                highlightedText = "",
+                columnWith = checkBoxWidth,
+            )
+        ) + baseCells
+    } else {
+        baseCells
+    }
+}
+
+private fun <I : IItemUi> List<ColumnDefinition1<I>>.toHeader(): List<TextCellElement> {
+    return this.map {
+        TextCellElement(
+            highlightedText = it.headerTitle,
+            columnWith = it.width,
+        )
+    }
+}
+
 @Suppress("LongMethod", "MagicNumber")
 @Composable
-private fun <BDOut : GenericItem, UI : DynamicIItemUi> DynamicItemsListBodyScreen(
-    listComponent: DynamicListComponent<BDOut, UI>,
-    columnDefinition: List<ColumnDefinition<UI>>,
+private fun <O : GenericItem, U : IItemUi> StaticItemsListBodyScreen1(
+    listComponent: StaticItemsBodyComponent1<O, U>,
     horizontalScrollState: ScrollState,
     verticalScrollState: LazyListState,
     modifier: Modifier = Modifier,
 ) {
 
-    val itemList by listComponent.items.collectAsState()
-    LoadInitDataScreen(listComponent.loadInitDataComponent) {
+    val itemListState by listComponent.itemListState.collectAsState()
 
-        val checkBoxWidth = CHECKBOX_WIDTH
+    when (val state = itemListState) {
+        is ItemListState.Error -> ErrorScreen(state.message)
+        is ItemListState.Initial -> LoadingScreen()
+        is ItemListState.Loading -> LoadingScreen()
+        is ItemListState.Success<U> -> {
 
-        val selectedItemIds = listComponent.selectedItemIds
-        val searchText by listComponent.searchText.collectAsState()
-        val deleteState by listComponent.deleteState.collectAsState()
+            val checkBoxWidth = CHECKBOX_WIDTH
 
-        Column(modifier.fillMaxWidth()) {
-            if (selectedItemIds.isNotEmpty()) {
-                ActionRow(
-                    delete = listComponent::deleteItems,
-                    deleteState = deleteState,
-                    share = {},
+            val itemList = state.data
+            val selectedItemIds = listComponent.selectedItemIds
+            val withCheckbox = listComponent.withCheckbox
+            val searchText by listComponent.searchText.collectAsState()
+            val deleteState by listComponent.deleteState.collectAsState()
+
+            Column(modifier.fillMaxWidth()) {
+                if (selectedItemIds.isNotEmpty()) {
+                    ActionRow(
+                        delete = listComponent::deleteItems,
+                        deleteState = deleteState,
+                        share = listComponent::shareItems,
+                    )
+                }
+
+                TableRow1<U>(
+
+                    scrollState = horizontalScrollState,
+                    searchText = "",
+                    generateCells = {
+                        createHeadersCells1(
+                            withCheckbox = withCheckbox,
+                            checkBoxWidth = checkBoxWidth,
+                            baseCells = listComponent.columnDefinition.toHeader(),
+                        )
+                    },
+                    item = itemList[0],
+                    modifier = Modifier.height(32.dp)
                 )
-            }
-
-            TableRow(
-                cells = createHeadersCells(
-                    withCheckbox = true,
-                    checkBoxWidth = checkBoxWidth,
-                    baseCells = columnDefinition.toBaseCells(),
-                ),
-                scrollState = horizontalScrollState,
-                searchText = "",
-                backgroundColor = MaterialTheme.colorScheme.primary.copy(0.5f),
-                borderColor = MaterialTheme.colorScheme.onPrimary,
-                modifier = Modifier.height(32.dp)
-            )
-            LazyColumn(
-                Modifier.fillMaxSize(), state = verticalScrollState
-            ) {
-                itemsIndexed(itemList, key = { _, item -> item.id }) { index, item ->
-                    Row(
-                        Modifier.Companion.height(32.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-
-                        SelectItemCheckBox(
-                            isChecked = item.id in selectedItemIds,
-                            onCheckedChange = { isChecked ->
-                                listComponent.actionInSelectedItemIds(
-                                    isChecked,
-                                    item.id
+                LazyColumn(
+                    Modifier.fillMaxSize(), state = verticalScrollState
+                ) {
+                    itemsIndexed(itemList, key = { _, item -> item.id }) { index, item ->
+                        Row(
+                            Modifier.height(32.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            if (withCheckbox) {
+                                SelectItemCheckBox(
+                                    isChecked = item.id in selectedItemIds,
+                                    onCheckedChange = { isChecked ->
+                                        listComponent.actionInSelectedItemIds(
+                                            isChecked,
+                                            item.id
+                                        )
+                                    },
+                                    checkboxWidth = checkBoxWidth,
                                 )
-                            },
-                            checkboxWidth = checkBoxWidth,
-                        )
+                            }
 
+                            TableRow1(
+                                item = item,
 
-                        TableRow(
-                            cells = columnDefinition.toCells(item),
-                            scrollState = horizontalScrollState,
-                            searchText = searchText.value,
-                            backgroundColor = MaterialTheme.colorScheme.secondary.copy(
-                                alpha = if (index % 2 == 0) 0.3f else 0.5f
-                            ),
-                            borderColor = MaterialTheme.colorScheme.onSecondary,
-                            modifier = Modifier.height(32.dp)
-                        )
+                                scrollState = horizontalScrollState,
+                                searchText = searchText.value,
+                                modifier = Modifier.height(32.dp)
+                                    .clickable { listComponent.onItemClick(item) },
+                                generateCells = { listComponent.columnDefinition.toBaseCells(item) },
+
+                                )
+                        }
+
                     }
-
                 }
             }
         }
     }
 
 }
+
 
 

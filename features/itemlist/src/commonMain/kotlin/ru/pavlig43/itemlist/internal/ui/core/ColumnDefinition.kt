@@ -10,8 +10,23 @@ internal data class ColumnDefinition<O : IItemUi>(
     val valueProvider: (O) -> String,
     val colorProvider: (O) -> Color = { Color.Unspecified },
 )
-internal fun <I : IItemUi> List<ColumnDefinition<I>>.toBaseCells() = this.map { Cell(it.title, it.width,it.titleColor) }
+
+internal fun <I : IItemUi> List<ColumnDefinition<I>>.toBaseCells() =
+    this.map { Cell(it.title, it.width, it.titleColor) }
 
 internal fun <I : IItemUi> List<ColumnDefinition<I>>.toCells(item: I): List<Cell> = this.map {
-    Cell(it.valueProvider(item), it.width,it.colorProvider(item))
+    Cell(it.valueProvider(item), it.width, it.colorProvider(item))
 }
+
+internal data class ColumnDefinition1<I : IItemUi>(
+    val width: Int,
+    val headerTitle: String,
+    val cellProvider: (I) -> CellElement,
+)
+
+internal fun <I : IItemUi> List<ColumnDefinition1<I>>.toBaseCells(
+    item: I
+) = this.map {
+    it.cellProvider(item)
+}
+

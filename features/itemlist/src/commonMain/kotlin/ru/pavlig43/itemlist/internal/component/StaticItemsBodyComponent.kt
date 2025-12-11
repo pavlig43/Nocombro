@@ -15,6 +15,8 @@ import ru.pavlig43.core.componentCoroutineScope
 import ru.pavlig43.core.data.GenericItem
 import ru.pavlig43.itemlist.api.data.IItemUi
 import ru.pavlig43.itemlist.internal.ItemFilter
+import ru.pavlig43.itemlist.internal.ui.core.ColumnDefinition
+import ru.pavlig43.itemlist.internal.ui.core.ColumnDefinition1
 
 @Suppress("LongParameterList")
 internal class StaticItemsBodyComponent<BDOut : GenericItem, UI : IItemUi>(
@@ -49,6 +51,68 @@ internal class StaticItemsBodyComponent<BDOut : GenericItem, UI : IItemUi>(
 
     val itemListState: StateFlow<ItemListState<UI>> = dataFlow
     .map { it.toItemListState(mapper)  }
+        .stateIn(
+            coroutineScope,
+            started = SharingStarted.Eagerly,
+            initialValue = ItemListState.Loading()
+        )
+
+
+    val deleteState: MutableStateFlow<DeleteState> =
+        MutableStateFlow(DeleteState.Initial())
+
+    fun deleteItems() {
+        coroutineScope.launch {
+            deleteState.update { DeleteState.Loading() }
+            val state = deleteItemsById(_selectedItemIds).toDeleteState()
+            deleteState.update { state }
+            if (state is DeleteState.Success) {
+                clearSelectedIds()
+            }
+            deleteState.update { DeleteState.Initial() }
+        }
+
+    }
+
+    fun shareItems() {
+        TODO("Not yet implemented")
+    }
+
+}
+@Suppress("LongParameterList")
+internal class StaticItemsBodyComponent1<BDOut : GenericItem, UI : IItemUi>(
+    componentContext: ComponentContext,
+    dataFlow: Flow<RequestResult<List<BDOut>>>,
+    val searchText: StateFlow<ItemFilter.SearchText>,
+    private val deleteItemsById: suspend (List<Int>) -> RequestResult<Unit>,
+    val withCheckbox: Boolean,
+    val onItemClick: (UI) -> Unit,
+    private val mapper: BDOut.() -> UI,
+    val columnDefinition: List<ColumnDefinition1<UI>>,
+
+    ) : ComponentContext by componentContext {
+    private val coroutineScope = componentCoroutineScope()
+
+
+    private val _selectedItemIds = mutableStateListOf<Int>()
+    val selectedItemIds: List<Int>
+        get() = _selectedItemIds
+
+    fun clearSelectedIds() {
+        _selectedItemIds.clear()
+    }
+
+    fun actionInSelectedItemIds(checked: Boolean, id: Int) {
+        if (checked) {
+            _selectedItemIds.add(id)
+        } else {
+            _selectedItemIds.remove(id)
+        }
+    }
+
+
+    val itemListState: StateFlow<ItemListState<UI>> = dataFlow
+        .map { it.toItemListState(mapper)  }
         .stateIn(
             coroutineScope,
             started = SharingStarted.Eagerly,

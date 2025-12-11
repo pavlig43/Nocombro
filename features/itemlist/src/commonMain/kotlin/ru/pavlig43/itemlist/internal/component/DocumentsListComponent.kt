@@ -64,7 +64,9 @@ data class DocumentItemUi(
     val type: DocumentType,
     val createdAt: Long,
     val comment: String = "",
-) : IItemUi
+) : IItemUi{
+    override val composeKey: Int = id
+}
 
 private fun Document.toUi(): DocumentItemUi {
     return DocumentItemUi(

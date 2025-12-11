@@ -51,7 +51,9 @@ data class VendorItemUi(
     val displayName: String,
     val comment: String,
     override val id: Int = 0,
-): IItemUi
+): IItemUi{
+    override val composeKey: Int = id
+}
 
 private fun Vendor.toUi(): VendorItemUi {
     return VendorItemUi(
