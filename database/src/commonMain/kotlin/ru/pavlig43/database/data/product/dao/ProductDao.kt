@@ -29,8 +29,8 @@ interface ProductDao {
     SELECT * FROM $PRODUCT_TABLE_NAME
     WHERE type IN (:types)
     AND (
-        display_name LIKE '%' || :searchText || '%' 
-        OR comment LIKE '%' || :searchText || '%'
+        LOWER(display_name) LIKE '%' || LOWER(:searchText) || '%'
+        OR LOWER(comment) LIKE '%' || LOWER(:searchText) || '%'
         OR :searchText = ''
     )
     ORDER BY created_at DESC

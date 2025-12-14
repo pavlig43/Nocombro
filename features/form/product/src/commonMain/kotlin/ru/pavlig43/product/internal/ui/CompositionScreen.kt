@@ -38,7 +38,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import ru.pavlig43.coreui.tooltip.IconButtonToolTip
-import ru.pavlig43.itemlist.api.ui.MBSItemList
+import ru.pavlig43.itemlist.statik.api.ui.MBSItemList
 import ru.pavlig43.product.internal.component.tabs.tabslot.CompositionTabSlot
 import ru.pavlig43.product.internal.data.CompositionUi
 import ru.pavlig43.product.internal.data.ProductIngredientUi

@@ -24,7 +24,7 @@ import ru.pavlig43.coreui.tooltip.IconButtonToolTip
 import ru.pavlig43.declaration.api.component.DeclarationTabSlot
 import ru.pavlig43.declaration.api.component.ProductDeclarationListComponent
 import ru.pavlig43.declaration.internal.ui.AddDeclarationRow
-import ru.pavlig43.itemlist.api.ui.MBSItemList
+import ru.pavlig43.itemlist.statik.api.ui.MBSItemList
 
 @Composable
 fun<Out: GenericDeclarationOut,In: GenericDeclarationIn>ProductDeclarationScreen(

@@ -20,12 +20,20 @@ abstract class CreateEssentialsComponent<I : GenericItem, T : ItemEssentialsUi>(
     componentFactory: EssentialComponentFactory<I, T>,
     private val createEssentialsRepository: CreateEssentialsRepository<I>,
     private val mapperToDTO: T.() -> I,
+//    lst: List<I> = emptyList()
 ) : EssentialsComponent<I, T>(
     componentContext = componentContext,
     componentFactory = componentFactory,
     getInitData = null,
 
 ) {
+//    init {
+//        coroutineScope.launch {
+//            lst.forEach {
+//                createEssentialsRepository.createEssential(it)
+//            }
+//        }
+//    }
     private val _createState: MutableStateFlow<CreateState> = MutableStateFlow(CreateState.Init)
     internal val createState = _createState.asStateFlow()
 

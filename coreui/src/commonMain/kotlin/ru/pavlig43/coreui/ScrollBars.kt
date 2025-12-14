@@ -10,4 +10,3 @@ expect fun BoxScope.ScrollBars(
     horizontalScrollState: ScrollState,
     verticalScrollState: LazyListState
 )
-

@@ -67,7 +67,7 @@ internal class ProductFormTabInnerTabsComponent(
                         productId = productId,
                         updateRepository = scope.get(named(UpdateCollectionRepositoryType.Declaration.name)),
                         openDeclarationTab = onOpenDeclarationTab,
-                        itemListDependencies = scope.get()
+                        itemStaticListDependencies = scope.get()
                     )
 
                     ProductTab.Ingredients -> CompositionTabSlot(
@@ -75,7 +75,7 @@ internal class ProductFormTabInnerTabsComponent(
                         productId = productId,
                         openProductTab = onOpenProductTab,
                         updateCompositionRepository = scope.get(named(UpdateCollectionRepositoryType.Composition.name)),
-                        itemListDependencies = scope.get(),
+                        itemStaticListDependencies = scope.get(),
                     )
                 }
 

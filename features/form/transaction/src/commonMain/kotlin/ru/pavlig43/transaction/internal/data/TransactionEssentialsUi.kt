@@ -17,7 +17,7 @@ internal data class TransactionEssentialsUi(
 
     val comment: String ="",
 
-    val isCompleted: Boolean = false,
+    val isCompleted: Boolean = true,
 
     override val id: Int = 0,
 

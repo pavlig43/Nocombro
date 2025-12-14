@@ -10,13 +10,21 @@ import ru.pavlig43.document.internal.data.toDto
 
 internal class CreateDocumentComponent(
     componentContext: ComponentContext,
-    onSuccessCreate:(Int)-> Unit,
+    onSuccessCreate: (Int) -> Unit,
     createDocumentRepository: CreateEssentialsRepository<Document>,
     componentFactory: EssentialComponentFactory<Document, DocumentEssentialsUi>
-): CreateEssentialsComponent<Document, DocumentEssentialsUi>(
+) : CreateEssentialsComponent<Document, DocumentEssentialsUi>(
     componentContext = componentContext,
-    onSuccessCreate =onSuccessCreate,
+    onSuccessCreate = onSuccessCreate,
     createEssentialsRepository = createDocumentRepository,
     componentFactory = componentFactory,
-    mapperToDTO = {toDto()},
+    mapperToDTO = { toDto() },
+//    lst = (10..1000).map {
+//        Document(
+//            id = it,
+//            type = DocumentType.GOST,
+//            displayName = "Doc $it",
+//            createdAt = 0,
+//            comment = "")
+//    }
 )

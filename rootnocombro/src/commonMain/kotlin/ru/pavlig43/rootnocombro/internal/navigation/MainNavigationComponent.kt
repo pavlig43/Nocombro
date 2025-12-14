@@ -10,12 +10,12 @@ import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.database.data.transaction.TransactionType
 import ru.pavlig43.declarationform.api.DeclarationFormComponent
 import ru.pavlig43.document.api.component.DocumentFormComponent
-import ru.pavlig43.itemlist.api.DeclarationListParamProvider
-import ru.pavlig43.itemlist.api.DocumentListParamProvider
-import ru.pavlig43.itemlist.api.ProductListParamProvider
-import ru.pavlig43.itemlist.api.TransactionListParamProvider
-import ru.pavlig43.itemlist.api.VendorListParamProvider
-import ru.pavlig43.itemlist.api.component.ItemListFactoryComponent
+import ru.pavlig43.itemlist.statik.api.DeclarationListParamProvider
+import ru.pavlig43.itemlist.statik.api.DocumentListParamProvider
+import ru.pavlig43.itemlist.statik.api.ProductListParamProvider
+import ru.pavlig43.itemlist.statik.api.TransactionListParamProvider
+import ru.pavlig43.itemlist.statik.api.VendorListParamProvider
+import ru.pavlig43.itemlist.statik.api.component.StaticItemListFactoryComponent
 import ru.pavlig43.notification.api.component.PageNotificationComponent
 import ru.pavlig43.notification.api.data.NotificationItem
 import ru.pavlig43.product.api.component.ProductFormComponent
@@ -115,7 +115,7 @@ internal class MainNavigationComponent(
         tabConfig: ItemList,
         context: ComponentContext
 
-    ): ItemListFactoryComponent {
+    ): StaticItemListFactoryComponent {
         val paramProvider = when (tabConfig) {
             is ItemList.DeclarationList -> DeclarationListParamProvider(withCheckbox = true)
             is ItemList.DocumentList -> DocumentListParamProvider(
@@ -142,9 +142,9 @@ internal class MainNavigationComponent(
             is ItemList.VendorList -> VendorForm(id)
             is ItemList.ProductTransactionList -> TransactionForm(id)
         }
-        return ItemListFactoryComponent(
+        return StaticItemListFactoryComponent(
             componentContext = context,
-            itemListDependencies = scope.get(),
+            itemStaticListDependencies = scope.get(),
             onCreate = { tabNavigationComponent.addTab(itemForm(0)) },
             onItemClick = { tabNavigationComponent.addTab(itemForm(it.id)) },
             itemListParamProvider = paramProvider

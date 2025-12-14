@@ -1,45 +1,16 @@
 package ru.pavlig43.database.data.transaction.dao
 
-import androidx.room.Dao
-import androidx.room.Delete
 import androidx.room.Embedded
-import androidx.room.Query
 import androidx.room.Relation
-import androidx.room.Upsert
 import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.database.data.product.Product
-import ru.pavlig43.database.data.transaction.ProductBatchTransactionBDIn
-import ru.pavlig43.database.data.transaction.ProductBatchTransactionBDOut
-
-@Dao
-abstract class ProductBatchDao {
-
-    @Query("""
-        DELETE FROM product_batch_transaction
-         WHERE id IN(:ids)
-    """)
-    abstract suspend fun deleteBatchesRows(ids: List<Int>)
-
-    @Upsert
-    abstract suspend fun upsert(batches: List<ProductBatchTransactionBDIn>)
-    @Query(
-        """
-        SELECT * FROM product_batch_transaction
-        WHERE transaction_id=:transactionId
-    """
-    )
-    internal abstract suspend fun internalBatchesRow(transactionId: Int): List<InternalProductBatchTransactionRow>
-
-    suspend fun getProductBatchesRow(transactionId: Int) =
-        internalBatchesRow(transactionId).map { it.toBDOut() }
-
-
-}
+import ru.pavlig43.database.data.transaction.TransactionProductBDIn
+import ru.pavlig43.database.data.transaction.TransactionProductBDOut
 
 internal data class InternalProductBatchTransactionRow(
 
     @Embedded
-    val productBatchTransaction: ProductBatchTransactionBDIn,
+    val productBatchTransaction: TransactionProductBDIn,
 
     @Relation(parentColumn = "product_id", entityColumn = "id")
     val product: Product,
@@ -48,8 +19,8 @@ internal data class InternalProductBatchTransactionRow(
     val declaration: Declaration,
 )
 
-private fun InternalProductBatchTransactionRow.toBDOut(): ProductBatchTransactionBDOut {
-    return ProductBatchTransactionBDOut(
+private fun InternalProductBatchTransactionRow.toBDOut(): TransactionProductBDOut {
+    return TransactionProductBDOut(
         productId = product.id,
         productName = product.displayName,
         declarationId = declaration.id,

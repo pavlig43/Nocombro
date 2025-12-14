@@ -28,8 +28,8 @@ import ru.pavlig43.declarationform.api.DeclarationFormComponent
 import ru.pavlig43.declarationform.api.DeclarationFormScreen
 import ru.pavlig43.document.api.component.DocumentFormComponent
 import ru.pavlig43.document.api.ui.DocumentFormScreen
-import ru.pavlig43.itemlist.api.component.ItemListFactoryComponent
-import ru.pavlig43.itemlist.api.ui.GeneralItemListScreen
+import ru.pavlig43.itemlist.statik.api.component.StaticItemListFactoryComponent
+import ru.pavlig43.itemlist.statik.api.ui.GeneralItemListScreen
 import ru.pavlig43.notification.api.component.PageNotificationComponent
 import ru.pavlig43.notification.api.ui.NotificationTabs
 import ru.pavlig43.product.api.component.ProductFormComponent
@@ -130,7 +130,7 @@ fun RootNocombroScreen(rootNocombroComponent: IRootNocombroComponent) {
 private fun SlotFactory(slotComponent: SlotComponent?){
     when (slotComponent) {
 
-        is ItemListFactoryComponent -> GeneralItemListScreen(slotComponent)
+        is StaticItemListFactoryComponent -> GeneralItemListScreen(slotComponent)
 
         is DocumentFormComponent -> DocumentFormScreen(slotComponent)
 

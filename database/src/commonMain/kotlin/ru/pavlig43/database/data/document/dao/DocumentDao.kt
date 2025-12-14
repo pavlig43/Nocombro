@@ -30,17 +30,9 @@ interface DocumentDao {
 
     @Query("""
     SELECT * FROM $DOCUMENT_TABLE_NAME
-    WHERE type IN (:types)
-    AND (
-        display_name LIKE '%' || :searchText || '%' 
-        OR comment LIKE '%' || :searchText || '%'
-        OR :searchText = ''
-    )
     ORDER BY created_at DESC
 """)
-    fun observeOnDocuments(
-        searchText: String,
-        types: List<DocumentType>): Flow<List<Document>>
+    fun observeOnDocuments(): Flow<List<Document>>
 
     @Query("""
         SELECT CASE

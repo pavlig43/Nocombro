@@ -2,12 +2,10 @@ package ru.pavlig43.product.internal.component.tabs.tabslot
 
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
-import com.arkivanov.decompose.router.slot.ChildSlot
 import com.arkivanov.decompose.router.slot.SlotNavigation
 import com.arkivanov.decompose.router.slot.activate
 import com.arkivanov.decompose.router.slot.childSlot
 import com.arkivanov.decompose.router.slot.dismiss
-import com.arkivanov.decompose.value.Value
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -20,10 +18,10 @@ import ru.pavlig43.database.data.product.ProductCompositionIn
 import ru.pavlig43.database.data.product.ProductCompositionOut
 import ru.pavlig43.database.data.product.ProductIngredientIn
 import ru.pavlig43.database.data.product.ProductType
-import ru.pavlig43.itemlist.api.ItemListDependencies
-import ru.pavlig43.itemlist.api.ProductListParamProvider
-import ru.pavlig43.itemlist.api.component.MBSItemListComponent
-import ru.pavlig43.itemlist.internal.component.ProductItemUi
+import ru.pavlig43.itemlist.statik.ItemStaticListDependencies
+import ru.pavlig43.itemlist.statik.api.ProductListParamProvider
+import ru.pavlig43.itemlist.statik.api.component.MBSItemListComponent
+import ru.pavlig43.itemlist.statik.internal.component.ProductItemUi
 import ru.pavlig43.loadinitdata.api.component.LoadInitDataComponent
 import ru.pavlig43.product.internal.data.CompositionUi
 import ru.pavlig43.product.internal.data.ProductIngredientUi
@@ -45,7 +43,7 @@ import ru.pavlig43.update.data.UpdateCollectionRepository
 internal class CompositionTabSlot(
     componentContext: ComponentContext,
     private val productId: Int,
-    itemListDependencies: ItemListDependencies,
+    itemStaticListDependencies: ItemStaticListDependencies,
     val openProductTab: (Int) -> Unit,
     private val updateCompositionRepository: UpdateCollectionRepository<ProductCompositionOut, ProductCompositionIn>
 ) : ComponentContext by componentContext, ProductTabSlot {
@@ -206,7 +204,7 @@ internal class CompositionTabSlot(
             MBSItemListComponent<ProductItemUi>(
                 componentContext = context,
                 onDismissed = dialogNavigation::dismiss,
-                itemListDependencies = itemListDependencies,
+                itemStaticListDependencies = itemStaticListDependencies,
                 onCreate = { openProductTab(0) },
                 itemListParamProvider = ProductListParamProvider(
                     fullListProductTypes = ProductType.entries,

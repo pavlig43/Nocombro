@@ -20,7 +20,7 @@ import ru.pavlig43.declarationform.internal.component.tabs.tabslot.DeclarationTa
 import ru.pavlig43.declarationform.internal.component.tabs.tabslot.EssentialTabSlot
 import ru.pavlig43.declarationform.internal.ui.CreateDeclarationScreen
 import ru.pavlig43.declarationform.internal.ui.DeclarationFields
-import ru.pavlig43.itemlist.api.ui.MBSItemList
+import ru.pavlig43.itemlist.statik.api.ui.MBSItemList
 import ru.pavlig43.update.ui.ItemTabsUi
 
 @Composable

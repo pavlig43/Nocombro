@@ -11,7 +11,7 @@ import ru.pavlig43.database.data.product.ProductCompositionOut
 import ru.pavlig43.database.data.product.ProductDeclaration
 import ru.pavlig43.database.data.product.ProductDeclarationOut
 import ru.pavlig43.database.data.product.ProductFile
-import ru.pavlig43.itemlist.api.ItemListDependencies
+import ru.pavlig43.itemlist.statik.ItemStaticListDependencies
 import ru.pavlig43.product.api.ProductFormDependencies
 import ru.pavlig43.update.data.UpdateCollectionRepository
 import ru.pavlig43.update.data.UpdateEssentialsRepository
@@ -20,7 +20,7 @@ internal fun createProductFormModule(dependencies: ProductFormDependencies) = li
     module {
         single<NocombroDatabase> { dependencies.db }
         single<DataBaseTransaction> { dependencies.transaction }
-        single<ItemListDependencies> { dependencies.itemListDependencies }
+        single<ItemStaticListDependencies> { dependencies.itemStaticListDependencies }
         single<CreateEssentialsRepository<Product>> { getCreateRepository(get()) }
         single<UpdateEssentialsRepository<Product>> { getUpdateRepository(get()) }
 

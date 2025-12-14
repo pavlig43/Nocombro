@@ -33,8 +33,7 @@ import ru.pavlig43.database.data.product.dao.ProductDao
 import ru.pavlig43.database.data.product.dao.ProductDeclarationDao
 import ru.pavlig43.database.data.product.dao.ProductFilesDao
 import ru.pavlig43.database.data.transaction.ProductTransaction
-import ru.pavlig43.database.data.transaction.ProductBatchTransactionBDIn
-import ru.pavlig43.database.data.transaction.dao.ProductBatchDao
+import ru.pavlig43.database.data.transaction.TransactionProductBDIn
 import ru.pavlig43.database.data.transaction.dao.ProductTransactionDao
 import ru.pavlig43.database.data.vendor.Vendor
 import ru.pavlig43.database.data.vendor.VendorFile
@@ -62,7 +61,7 @@ import kotlin.time.ExperimentalTime
 
 
         ProductTransaction::class,
-        ProductBatchTransactionBDIn::class,
+        TransactionProductBDIn::class,
     ],
 
 
@@ -86,7 +85,6 @@ abstract class NocombroDatabase : RoomDatabase() {
     abstract val compositionDao: CompositionDao
 
     abstract val productTransactionDao:ProductTransactionDao
-    abstract val productBatchDao: ProductBatchDao
 }
 
 

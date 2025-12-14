@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "53e068f3d71effa928f658d0230a3389",
+    "identityHash": "3c4955cec05f7edcb09f2224b1260b50",
     "entities": [
       {
         "tableName": "document",
@@ -563,7 +563,7 @@
         }
       },
       {
-        "tableName": "product_batch_transaction",
+        "tableName": "transaction_product",
         "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`product_id` INTEGER NOT NULL, `declaration_id` INTEGER NOT NULL, `date_born` INTEGER NOT NULL, `batch` INTEGER NOT NULL, `transaction_id` INTEGER NOT NULL, `count` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, FOREIGN KEY(`product_id`) REFERENCES `product`(`id`) ON UPDATE NO ACTION ON DELETE RESTRICT , FOREIGN KEY(`declaration_id`) REFERENCES `declaration`(`id`) ON UPDATE NO ACTION ON DELETE RESTRICT , FOREIGN KEY(`transaction_id`) REFERENCES `product_transaction`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
@@ -654,7 +654,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '53e068f3d71effa928f658d0230a3389')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '3c4955cec05f7edcb09f2224b1260b50')"
     ]
   }
 }

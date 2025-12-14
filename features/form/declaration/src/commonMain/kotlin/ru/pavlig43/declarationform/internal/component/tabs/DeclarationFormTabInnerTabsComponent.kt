@@ -41,7 +41,7 @@ internal class DeclarationFormTabInnerTabsComponent(
 
                     DeclarationTab.Essentials -> EssentialTabSlot(
                         componentContext = context,
-                        itemListDependencies = scope.get(),
+                        itemStaticListDependencies = scope.get(),
                         declarationId = declarationId,
                         updateRepository = scope.get(),
                         componentFactory = componentFactory,

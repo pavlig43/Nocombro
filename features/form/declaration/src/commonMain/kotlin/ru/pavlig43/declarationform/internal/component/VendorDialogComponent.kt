@@ -1,21 +1,19 @@
 package ru.pavlig43.declarationform.internal.component
 
 import com.arkivanov.decompose.ComponentContext
-import com.arkivanov.decompose.router.slot.ChildSlot
 import com.arkivanov.decompose.router.slot.SlotNavigation
 import com.arkivanov.decompose.router.slot.activate
 import com.arkivanov.decompose.router.slot.childSlot
 import com.arkivanov.decompose.router.slot.dismiss
-import com.arkivanov.decompose.value.Value
-import ru.pavlig43.itemlist.api.ItemListDependencies
-import ru.pavlig43.itemlist.api.VendorListParamProvider
-import ru.pavlig43.itemlist.api.component.MBSItemListComponent
-import ru.pavlig43.itemlist.internal.component.VendorItemUi
+import ru.pavlig43.itemlist.statik.ItemStaticListDependencies
+import ru.pavlig43.itemlist.statik.api.VendorListParamProvider
+import ru.pavlig43.itemlist.statik.api.component.MBSItemListComponent
+import ru.pavlig43.itemlist.statik.internal.component.VendorItemUi
 
 internal class VendorDialogComponent(
     parentComponentContext: ComponentContext,
     private val onChangeVendor: (Int, String) -> Unit,
-    itemListDependencies: ItemListDependencies,
+    itemStaticListDependencies: ItemStaticListDependencies,
     onOpenVendorTab: (Int) -> Unit,
 ) {
     private val dialogNavigation = SlotNavigation<MBSVendorDialog>()
@@ -30,7 +28,7 @@ internal class VendorDialogComponent(
             MBSItemListComponent<VendorItemUi>(
                 componentContext = context,
                 onDismissed = dialogNavigation::dismiss,
-                itemListDependencies = itemListDependencies,
+                itemStaticListDependencies = itemStaticListDependencies,
                 onCreate = { onOpenVendorTab(0) },
                 itemListParamProvider = VendorListParamProvider(
                     withCheckbox = false

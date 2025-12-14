@@ -18,11 +18,10 @@ import ru.pavlig43.core.data.GenericDeclarationOut
 import ru.pavlig43.core.getUTCNow
 import ru.pavlig43.core.mapTo
 import ru.pavlig43.declaration.api.data.ItemDeclarationUi
-import ru.pavlig43.itemlist.api.DeclarationListParamProvider
-import ru.pavlig43.itemlist.api.ItemListDependencies
-import ru.pavlig43.itemlist.api.component.MBSItemListComponent
-import ru.pavlig43.itemlist.internal.component.DeclarationItemUi
-import ru.pavlig43.itemlist.internal.component.DocumentItemUi
+import ru.pavlig43.itemlist.statik.ItemStaticListDependencies
+import ru.pavlig43.itemlist.statik.api.DeclarationListParamProvider
+import ru.pavlig43.itemlist.statik.api.component.MBSItemListComponent
+import ru.pavlig43.itemlist.statik.internal.component.DeclarationItemUi
 import ru.pavlig43.loadinitdata.api.component.LoadInitDataComponent
 import ru.pavlig43.update.data.UpdateCollectionRepository
 import kotlin.time.ExperimentalTime
@@ -30,7 +29,7 @@ import kotlin.time.ExperimentalTime
 abstract class DeclarationTabSlot<Out : GenericDeclarationOut, In : GenericDeclarationIn>(
     componentContext: ComponentContext,
     private val productId: Int,
-    itemListDependencies: ItemListDependencies,
+    itemStaticListDependencies: ItemStaticListDependencies,
     private val updateRepository: UpdateCollectionRepository<Out, In>,
     openDeclarationTab: (Int) -> Unit,
     private val mapper: ItemDeclarationUi.(id: Int) -> In,
@@ -55,7 +54,7 @@ abstract class DeclarationTabSlot<Out : GenericDeclarationOut, In : GenericDecla
             componentContext = context,
             onDismissed = dialogNavigation::dismiss,
             onCreate = { openDeclarationTab(0) },
-            itemListDependencies = itemListDependencies,
+            itemStaticListDependencies = itemStaticListDependencies,
             itemListParamProvider = DeclarationListParamProvider(withCheckbox = false),
             onItemClick = {dec ->
                 productDeclarationList.addDeclaration(dec)

@@ -9,23 +9,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextDecoration
 
-@Composable
-fun HighlightedText(
-    text: String,
-    searchText: String,
-    modifier: Modifier = Modifier
-) {
-    val background = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
-    val annotated = remember(text, searchText, background) {
-        highlightText(text, searchText, background)
-    }
-    Text(text = annotated, modifier = modifier)
-}
 
 @Composable
 fun HighlightedTextField(
@@ -47,7 +34,18 @@ fun HighlightedTextField(
         modifier = modifier
     )
 }
-
+@Composable
+fun HighlightedText(
+    text: String,
+    searchText: String,
+    modifier: Modifier = Modifier
+) {
+    val background = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
+    val annotated = remember(text, searchText, background) {
+        highlightText(text, searchText, background)
+    }
+    Text(text = annotated, modifier = modifier)
+}
 private fun highlightText(
     text: String,
     searchText: String,
@@ -59,6 +57,7 @@ private fun highlightText(
         while (true) {
             val foundIndex = text.indexOf(searchText, startIndex, ignoreCase = true)
             if (foundIndex == -1) break
+
 
             addStyle(
                 style = SpanStyle(
@@ -72,4 +71,10 @@ private fun highlightText(
             startIndex = foundIndex + searchText.length
         }
     }
+}
+fun main() {
+    val value = "м"
+    val template = " ПРивет МИР"
+    println(template.indexOf(value, ))
+    println(template.indexOf(value, ignoreCase = true))
 }
