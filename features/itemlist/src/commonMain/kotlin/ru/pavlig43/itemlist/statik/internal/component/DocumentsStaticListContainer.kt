@@ -1,6 +1,5 @@
 package ru.pavlig43.itemlist.statik.internal.component
 
-import androidx.compose.runtime.mutableLongStateOf
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -10,7 +9,6 @@ import kotlinx.coroutines.flow.flatMapLatest
 import ru.pavlig43.core.RequestResult
 import ru.pavlig43.core.data.dbSafeCall
 import ru.pavlig43.core.data.dbSafeFlow
-import ru.pavlig43.core.mapTo
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.document.Document
 import ru.pavlig43.database.data.document.DocumentType
@@ -39,29 +37,17 @@ internal class DocumentsStaticListContainer(
     )
 
 
-    private val allItems = documentListRepository.observeOnItems()
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    private val documentListFlow: Flow<RequestResult<List<Document>>> =
-        combine(
-            allItems,
-            typeFilterComponent.valueFlow,
-            searchTextFilterComponent.valueFlow
-        ) { itemsResult, types, text ->
-
-            itemsResult.mapTo { lst ->
-                lst.filter {
-                    val matchesType = types.isEmpty() || it.type in types
-                    val matchesText =
-                        text.isBlank() ||
-                                it.displayName.contains(text, ignoreCase = true) ||
-                                it.comment.contains(text, ignoreCase = true)
-
-
-                    matchesType && matchesText
-                }
-            }
-        }
+    private val documentListFlow: Flow<RequestResult<List<Document>>> = combine(
+        typeFilterComponent.valueFlow,
+        searchTextFilterComponent.valueFlow
+    ) { types, text ->
+        documentListRepository.observeOnItems(
+            searchText = text,
+            types = types
+        )
+    }.flatMapLatest { it }
 
 
     override val staticListComponent: StaticListComponent<Document, DocumentItemUi> =
@@ -110,10 +96,13 @@ internal class DocumentListRepository(
     }
 
     fun observeOnItems(
+        searchText: String,
+        types: List<DocumentType>,
     ): Flow<RequestResult<List<Document>>> {
         return dbSafeFlow(tag) {
             dao.observeOnDocuments(
-
+            types = types,
+            searchText = searchText
             )
         }
     }

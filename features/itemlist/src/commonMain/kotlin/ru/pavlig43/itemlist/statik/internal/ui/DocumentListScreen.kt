@@ -77,10 +77,11 @@ internal fun DocumentListScreen(
         )
     )
     val searchText by component.searchTextFilterComponent.valueFlow.collectAsState()
-    Column(modifier.fillMaxWidth()) {
-        StaticItemListBox(
-            listComponent = component.staticListComponent,
-            headers = headers,
-            contentRow = { cells(it, searchText) })
-    }
+    DocScreen(component)
+//    Column(modifier.fillMaxWidth()) {
+//        StaticItemListBox(
+//            listComponent = component.staticListComponent,
+//            headers = headers,
+//            contentRow = { cells(it, searchText) })
+//    }
 }
