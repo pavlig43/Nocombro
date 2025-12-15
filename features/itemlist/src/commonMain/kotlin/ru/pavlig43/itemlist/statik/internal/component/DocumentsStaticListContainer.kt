@@ -82,6 +82,15 @@ private fun Document.toUi(): DocumentItemUi {
         comment = comment
     )
 }
+internal class DocListComponent(
+    componentContext: ComponentContext,
+    val onCreate: () -> Unit,
+    val onItemClick: (DocumentItemUi) -> Unit,
+    paramProvider: DocumentListParamProvider,
+    private val documentListRepository: DocumentListRepository,
+): ComponentContext by componentContext{
+
+}
 
 internal class DocumentListRepository(
     db: NocombroDatabase

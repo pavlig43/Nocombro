@@ -1,11 +1,16 @@
 package ru.pavlig43.itemlist.statik.internal.ui
 
 import androidx.compose.foundation.HorizontalScrollbar
+import androidx.compose.foundation.LocalScrollbarStyle
 import androidx.compose.foundation.VerticalScrollbar
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.rememberScrollbarAdapter
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -14,144 +19,135 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
+import ru.pavlig43.core.DateFieldKind
+import ru.pavlig43.core.convertToDateOrDateTimeString
+import ru.pavlig43.core.data.GenericItem
+import ru.pavlig43.coreui.ErrorScreen
+import ru.pavlig43.coreui.LoadingScreen
+import ru.pavlig43.itemlist.core.data.IItemUi
 import ru.pavlig43.itemlist.statik.internal.component.DocumentItemUi
 import ru.pavlig43.itemlist.statik.internal.component.DocumentsStaticListContainer
 import ru.pavlig43.itemlist.statik.internal.component.ItemListState
-import ua.wwind.paging.core.PagingData
+import ru.pavlig43.itemlist.statik.internal.component.StaticListComponent
+import ua.wwind.table.ColumnSpec
 import ua.wwind.table.ExperimentalTableApi
 import ua.wwind.table.Table
+import ua.wwind.table.config.DefaultTableCustomization
 import ua.wwind.table.config.SelectionMode
+import ua.wwind.table.config.TableCellStyle
+import ua.wwind.table.config.TableCustomization
+import ua.wwind.table.config.TableGroupContext
 import ua.wwind.table.config.TableSettings
 import ua.wwind.table.filter.data.TableFilterType
+import ua.wwind.table.format.rememberCustomization
 import ua.wwind.table.state.rememberTableState
 import ua.wwind.table.tableColumns
-import ua.wwind.table.paging.Table as PT
-data class Person(val name: String, val age: Int)
 
-enum class PersonField { Name, Age }
-data class PersonTableData(
-    val displayedPeople: List<Person> = emptyList(),
-)
+enum class DocumentField {
+    Id,
+    Name,
+    Type,
+    CreatedAt,
+    Comment
+}
 
-val columns = tableColumns<Person, PersonField, PersonTableData> {
-    column(PersonField.Name, valueOf = { it.name }) {
-        header("Name")
-        cell { person, _ -> Text(person.name) }
-        sortable()
-        // Enable built‑in Text filter UI in header
-        filter(TableFilterType.TextTableFilter())
-        // Auto‑fit to content with optional max cap
-        autoWidth(max = 500.dp)
+val columns: ImmutableList<ColumnSpec<DocumentItemUi, DocumentField, Unit>> =
+    tableColumns<DocumentItemUi, DocumentField, Unit> {
 
-        // Optional footer with access to table data
-        footer { tableData ->
-            Text("Total: ${tableData.displayedPeople.size}")
+
+        column(DocumentField.Id, valueOf = { it.id }) {
+            header("Ид")
+            cell { document, _ -> Text(document.id.toString()) }
+            sortable()
+            // Enable built‑in Text filter UI in header
+            filter(TableFilterType.TextTableFilter())
+            // Auto‑fit to content with optional max cap
+            autoWidth(max = 500.dp)
+
+        }
+
+        column(DocumentField.Name, valueOf = { it.displayName }) {
+            header("Название")
+            cell { document, _ -> Text(document.displayName) }
+            sortable()
+        }
+        column(DocumentField.Type, valueOf = { it.type }) {
+            header("Тип")
+            cell { document, _ -> Text(document.type.displayName) }
+        }
+        column(DocumentField.CreatedAt, valueOf = { it.createdAt }) {
+            header("Создан")
+            cell { document, _ ->
+                Text(
+                    document.createdAt.convertToDateOrDateTimeString(
+                        DateFieldKind.Date
+                    )
+                )
+            }
+            sortable()
+        }
+        column(DocumentField.Comment, valueOf = { it.comment }) {
+            header("Комментарий")
+            cell { document, _ -> Text(document.comment) }
         }
     }
 
-    column(PersonField.Age, valueOf = { it.age }) {
-        header("Age")
-        cell { person, _ -> Text(person.age.toString()) }
-        sortable()
-        align(Alignment.TopEnd)
-        filter(
-            TableFilterType.NumberTableFilter(
-                delegate = TableFilterType.NumberTableFilter.IntDelegate,
-                rangeOptions = 0 to 120
-            )
-        )
-    }
-}
 @OptIn(ExperimentalTableApi::class)
 @Composable
 internal fun DocScreen(
     component: DocumentsStaticListContainer,
     modifier: Modifier = Modifier
-){
-    val a: ItemListState<DocumentItemUi> by component.staticListComponent.itemListState.collectAsState()
-    when(val state =a ){
-        is ItemListState.Error<*> -> Box{}
-        is ItemListState.Initial -> Box{}
-        is ItemListState.Loading -> Box{}
-        is ItemListState.Success<*> -> {
-            val items = state.data
-                .map {
-                item->
-                Person((item as DocumentItemUi).displayName, item.id)
-            }
-//            val a = PagingData()
-            PeopleTable(items)
-
-//            PeopleTableWithPaging(
-//
-//            )
-        }
-    }
-
-
-
-}
-@Composable
-fun PeopleTableWithPaging(
-    pagingData: PagingData<Person>,
-    onPersonClick: (Person) -> Unit,
 ) {
-    // Create table state
-    val tableState = rememberTableState(
-        columns = PersonField.entries.toImmutableList(),
-        settings = TableSettings(
-            stripedRows = true,
-        )
+    ImmutableListScreen(
+        component = component.staticListComponent,
+        columns = columns,
+        onItemClick = { component.onItemClick(it) },
+        tableData = Unit,
+        modifier = modifier
     )
 
-    // Define columns
-    val columns = tableColumns<Person, PersonField, Unit> {
-        column(PersonField.Name, valueOf = { it.name }) {
-            header("Name")
-            cell { person, _ -> Text(person.name) }
-            sortable()
-        }
-        column(PersonField.Age, valueOf = { it.age }) {
-            header("Age")
-            cell { person, _ -> Text(1.toString()) }
-            sortable()
-        }
-    }
-
-    // Scroll states for scrollbars
-    val verticalState = rememberLazyListState()
-    val horizontalState = rememberScrollState()
-
-    // Render table with scrollbars
-    Box {
-        PT(
-            items = pagingData, // Pass PagingData directly
-            state = tableState,
-            columns = columns,
-            onRowClick = onPersonClick,
-            verticalState = verticalState,
-            horizontalState = horizontalState,
-        )
-
-        // Vertical scrollbar shows total dataset size
-        VerticalScrollbar(
-            adapter = rememberScrollbarAdapter(verticalState),
-            modifier = Modifier.align(Alignment.CenterEnd)
-        )
-
-        // Horizontal scrollbar
-        HorizontalScrollbar(
-            adapter = rememberScrollbarAdapter(horizontalState),
-            modifier = Modifier.align(Alignment.BottomStart)
-        )
-    }
 }
+
 @OptIn(ExperimentalTableApi::class)
 @Composable
-fun PeopleTable(items: List<Person>) {
-    val a = PersonTableData(items)
+internal fun <I : IItemUi, C, E> ImmutableListScreen(
+    component: StaticListComponent<out GenericItem, I>,
+    columns: ImmutableList<ColumnSpec<I, C, E>>,
+    onItemClick: (I) -> Unit,
+    tableData: E,
+    modifier: Modifier = Modifier
+) {
+    val itemListState: ItemListState<I> by component.itemListState.collectAsState()
+    Box(modifier.padding(16.dp)) {
+
+        when (val state = itemListState) {
+
+            is ItemListState.Error<*> -> ErrorScreen(state.message)
+            is ItemListState.Initial -> LoadingScreen()
+            is ItemListState.Loading -> LoadingScreen()
+            is ItemListState.Success -> {
+                ImmutableListTable(
+                    columns = columns,
+                    items = state.data,
+                    onRowClick = onItemClick,
+                    tableData = tableData
+                )
+            }
+
+        }
+    }
+}
+
+
+@OptIn(ExperimentalTableApi::class)
+@Composable
+internal fun <I : Any, C, E> ImmutableListTable(
+    columns: ImmutableList<ColumnSpec<I, C, E>>,
+    items: List<I>,
+    onRowClick: (I) -> Unit,
+    tableData: E
+) {
     val state = rememberTableState(
         columns = columns.map { it.key }.toImmutableList(),
         settings = TableSettings(
@@ -160,13 +156,44 @@ fun PeopleTable(items: List<Person>) {
             selectionMode = SelectionMode.Single,
         )
     )
-    Table(
-        itemsCount = items.size,
-        itemAt = { index -> items.getOrNull(index) },
-        state = state,
-        tableData = a,
-        columns = columns,
-        onRowClick = { person -> println(person) },
-    )
+    val verticalState = rememberLazyListState()
+    val horizontalState = rememberScrollState()
+    Box {
+
+        Table(
+            itemsCount = items.size,
+            itemAt = { index -> items.getOrNull(index) },
+            state = state,
+            customization = DefaultTableCustomization(),
+            tableData = tableData,
+            columns = columns,
+            verticalState = verticalState,
+            horizontalState = horizontalState,
+            onRowClick = onRowClick,
+            modifier = Modifier.fillMaxSize()
+                .padding(end = 16.dp, bottom = 16.dp)
+        )
+
+        val lineColor = MaterialTheme.colorScheme.secondary
+        val style = LocalScrollbarStyle.current.copy(
+            unhoverColor = MaterialTheme.colorScheme.onSecondary.copy(alpha = 0.7f),
+            hoverColor = MaterialTheme.colorScheme.onSecondary,
+        )
+        VerticalScrollbar(
+            adapter = rememberScrollbarAdapter(verticalState),
+            style = style,
+            modifier = Modifier.align(Alignment.CenterEnd).padding(bottom = 24.dp)
+                .background(lineColor)
+        )
+
+        // Horizontal scrollbar
+        HorizontalScrollbar(
+            adapter = rememberScrollbarAdapter(horizontalState),
+            style = style,
+            modifier = Modifier.align(Alignment.BottomStart).padding(end = 24.dp)
+                .background(lineColor)
+        )
+    }
+
 }
 
