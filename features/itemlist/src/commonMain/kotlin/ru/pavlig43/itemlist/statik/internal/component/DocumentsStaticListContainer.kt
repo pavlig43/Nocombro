@@ -43,10 +43,7 @@ internal class DocumentsStaticListContainer(
         typeFilterComponent.valueFlow,
         searchTextFilterComponent.valueFlow
     ) { types, text ->
-        documentListRepository.observeOnItems(
-            searchText = text,
-            types = types
-        )
+        documentListRepository.observeOnItems()
     }.flatMapLatest { it }
 
 
@@ -98,20 +95,16 @@ internal class DocumentListRepository(
     private val dao = db.documentDao
     private val tag = "DocumentListRepository"
 
-    suspend fun deleteByIds(ids: List<Int>): RequestResult<Unit> {
+    suspend fun deleteByIds(ids: Set<Int>): RequestResult<Unit> {
         return dbSafeCall(tag) {
             dao.deleteDocumentsByIds(ids)
         }
     }
 
     fun observeOnItems(
-        searchText: String,
-        types: List<DocumentType>,
     ): Flow<RequestResult<List<Document>>> {
         return dbSafeFlow(tag) {
             dao.observeOnDocuments(
-            types = types,
-            searchText = searchText
             )
         }
     }

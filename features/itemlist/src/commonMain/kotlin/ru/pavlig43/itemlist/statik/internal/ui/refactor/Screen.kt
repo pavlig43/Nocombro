@@ -1,4 +1,4 @@
-package ru.pavlig43.itemlist.statik.internal.ui
+package ru.pavlig43.itemlist.statik.internal.ui.refactor
 
 import androidx.compose.foundation.HorizontalScrollbar
 import androidx.compose.foundation.LocalScrollbarStyle
@@ -10,9 +10,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.rememberScrollbarAdapter
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -22,88 +24,110 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import ru.pavlig43.core.DateFieldKind
 import ru.pavlig43.core.convertToDateOrDateTimeString
-import ru.pavlig43.core.data.GenericItem
 import ru.pavlig43.coreui.ErrorScreen
 import ru.pavlig43.coreui.LoadingScreen
-import ru.pavlig43.itemlist.core.data.IItemUi
 import ru.pavlig43.itemlist.statik.internal.component.DocumentItemUi
 import ru.pavlig43.itemlist.statik.internal.component.DocumentsStaticListContainer
-import ru.pavlig43.itemlist.statik.internal.component.ItemListState
-import ru.pavlig43.itemlist.statik.internal.component.StaticListComponent
 import ua.wwind.table.ColumnSpec
 import ua.wwind.table.ExperimentalTableApi
 import ua.wwind.table.Table
 import ua.wwind.table.config.DefaultTableCustomization
 import ua.wwind.table.config.SelectionMode
-import ua.wwind.table.config.TableCellStyle
-import ua.wwind.table.config.TableCustomization
-import ua.wwind.table.config.TableGroupContext
 import ua.wwind.table.config.TableSettings
 import ua.wwind.table.filter.data.TableFilterType
-import ua.wwind.table.format.rememberCustomization
 import ua.wwind.table.state.rememberTableState
 import ua.wwind.table.tableColumns
 
+
 enum class DocumentField {
+
+    SELECTION,
+
     Id,
     Name,
     Type,
     CreatedAt,
     Comment
 }
+fun createColumn(
+    onEvent: (SampleUiEvent) -> Unit,
+): ImmutableList<ColumnSpec<DocumentItemUi, DocumentField, TableData<DocumentItemUi>>> {
+    val columns =
+        tableColumns<DocumentItemUi, DocumentField, TableData<DocumentItemUi>> {
+            column(DocumentField.SELECTION, valueOf = {it.id}){
+                title { "" }
+                width(48.dp)
+                resizable(false)
+                cell { doc,tableData->
+                    if (tableData.selectionModeEnabled){
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier.fillMaxSize(),
+                        ) {
+                            Checkbox(
+                                checked = doc.id in tableData.selectedIds,
+                                onCheckedChange = {
+                                    onEvent(SampleUiEvent.ToggleSelection(doc.id))
+                                },
+                            )
+                        }
+                    }
 
-val columns: ImmutableList<ColumnSpec<DocumentItemUi, DocumentField, Unit>> =
-    tableColumns<DocumentItemUi, DocumentField, Unit> {
+                }
 
-
-        column(DocumentField.Id, valueOf = { it.id }) {
-            header("Ид")
-            cell { document, _ -> Text(document.id.toString()) }
-            sortable()
-            // Enable built‑in Text filter UI in header
-            filter(TableFilterType.TextTableFilter())
-            // Auto‑fit to content with optional max cap
-            autoWidth(max = 500.dp)
-
-        }
-
-        column(DocumentField.Name, valueOf = { it.displayName }) {
-            header("Название")
-            cell { document, _ -> Text(document.displayName) }
-            sortable()
-        }
-        column(DocumentField.Type, valueOf = { it.type }) {
-            header("Тип")
-            cell { document, _ -> Text(document.type.displayName) }
-        }
-        column(DocumentField.CreatedAt, valueOf = { it.createdAt }) {
-            header("Создан")
-            cell { document, _ ->
-                Text(
-                    document.createdAt.convertToDateOrDateTimeString(
-                        DateFieldKind.Date
-                    )
-                )
             }
-            sortable()
+
+            column(DocumentField.Id, valueOf = { it.id }) {
+                header("Ид")
+                cell { document, _ -> Text(document.id.toString()) }
+                sortable()
+                // Enable built‑in Text filter UI in header
+                filter(TableFilterType.TextTableFilter())
+                // Auto‑fit to content with optional max cap
+                autoWidth(max = 500.dp)
+
+            }
+
+            column(DocumentField.Name, valueOf = { it.displayName }) {
+                header("Название")
+                cell { document, _ -> Text(document.displayName) }
+                sortable()
+            }
+            column(DocumentField.Type, valueOf = { it.type }) {
+                header("Тип")
+                cell { document, _ -> Text(document.type.displayName) }
+            }
+            column(DocumentField.CreatedAt, valueOf = { it.createdAt }) {
+                header("Создан")
+                cell { document, _ ->
+                    Text(
+                        document.createdAt.convertToDateOrDateTimeString(
+                            DateFieldKind.Date
+                        )
+                    )
+                }
+                sortable()
+            }
+            column(DocumentField.Comment, valueOf = { it.comment }) {
+                header("Комментарий")
+                cell { document, _ -> Text(document.comment) }
+            }
         }
-        column(DocumentField.Comment, valueOf = { it.comment }) {
-            header("Комментарий")
-            cell { document, _ -> Text(document.comment) }
-        }
-    }
+    return columns
+
+}
 
 @OptIn(ExperimentalTableApi::class)
 @Composable
-internal fun DocScreen(
-    component: DocumentsStaticListContainer,
+internal fun DocScreen1(
+    component: DocumentTableComponent,
     modifier: Modifier = Modifier
 ) {
-    ImmutableListScreen(
-        component = component.staticListComponent,
-        columns = columns,
+
+    ImmutableListScreen1(
+        component = component,
+        columns = createColumn(component::onEvent),
         onItemClick = { component.onItemClick(it) },
-        tableData = Unit,
         modifier = modifier
     )
 
@@ -111,22 +135,21 @@ internal fun DocScreen(
 
 @OptIn(ExperimentalTableApi::class)
 @Composable
-internal fun <I : IItemUi, C, E> ImmutableListScreen(
-    component: StaticListComponent<out GenericItem, I>,
-    columns: ImmutableList<ColumnSpec<I, C, E>>,
+internal fun <I : Any, C> ImmutableListScreen1(
+    component: IImmutableTableComponent<I>,
+    columns: ImmutableList<ColumnSpec<I, C, TableData<I>>>,
     onItemClick: (I) -> Unit,
-    tableData: E,
     modifier: Modifier = Modifier
 ) {
-    val itemListState: ItemListState<I> by component.itemListState.collectAsState()
+    val itemListState by component.itemListState.collectAsState()
+    val tableData: TableData<I> by component.tableData.collectAsState()
     Box(modifier.padding(16.dp)) {
 
         when (val state = itemListState) {
 
-            is ItemListState.Error<*> -> ErrorScreen(state.message)
-            is ItemListState.Initial -> LoadingScreen()
-            is ItemListState.Loading -> LoadingScreen()
-            is ItemListState.Success -> {
+            is ItemListState1.Error -> ErrorScreen(state.message)
+            is ItemListState1.Loading -> LoadingScreen()
+            is ItemListState1.Success -> {
                 ImmutableListTable(
                     columns = columns,
                     items = state.data,
@@ -142,7 +165,7 @@ internal fun <I : IItemUi, C, E> ImmutableListScreen(
 
 @OptIn(ExperimentalTableApi::class)
 @Composable
-internal fun <I : Any, C, E> ImmutableListTable(
+private fun <I : Any, C, E: TableData<I>> ImmutableListTable(
     columns: ImmutableList<ColumnSpec<I, C, E>>,
     items: List<I>,
     onRowClick: (I) -> Unit,
@@ -152,8 +175,11 @@ internal fun <I : Any, C, E> ImmutableListTable(
         columns = columns.map { it.key }.toImmutableList(),
         settings = TableSettings(
             stripedRows = true,
+            autoApplyFilters = true,
+            showFastFilters = true,
             showActiveFiltersHeader = true,
-            selectionMode = SelectionMode.Single,
+            selectionMode = SelectionMode.Multiple,
+            pinnedColumnsCount = 1
         )
     )
     val verticalState = rememberLazyListState()
@@ -196,4 +222,3 @@ internal fun <I : Any, C, E> ImmutableListTable(
     }
 
 }
-

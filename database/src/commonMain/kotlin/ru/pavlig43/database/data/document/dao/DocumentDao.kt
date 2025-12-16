@@ -22,7 +22,7 @@ interface DocumentDao {
     suspend fun updateDocument(document: Document)
 
     @Query("DELETE FROM document WHERE id IN (:ids)")
-    suspend fun deleteDocumentsByIds(ids: List<Int>)
+    suspend fun deleteDocumentsByIds(ids: Set<Int>)
 
     @Query("SELECT * from document WHERE id = :id")
     suspend fun getDocument(id: Int):Document
@@ -30,17 +30,9 @@ interface DocumentDao {
 
     @Query("""
     SELECT * FROM $DOCUMENT_TABLE_NAME
-    WHERE type IN (:types)
-    AND (
-        display_name LIKE '%' || :searchText || '%' 
-        OR comment LIKE '%' || :searchText || '%'
-        OR :searchText = ''
-    )
-    ORDER BY created_at DESC
+    ORDER BY id DESC
 """)
-    fun observeOnDocuments(
-        searchText: String,
-        types: List<DocumentType>): Flow<List<Document>>
+    fun observeOnDocuments(): Flow<List<Document>>
 
     @Query("""
         SELECT CASE

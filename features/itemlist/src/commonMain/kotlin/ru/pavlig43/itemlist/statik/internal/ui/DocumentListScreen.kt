@@ -16,6 +16,7 @@ import ru.pavlig43.itemlist.internal.ui.core.LabelSelectionLogic
 import ru.pavlig43.itemlist.statik.internal.component.DocumentItemUi
 import ru.pavlig43.itemlist.statik.internal.component.DocumentsStaticListContainer
 import ru.pavlig43.itemlist.statik.internal.ui.core.StaticItemListBox
+import ru.pavlig43.itemlist.statik.internal.ui.refactor.DocScreen
 
 
 private fun TableRowScope.cells(
@@ -77,11 +78,10 @@ internal fun DocumentListScreen(
         )
     )
     val searchText by component.searchTextFilterComponent.valueFlow.collectAsState()
-    DocScreen(component)
-//    Column(modifier.fillMaxWidth()) {
-//        StaticItemListBox(
-//            listComponent = component.staticListComponent,
-//            headers = headers,
-//            contentRow = { cells(it, searchText) })
-//    }
+    Column(modifier.fillMaxWidth()) {
+        StaticItemListBox(
+            listComponent = component.staticListComponent,
+            headers = headers,
+            contentRow = { cells(it, searchText) })
+    }
 }
