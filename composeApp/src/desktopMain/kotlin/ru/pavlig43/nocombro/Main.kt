@@ -43,6 +43,7 @@ fun main() {
                 windowState = windowState,
                 windowInfo = LocalWindowInfo.current,
             )
+
             App(rootNocombroComponent)
 
 

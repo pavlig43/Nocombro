@@ -13,6 +13,7 @@ import ru.pavlig43.theme.NocombroTheme
 @Composable
 fun App(rootNocombroComponent: IRootNocombroComponent,) {
     val darkMode by rootNocombroComponent.settingsComponent.darkMode.collectAsState()
+
     NocombroTheme(darkTheme = darkMode) {
         Column(Modifier.fillMaxSize()) {
 

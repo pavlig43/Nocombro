@@ -16,7 +16,6 @@ import ru.pavlig43.itemlist.internal.ui.core.LabelSelectionLogic
 import ru.pavlig43.itemlist.statik.internal.component.DocumentItemUi
 import ru.pavlig43.itemlist.statik.internal.component.DocumentsStaticListContainer
 import ru.pavlig43.itemlist.statik.internal.ui.core.StaticItemListBox
-import ru.pavlig43.itemlist.statik.internal.ui.refactor.DocScreen
 
 
 private fun TableRowScope.cells(
@@ -33,7 +32,7 @@ private fun TableRowScope.cells(
 
     }
     cell { Text(item.type.displayName) }
-    cell { Text(item.createdAt.convertToDateOrDateTimeString(DateFieldKind.Date)) }
+    cell { Text(item.createdAt.toString()) }
     cell {
         HighlightedText(
             text = item.comment,

@@ -25,5 +25,7 @@ kotlin {
         implementation(projects.features.form.declaration)
         implementation(projects.features.form.transaction)
 
+        implementation("androidx.lifecycle:lifecycle-viewmodel:2.8.6")
+
     }
 }

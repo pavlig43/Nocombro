@@ -14,7 +14,6 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -27,7 +26,6 @@ import ru.pavlig43.core.convertToDateOrDateTimeString
 import ru.pavlig43.coreui.ErrorScreen
 import ru.pavlig43.coreui.LoadingScreen
 import ru.pavlig43.itemlist.statik.internal.component.DocumentItemUi
-import ru.pavlig43.itemlist.statik.internal.component.DocumentsStaticListContainer
 import ua.wwind.table.ColumnSpec
 import ua.wwind.table.ExperimentalTableApi
 import ua.wwind.table.Table
@@ -43,11 +41,11 @@ enum class DocumentField {
 
     SELECTION,
 
-    Id,
-    Name,
-    Type,
-    CreatedAt,
-    Comment
+    ID,
+    NAME,
+    TYPE,
+    CREATED_AT,
+    COMMENT
 }
 fun createColumn(
     onEvent: (SampleUiEvent) -> Unit,
@@ -77,7 +75,7 @@ fun createColumn(
 
             }
 
-            column(DocumentField.Id, valueOf = { it.id }) {
+            column(DocumentField.ID, valueOf = { it.id }) {
                 header("Ид")
                 cell { document, _ -> Text(document.id.toString()) }
                 sortable()
@@ -88,27 +86,25 @@ fun createColumn(
 
             }
 
-            column(DocumentField.Name, valueOf = { it.displayName }) {
+            column(DocumentField.NAME, valueOf = { it.displayName }) {
                 header("Название")
                 cell { document, _ -> Text(document.displayName) }
                 sortable()
             }
-            column(DocumentField.Type, valueOf = { it.type }) {
+            column(DocumentField.TYPE, valueOf = { it.type }) {
                 header("Тип")
                 cell { document, _ -> Text(document.type.displayName) }
             }
-            column(DocumentField.CreatedAt, valueOf = { it.createdAt }) {
+            column(DocumentField.CREATED_AT, valueOf = { it.createdAt }) {
                 header("Создан")
                 cell { document, _ ->
                     Text(
-                        document.createdAt.convertToDateOrDateTimeString(
-                            DateFieldKind.Date
-                        )
+                        document.createdAt.toString()
                     )
                 }
                 sortable()
             }
-            column(DocumentField.Comment, valueOf = { it.comment }) {
+            column(DocumentField.COMMENT, valueOf = { it.comment }) {
                 header("Комментарий")
                 cell { document, _ -> Text(document.comment) }
             }
@@ -142,6 +138,7 @@ internal fun <I : Any, C> ImmutableListScreen1(
     modifier: Modifier = Modifier
 ) {
     val itemListState by component.itemListState.collectAsState()
+
     val tableData: TableData<I> by component.tableData.collectAsState()
     Box(modifier.padding(16.dp)) {
 
@@ -152,7 +149,7 @@ internal fun <I : Any, C> ImmutableListScreen1(
             is ItemListState1.Success -> {
                 ImmutableListTable(
                     columns = columns,
-                    items = state.data,
+                    items = tableData.displayedItems,
                     onRowClick = onItemClick,
                     tableData = tableData
                 )

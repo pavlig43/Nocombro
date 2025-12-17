@@ -10,13 +10,19 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModelStore
+import androidx.lifecycle.ViewModelStoreOwner
 import com.arkivanov.decompose.Child
 import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
@@ -45,6 +51,8 @@ import ru.pavlig43.transaction.api.component.TransactionFormComponent
 import ru.pavlig43.transaction.api.ui.TransactionFormScreen
 import ru.pavlig43.vendor.api.ui.VendorFormScreen
 import ru.pavlig43.vendor.component.VendorFormComponent
+import ua.wwind.table.sample.app.SampleApp
+
 
 @Suppress("LongMethod")
 @Composable
@@ -52,78 +60,81 @@ fun RootNocombroScreen(rootNocombroComponent: IRootNocombroComponent) {
     val stack by rootNocombroComponent.stack.subscribeAsState()
     val coroutineScope = rememberCoroutineScope()
     val drawerState = rememberDrawerState(DrawerValue.Closed)
-    Surface {
-
-        Children(
-            stack = stack,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(24.dp)
-                .windowInsetsPadding(WindowInsets.systemBars)
-        ) { child: Child.Created<Any, IRootNocombroComponent.Child> ->
-            Column(
-                Modifier.fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-
-                when (val instance = child.instance) {
-                    is IRootNocombroComponent.Child.RootSign -> RootSignScreen(instance.component)
-
-                    is IRootNocombroComponent.Child.Tabs -> {
-                        val mainNavigationComponent: IMainNavigationComponent<TabConfig, SlotComponent> =
-                            instance.component
-                        val tabNavigationComponent: TabNavigationComponent<TabConfig, SlotComponent> =
-                            mainNavigationComponent.tabNavigationComponent
-                        val drawerNavigationComponent = mainNavigationComponent.drawerComponent
-                        NocombroAppBar(
-                            settingsComponent = rootNocombroComponent.settingsComponent,
-                            onOpenDrawer = {
-                                coroutineScope.launch {
-                                    if (drawerState.isClosed) {
-                                        drawerState.open()
-                                    } else {
-                                        drawerState.close()
-                                    }
-                                }
-                            }
-                        )
-                        NavigationDrawer(
-                            drawerComponent = drawerNavigationComponent,
-                            drawerState = drawerState,
-                            onCloseNavigationDrawer = {
-                                coroutineScope.launch { drawerState.close() }
-                            },
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Column(Modifier.fillMaxSize()) {
-                                TabNavigationContent(
-                                    navigationComponent = tabNavigationComponent,
-                                    tabContent = { index, slotComponent, modifier, isSelected, isDragging, onClose ->
-                                        TabContent(
-                                            slotComponent = slotComponent,
-                                            modifier = modifier,
-                                            isSelected = isSelected,
-                                            isDragging = isDragging,
-                                            onClose = onClose,
-                                            onSelect = { tabNavigationComponent.onSelectTab(index) },
-                                        )
-                                    },
-                                    containerContent = { innerTabs: @Composable (modifier: Modifier) -> Unit ->
-                                        innerTabs(Modifier.fillMaxWidth())
-
-                                    },
-                                    slotFactory = {slotComponent -> SlotFactory(slotComponent)}
-                                )
-                            }
-                        }
 
 
-                    }
-                }
-
-            }
-        }
-    }
+    SampleApp()
+//    Surface {
+//
+//        Children(
+//            stack = stack,
+//            modifier = Modifier
+//                .fillMaxSize()
+//                .padding(24.dp)
+//                .windowInsetsPadding(WindowInsets.systemBars)
+//        ) { child: Child.Created<Any, IRootNocombroComponent.Child> ->
+//            Column(
+//                Modifier.fillMaxSize(),
+//                horizontalAlignment = Alignment.CenterHorizontally
+//            ) {
+//
+//                when (val instance = child.instance) {
+//                    is IRootNocombroComponent.Child.RootSign -> RootSignScreen(instance.component)
+//
+//                    is IRootNocombroComponent.Child.Tabs -> {
+//                        val mainNavigationComponent: IMainNavigationComponent<TabConfig, SlotComponent> =
+//                            instance.component
+//                        val tabNavigationComponent: TabNavigationComponent<TabConfig, SlotComponent> =
+//                            mainNavigationComponent.tabNavigationComponent
+//                        val drawerNavigationComponent = mainNavigationComponent.drawerComponent
+//                        NocombroAppBar(
+//                            settingsComponent = rootNocombroComponent.settingsComponent,
+//                            onOpenDrawer = {
+//                                coroutineScope.launch {
+//                                    if (drawerState.isClosed) {
+//                                        drawerState.open()
+//                                    } else {
+//                                        drawerState.close()
+//                                    }
+//                                }
+//                            }
+//                        )
+//                        NavigationDrawer(
+//                            drawerComponent = drawerNavigationComponent,
+//                            drawerState = drawerState,
+//                            onCloseNavigationDrawer = {
+//                                coroutineScope.launch { drawerState.close() }
+//                            },
+//                            modifier = Modifier.fillMaxWidth()
+//                        ) {
+//                            Column(Modifier.fillMaxSize()) {
+//                                TabNavigationContent(
+//                                    navigationComponent = tabNavigationComponent,
+//                                    tabContent = { index, slotComponent, modifier, isSelected, isDragging, onClose ->
+//                                        TabContent(
+//                                            slotComponent = slotComponent,
+//                                            modifier = modifier,
+//                                            isSelected = isSelected,
+//                                            isDragging = isDragging,
+//                                            onClose = onClose,
+//                                            onSelect = { tabNavigationComponent.onSelectTab(index) },
+//                                        )
+//                                    },
+//                                    containerContent = { innerTabs: @Composable (modifier: Modifier) -> Unit ->
+//                                        innerTabs(Modifier.fillMaxWidth())
+//
+//                                    },
+//                                    slotFactory = {slotComponent -> SlotFactory(slotComponent)}
+//                                )
+//                            }
+//                        }
+//
+//
+//                    }
+//                }
+//
+//            }
+//        }
+//    }
 
 }
 @Composable

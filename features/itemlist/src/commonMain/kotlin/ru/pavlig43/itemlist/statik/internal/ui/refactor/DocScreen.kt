@@ -46,21 +46,7 @@ import ua.wwind.table.tableColumns
 
 
 
-//@OptIn(ExperimentalTableApi::class)
-//@Composable
-//internal fun DocScreen(
-//    component: DocumentsStaticListContainer,
-//    modifier: Modifier = Modifier
-//) {
-//    ImmutableListScreen(
-//        component = component.staticListComponent,
-//        columns = createColumn(),
-//        onItemClick = { component.onItemClick(it) },
-//        tableData = Unit,
-//        modifier = modifier
-//    )
-//
-//}
+
 
 @OptIn(ExperimentalTableApi::class)
 @Composable

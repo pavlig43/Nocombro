@@ -6,6 +6,9 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import ru.pavlig43.core.RequestResult
 import ru.pavlig43.core.data.dbSafeCall
 import ru.pavlig43.core.data.dbSafeFlow
@@ -15,6 +18,8 @@ import ru.pavlig43.database.data.document.DocumentType
 import ru.pavlig43.itemlist.core.data.IItemUi
 import ru.pavlig43.itemlist.core.component.ValueFilterComponent
 import ru.pavlig43.itemlist.statik.api.DocumentListParamProvider
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 
 internal class DocumentsStaticListContainer(
     componentContext: ComponentContext,
@@ -51,7 +56,7 @@ internal class DocumentsStaticListContainer(
         StaticListComponent(
             componentContext = childContext("body"),
             dataFlow = documentListFlow,
-            deleteItemsById = documentListRepository::deleteByIds,
+            deleteItemsById = {ids-> documentListRepository.deleteByIds(ids.toSet()) },
             searchTextComponent = searchTextFilterComponent,
             onCreate = onCreate,
             withCheckbox = paramProvider.withCheckbox,
@@ -66,16 +71,20 @@ data class DocumentItemUi(
     override val id: Int,
     val displayName: String,
     val type: DocumentType,
-    val createdAt: Long,
+    val createdAt: LocalDate,
     val comment: String = "",
 ) : IItemUi
 
+@OptIn(ExperimentalTime::class)
 private fun Document.toUi(): DocumentItemUi {
+    val date = Instant.fromEpochMilliseconds(createdAt)
+        .toLocalDateTime(TimeZone.currentSystemDefault())
+        .date
     return DocumentItemUi(
         id = id,
         displayName = displayName,
         type = type,
-        createdAt = createdAt,
+        createdAt = date,
         comment = comment
     )
 }
