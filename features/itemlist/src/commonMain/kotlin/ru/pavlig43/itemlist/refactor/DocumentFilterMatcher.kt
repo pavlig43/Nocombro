@@ -6,19 +6,17 @@ import ru.pavlig43.itemlist.statik.internal.component.DocumentItemUi
 import ua.wwind.table.filter.data.FilterConstraint
 import ua.wwind.table.filter.data.TableFilterState
 
-data class TypeFilter(val types: Set<DocumentType>)
-
 
 /**
  * Utility class for filtering Person objects based on filter constraints.
  */
-object DocumentFilterMatcher {
+object DocumentFilterMatcher: FilterMatcher<DocumentItemUi, DocumentField> {
     /**
      * Evaluate whether the given person matches the filter map.
      * Supports Text, Number(Int), Boolean, LocalDate filter types.
      */
-    fun matchesDocument(
-        document: DocumentItemUi,
+    override fun matchesItem(
+        item: DocumentItemUi,
         filters: Map<DocumentField, TableFilterState<*>>,
     ): Boolean {
         for ((column, stateAny) in filters) {
@@ -35,12 +33,12 @@ object DocumentFilterMatcher {
 
             val matches =
                 when (column) {
-                    DocumentField.NAME -> matchesTextField(document.displayName, stateAny)
+                    DocumentField.NAME -> matchesTextField(item.displayName, stateAny)
                     DocumentField.SELECTION -> true
-                    DocumentField.ID -> matchesIntField(document.id, stateAny)
-                    DocumentField.TYPE -> matchesTypeField(document.type, stateAny)
-                    DocumentField.CREATED_AT -> matchesDateField(document.createdAt,stateAny)
-                    DocumentField.COMMENT -> matchesTextField(document.comment, stateAny)
+                    DocumentField.ID -> matchesIntField(item.id, stateAny)
+                    DocumentField.TYPE -> matchesTypeField(item.type, stateAny)
+                    DocumentField.CREATED_AT -> matchesDateField(item.createdAt,stateAny)
+                    DocumentField.COMMENT -> matchesTextField(item.comment, stateAny)
                 }
 
             if (!matches) return false
@@ -89,11 +87,23 @@ object DocumentFilterMatcher {
             else -> true
         }
     }
-    fun matchesTypeField(type: DocumentType, state: Any?): Boolean {
-        val filter = state as? TypeFilter ?: return true
-        if (filter.types.isEmpty()) return true
-        return type in filter.types
-    }
+    fun matchesTypeField(value: DocumentType, state: TableFilterState<*>,): Boolean {
+            val constraint = state.constraint ?: return true
+
+            @Suppress("UNCHECKED_CAST")
+            val selectedValues = (state.values as? List<DocumentType>) ?: emptyList()
+
+            return when (constraint) {
+                FilterConstraint.IN -> selectedValues.isEmpty() || selectedValues.contains(value)
+                FilterConstraint.NOT_IN -> selectedValues.isEmpty() || !selectedValues.contains(value)
+                FilterConstraint.EQUALS -> selectedValues.firstOrNull() == value
+                FilterConstraint.NOT_EQUALS -> selectedValues.firstOrNull() != value
+                else -> true
+            }
+        }
+
+
+}
 
     private fun matchesBooleanField(
         value: Boolean,
@@ -136,5 +146,3 @@ object DocumentFilterMatcher {
         }
     }
 
-
-}

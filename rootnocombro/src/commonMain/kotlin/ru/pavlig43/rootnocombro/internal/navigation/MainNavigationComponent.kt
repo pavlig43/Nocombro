@@ -92,6 +92,7 @@ internal class MainNavigationComponent(
                         componentContext = context,
                         onCreate =  { tabNavigationComponent.addTab(DocumentForm(0)) },
                         onItemClick = { tabNavigationComponent.addTab(DocumentForm(it.id)) },
+                        withCheckbox = true,
                         dependencies = scope.get()
                     )
                     is ItemList -> createItemListFactoryComponent(

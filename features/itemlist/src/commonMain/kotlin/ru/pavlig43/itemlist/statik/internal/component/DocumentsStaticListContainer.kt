@@ -98,6 +98,24 @@ internal class DocListComponent(
 
 }
 
+class ImmutableListRepository<I>(
+    private val delete: suspend (Set<Int>) -> Unit,
+    private val observe: () -> Flow<List<I>>,
+    private val tag: String
+){
+    suspend fun deleteByIds(ids: Set<Int>): RequestResult<Unit> {
+        return dbSafeCall(tag) {
+            delete(ids)
+        }
+    }
+
+    fun observeOnItems(
+    ): Flow<RequestResult<List<I>>> {
+        return dbSafeFlow(tag) {
+            observe()
+        }
+    }
+}
 class DocumentListRepository(
     db: NocombroDatabase
 ) {

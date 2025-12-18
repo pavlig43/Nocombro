@@ -8,6 +8,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
+import ru.pavlig43.database.data.document.DocumentType
 import ru.pavlig43.itemlist.statik.internal.component.DocumentItemUi
 import ua.wwind.table.ColumnSpec
 import ua.wwind.table.filter.data.TableFilterType
@@ -25,43 +27,41 @@ enum class DocumentField {
 }
 
 fun createColumn(
-    withCheckBox: Boolean,
-    onEvent: (SampleUiEvent) -> Unit,
-): ImmutableList<ColumnSpec<DocumentItemUi, DocumentField, TableData<DocumentItemUi>>> {
+    onEvent: (SelectionUiEvent) -> Unit,
+): ImmutableList<ColumnSpec<DocumentItemUi, DocumentField, TableData1<DocumentItemUi>>> {
     val columns =
-        tableColumns<DocumentItemUi, DocumentField, TableData<DocumentItemUi>> {
+        tableColumns<DocumentItemUi, DocumentField, TableData1<DocumentItemUi>> {
 
-            if (withCheckBox){
+
                 column(DocumentField.SELECTION, valueOf = { it.id }) {
+
                     title { "" }
                     autoWidth(48.dp)
-//                width(min = 24.dp, pref = 24.dp)
                     cell { doc, tableData ->
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier.fillMaxSize(),
-                        ) {
-                            Checkbox(
-                                checked = doc.id in tableData.selectedIds,
-                                onCheckedChange = {
-                                    onEvent(SampleUiEvent.ToggleSelection(doc.id))
-                                },
-                            )
+                        if (tableData.isSelectionMode){
+                            Box(
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier.fillMaxSize(),
+                            ) {
+                                Checkbox(
+                                    checked = doc.id in tableData.selectedIds,
+                                    onCheckedChange = {
+                                        onEvent(SelectionUiEvent.ToggleSelection(doc.id))
+                                    },
+                                )
+                            }
                         }
+
 
                     }
 
                 }
-            }
-
-
 
             column(DocumentField.ID, valueOf = { it.id }) {
                 header("Ид")
+                align(Alignment.Center)
                 cell { document, _ -> Text(document.id.toString()) }
-                sortable()
                 // Enable built‑in Text filter UI in header
-                filter(TableFilterType.TextTableFilter())
                 // Auto‑fit to content with optional max cap
                 autoWidth(max = 500.dp)
 
@@ -69,15 +69,25 @@ fun createColumn(
 
             column(DocumentField.NAME, valueOf = { it.displayName }) {
                 header("Название")
+                align(Alignment.Center)
+                filter(TableFilterType.TextTableFilter())
                 cell { document, _ -> Text(document.displayName) }
                 sortable()
             }
             column(DocumentField.TYPE, valueOf = { it.type }) {
                 header("Тип")
+                align(Alignment.Center)
+                filter(
+                    TableFilterType.EnumTableFilter(
+                        DocumentType.entries.toImmutableList(),
+                        getTitle = { it.displayName })
+                )
                 cell { document, _ -> Text(document.type.displayName) }
             }
             column(DocumentField.CREATED_AT, valueOf = { it.createdAt }) {
                 header("Создан")
+                align(Alignment.Center)
+                filter(TableFilterType.DateTableFilter())
                 cell { document, _ ->
                     Text(
                         document.createdAt.toString()
@@ -87,6 +97,8 @@ fun createColumn(
             }
             column(DocumentField.COMMENT, valueOf = { it.comment }) {
                 header("Комментарий")
+                align(Alignment.Center)
+                filter(TableFilterType.TextTableFilter())
                 cell { document, _ -> Text(document.comment) }
             }
         }
