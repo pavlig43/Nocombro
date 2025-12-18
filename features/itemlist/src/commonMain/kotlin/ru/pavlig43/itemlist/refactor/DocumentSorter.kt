@@ -1,4 +1,4 @@
-package ru.pavlig43.itemlist.statik.internal.ui.refactor
+package ru.pavlig43.itemlist.refactor
 
 import ru.pavlig43.itemlist.statik.internal.component.DocumentItemUi
 import ua.wwind.table.data.SortOrder

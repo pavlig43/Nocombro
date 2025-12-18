@@ -98,7 +98,7 @@ internal class DocListComponent(
 
 }
 
-internal class DocumentListRepository(
+class DocumentListRepository(
     db: NocombroDatabase
 ) {
     private val dao = db.documentDao

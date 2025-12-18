@@ -10,6 +10,7 @@ import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.database.data.transaction.TransactionType
 import ru.pavlig43.declarationform.api.DeclarationFormComponent
 import ru.pavlig43.document.api.component.DocumentFormComponent
+import ru.pavlig43.itemlist.refactor.DocumentTableComponent
 import ru.pavlig43.itemlist.statik.api.DeclarationListParamProvider
 import ru.pavlig43.itemlist.statik.api.DocumentListParamProvider
 import ru.pavlig43.itemlist.statik.api.ProductListParamProvider
@@ -80,13 +81,19 @@ internal class MainNavigationComponent(
         TabNavigationComponent(
             componentContext = childContext("tab"),
             startConfigurations = listOf(
-                ItemList.ProductList(),
+                DocumentList(),
             ),
             serializer = TabConfig.serializer(),
             slotFactory = { context, tabConfig: TabConfig, onCloseTab: () -> Unit ->
 
                 when (tabConfig) {
                     is Notification -> notificationComponent
+                    is DocumentList-> DocumentTableComponent(
+                        componentContext = context,
+                        onCreate =  { tabNavigationComponent.addTab(DocumentForm(0)) },
+                        onItemClick = { tabNavigationComponent.addTab(DocumentForm(it.id)) },
+                        dependencies = scope.get()
+                    )
                     is ItemList -> createItemListFactoryComponent(
                         tabConfig = tabConfig,
                         context = context
@@ -117,30 +124,30 @@ internal class MainNavigationComponent(
 
     ): StaticItemListFactoryComponent {
         val paramProvider = when (tabConfig) {
-            is ItemList.DeclarationList -> DeclarationListParamProvider(withCheckbox = true)
-            is ItemList.DocumentList -> DocumentListParamProvider(
+            is DeclarationList -> DeclarationListParamProvider(withCheckbox = true)
+            is DocumentList -> DocumentListParamProvider(
                 fullListDocumentTypes = DocumentType.entries,
                 withCheckbox = true
             )
 
-            is ItemList.ProductList -> ProductListParamProvider(
+            is ProductList -> ProductListParamProvider(
                 fullListProductTypes = ProductType.entries,
                 withCheckbox = true
             )
 
-            is ItemList.VendorList -> VendorListParamProvider(withCheckbox = true)
-            is ItemList.ProductTransactionList -> TransactionListParamProvider(
+            is VendorList -> VendorListParamProvider(withCheckbox = true)
+            is ProductTransactionList -> TransactionListParamProvider(
                 fullListTransactionTypes = TransactionType.entries,
                 withCheckbox = true
             )
         }
 
         fun itemForm(id: Int) = when (tabConfig) {
-            is ItemList.DeclarationList -> DeclarationForm(id)
-            is ItemList.DocumentList -> DocumentForm(id)
-            is ItemList.ProductList -> ProductForm(id)
-            is ItemList.VendorList -> VendorForm(id)
-            is ItemList.ProductTransactionList -> TransactionForm(id)
+            is DeclarationList -> DeclarationForm(id)
+            is DocumentList -> DocumentForm(id)
+            is ProductList -> ProductForm(id)
+            is VendorList -> VendorForm(id)
+            is ProductTransactionList -> TransactionForm(id)
         }
         return StaticItemListFactoryComponent(
             componentContext = context,
@@ -157,34 +164,34 @@ internal class MainNavigationComponent(
         onCloseTab: () -> Unit
     ): SlotComponent {
         return when(tabConfig){
-            is ItemForm.DeclarationForm -> DeclarationFormComponent(
+            is DeclarationForm -> DeclarationFormComponent(
                 declarationId = tabConfig.id,
                 closeTab = onCloseTab,
                 componentContext = context,
                 dependencies = scope.get(),
-                onOpenVendorTab = { tabNavigationComponent.addTab(ItemForm.VendorForm(it)) }
+                onOpenVendorTab = { tabNavigationComponent.addTab(VendorForm(it)) }
             )
-            is ItemForm.DocumentForm -> DocumentFormComponent(
+            is DocumentForm -> DocumentFormComponent(
                 documentId = tabConfig.id,
                 closeTab = onCloseTab,
                 componentContext = context,
                 dependencies = scope.get()
             )
-            is ItemForm.ProductForm -> ProductFormComponent(
+            is ProductForm -> ProductFormComponent(
                 componentContext = context,
                 dependencies = scope.get(),
                 closeTab = onCloseTab,
                 productId = tabConfig.id,
-                onOpenDeclarationTab = { tabNavigationComponent.addTab(ItemForm.DeclarationForm(it)) },
-                onOpenProductTab = { tabNavigationComponent.addTab(ItemForm.ProductForm(it)) }
+                onOpenDeclarationTab = { tabNavigationComponent.addTab(DeclarationForm(it)) },
+                onOpenProductTab = { tabNavigationComponent.addTab(ProductForm(it)) }
             )
-            is ItemForm.TransactionForm -> TransactionFormComponent(
+            is TransactionForm -> TransactionFormComponent(
                 transactionId = tabConfig.id,
                 closeTab = onCloseTab,
                 componentContext = context,
                 dependencies = scope.get()
             )
-            is ItemForm.VendorForm -> VendorFormComponent(
+            is VendorForm -> VendorFormComponent(
                 vendorId = tabConfig.id,
                 closeTab = onCloseTab,
                 componentContext = context,

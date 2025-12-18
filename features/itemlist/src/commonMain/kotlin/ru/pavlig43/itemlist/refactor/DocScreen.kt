@@ -1,4 +1,4 @@
-package ru.pavlig43.itemlist.statik.internal.ui.refactor
+package ru.pavlig43.itemlist.refactor
 
 import androidx.compose.foundation.HorizontalScrollbar
 import androidx.compose.foundation.LocalScrollbarStyle

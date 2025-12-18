@@ -1,4 +1,4 @@
-package ru.pavlig43.itemlist.statik.internal.ui.refactor
+package ru.pavlig43.itemlist.refactor
 
 import kotlinx.datetime.LocalDate
 import ru.pavlig43.database.data.document.DocumentType

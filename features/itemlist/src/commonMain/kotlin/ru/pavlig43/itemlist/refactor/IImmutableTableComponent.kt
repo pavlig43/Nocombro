@@ -1,7 +1,8 @@
-package ru.pavlig43.itemlist.statik.internal.ui.refactor
+package ru.pavlig43.itemlist.refactor
 
 import androidx.compose.runtime.Immutable
 import com.arkivanov.decompose.ComponentContext
+import com.arkivanov.essenty.instancekeeper.getOrCreate
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -16,13 +17,18 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import ru.pavlig43.core.RequestResult
+import ru.pavlig43.core.SlotComponent
 import ru.pavlig43.core.componentCoroutineScope
 import ru.pavlig43.core.data.GenericItem
+import ru.pavlig43.corekoin.ComponentKoinContext
 import ru.pavlig43.database.data.document.Document
+import ru.pavlig43.itemlist.statik.ItemStaticListDependencies
 import ru.pavlig43.itemlist.statik.internal.component.DocumentItemUi
 import ru.pavlig43.itemlist.statik.internal.component.DocumentListRepository
+import ru.pavlig43.itemlist.statik.internal.di.moduleFactory
 import ua.wwind.table.filter.data.TableFilterState
 import ua.wwind.table.state.SortState
+import java.awt.Checkbox
 import kotlin.collections.filter
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
@@ -83,16 +89,24 @@ private fun RequestResult<Unit>.toDeleteState(): DeleteState {
     }
 }
 
-internal class DocumentTableComponent(
+class DocumentTableComponent(
     componentContext: ComponentContext,
+    val withCheckbox: Boolean,
     val onCreate: () -> Unit,
     val onItemClick: (DocumentItemUi) -> Unit,
-    private val repository: DocumentListRepository
-) : ComponentContext by componentContext, IImmutableTableComponent<DocumentItemUi> {
+    dependencies: ItemStaticListDependencies,
+//    val repository: DocumentListRepository
+) : ComponentContext by componentContext, IImmutableTableComponent<DocumentItemUi>, SlotComponent {
+
+    private val koinContext = instanceKeeper.getOrCreate { ComponentKoinContext() }
+    private val scope = koinContext.getOrCreateKoinScope(
+        moduleFactory(dependencies)
+    )
+    private val repository: DocumentListRepository = scope.get()
 
     private val coroutineScope = componentCoroutineScope()
     private val _deleteState = MutableStateFlow<DeleteState>(DeleteState.Initial())
-    val deleteState = _deleteState.asStateFlow()
+    internal val deleteState = _deleteState.asStateFlow()
 
     private val currentFilters =
         MutableStateFlow<Map<DocumentField, TableFilterState<*>>>(emptyMap())
@@ -188,6 +202,9 @@ internal class DocumentTableComponent(
         }
 
     }
+
+    val a = MutableStateFlow(SlotComponent.TabModel(""))
+    override val model: StateFlow<SlotComponent.TabModel>  = a.asStateFlow()
 
 
 }

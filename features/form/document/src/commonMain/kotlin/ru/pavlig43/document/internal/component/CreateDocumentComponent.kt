@@ -5,6 +5,7 @@ import ru.pavlig43.core.component.EssentialComponentFactory
 import ru.pavlig43.create.component.CreateEssentialsComponent
 import ru.pavlig43.create.data.CreateEssentialsRepository
 import ru.pavlig43.database.data.document.Document
+import ru.pavlig43.database.data.document.DocumentType
 import ru.pavlig43.document.internal.data.DocumentEssentialsUi
 import ru.pavlig43.document.internal.data.toDto
 
@@ -19,12 +20,12 @@ internal class CreateDocumentComponent(
     createEssentialsRepository = createDocumentRepository,
     componentFactory = componentFactory,
     mapperToDTO = { toDto() },
-//    lst = (10..1000).map {
-//        Document(
-//            id = it,
-//            type = DocumentType.GOST,
-//            displayName = "Doc $it",
-//            createdAt = 0,
-//            comment = "")
-//    }
+    lst = (10..1000).map {
+        Document(
+            id = it,
+            type = DocumentType.GOST,
+            displayName = "Doc $it",
+            createdAt = 0,
+            comment = "")
+    }
 )

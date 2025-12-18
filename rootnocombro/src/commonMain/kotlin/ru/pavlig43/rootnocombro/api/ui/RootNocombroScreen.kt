@@ -34,6 +34,8 @@ import ru.pavlig43.declarationform.api.DeclarationFormComponent
 import ru.pavlig43.declarationform.api.DeclarationFormScreen
 import ru.pavlig43.document.api.component.DocumentFormComponent
 import ru.pavlig43.document.api.ui.DocumentFormScreen
+import ru.pavlig43.itemlist.refactor.DocScreen1
+import ru.pavlig43.itemlist.refactor.DocumentTableComponent
 import ru.pavlig43.itemlist.statik.api.component.StaticItemListFactoryComponent
 import ru.pavlig43.itemlist.statik.api.ui.GeneralItemListScreen
 import ru.pavlig43.notification.api.component.PageNotificationComponent
@@ -62,84 +64,85 @@ fun RootNocombroScreen(rootNocombroComponent: IRootNocombroComponent) {
     val drawerState = rememberDrawerState(DrawerValue.Closed)
 
 
-    SampleApp()
-//    Surface {
-//
-//        Children(
-//            stack = stack,
-//            modifier = Modifier
-//                .fillMaxSize()
-//                .padding(24.dp)
-//                .windowInsetsPadding(WindowInsets.systemBars)
-//        ) { child: Child.Created<Any, IRootNocombroComponent.Child> ->
-//            Column(
-//                Modifier.fillMaxSize(),
-//                horizontalAlignment = Alignment.CenterHorizontally
-//            ) {
-//
-//                when (val instance = child.instance) {
-//                    is IRootNocombroComponent.Child.RootSign -> RootSignScreen(instance.component)
-//
-//                    is IRootNocombroComponent.Child.Tabs -> {
-//                        val mainNavigationComponent: IMainNavigationComponent<TabConfig, SlotComponent> =
-//                            instance.component
-//                        val tabNavigationComponent: TabNavigationComponent<TabConfig, SlotComponent> =
-//                            mainNavigationComponent.tabNavigationComponent
-//                        val drawerNavigationComponent = mainNavigationComponent.drawerComponent
-//                        NocombroAppBar(
-//                            settingsComponent = rootNocombroComponent.settingsComponent,
-//                            onOpenDrawer = {
-//                                coroutineScope.launch {
-//                                    if (drawerState.isClosed) {
-//                                        drawerState.open()
-//                                    } else {
-//                                        drawerState.close()
-//                                    }
-//                                }
-//                            }
-//                        )
-//                        NavigationDrawer(
-//                            drawerComponent = drawerNavigationComponent,
-//                            drawerState = drawerState,
-//                            onCloseNavigationDrawer = {
-//                                coroutineScope.launch { drawerState.close() }
-//                            },
-//                            modifier = Modifier.fillMaxWidth()
-//                        ) {
-//                            Column(Modifier.fillMaxSize()) {
-//                                TabNavigationContent(
-//                                    navigationComponent = tabNavigationComponent,
-//                                    tabContent = { index, slotComponent, modifier, isSelected, isDragging, onClose ->
-//                                        TabContent(
-//                                            slotComponent = slotComponent,
-//                                            modifier = modifier,
-//                                            isSelected = isSelected,
-//                                            isDragging = isDragging,
-//                                            onClose = onClose,
-//                                            onSelect = { tabNavigationComponent.onSelectTab(index) },
-//                                        )
-//                                    },
-//                                    containerContent = { innerTabs: @Composable (modifier: Modifier) -> Unit ->
-//                                        innerTabs(Modifier.fillMaxWidth())
-//
-//                                    },
-//                                    slotFactory = {slotComponent -> SlotFactory(slotComponent)}
-//                                )
-//                            }
-//                        }
-//
-//
-//                    }
-//                }
-//
-//            }
-//        }
-//    }
+//    SampleApp()
+    Surface {
+
+        Children(
+            stack = stack,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(24.dp)
+                .windowInsetsPadding(WindowInsets.systemBars)
+        ) { child: Child.Created<Any, IRootNocombroComponent.Child> ->
+            Column(
+                Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+
+                when (val instance = child.instance) {
+                    is IRootNocombroComponent.Child.RootSign -> RootSignScreen(instance.component)
+
+                    is IRootNocombroComponent.Child.Tabs -> {
+                        val mainNavigationComponent: IMainNavigationComponent<TabConfig, SlotComponent> =
+                            instance.component
+                        val tabNavigationComponent: TabNavigationComponent<TabConfig, SlotComponent> =
+                            mainNavigationComponent.tabNavigationComponent
+                        val drawerNavigationComponent = mainNavigationComponent.drawerComponent
+                        NocombroAppBar(
+                            settingsComponent = rootNocombroComponent.settingsComponent,
+                            onOpenDrawer = {
+                                coroutineScope.launch {
+                                    if (drawerState.isClosed) {
+                                        drawerState.open()
+                                    } else {
+                                        drawerState.close()
+                                    }
+                                }
+                            }
+                        )
+                        NavigationDrawer(
+                            drawerComponent = drawerNavigationComponent,
+                            drawerState = drawerState,
+                            onCloseNavigationDrawer = {
+                                coroutineScope.launch { drawerState.close() }
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Column(Modifier.fillMaxSize()) {
+                                TabNavigationContent(
+                                    navigationComponent = tabNavigationComponent,
+                                    tabContent = { index, slotComponent, modifier, isSelected, isDragging, onClose ->
+                                        TabContent(
+                                            slotComponent = slotComponent,
+                                            modifier = modifier,
+                                            isSelected = isSelected,
+                                            isDragging = isDragging,
+                                            onClose = onClose,
+                                            onSelect = { tabNavigationComponent.onSelectTab(index) },
+                                        )
+                                    },
+                                    containerContent = { innerTabs: @Composable (modifier: Modifier) -> Unit ->
+                                        innerTabs(Modifier.fillMaxWidth())
+
+                                    },
+                                    slotFactory = {slotComponent -> SlotFactory(slotComponent)}
+                                )
+                            }
+                        }
+
+
+                    }
+                }
+
+            }
+        }
+    }
 
 }
 @Composable
 private fun SlotFactory(slotComponent: SlotComponent?){
     when (slotComponent) {
+        is DocumentTableComponent -> DocScreen1(slotComponent)
 
         is StaticItemListFactoryComponent -> GeneralItemListScreen(slotComponent)
 

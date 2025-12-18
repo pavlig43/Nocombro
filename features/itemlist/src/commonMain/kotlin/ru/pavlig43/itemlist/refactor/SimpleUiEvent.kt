@@ -1,4 +1,4 @@
-package ru.pavlig43.itemlist.statik.internal.ui.refactor
+package ru.pavlig43.itemlist.refactor
 
 /** UI events for sample app, including table editing events. */
 sealed class SampleUiEvent {

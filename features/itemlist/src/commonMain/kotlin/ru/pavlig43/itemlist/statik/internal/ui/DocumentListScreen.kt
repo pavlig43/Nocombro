@@ -9,10 +9,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import com.seanproctor.datatable.DataColumn
 import com.seanproctor.datatable.TableRowScope
-import ru.pavlig43.core.DateFieldKind
-import ru.pavlig43.core.convertToDateOrDateTimeString
 import ru.pavlig43.coreui.HighlightedText
-import ru.pavlig43.itemlist.internal.ui.core.LabelSelectionLogic
+import ru.pavlig43.itemlist.statik.internal.component.core.LabelSelectionLogic
 import ru.pavlig43.itemlist.statik.internal.component.DocumentItemUi
 import ru.pavlig43.itemlist.statik.internal.component.DocumentsStaticListContainer
 import ru.pavlig43.itemlist.statik.internal.ui.core.StaticItemListBox
