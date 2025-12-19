@@ -15,7 +15,7 @@ import com.seanproctor.datatable.paging.rememberPaginatedDataTableState
 import ru.pavlig43.core.data.GenericItem
 import ru.pavlig43.coreui.ErrorScreen
 import ru.pavlig43.coreui.LoadingScreen
-import ru.pavlig43.itemlist.core.data.IItemUi
+import ru.pavlig43.itemlist.core.refac.api.model.IItemUi
 import ru.pavlig43.itemlist.core.ui.ItemListBox
 import ru.pavlig43.itemlist.core.ui.rowContentWithOptionalCheckbox
 import ru.pavlig43.itemlist.core.ui.withOptionalCheckboxHeader

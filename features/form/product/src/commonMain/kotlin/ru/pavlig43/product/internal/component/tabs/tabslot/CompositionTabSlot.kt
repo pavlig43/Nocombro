@@ -19,7 +19,7 @@ import ru.pavlig43.database.data.product.ProductCompositionOut
 import ru.pavlig43.database.data.product.ProductIngredientIn
 import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.itemlist.statik.ItemStaticListDependencies
-import ru.pavlig43.itemlist.statik.api.ProductListParamProvider
+import ru.pavlig43.itemlist.core.refac.api.ProductListParamProvider
 import ru.pavlig43.itemlist.statik.api.component.MBSItemListComponent
 import ru.pavlig43.itemlist.statik.internal.component.ProductItemUi
 import ru.pavlig43.loadinitdata.api.component.LoadInitDataComponent
@@ -206,7 +206,7 @@ internal class CompositionTabSlot(
                 onDismissed = dialogNavigation::dismiss,
                 itemStaticListDependencies = itemStaticListDependencies,
                 onCreate = { openProductTab(0) },
-                itemListParamProvider = ProductListParamProvider(
+                immutableTableBuilder = ProductListParamProvider(
                     fullListProductTypes = ProductType.entries,
                     withCheckbox = false
                 ),

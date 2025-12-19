@@ -1,4 +1,4 @@
-package ru.pavlig43.itemlist.refactor.manager
+package ru.pavlig43.itemlist.core.refac.core.component.manager
 
 import com.arkivanov.decompose.ComponentContext
 import kotlinx.coroutines.flow.MutableStateFlow

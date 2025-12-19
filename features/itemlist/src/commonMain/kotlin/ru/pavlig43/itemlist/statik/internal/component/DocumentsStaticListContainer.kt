@@ -15,9 +15,9 @@ import ru.pavlig43.core.data.dbSafeFlow
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.document.Document
 import ru.pavlig43.database.data.document.DocumentType
-import ru.pavlig43.itemlist.core.data.IItemUi
+import ru.pavlig43.itemlist.core.refac.api.model.IItemUi
 import ru.pavlig43.itemlist.core.component.ValueFilterComponent
-import ru.pavlig43.itemlist.statik.api.DocumentListParamProvider
+import ru.pavlig43.itemlist.core.refac.api.DocumentListParamProvider
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 

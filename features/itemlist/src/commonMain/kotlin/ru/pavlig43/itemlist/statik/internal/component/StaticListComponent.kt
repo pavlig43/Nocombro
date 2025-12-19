@@ -13,7 +13,7 @@ import kotlinx.coroutines.launch
 import ru.pavlig43.core.RequestResult
 import ru.pavlig43.core.componentCoroutineScope
 import ru.pavlig43.core.data.GenericItem
-import ru.pavlig43.itemlist.core.data.IItemUi
+import ru.pavlig43.itemlist.core.refac.api.model.IItemUi
 import ru.pavlig43.itemlist.core.component.ValueFilterComponent
 import ru.pavlig43.itemlist.statik.internal.component.core.SelectedRowsComponent
 

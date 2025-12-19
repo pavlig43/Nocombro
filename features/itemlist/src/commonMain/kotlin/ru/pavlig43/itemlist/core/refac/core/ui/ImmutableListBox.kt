@@ -1,4 +1,4 @@
-package ru.pavlig43.itemlist.refactor
+package ru.pavlig43.itemlist.core.refac.core.ui
 
 import androidx.compose.foundation.HorizontalScrollbar
 import androidx.compose.foundation.LocalScrollbarStyle
@@ -23,7 +23,11 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import ru.pavlig43.coreui.ErrorScreen
 import ru.pavlig43.coreui.LoadingScreen
-import ru.pavlig43.itemlist.core.data.IItemUi
+import ru.pavlig43.itemlist.core.refac.core.component.ImmutableTableComponent
+import ru.pavlig43.itemlist.core.refac.core.component.ItemListState1
+import ru.pavlig43.itemlist.core.refac.core.component.SelectionUiEvent
+import ru.pavlig43.itemlist.core.refac.api.model.IItemUi
+import ru.pavlig43.itemlist.core.refac.core.model.TableData
 import ua.wwind.table.ColumnSpec
 import ua.wwind.table.ExperimentalTableApi
 import ua.wwind.table.Table
@@ -35,42 +39,15 @@ import ua.wwind.table.sample.app.components.SelectionActionBar
 import ua.wwind.table.state.SortState
 import ua.wwind.table.state.rememberTableState
 
-
-
-
 @OptIn(ExperimentalTableApi::class)
 @Composable
-fun DocScreen1(
-    component: DocumentTableComponent,
-    modifier: Modifier = Modifier
-) {
-
-    ImmutableListScreen1(
-        component = component,
-        columns = createColumn(component::onEvent,),
-        onItemClick = { component.onItemClick(it) },
-        onFiltersChanged = component::updateFilters,
-        onSortChanged = component::updateSort,
-        onEvent = component::onEvent,
-        modifier = modifier
-    )
-
-}
-
-@OptIn(ExperimentalTableApi::class)
-@Composable
-internal fun <I : IItemUi, C> ImmutableListScreen1(
-    component: ImmutableTableComponent<*,I,C>,
-    onEvent: (SelectionUiEvent) -> Unit,
-    columns: ImmutableList<ColumnSpec<I, C, TableData1<I>>>,
-    onSortChanged: (SortState<C>?) -> Unit,
-    onFiltersChanged: (Map<C, TableFilterState<*>>) -> Unit,
-    onItemClick: (I) -> Unit,
+fun <I : IItemUi, C> ImmutableListBox(
+    component: ImmutableTableComponent<*, I, C>,
     modifier: Modifier = Modifier
 ) {
     val itemListState by component.itemListState.collectAsState()
 
-    val tableData: TableData1<I> by component.tableData.collectAsState()
+    val tableData: TableData<I> by component.tableData.collectAsState()
 
     Box(modifier.padding(16.dp)) {
 
@@ -79,14 +56,14 @@ internal fun <I : IItemUi, C> ImmutableListScreen1(
             is ItemListState1.Error -> ErrorScreen(state.message)
             is ItemListState1.Loading -> LoadingScreen()
             is ItemListState1.Success -> {
-                ImmutableListTable(
-                    columns = columns,
+                ImmutableTable(
+                    columns = component.columns,
                     items = tableData.displayedItems,
-                    onRowClick = onItemClick,
+                    onRowClick = {component.onItemClick(it)},
                     tableData = tableData,
-                    onFiltersChanged = onFiltersChanged,
-                    onSortChanged = onSortChanged,
-                    onEvent = onEvent
+                    onFiltersChanged = component::updateFilters,
+                    onSortChanged = component::updateSort,
+                    onEvent = component::onEvent
                 )
             }
 
@@ -97,7 +74,7 @@ internal fun <I : IItemUi, C> ImmutableListScreen1(
 
 @OptIn(ExperimentalTableApi::class)
 @Composable
-private fun <I : IItemUi, C, E: TableData1<I>> ImmutableListTable(
+private fun <I : IItemUi, C, E: TableData<I>> ImmutableTable(
     columns: ImmutableList<ColumnSpec<I, C, E>>,
     items: List<I>,
     onFiltersChanged: (Map<C, TableFilterState<*>>) -> Unit,
@@ -137,7 +114,7 @@ private fun <I : IItemUi, C, E: TableData1<I>> ImmutableListTable(
             verticalState = verticalState,
             horizontalState = horizontalState,
             onRowClick = onRowClick,
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.Companion.fillMaxSize()
                 .padding(end = 16.dp, bottom = 16.dp)
         )
         SelectionActionBar(
@@ -150,8 +127,8 @@ private fun <I : IItemUi, C, E: TableData1<I>> ImmutableListTable(
             },
 //                                liquidState = liquidState,
             modifier =
-                Modifier
-                    .align(Alignment.BottomCenter)
+                Modifier.Companion
+                    .align(Alignment.Companion.BottomCenter)
                     .padding(16.dp),
         )
 
@@ -163,7 +140,7 @@ private fun <I : IItemUi, C, E: TableData1<I>> ImmutableListTable(
         VerticalScrollbar(
             adapter = rememberScrollbarAdapter(verticalState),
             style = style,
-            modifier = Modifier.align(Alignment.CenterEnd).padding(bottom = 24.dp)
+            modifier = Modifier.Companion.align(Alignment.Companion.CenterEnd).padding(bottom = 24.dp)
                 .background(lineColor)
         )
 
@@ -171,7 +148,7 @@ private fun <I : IItemUi, C, E: TableData1<I>> ImmutableListTable(
         HorizontalScrollbar(
             adapter = rememberScrollbarAdapter(horizontalState),
             style = style,
-            modifier = Modifier.align(Alignment.BottomStart).padding(end = 24.dp)
+            modifier = Modifier.Companion.align(Alignment.Companion.BottomStart).padding(end = 24.dp)
                 .background(lineColor)
         )
     }

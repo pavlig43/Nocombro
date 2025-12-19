@@ -1,11 +1,11 @@
-package ru.pavlig43.itemlist.refactor.manager
+package ru.pavlig43.itemlist.core.refac.core.component.manager
 
 import com.arkivanov.decompose.ComponentContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
-class SelectionManager(
+internal class SelectionManager(
     componentContext: ComponentContext,
 
     ) : ComponentContext by componentContext {

@@ -1,4 +1,4 @@
-package ru.pavlig43.itemlist.refactor
+package ru.pavlig43.itemlist.core.refac.internal.document
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,12 +10,14 @@ import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import ru.pavlig43.database.data.document.DocumentType
+import ru.pavlig43.itemlist.core.refac.core.component.SelectionUiEvent
+import ru.pavlig43.itemlist.core.refac.core.model.TableData
 import ru.pavlig43.itemlist.statik.internal.component.DocumentItemUi
 import ua.wwind.table.ColumnSpec
 import ua.wwind.table.filter.data.TableFilterType
 import ua.wwind.table.tableColumns
 
-enum class DocumentField {
+internal enum class DocumentField {
 
     SELECTION,
 
@@ -26,11 +28,12 @@ enum class DocumentField {
     COMMENT
 }
 
-fun createColumn(
+internal fun createDocumentColumn(
+    listTypeForFilter: List<DocumentType>,
     onEvent: (SelectionUiEvent) -> Unit,
-): ImmutableList<ColumnSpec<DocumentItemUi, DocumentField, TableData1<DocumentItemUi>>> {
+): ImmutableList<ColumnSpec<DocumentItemUi, DocumentField, TableData<DocumentItemUi>>> {
     val columns =
-        tableColumns<DocumentItemUi, DocumentField, TableData1<DocumentItemUi>> {
+        tableColumns<DocumentItemUi, DocumentField, TableData<DocumentItemUi>> {
 
 
                 column(DocumentField.SELECTION, valueOf = { it.id }) {
@@ -79,7 +82,7 @@ fun createColumn(
                 align(Alignment.Center)
                 filter(
                     TableFilterType.EnumTableFilter(
-                        DocumentType.entries.toImmutableList(),
+                        listTypeForFilter.toImmutableList(),
                         getTitle = { it.displayName })
                 )
                 cell { document, _ -> Text(document.type.displayName) }

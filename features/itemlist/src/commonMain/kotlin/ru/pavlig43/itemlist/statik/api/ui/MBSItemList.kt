@@ -6,7 +6,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import ru.pavlig43.itemlist.core.data.IItemUi
+import ru.pavlig43.itemlist.core.refac.api.model.IItemUi
 import ru.pavlig43.itemlist.statik.api.component.MBSItemListComponent
 
 @OptIn(ExperimentalMaterial3Api::class)

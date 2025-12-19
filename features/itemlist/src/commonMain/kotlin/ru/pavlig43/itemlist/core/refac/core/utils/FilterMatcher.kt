@@ -1,23 +1,21 @@
-package ru.pavlig43.itemlist.refactor
+package ru.pavlig43.itemlist.core.refac.core.utils
 
 import kotlinx.datetime.LocalDate
-import ru.pavlig43.database.data.document.DocumentType
-import ru.pavlig43.itemlist.statik.internal.component.DocumentItemUi
+import ru.pavlig43.itemlist.core.refac.api.model.IItemUi
 import ua.wwind.table.filter.data.FilterConstraint
 import ua.wwind.table.filter.data.TableFilterState
 
+interface FilterMatcher<I : IItemUi, C> {
+    fun matchesItem(item: I, filters: Map<C, TableFilterState<*>>): Boolean
+}
+abstract class DefaultFilterMatcher<I : IItemUi, C> {
 
-/**
- * Utility class for filtering Person objects based on filter constraints.
- */
-object DocumentFilterMatcher: FilterMatcher<DocumentItemUi, DocumentField> {
-    /**
-     * Evaluate whether the given person matches the filter map.
-     * Supports Text, Number(Int), Boolean, LocalDate filter types.
-     */
-    override fun matchesItem(
-        item: DocumentItemUi,
-        filters: Map<DocumentField, TableFilterState<*>>,
+
+    protected abstract fun matchesRules(item:I,column:C,stateAny:  TableFilterState<*>): Boolean
+
+    fun matchesItem(
+        item: I,
+        filters: Map<C, TableFilterState<*>>,
     ): Boolean {
         for ((column, stateAny) in filters) {
             // If state has no constraint or values, skip this field (not restrictive)
@@ -31,22 +29,13 @@ object DocumentFilterMatcher: FilterMatcher<DocumentItemUi, DocumentField> {
                 continue
             }
 
-            val matches =
-                when (column) {
-                    DocumentField.NAME -> matchesTextField(item.displayName, stateAny)
-                    DocumentField.SELECTION -> true
-                    DocumentField.ID -> matchesIntField(item.id, stateAny)
-                    DocumentField.TYPE -> matchesTypeField(item.type, stateAny)
-                    DocumentField.CREATED_AT -> matchesDateField(item.createdAt,stateAny)
-                    DocumentField.COMMENT -> matchesTextField(item.comment, stateAny)
-                }
+            val matches = matchesRules(item,column,stateAny)
 
             if (!matches) return false
         }
         return true
     }
-
-    private fun matchesTextField(
+    protected fun matchesTextField(
         value: String,
         state: TableFilterState<*>,
     ): Boolean {
@@ -64,7 +53,7 @@ object DocumentFilterMatcher: FilterMatcher<DocumentItemUi, DocumentField> {
         }
     }
 
-    private fun matchesIntField(
+    protected fun matchesIntField(
         value: Int,
         state: TableFilterState<*>,
     ): Boolean {
@@ -87,25 +76,21 @@ object DocumentFilterMatcher: FilterMatcher<DocumentItemUi, DocumentField> {
             else -> true
         }
     }
-    fun matchesTypeField(value: DocumentType, state: TableFilterState<*>,): Boolean {
-            val constraint = state.constraint ?: return true
+    fun <I>matchesTypeField(value: I, state: TableFilterState<*>,): Boolean {
+        val constraint = state.constraint ?: return true
 
-            @Suppress("UNCHECKED_CAST")
-            val selectedValues = (state.values as? List<DocumentType>) ?: emptyList()
+        @Suppress("UNCHECKED_CAST")
+        val selectedValues = (state.values as? List<I>) ?: emptyList()
 
-            return when (constraint) {
-                FilterConstraint.IN -> selectedValues.isEmpty() || selectedValues.contains(value)
-                FilterConstraint.NOT_IN -> selectedValues.isEmpty() || !selectedValues.contains(value)
-                FilterConstraint.EQUALS -> selectedValues.firstOrNull() == value
-                FilterConstraint.NOT_EQUALS -> selectedValues.firstOrNull() != value
-                else -> true
-            }
+        return when (constraint) {
+            FilterConstraint.IN -> selectedValues.isEmpty() || selectedValues.contains(value)
+            FilterConstraint.NOT_IN -> selectedValues.isEmpty() || !selectedValues.contains(value)
+            FilterConstraint.EQUALS -> selectedValues.firstOrNull() == value
+            FilterConstraint.NOT_EQUALS -> selectedValues.firstOrNull() != value
+            else -> true
         }
-
-
-}
-
-    private fun matchesBooleanField(
+    }
+    protected fun matchesBooleanField(
         value: Boolean,
         state: TableFilterState<*>,
     ): Boolean {
@@ -122,7 +107,7 @@ object DocumentFilterMatcher: FilterMatcher<DocumentItemUi, DocumentField> {
 
 
 
-    private fun matchesDateField(
+    protected fun matchesDateField(
         value: LocalDate,
         state: TableFilterState<*>,
     ): Boolean {
@@ -145,4 +130,7 @@ object DocumentFilterMatcher: FilterMatcher<DocumentItemUi, DocumentField> {
             else -> true
         }
     }
+
+}
+
 

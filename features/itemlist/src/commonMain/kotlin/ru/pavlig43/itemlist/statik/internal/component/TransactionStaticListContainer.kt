@@ -13,9 +13,9 @@ import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.transaction.OperationType
 import ru.pavlig43.database.data.transaction.ProductTransaction
 import ru.pavlig43.database.data.transaction.TransactionType
-import ru.pavlig43.itemlist.core.data.IItemUi
+import ru.pavlig43.itemlist.core.refac.api.model.IItemUi
 import ru.pavlig43.itemlist.core.component.ValueFilterComponent
-import ru.pavlig43.itemlist.statik.api.TransactionListParamProvider
+import ru.pavlig43.itemlist.core.refac.api.TransactionListParamProvider
 
 internal class TransactionStaticListContainer(
     componentContext: ComponentContext,

@@ -1,10 +1,11 @@
-package ru.pavlig43.itemlist.refactor
+package ru.pavlig43.itemlist.core.refac.internal.document
 
+import ru.pavlig43.itemlist.core.refac.core.utils.SortMatcher
 import ru.pavlig43.itemlist.statik.internal.component.DocumentItemUi
 import ua.wwind.table.data.SortOrder
 import ua.wwind.table.state.SortState
 
-object DocumentSorter: SortMatcher<DocumentItemUi, DocumentField> {
+internal object DocumentSorter: SortMatcher<DocumentItemUi, DocumentField> {
     override fun sort(
         items: List<DocumentItemUi>,
         sort: SortState<DocumentField>?,

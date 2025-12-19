@@ -8,14 +8,14 @@ import kotlinx.coroutines.flow.asStateFlow
 import ru.pavlig43.core.SlotComponent
 import ru.pavlig43.core.data.GenericItem
 import ru.pavlig43.corekoin.ComponentKoinContext
-import ru.pavlig43.itemlist.core.data.IItemUi
+import ru.pavlig43.itemlist.core.refac.api.model.IItemUi
 import ru.pavlig43.itemlist.statik.ItemStaticListDependencies
-import ru.pavlig43.itemlist.statik.api.DeclarationListParamProvider
-import ru.pavlig43.itemlist.statik.api.DocumentListParamProvider
-import ru.pavlig43.itemlist.statik.api.ItemListParamProvider
-import ru.pavlig43.itemlist.statik.api.ProductListParamProvider
-import ru.pavlig43.itemlist.statik.api.TransactionListParamProvider
-import ru.pavlig43.itemlist.statik.api.VendorListParamProvider
+import ru.pavlig43.itemlist.core.refac.api.DeclarationListParamProvider
+import ru.pavlig43.itemlist.core.refac.api.DocumentListParamProvider
+import ru.pavlig43.itemlist.core.refac.api.ImmutableTableBuilder2
+import ru.pavlig43.itemlist.core.refac.api.ProductListParamProvider
+import ru.pavlig43.itemlist.core.refac.api.TransactionListParamProvider
+import ru.pavlig43.itemlist.core.refac.api.VendorListParamProvider
 import ru.pavlig43.itemlist.statik.internal.component.DeclarationStaticListContainer
 import ru.pavlig43.itemlist.statik.internal.component.DocumentsStaticListContainer
 import ru.pavlig43.itemlist.statik.internal.component.IStaticListContainer
@@ -29,20 +29,20 @@ class StaticItemListFactoryComponent(
     val onCreate: () -> Unit,
     val onItemClick: (IItemUi) -> Unit,
     itemStaticListDependencies: ItemStaticListDependencies,
-    itemListParamProvider: ItemListParamProvider
+    immutableTableBuilder: ImmutableTableBuilder2
 ): ComponentContext by componentContext, SlotComponent {
 
     private val koinComponent = instanceKeeper.getOrCreate { ComponentKoinContext() }
     private val scope = koinComponent.getOrCreateKoinScope(moduleFactory(itemStaticListDependencies))
-    private val _model = MutableStateFlow(SlotComponent.TabModel(itemListParamProvider.tabTitle))
+    private val _model = MutableStateFlow(SlotComponent.TabModel(immutableTableBuilder.tabTitle))
     override val model: StateFlow<SlotComponent.TabModel> = _model.asStateFlow()
 
-    internal val listComponent: IStaticListContainer<out GenericItem, out IItemUi> = when(itemListParamProvider){
+    internal val listComponent: IStaticListContainer<out GenericItem, out IItemUi> = when(immutableTableBuilder){
         is DocumentListParamProvider -> DocumentsStaticListContainer(
             componentContext = componentContext,
             onCreate = onCreate,
             onItemClick = onItemClick,
-            paramProvider = itemListParamProvider,
+            paramProvider = immutableTableBuilder,
             documentListRepository = scope.get()
         )
 
@@ -51,14 +51,14 @@ class StaticItemListFactoryComponent(
             onCreate = onCreate,
             onItemClick = onItemClick,
             declarationListRepository = scope.get(),
-            paramProvider = itemListParamProvider
+            paramProvider = immutableTableBuilder
         )
 
         is ProductListParamProvider -> ProductStaticListContainer(
             componentContext = componentContext,
             onCreate = onCreate,
             onItemClick = onItemClick,
-            paramProvider = itemListParamProvider,
+            paramProvider = immutableTableBuilder,
             productListRepository = scope.get()
         )
 
@@ -67,14 +67,14 @@ class StaticItemListFactoryComponent(
             onCreate = onCreate,
             onItemClick = onItemClick,
             vendorListRepository = scope.get(),
-            paramProvider = itemListParamProvider
+            paramProvider = immutableTableBuilder
         )
 
         is TransactionListParamProvider -> TransactionStaticListContainer(
             componentContext = componentContext,
             onCreate = onCreate,
             onItemClick = onItemClick,
-            paramProvider = itemListParamProvider,
+            paramProvider = immutableTableBuilder,
             listRepository = scope.get()
         )
     }

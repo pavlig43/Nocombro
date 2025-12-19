@@ -10,12 +10,15 @@ import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.database.data.transaction.TransactionType
 import ru.pavlig43.declarationform.api.DeclarationFormComponent
 import ru.pavlig43.document.api.component.DocumentFormComponent
-import ru.pavlig43.itemlist.refactor.DocumentTableComponent
-import ru.pavlig43.itemlist.statik.api.DeclarationListParamProvider
-import ru.pavlig43.itemlist.statik.api.DocumentListParamProvider
-import ru.pavlig43.itemlist.statik.api.ProductListParamProvider
-import ru.pavlig43.itemlist.statik.api.TransactionListParamProvider
-import ru.pavlig43.itemlist.statik.api.VendorListParamProvider
+import ru.pavlig43.itemlist.core.refac.api.DeclarationListParamProvider
+import ru.pavlig43.itemlist.core.refac.api.DocumentBuilder
+import ru.pavlig43.itemlist.core.refac.api.DocumentListParamProvider
+import ru.pavlig43.itemlist.core.refac.api.BuilderData
+import ru.pavlig43.itemlist.core.refac.api.ProductListParamProvider
+import ru.pavlig43.itemlist.core.refac.api.TransactionListParamProvider
+import ru.pavlig43.itemlist.core.refac.api.VendorListParamProvider
+import ru.pavlig43.itemlist.core.refac.core.component.ImmutableTableBuilder
+import ru.pavlig43.itemlist.core.refac.core.component.ImmutableTableComponent
 import ru.pavlig43.itemlist.statik.api.component.StaticItemListFactoryComponent
 import ru.pavlig43.notification.api.component.PageNotificationComponent
 import ru.pavlig43.notification.api.data.NotificationItem
@@ -88,17 +91,25 @@ internal class MainNavigationComponent(
 
                 when (tabConfig) {
                     is Notification -> notificationComponent
-                    is DocumentList-> DocumentTableComponent(
-                        componentContext = context,
-                        onCreate =  { tabNavigationComponent.addTab(DocumentForm(0)) },
+                    is DocumentList-> ImmutableTableBuilder.build(
+                        context = context,
+                        dependencies = scope.get(),
+                        onCreate = { tabNavigationComponent.addTab(DocumentForm(0)) },
                         onItemClick = { tabNavigationComponent.addTab(DocumentForm(it.id)) },
-                        withCheckbox = true,
-                        dependencies = scope.get()
+                        builderData = DocumentBuilder(
+                            fullListDocumentTypes = DocumentType.entries,
+                            withCheckbox = true
+                        )
+                    )
+                    is ItemList -> createImmutableTableComponent(
+                        tabConfig = tabConfig,
+                        context = context
                     )
                     is ItemList -> createItemListFactoryComponent(
                         tabConfig = tabConfig,
                         context = context
                     )
+
                     is ItemForm -> createItemFormComponent(
                         tabConfig = tabConfig,
                         context = context,
@@ -116,6 +127,36 @@ internal class MainNavigationComponent(
             NotificationItem.Declaration -> DeclarationForm(id)
         }
         tabNavigationComponent.addTab(tab)
+    }
+    private fun createImmutableTableComponent(
+        tabConfig: ItemList,
+        context: ComponentContext
+    ): ImmutableTableComponent<*,*,*>{
+        val a= DocumentBuilder(
+            fullListDocumentTypes = DocumentType.entries,
+            withCheckbox = true
+        )
+        val builderData: BuilderData<*> = when(tabConfig){
+            is DeclarationList -> a
+            is DocumentList -> a
+            is ProductList -> a
+            is ProductTransactionList -> a
+            is VendorList -> a
+        }
+        fun itemForm(id: Int) = when (tabConfig) {
+            is DeclarationList -> DeclarationForm(id)
+            is DocumentList -> DocumentForm(id)
+            is ProductList -> ProductForm(id)
+            is VendorList -> VendorForm(id)
+            is ProductTransactionList -> TransactionForm(id)
+        }
+        return ImmutableTableBuilder.build(
+            context = context,
+            dependencies = scope.get(),
+            onCreate = { tabNavigationComponent.addTab(itemForm(0)) },
+            onItemClick = { tabNavigationComponent.addTab(itemForm(it.id)) },
+            builderData = builderData
+        )
     }
 
 
@@ -155,7 +196,7 @@ internal class MainNavigationComponent(
             itemStaticListDependencies = scope.get(),
             onCreate = { tabNavigationComponent.addTab(itemForm(0)) },
             onItemClick = { tabNavigationComponent.addTab(itemForm(it.id)) },
-            itemListParamProvider = paramProvider
+            immutableTableBuilder = paramProvider
         )
 
     }

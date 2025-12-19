@@ -12,9 +12,9 @@ import ru.pavlig43.core.data.dbSafeFlow
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductType
-import ru.pavlig43.itemlist.core.data.IItemUi
+import ru.pavlig43.itemlist.core.refac.api.model.IItemUi
 import ru.pavlig43.itemlist.core.component.ValueFilterComponent
-import ru.pavlig43.itemlist.statik.api.ProductListParamProvider
+import ru.pavlig43.itemlist.core.refac.api.ProductListParamProvider
 
 internal class ProductStaticListContainer(
     componentContext: ComponentContext,

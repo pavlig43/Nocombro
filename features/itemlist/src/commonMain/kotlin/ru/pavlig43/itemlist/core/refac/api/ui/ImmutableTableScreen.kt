@@ -1,0 +1,12 @@
+package ru.pavlig43.itemlist.core.refac.api.ui
+
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+
+
+@Composable
+fun ImmutableTableScreen(
+    modifier: Modifier
+){
+
+}

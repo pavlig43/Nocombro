@@ -19,7 +19,7 @@ import ru.pavlig43.core.getUTCNow
 import ru.pavlig43.core.mapTo
 import ru.pavlig43.declaration.api.data.ItemDeclarationUi
 import ru.pavlig43.itemlist.statik.ItemStaticListDependencies
-import ru.pavlig43.itemlist.statik.api.DeclarationListParamProvider
+import ru.pavlig43.itemlist.core.refac.api.DeclarationListParamProvider
 import ru.pavlig43.itemlist.statik.api.component.MBSItemListComponent
 import ru.pavlig43.itemlist.statik.internal.component.DeclarationItemUi
 import ru.pavlig43.loadinitdata.api.component.LoadInitDataComponent
@@ -55,7 +55,7 @@ abstract class DeclarationTabSlot<Out : GenericDeclarationOut, In : GenericDecla
             onDismissed = dialogNavigation::dismiss,
             onCreate = { openDeclarationTab(0) },
             itemStaticListDependencies = itemStaticListDependencies,
-            itemListParamProvider = DeclarationListParamProvider(withCheckbox = false),
+            immutableTableBuilder = DeclarationListParamProvider(withCheckbox = false),
             onItemClick = {dec ->
                 productDeclarationList.addDeclaration(dec)
                 dialogNavigation.dismiss()

@@ -6,7 +6,7 @@ import com.arkivanov.decompose.router.slot.activate
 import com.arkivanov.decompose.router.slot.childSlot
 import com.arkivanov.decompose.router.slot.dismiss
 import ru.pavlig43.itemlist.statik.ItemStaticListDependencies
-import ru.pavlig43.itemlist.statik.api.VendorListParamProvider
+import ru.pavlig43.itemlist.core.refac.api.VendorListParamProvider
 import ru.pavlig43.itemlist.statik.api.component.MBSItemListComponent
 import ru.pavlig43.itemlist.statik.internal.component.VendorItemUi
 
@@ -30,7 +30,7 @@ internal class VendorDialogComponent(
                 onDismissed = dialogNavigation::dismiss,
                 itemStaticListDependencies = itemStaticListDependencies,
                 onCreate = { onOpenVendorTab(0) },
-                itemListParamProvider = VendorListParamProvider(
+                immutableTableBuilder = VendorListParamProvider(
                     withCheckbox = false
                 ),
                 onItemClick = {

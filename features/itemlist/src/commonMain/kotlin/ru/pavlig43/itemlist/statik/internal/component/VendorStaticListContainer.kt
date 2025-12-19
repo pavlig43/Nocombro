@@ -10,9 +10,9 @@ import ru.pavlig43.core.data.dbSafeCall
 import ru.pavlig43.core.data.dbSafeFlow
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.vendor.Vendor
-import ru.pavlig43.itemlist.core.data.IItemUi
+import ru.pavlig43.itemlist.core.refac.api.model.IItemUi
 import ru.pavlig43.itemlist.core.component.ValueFilterComponent
-import ru.pavlig43.itemlist.statik.api.VendorListParamProvider
+import ru.pavlig43.itemlist.core.refac.api.VendorListParamProvider
 
 
 internal class VendorStaticListContainer(

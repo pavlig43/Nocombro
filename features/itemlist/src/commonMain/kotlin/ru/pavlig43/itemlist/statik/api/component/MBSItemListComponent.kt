@@ -2,14 +2,14 @@ package ru.pavlig43.itemlist.statik.api.component
 
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
-import ru.pavlig43.itemlist.core.data.IItemUi
+import ru.pavlig43.itemlist.core.refac.api.model.IItemUi
 import ru.pavlig43.itemlist.statik.ItemStaticListDependencies
-import ru.pavlig43.itemlist.statik.api.ItemListParamProvider
+import ru.pavlig43.itemlist.core.refac.api.ImmutableTableBuilder2
 
 @Suppress("UNCHECKED_CAST")
 class MBSItemListComponent<I: IItemUi>(
     componentContext: ComponentContext,
-    itemListParamProvider: ItemListParamProvider,
+    immutableTableBuilder: ImmutableTableBuilder2,
     onItemClick: (I) -> Unit,
     onCreate: () -> Unit,
     itemStaticListDependencies: ItemStaticListDependencies,
@@ -21,7 +21,7 @@ class MBSItemListComponent<I: IItemUi>(
         onCreate = onCreate,
         onItemClick = { ui: IItemUi -> onItemClick(ui as I) },
         itemStaticListDependencies = itemStaticListDependencies,
-        itemListParamProvider = itemListParamProvider
+        immutableTableBuilder = immutableTableBuilder
     )
 
     fun onDismissClicked() {
