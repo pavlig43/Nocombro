@@ -61,7 +61,7 @@ class DeclarationFormComponent(
                     componentContext = componentContext,
                     onSuccessCreate = { stackNavigation.replaceAll(Config.Update(it)) },
                     createDeclarationRepository = scope.get(),
-                    itemStaticListDependencies = scope.get(),
+                    dependencies = scope.get(),
                     onOpenVendorTab = onOpenVendorTab,
                     componentFactory = componentFactory
                 )

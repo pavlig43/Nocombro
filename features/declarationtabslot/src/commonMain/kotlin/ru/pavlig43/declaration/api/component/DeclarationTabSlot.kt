@@ -11,17 +11,15 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.serialization.Serializable
 import ru.pavlig43.core.FormTabSlot
-import ru.pavlig43.core.RequestResult
 import ru.pavlig43.core.data.ChangeSet
 import ru.pavlig43.core.data.GenericDeclarationIn
 import ru.pavlig43.core.data.GenericDeclarationOut
-import ru.pavlig43.core.getUTCNow
-import ru.pavlig43.core.mapTo
+import ru.pavlig43.core.getCurrentLocalDate
 import ru.pavlig43.declaration.api.data.ItemDeclarationUi
-import ru.pavlig43.itemlist.statik.ItemStaticListDependencies
-import ru.pavlig43.itemlist.core.refac.api.DeclarationListParamProvider
-import ru.pavlig43.itemlist.statik.api.component.MBSItemListComponent
-import ru.pavlig43.itemlist.statik.internal.component.DeclarationItemUi
+import ru.pavlig43.itemlist.api.component.DeclarationBuilder
+import ru.pavlig43.itemlist.api.component.MBSImmutableTableComponent
+import ru.pavlig43.itemlist.api.dependencies
+import ru.pavlig43.itemlist.internal.component.items.declaration.DeclarationItemUi
 import ru.pavlig43.loadinitdata.api.component.LoadInitDataComponent
 import ru.pavlig43.update.data.UpdateCollectionRepository
 import kotlin.time.ExperimentalTime
@@ -29,7 +27,7 @@ import kotlin.time.ExperimentalTime
 abstract class DeclarationTabSlot<Out : GenericDeclarationOut, In : GenericDeclarationIn>(
     componentContext: ComponentContext,
     private val productId: Int,
-    itemStaticListDependencies: ItemStaticListDependencies,
+    dependencies: dependencies,
     private val updateRepository: UpdateCollectionRepository<Out, In>,
     openDeclarationTab: (Int) -> Unit,
     private val mapper: ItemDeclarationUi.(id: Int) -> In,
@@ -50,12 +48,14 @@ abstract class DeclarationTabSlot<Out : GenericDeclarationOut, In : GenericDecla
         serializer = DialogConfig.serializer(),
         handleBackButton = true,
     ) { _, context ->
-        MBSItemListComponent<DeclarationItemUi>(
+        MBSImmutableTableComponent<DeclarationItemUi>(
             componentContext = context,
             onDismissed = dialogNavigation::dismiss,
             onCreate = { openDeclarationTab(0) },
-            itemStaticListDependencies = itemStaticListDependencies,
-            immutableTableBuilder = DeclarationListParamProvider(withCheckbox = false),
+            dependencies = dependencies,
+            builderData = DeclarationBuilder(
+                withCheckbox = false
+            ),
             onItemClick = {dec ->
                 productDeclarationList.addDeclaration(dec)
                 dialogNavigation.dismiss()
@@ -72,7 +72,7 @@ abstract class DeclarationTabSlot<Out : GenericDeclarationOut, In : GenericDecla
     }
 
 
-    override suspend fun onUpdate(): RequestResult<Unit> {
+    override suspend fun onUpdate(): Result<Unit> {
         val old =
             productDeclarationList.loadInitDataComponent.firstData.value?.map { it.mapper(productId) }
         val new = productDeclarationList.declarationUi.value.map { it.mapper(productId) }
@@ -85,7 +85,7 @@ abstract class DeclarationTabSlot<Out : GenericDeclarationOut, In : GenericDecla
 internal class ProductDeclarationListComponent<Out : GenericDeclarationOut>(
     componentContext: ComponentContext,
     val openDeclarationTab: (Int) -> Unit,
-    private val getInitData: suspend () -> RequestResult<List<Out>>,
+    private val getInitData: suspend () -> Result<List<Out>>,
 ) : ComponentContext by componentContext {
 
     fun removeDeclaration(index: Int) {
@@ -106,7 +106,8 @@ internal class ProductDeclarationListComponent<Out : GenericDeclarationOut>(
             declarationName = declaration.displayName,
             vendorName = declaration.vendorName,
             isActual = true,
-            bestBefore = declaration.bestBefore
+
+            bestBefore = getCurrentLocalDate()
         )
 
         updateList { lst ->
@@ -127,7 +128,7 @@ internal class ProductDeclarationListComponent<Out : GenericDeclarationOut>(
     val loadInitDataComponent: LoadInitDataComponent<List<ItemDeclarationUi>> =
         LoadInitDataComponent<List<ItemDeclarationUi>>(
             componentContext = childContext("loadInitData"),
-            getInitData = { getInitData().mapTo { it.toListDeclarationUi() } },
+            getInitData = { getInitData().map { it.toListDeclarationUi() } },
             onSuccessGetInitData = { declarations -> _itemDeclarationUiList.update { declarations } }
         )
 
@@ -147,7 +148,7 @@ private fun <D : GenericDeclarationOut> D.toDeclarationUi(composeKey: Int): Item
     return ItemDeclarationUi(
         id = id,
         declarationId = declarationId,
-        isActual = bestBefore > getUTCNow(),
+        isActual = bestBefore > getCurrentLocalDate(),
         composeKey = composeKey,
         declarationName = declarationName,
         vendorName = vendorName,

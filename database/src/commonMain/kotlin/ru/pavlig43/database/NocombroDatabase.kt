@@ -11,8 +11,7 @@ import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import ru.pavlig43.core.RequestResult
-import ru.pavlig43.core.getUTCNow
+import kotlinx.datetime.LocalDate
 import ru.pavlig43.database.data.common.Converters
 import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.database.data.declaration.DeclarationFile
@@ -59,7 +58,6 @@ import kotlin.time.ExperimentalTime
         ProductIngredientIn::class,
 
 
-
         ProductTransaction::class,
         TransactionProductBDIn::class,
     ],
@@ -84,7 +82,7 @@ abstract class NocombroDatabase : RoomDatabase() {
     abstract val productDeclarationDao: ProductDeclarationDao
     abstract val compositionDao: CompositionDao
 
-    abstract val productTransactionDao:ProductTransactionDao
+    abstract val productTransactionDao: ProductTransactionDao
 }
 
 
@@ -105,51 +103,30 @@ fun getNocombroDatabase(builder: RoomDatabase.Builder<NocombroDatabase>): Nocomb
 }
 
 interface DataBaseTransaction {
-    suspend fun transaction(blocks: List<suspend () -> RequestResult<Unit>>): RequestResult<Unit>
+    suspend fun transaction(blocks: List<suspend () -> Result<Unit>>): Result<Unit>
 }
 
 class NocombroTransaction(
     private val db: NocombroDatabase
 ) : DataBaseTransaction {
-//    override suspend fun transaction(blocks: List<suspend () -> Unit>) {
-//        db.useWriterConnection { transactor ->
-//            transactor.immediateTransaction {
-//                blocks.forEach { block ->
-//                    block()
-//                }
-//            }
-//        }
-//    }
-    override suspend fun transaction(blocks: List<suspend () -> RequestResult<Unit>>): RequestResult<Unit> {
-        val errors = mutableListOf<String>()
 
-        return try {
+    override suspend fun transaction(blocks: List<suspend () -> Result<Unit>>): Result<Unit> {
+        return runCatching {
             db.useWriterConnection { transactor ->
                 transactor.immediateTransaction {
                     blocks.forEach { block ->
-                        val result = block()
-                        if (result is RequestResult.Error) {
-                            errors.add(result.message?:"какая то ошибка ")
-                            return@immediateTransaction
+                            block().getOrThrow()
                         }
                     }
                 }
             }
-
-            if (errors.isEmpty()) {
-                RequestResult.Success(Unit)
-            } else {
-                RequestResult.Error(message = errors.joinToString("; "))
-            }
-        } catch (e: Exception) {
-            RequestResult.Error(message = e.message ?: "Transaction failed")
         }
     }
 
-}
+
 
 @OptIn(ExperimentalTime::class)
-@Suppress("LongMethod","TooGenericExceptionCaught","SwallowedException")
+@Suppress("LongMethod", "TooGenericExceptionCaught", "SwallowedException")
 suspend fun initData(db: NocombroDatabase) {
     try {
         db.productDao.getProduct(1)
@@ -158,21 +135,21 @@ suspend fun initData(db: NocombroDatabase) {
             Product(
                 type = ProductType.BASE,
                 displayName = "Соль",
-                createdAt = getUTCNow(),
+                createdAt = LocalDate.fromEpochDays(0),
                 comment = "",
                 id = 1
             ),
             Product(
                 type = ProductType.NOCOMBRO_SPICE,
                 displayName = "БАварские",
-                createdAt = getUTCNow(),
+                createdAt = LocalDate.fromEpochDays(0),
                 comment = "",
                 id = 2
             ),
             Product(
                 type = ProductType.BASE,
                 displayName = "Декстроза",
-                createdAt = getUTCNow(),
+                createdAt = LocalDate.fromEpochDays(0),
                 comment = "",
                 id = 3
             )
@@ -197,28 +174,28 @@ suspend fun initData(db: NocombroDatabase) {
         val declaration = listOf(
             Declaration(
                 displayName = "Декларация ингре",
-                createdAt = getUTCNow(),
+                createdAt = LocalDate.fromEpochDays(0),
                 vendorId = 1,
                 vendorName = "Ингре",
-                bestBefore = 0,
+                bestBefore = LocalDate.fromEpochDays(0),
                 id = 1,
                 observeFromNotification = true
             ),
             Declaration(
                 displayName = "Декларация стоинг",
-                createdAt = getUTCNow(),
+                createdAt = LocalDate.fromEpochDays(0),
                 vendorId = 2,
                 vendorName = "Стоинг",
-                bestBefore = 0,
+                bestBefore = LocalDate.fromEpochDays(0),
                 id = 2,
                 observeFromNotification = true
             ),
             Declaration(
                 displayName = "Декларация рустарк",
-                createdAt = getUTCNow(),
+                createdAt = LocalDate.fromEpochDays(0),
                 vendorId = 3,
                 vendorName = "Рустарк",
-                bestBefore = 0,
+                bestBefore = LocalDate.fromEpochDays(0),
                 id = 3,
                 observeFromNotification = true
             )

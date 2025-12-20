@@ -3,6 +3,7 @@ package ru.pavlig43.database.data.transaction
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.core.data.GenericItem
 
 @Entity(
@@ -17,7 +18,7 @@ data class ProductTransaction(
     val operationType: OperationType,
 
     @ColumnInfo("created_at")
-    val createdAt: Long,
+    val createdAt: LocalDateTime,
 
     @ColumnInfo("comment")
     val comment: String,

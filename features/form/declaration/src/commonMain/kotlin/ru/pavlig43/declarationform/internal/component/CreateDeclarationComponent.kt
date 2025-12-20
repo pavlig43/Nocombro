@@ -8,14 +8,14 @@ import ru.pavlig43.create.data.CreateEssentialsRepository
 import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.declarationform.internal.data.DeclarationEssentialsUi
 import ru.pavlig43.declarationform.internal.data.toDto
-import ru.pavlig43.itemlist.statik.ItemStaticListDependencies
+import ru.pavlig43.itemlist.api.dependencies
 
 
 internal class CreateDeclarationComponent(
     componentContext: ComponentContext,
     onSuccessCreate: (Int) -> Unit,
     createDeclarationRepository: CreateEssentialsRepository<Declaration>,
-    itemStaticListDependencies: ItemStaticListDependencies,
+    dependencies: dependencies,
     onOpenVendorTab: (Int) -> Unit,
     componentFactory: EssentialComponentFactory<Declaration, DeclarationEssentialsUi>
 ) : CreateEssentialsComponent<Declaration, DeclarationEssentialsUi>(
@@ -31,7 +31,7 @@ internal class CreateDeclarationComponent(
             val declaration = itemFields.value.copy(vendorId = id, vendorName = name)
             onChangeItem(declaration)
         },
-        itemStaticListDependencies = itemStaticListDependencies,
+        dependencies = dependencies,
         onOpenVendorTab = onOpenVendorTab
     )
 

@@ -2,6 +2,7 @@ package ru.pavlig43.document.internal.component
 
 import com.arkivanov.decompose.ComponentContext
 import ru.pavlig43.core.component.EssentialComponentFactory
+import ru.pavlig43.core.getCurrentLocalDate
 import ru.pavlig43.create.component.CreateEssentialsComponent
 import ru.pavlig43.create.data.CreateEssentialsRepository
 import ru.pavlig43.database.data.document.Document
@@ -20,12 +21,5 @@ internal class CreateDocumentComponent(
     createEssentialsRepository = createDocumentRepository,
     componentFactory = componentFactory,
     mapperToDTO = { toDto() },
-    lst = (10..1000).map {
-        Document(
-            id = it,
-            type = DocumentType.GOST,
-            displayName = "Doc $it",
-            createdAt = 0,
-            comment = "")
-    }
+
 )

@@ -5,7 +5,7 @@ import androidx.compose.runtime.getValue
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import ru.pavlig43.create.ui.CreateEssentialsScreen
 import ru.pavlig43.declarationform.internal.component.CreateDeclarationComponent
-import ru.pavlig43.itemlist.statik.api.ui.MBSItemList
+import ru.pavlig43.itemlist.api.ui.MBSImmutableTable
 
 @Composable
 internal fun CreateDeclarationScreen(
@@ -20,6 +20,6 @@ internal fun CreateDeclarationScreen(
         )
     }
     dialog.child?.instance?.also {
-        MBSItemList(it)
+        MBSImmutableTable(it)
     }
 }

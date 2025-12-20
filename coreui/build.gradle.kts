@@ -14,5 +14,4 @@ android {
 commonMainDependencies {
     implementation(projects.core)
     implementation(libs.datetime.wheel.picker)
-    implementation(libs.kotlinx.datetime)
 }

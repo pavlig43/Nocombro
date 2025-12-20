@@ -39,7 +39,7 @@ private fun LogoPassFormPreviewLight() {
 private class FakeSignInComponent: ISignInComponent {
     override val logoPassComponent: ILogoPassComponent = FakeLogoPassComponent()
     override val socialSignComponent: ISocialSignComponent = FakeSocialSignComponent()
-    override val signInState: StateFlow<SignInState> = MutableStateFlow(SignInState.Initial())
+    override val signInState: StateFlow<SignInState> = MutableStateFlow(SignInState.Initial)
     override fun onSignUpClick() = Unit
 
 }

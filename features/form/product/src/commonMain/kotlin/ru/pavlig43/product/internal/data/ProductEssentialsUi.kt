@@ -1,7 +1,8 @@
 package ru.pavlig43.product.internal.data
 
+import kotlinx.datetime.LocalDate
 import ru.pavlig43.core.data.ItemEssentialsUi
-import ru.pavlig43.core.getUTCNow
+import ru.pavlig43.core.getCurrentLocalDate
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductType
 import kotlin.time.ExperimentalTime
@@ -11,7 +12,7 @@ internal data class ProductEssentialsUi(
 
     val type: ProductType? = null,
 
-    val createdAt: Long? = null,
+    val createdAt: LocalDate = getCurrentLocalDate(),
 
     val comment:String ="",
 
@@ -31,7 +32,7 @@ internal fun ProductEssentialsUi.toDto(): Product {
     return Product(
         type = type?: throw IllegalArgumentException("product type require") ,
         displayName = displayName,
-        createdAt = createdAt?: getUTCNow(),
+        createdAt = createdAt,
         comment = comment,
         id = id
     )

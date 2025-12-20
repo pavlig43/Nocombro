@@ -25,7 +25,6 @@ private fun getCreateRepository(
 ): CreateEssentialsRepository<Document> {
     val documentDao = db.documentDao
     return CreateEssentialsRepository(
-        tag = "Create Document Repository",
         create = documentDao::create,
         isCanSave = documentDao::isCanSave
     )
@@ -35,7 +34,6 @@ private fun getUpdateRepository(
 ): UpdateEssentialsRepository<Document>{
     val dao = db.documentDao
     return UpdateEssentialsRepository(
-        tag = "UpdateEssentialsRepository",
         isCanSave = dao::isCanSave,
         loadItem = dao::getDocument,
         updateItem = dao::updateDocument

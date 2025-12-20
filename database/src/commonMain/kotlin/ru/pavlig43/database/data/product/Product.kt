@@ -3,6 +3,7 @@ package ru.pavlig43.database.data.product
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import kotlinx.datetime.LocalDate
 import ru.pavlig43.core.data.GenericItem
 
 const val PRODUCT_TABLE_NAME = "product"
@@ -21,7 +22,7 @@ data class Product(
 //    val unit: ProductUnit,
 
     @ColumnInfo("created_at")
-    val createdAt: Long,
+    val createdAt: LocalDate,
 
     val comment: String = "",
 

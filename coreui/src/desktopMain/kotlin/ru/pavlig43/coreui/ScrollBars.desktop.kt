@@ -30,12 +30,12 @@ actual fun BoxScope.ScrollBars(
     )
     HorizontalScrollbar(
         adapter = rememberScrollbarAdapter(horizontalScrollState),
-        modifier = Modifier.Companion.fillMaxWidth().align(Alignment.Companion.BottomCenter),
+        modifier = Modifier.fillMaxWidth().align(Alignment.BottomCenter),
         style = scrollBarStyle
     )
     VerticalScrollbar(
         adapter = rememberScrollbarAdapter(verticalScrollState),
-        modifier = Modifier.Companion.fillMaxHeight().align(Alignment.Companion.CenterEnd),
+        modifier = Modifier.fillMaxHeight().align(Alignment.CenterEnd),
         style = scrollBarStyle
     )
 }

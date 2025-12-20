@@ -5,7 +5,9 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.ForeignKey.Companion.CASCADE
 import androidx.room.ForeignKey.Companion.RESTRICT
+
 import androidx.room.PrimaryKey
+import kotlinx.datetime.LocalDate
 import ru.pavlig43.core.data.CollectionObject
 import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.database.data.product.Product
@@ -42,7 +44,7 @@ data class TransactionProductBDIn(
     val declarationId: Int,
 
     @ColumnInfo("date_born")
-    val dateBorn: Long,
+    val dateBorn: LocalDate,
 
     @ColumnInfo("batch")
     val batch: Int,
@@ -64,7 +66,7 @@ data class TransactionProductBDOut(
     val declarationId: Int,
     val declarationName: String,
     val vendorName: String,
-    val dateBorn: Long,
+    val dateBorn: LocalDate,
     val batch: Int,
     override val id: Int,
 ): CollectionObject

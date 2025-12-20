@@ -1,5 +1,6 @@
 package ru.pavlig43.core.data
 
+import kotlinx.datetime.LocalDate
 
 
 interface GenericDeclarationIn:CollectionObject{
@@ -13,5 +14,5 @@ interface GenericDeclarationOut:CollectionObject{
     val declarationId: Int
     val declarationName: String
     val vendorName: String
-    val bestBefore: Long
+    val bestBefore: LocalDate
 }

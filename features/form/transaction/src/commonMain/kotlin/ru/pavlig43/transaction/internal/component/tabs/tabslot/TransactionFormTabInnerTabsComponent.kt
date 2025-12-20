@@ -4,7 +4,6 @@ import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
 import com.arkivanov.decompose.value.operator.map
 import org.koin.core.scope.Scope
-import ru.pavlig43.core.RequestResult
 import ru.pavlig43.core.component.EssentialComponentFactory
 import ru.pavlig43.core.tabs.TabNavigationComponent
 import ru.pavlig43.database.DataBaseTransaction
@@ -47,7 +46,7 @@ internal class TransactionFormTabInnerTabsComponent(
 
             },
         )
-    private suspend fun update():RequestResult<Unit> {
+    private suspend fun update():Result<Unit> {
         val blocks= tabNavigationComponent.children.map { children->
             children.items.map { child-> suspend {child.instance.onUpdate()} } }
         return dbTransaction.transaction(blocks.value)

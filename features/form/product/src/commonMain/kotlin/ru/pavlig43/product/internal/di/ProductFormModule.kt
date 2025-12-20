@@ -11,7 +11,7 @@ import ru.pavlig43.database.data.product.ProductCompositionOut
 import ru.pavlig43.database.data.product.ProductDeclaration
 import ru.pavlig43.database.data.product.ProductDeclarationOut
 import ru.pavlig43.database.data.product.ProductFile
-import ru.pavlig43.itemlist.statik.ItemStaticListDependencies
+import ru.pavlig43.itemlist.api.dependencies
 import ru.pavlig43.product.api.ProductFormDependencies
 import ru.pavlig43.update.data.UpdateCollectionRepository
 import ru.pavlig43.update.data.UpdateEssentialsRepository
@@ -20,7 +20,7 @@ internal fun createProductFormModule(dependencies: ProductFormDependencies) = li
     module {
         single<NocombroDatabase> { dependencies.db }
         single<DataBaseTransaction> { dependencies.transaction }
-        single<ItemStaticListDependencies> { dependencies.itemStaticListDependencies }
+        single<dependencies> { dependencies.dependencies }
         single<CreateEssentialsRepository<Product>> { getCreateRepository(get()) }
         single<UpdateEssentialsRepository<Product>> { getUpdateRepository(get()) }
 
@@ -50,7 +50,6 @@ private fun getCreateRepository(
 ): CreateEssentialsRepository<Product> {
     val dao = db.productDao
     return CreateEssentialsRepository(
-        tag = "Create Product Repository",
         create = dao::create,
         isCanSave = dao::isCanSave
     )
@@ -61,7 +60,6 @@ private fun getUpdateRepository(
 ): UpdateEssentialsRepository<Product> {
     val dao = db.productDao
     return UpdateEssentialsRepository(
-        tag = "Update Product sRepository",
         isCanSave = dao::isCanSave,
         loadItem = dao::getProduct,
         updateItem = dao::updateProduct

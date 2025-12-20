@@ -35,7 +35,6 @@ private fun getCreateRepository(
 ): CreateEssentialsRepository<Vendor> {
     val dao = db.vendorDao
     return CreateEssentialsRepository(
-        tag = "Create Vendor Repository",
         create = dao::create,
         isCanSave = dao::isCanSave
     )
@@ -46,7 +45,6 @@ private fun getUpdateRepository(
 ): UpdateEssentialsRepository<Vendor> {
     val dao = db.vendorDao
     return UpdateEssentialsRepository(
-        tag = "Update vendor sRepository",
         isCanSave = dao::isCanSave,
         loadItem = dao::getVendor,
         updateItem = dao::updateVendor

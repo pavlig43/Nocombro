@@ -7,7 +7,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import org.koin.core.scope.Scope
-import ru.pavlig43.core.RequestResult
 import ru.pavlig43.corekoin.ComponentKoinContext
 import ru.pavlig43.signcommon.logopass.api.components.ILogoPassComponent
 import ru.pavlig43.signcommon.logopass.api.components.LogoPassComponent
@@ -24,7 +23,7 @@ class SignUpComponent(
 ) : ComponentContext by componentContext, ISignUpComponent {
 //    private val coroutineScope = componentCoroutineScope()
 
-    private val _signUpState = MutableStateFlow<SignUpState>(SignUpState.Initial())
+    private val _signUpState = MutableStateFlow<SignUpState>(SignUpState.Initial)
 
 
     private fun handleSignInState(signUpState: SignUpState) {
@@ -43,9 +42,13 @@ class SignUpComponent(
         }
     }
 
-    private fun trySignIn(result: RequestResult<*>) {
+    private fun trySignIn(result: Result<*>) {
+        val state = result.fold(
+            onSuccess = { SignUpState.Success },
+            onFailure = { SignUpState.Error(it.message ?: "Неизвестная ошибка")}
+        )
 
-        _signUpState.update { result.toSignUpState() }
+        _signUpState.update { state }
         handleSignInState(_signUpState.value)
     }
 
@@ -77,18 +80,11 @@ class SignUpComponent(
 
 }
 
-private fun RequestResult<*>.toSignUpState(): SignUpState {
-    return when (this) {
-        is RequestResult.Error<*> -> SignUpState.Error(" ${throwable?.message ?: "Unknown error"}")
-        is RequestResult.InProgress -> SignUpState.Loading()
-        is RequestResult.Initial<*> -> SignUpState.Initial()
-        is RequestResult.Success<*> -> SignUpState.Success()
-    }
-}
+
 
 interface SignUpState {
-    class Initial : SignUpState
-    class Loading : SignUpState
-    class Success : SignUpState
-    class Error(val message: String) : SignUpState
+    data object Initial : SignUpState
+    data object Loading : SignUpState
+    data object Success : SignUpState
+    data class Error(val message: String) : SignUpState
 }

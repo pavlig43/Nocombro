@@ -7,7 +7,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import org.koin.core.scope.Scope
-import ru.pavlig43.core.RequestResult
 import ru.pavlig43.corekoin.ComponentKoinContext
 import ru.pavlig43.signcommon.logopass.api.components.ILogoPassComponent
 import ru.pavlig43.signcommon.logopass.api.components.LogoPassComponent
@@ -22,14 +21,13 @@ class SignInComponent(
     private val signIn: () -> Unit,
     private val navigateToSignUp: () -> Unit,
 ) : ComponentContext by componentContext, ISignInComponent {
-//    private val coroutineScope = componentCoroutineScope()
     private val koinContext = instanceKeeper.getOrCreate {
         ComponentKoinContext()
     }
     private val scope: Scope =
         koinContext.getOrCreateKoinScope(createSignInModule(signInDependencies))
 
-    private val _signInState = MutableStateFlow<SignInState>(SignInState.Initial())
+    private val _signInState = MutableStateFlow<SignInState>(SignInState.Initial)
 
     override val signInState = _signInState.asStateFlow()
 
@@ -47,8 +45,12 @@ class SignInComponent(
         }
     }
 
-    private fun trySignIn(result: RequestResult<*>) {
-        _signInState.update { result.toSignInState() }
+    private fun trySignIn(result: Result<*>) {
+        val state = result.fold(
+            onSuccess = { SignInState.Success },
+            onFailure = { SignInState.Error(it.message ?: "Неизвестная ошибка")}
+        )
+        _signInState.update { state }
         handleSignInState(_signInState.value)
     }
 
@@ -75,14 +77,7 @@ class SignInComponent(
 
 }
 
-private fun RequestResult<*>.toSignInState(): SignInState {
-    return when (this) {
-        is RequestResult.Error<*> -> SignInState.Error(" ${throwable?.message ?: "Unknown error"}")
-        is RequestResult.InProgress -> SignInState.Loading()
-        is RequestResult.Initial<*> -> SignInState.Initial()
-        is RequestResult.Success<*> -> SignInState.Success()
-    }
-}
+
 
 
 

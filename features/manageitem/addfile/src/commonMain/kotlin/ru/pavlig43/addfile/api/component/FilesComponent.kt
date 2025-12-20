@@ -17,16 +17,14 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import ru.pavlig43.addfile.api.data.FileUi
 import ru.pavlig43.addfile.api.data.UploadState
-import ru.pavlig43.core.RequestResult
 import ru.pavlig43.core.componentCoroutineScope
 import ru.pavlig43.core.data.FileData
-import ru.pavlig43.core.mapTo
 import ru.pavlig43.loadinitdata.api.component.LoadInitDataComponent
 
 
 class FilesComponent<Files : List<FileData>>(
     componentContext: ComponentContext,
-    private val getInitData: suspend () -> RequestResult<Files>,
+    private val getInitData: suspend () -> Result<Files>,
 ) : ComponentContext by componentContext, IFilesComponent {
 
     private val coroutineScope = componentCoroutineScope()
@@ -107,7 +105,7 @@ class FilesComponent<Files : List<FileData>>(
     override val loadInitDataComponent: LoadInitDataComponent<List<FileUi>> =
         LoadInitDataComponent<List<FileUi>>(
             componentContext = childContext("loadInitData"),
-            getInitData = { getInitData().mapTo { it.toListFileUi() } },
+            getInitData = { getInitData().map { it.toListFileUi() } },
             onSuccessGetInitData = { files -> _filesUi.update { files } }
         )
 

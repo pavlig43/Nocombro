@@ -1,5 +1,7 @@
 package ru.pavlig43.declaration.api.data
 
+import kotlinx.datetime.LocalDate
+
 data class ItemDeclarationUi(
     val id: Int,
     val composeKey: Int,
@@ -7,5 +9,5 @@ data class ItemDeclarationUi(
     val declarationName: String,
     val vendorName: String,
     val isActual: Boolean,
-    val bestBefore:Long
+    val bestBefore: LocalDate
 )

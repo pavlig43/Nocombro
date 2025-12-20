@@ -9,7 +9,6 @@ import kotlinx.coroutines.launch
 import ru.pavlig43.core.component.CreateState
 import ru.pavlig43.core.component.EssentialComponentFactory
 import ru.pavlig43.core.component.EssentialsComponent
-import ru.pavlig43.core.component.toCreateState
 import ru.pavlig43.core.data.GenericItem
 import ru.pavlig43.core.data.ItemEssentialsUi
 import ru.pavlig43.create.data.CreateEssentialsRepository
@@ -20,20 +19,13 @@ abstract class CreateEssentialsComponent<I : GenericItem, T : ItemEssentialsUi>(
     componentFactory: EssentialComponentFactory<I, T>,
     private val createEssentialsRepository: CreateEssentialsRepository<I>,
     private val mapperToDTO: T.() -> I,
-    lst: List<I> = emptyList()
 ) : EssentialsComponent<I, T>(
     componentContext = componentContext,
     componentFactory = componentFactory,
     getInitData = null,
 
-) {
-    init {
-        coroutineScope.launch {
-            lst.forEach {
-                createEssentialsRepository.createEssential(it)
-            }
-        }
-    }
+    ) {
+
     private val _createState: MutableStateFlow<CreateState> = MutableStateFlow(CreateState.Init)
     internal val createState = _createState.asStateFlow()
 
@@ -42,7 +34,11 @@ abstract class CreateEssentialsComponent<I : GenericItem, T : ItemEssentialsUi>(
             _createState.update { CreateState.Loading }
             val item = itemFields.value.mapperToDTO()
             val idResult = createEssentialsRepository.createEssential(item)
-            _createState.update { idResult.toCreateState() }
+            val state = idResult.fold(
+                onSuccess = { CreateState.Success(it) },
+                onFailure = { CreateState.Error(it.message ?: "Неизвестная ошибка") }
+            )
+            _createState.update { state }
         }
 
     }

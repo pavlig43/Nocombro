@@ -5,13 +5,13 @@ import ru.pavlig43.database.data.product.ProductDeclaration
 import ru.pavlig43.database.data.product.ProductDeclarationOut
 import ru.pavlig43.declaration.api.component.DeclarationTabSlot
 import ru.pavlig43.declaration.api.data.ItemDeclarationUi
-import ru.pavlig43.itemlist.statik.ItemStaticListDependencies
+import ru.pavlig43.itemlist.api.dependencies
 import ru.pavlig43.update.data.UpdateCollectionRepository
 
 class ProductDeclarationTabSlot(
     componentContext: ComponentContext,
     productId: Int,
-    itemStaticListDependencies: ItemStaticListDependencies,
+    dependencies: dependencies,
     updateRepository: UpdateCollectionRepository<ProductDeclarationOut, ProductDeclaration>,
     openDeclarationTab: (Int) -> Unit,
 
@@ -20,7 +20,7 @@ class ProductDeclarationTabSlot(
     productId = productId,
     updateRepository = updateRepository,
     openDeclarationTab = openDeclarationTab,
-    itemStaticListDependencies = itemStaticListDependencies,
+    dependencies = dependencies,
     mapper = { mapper(productId) },
 ), ProductTabSlot
 

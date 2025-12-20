@@ -5,15 +5,15 @@ import com.arkivanov.decompose.router.slot.SlotNavigation
 import com.arkivanov.decompose.router.slot.activate
 import com.arkivanov.decompose.router.slot.childSlot
 import com.arkivanov.decompose.router.slot.dismiss
-import ru.pavlig43.itemlist.statik.ItemStaticListDependencies
-import ru.pavlig43.itemlist.core.refac.api.VendorListParamProvider
-import ru.pavlig43.itemlist.statik.api.component.MBSItemListComponent
-import ru.pavlig43.itemlist.statik.internal.component.VendorItemUi
+import ru.pavlig43.itemlist.api.component.MBSImmutableTableComponent
+import ru.pavlig43.itemlist.api.component.VendorBuilder
+import ru.pavlig43.itemlist.api.dependencies
+import ru.pavlig43.itemlist.internal.component.items.vendor.VendorItemUi
 
 internal class VendorDialogComponent(
     parentComponentContext: ComponentContext,
     private val onChangeVendor: (Int, String) -> Unit,
-    itemStaticListDependencies: ItemStaticListDependencies,
+    dependencies: dependencies,
     onOpenVendorTab: (Int) -> Unit,
 ) {
     private val dialogNavigation = SlotNavigation<MBSVendorDialog>()
@@ -25,12 +25,12 @@ internal class VendorDialogComponent(
             serializer = MBSVendorDialog.serializer(),
             handleBackButton = true,
         ) { _: MBSVendorDialog, context ->
-            MBSItemListComponent<VendorItemUi>(
+            MBSImmutableTableComponent<VendorItemUi>(
                 componentContext = context,
                 onDismissed = dialogNavigation::dismiss,
-                itemStaticListDependencies = itemStaticListDependencies,
+                dependencies = dependencies,
                 onCreate = { onOpenVendorTab(0) },
-                immutableTableBuilder = VendorListParamProvider(
+                builderData = VendorBuilder(
                     withCheckbox = false
                 ),
                 onItemClick = {

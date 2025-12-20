@@ -21,7 +21,7 @@ interface DeclarationDao {
     suspend fun updateDeclaration(declaration: Declaration)
 
     @Query("DELETE FROM $DECLARATIONS_TABLE_NAME WHERE id IN (:ids)")
-    suspend fun deleteDeclarationsByIds(ids: List<Int>)
+    suspend fun deleteDeclarationsByIds(ids: Set<Int>)
 
 
     @Query("SELECT * FROM $DECLARATIONS_TABLE_NAME WHERE id = :id")
@@ -30,13 +30,10 @@ interface DeclarationDao {
     @Query(
         """
     SELECT * FROM $DECLARATIONS_TABLE_NAME d
-    WHERE (:isFilterByText = FALSE OR 
-           (d.display_name LIKE '%' || :searchText || '%' OR 
-            d.vendor_name LIKE '%' || :searchText || '%'))
     ORDER BY id DESC
 """
     )
-    fun observeOnItems(searchText: String, isFilterByText: Boolean): Flow<List<Declaration>>
+    fun observeOnItems(): Flow<List<Declaration>>
 
     @Query(
         """

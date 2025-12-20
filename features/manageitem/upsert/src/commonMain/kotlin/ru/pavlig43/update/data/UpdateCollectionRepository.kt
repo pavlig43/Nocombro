@@ -1,9 +1,7 @@
 package ru.pavlig43.update.data
 
-import ru.pavlig43.core.RequestResult
 import ru.pavlig43.core.data.ChangeSet
 import ru.pavlig43.core.data.CollectionObject
-import ru.pavlig43.core.data.dbSafeCall
 
 class UpdateCollectionRepository<DBOut: CollectionObject,DBIn : CollectionObject>(
     private val tag: String,
@@ -11,14 +9,14 @@ class UpdateCollectionRepository<DBOut: CollectionObject,DBIn : CollectionObject
     private val deleteCollection: suspend (ids: List<Int>) -> Unit,
     private val upsertCollection: suspend (collection: List<DBIn>) -> Unit
 )  {
-    suspend fun getInit(id: Int): RequestResult<List<DBOut>> {
-        return dbSafeCall(tag) {
+    suspend fun getInit(id: Int): Result<List<DBOut>> {
+        return runCatching {
             loadCollection(id)
         }
     }
 
-    suspend fun update(changeSet: ChangeSet<List<DBIn>>): RequestResult<Unit> {
-        return dbSafeCall(tag) {
+    suspend fun update(changeSet: ChangeSet<List<DBIn>>): Result<Unit> {
+        return runCatching {
             val (old, new) = changeSet
             val newById = new.associateBy { it.id }
             if (old != null) {

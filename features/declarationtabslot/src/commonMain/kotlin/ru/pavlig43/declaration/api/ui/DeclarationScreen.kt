@@ -24,7 +24,7 @@ import ru.pavlig43.coreui.tooltip.IconButtonToolTip
 import ru.pavlig43.declaration.api.component.DeclarationTabSlot
 import ru.pavlig43.declaration.api.component.ProductDeclarationListComponent
 import ru.pavlig43.declaration.internal.ui.AddDeclarationRow
-import ru.pavlig43.itemlist.statik.api.ui.MBSItemList
+import ru.pavlig43.itemlist.api.ui.MBSImmutableTable
 
 @Composable
 fun<Out: GenericDeclarationOut,In: GenericDeclarationIn>ProductDeclarationScreen(
@@ -40,7 +40,7 @@ fun<Out: GenericDeclarationOut,In: GenericDeclarationIn>ProductDeclarationScreen
         modifier = modifier.verticalScroll(rememberScrollState())
     )
     dialog.child?.instance?.also {
-        MBSItemList(it)
+        MBSImmutableTable(it)
     }
 }
 @Composable

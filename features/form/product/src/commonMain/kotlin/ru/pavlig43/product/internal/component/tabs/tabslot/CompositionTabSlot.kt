@@ -10,18 +10,16 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.serialization.Serializable
-import ru.pavlig43.core.RequestResult
 import ru.pavlig43.core.data.ChangeSet
-import ru.pavlig43.core.mapTo
 import ru.pavlig43.database.data.product.ProductComposition
 import ru.pavlig43.database.data.product.ProductCompositionIn
 import ru.pavlig43.database.data.product.ProductCompositionOut
 import ru.pavlig43.database.data.product.ProductIngredientIn
 import ru.pavlig43.database.data.product.ProductType
-import ru.pavlig43.itemlist.statik.ItemStaticListDependencies
-import ru.pavlig43.itemlist.core.refac.api.ProductListParamProvider
-import ru.pavlig43.itemlist.statik.api.component.MBSItemListComponent
-import ru.pavlig43.itemlist.statik.internal.component.ProductItemUi
+import ru.pavlig43.itemlist.api.component.MBSImmutableTableComponent
+import ru.pavlig43.itemlist.api.component.ProductBuilder
+import ru.pavlig43.itemlist.api.dependencies
+import ru.pavlig43.itemlist.internal.component.items.product.ProductItemUi
 import ru.pavlig43.loadinitdata.api.component.LoadInitDataComponent
 import ru.pavlig43.product.internal.data.CompositionUi
 import ru.pavlig43.product.internal.data.ProductIngredientUi
@@ -43,7 +41,7 @@ import ru.pavlig43.update.data.UpdateCollectionRepository
 internal class CompositionTabSlot(
     componentContext: ComponentContext,
     private val productId: Int,
-    itemStaticListDependencies: ItemStaticListDependencies,
+    dependencies: dependencies,
     val openProductTab: (Int) -> Unit,
     private val updateCompositionRepository: UpdateCollectionRepository<ProductCompositionOut, ProductCompositionIn>
 ) : ComponentContext by componentContext, ProductTabSlot {
@@ -61,7 +59,7 @@ internal class CompositionTabSlot(
         LoadInitDataComponent<List<CompositionUi>>(
             componentContext = childContext("loadInitData_composition"),
             getInitData = {
-                updateCompositionRepository.getInit(productId).mapTo { it.toCompositionUi() }
+                updateCompositionRepository.getInit(productId).map { it.toCompositionUi() }
             },
             onSuccessGetInitData = { compositions ->
                 _compositionList.update { compositions }
@@ -201,12 +199,12 @@ internal class CompositionTabSlot(
             serializer = MBSIngredientDialog.serializer(),
             handleBackButton = true,
         ) { config: MBSIngredientDialog, context ->
-            MBSItemListComponent<ProductItemUi>(
+            MBSImmutableTableComponent<ProductItemUi>(
                 componentContext = context,
                 onDismissed = dialogNavigation::dismiss,
-                itemStaticListDependencies = itemStaticListDependencies,
+                dependencies = dependencies,
                 onCreate = { openProductTab(0) },
-                immutableTableBuilder = ProductListParamProvider(
+                builderData = ProductBuilder(
                     fullListProductTypes = ProductType.entries,
                     withCheckbox = false
                 ),
@@ -236,7 +234,7 @@ internal class CompositionTabSlot(
      *
      * Сравнивает текущее состояние с исходным и отправляет изменения через репозиторий.
      */
-    override suspend fun onUpdate(): RequestResult<Unit> {
+    override suspend fun onUpdate(): Result<Unit> {
         val old =
             loadInitDataComponent.firstData.value?.map { it.toProductCompositionIn(productId) }
         val new = _compositionList.value.map { it.toProductCompositionIn(productId) }

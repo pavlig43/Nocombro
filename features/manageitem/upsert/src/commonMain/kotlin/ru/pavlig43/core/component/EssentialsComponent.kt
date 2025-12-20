@@ -8,11 +8,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
-import ru.pavlig43.core.RequestResult
 import ru.pavlig43.core.componentCoroutineScope
 import ru.pavlig43.core.data.GenericItem
 import ru.pavlig43.core.data.ItemEssentialsUi
-import ru.pavlig43.core.mapTo
 import ru.pavlig43.loadinitdata.api.component.LoadInitDataComponent
 
 data class EssentialComponentFactory<I : GenericItem, T : ItemEssentialsUi>(
@@ -25,7 +23,7 @@ data class EssentialComponentFactory<I : GenericItem, T : ItemEssentialsUi>(
 abstract class EssentialsComponent<I : GenericItem, T : ItemEssentialsUi>(
     componentContext: ComponentContext,
     private val componentFactory: EssentialComponentFactory<I, T>,
-    getInitData: (suspend () -> RequestResult<I>)?,
+    getInitData: (suspend () -> Result<I>)?,
 ) : ComponentContext by componentContext {
     protected val coroutineScope = componentCoroutineScope()
 
@@ -35,14 +33,10 @@ abstract class EssentialsComponent<I : GenericItem, T : ItemEssentialsUi>(
     val initDataComponent = LoadInitDataComponent<T>(
         componentContext = childContext("init"),
         getInitData = {
-            getInitData?.invoke()?.mapTo { item ->
-                componentFactory.mapperToUi(item).also {
-                    componentFactory.vendorInfoForTabName(it)
-                }
-
-            } ?: RequestResult.Success(
-                componentFactory.initItem
-            )
+            getInitData?.invoke()?.map { item ->
+                componentFactory.mapperToUi(item)
+                    .also { componentFactory.vendorInfoForTabName(it) }
+            }?:Result.success(componentFactory.initItem)
 
         },
         onSuccessGetInitData = { item ->
@@ -74,12 +68,5 @@ internal interface CreateState {
     data class Error(val message: String) : CreateState
 }
 
-internal fun RequestResult<Int>.toCreateState(): CreateState {
-    return when (this) {
-        is RequestResult.Error<*> -> CreateState.Error(this.message ?: "Неизвестная ошибка")
-        is RequestResult.InProgress -> CreateState.Loading
-        is RequestResult.Initial<*> -> CreateState.Init
-        is RequestResult.Success<Int> -> CreateState.Success(data)
-    }
-}
+
 

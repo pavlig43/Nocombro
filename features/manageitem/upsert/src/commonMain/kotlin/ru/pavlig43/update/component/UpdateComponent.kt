@@ -10,21 +10,20 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import ru.pavlig43.core.RequestResult
 import ru.pavlig43.core.componentCoroutineScope
 
-sealed interface UpdateState<O : Any> {
-    class Init<O : Any> : UpdateState<O>
-    class Loading<O : Any> : UpdateState<O>
-    class Success<O : Any>(val data: O) : UpdateState<O>
-    class Error<O : Any>(val message: String) : UpdateState<O>
+sealed interface UpdateState {
+    data object Init: UpdateState
+    data object Loading : UpdateState
+    data object Success : UpdateState
+    data class Error(val message: String) : UpdateState
 }
 
 
 
 class UpdateComponent(
     componentContext: ComponentContext,
-    private val onUpdateComponent: suspend () -> RequestResult<Unit>,
+    private val onUpdateComponent: suspend () -> Result<Unit>,
     otherValidValue: Flow<Boolean> = flowOf(true),
     val closeFormScreen: () -> Unit,
 ) : ComponentContext by componentContext {
@@ -38,26 +37,21 @@ class UpdateComponent(
         )
 
      fun onUpdate() {
-        _updateState.update { UpdateState.Loading() }
+        _updateState.update { UpdateState.Loading }
         coroutineScope.launch {
-            val result = onUpdateComponent()
-            _updateState.update { result.toUpdateState() }
+            val result = onUpdateComponent().fold(
+                onSuccess = { UpdateState.Success},
+                onFailure = { UpdateState.Error(it.message ?: "Неизвестная ошибка")}
+            )
+            _updateState.update { result }
         }
 
     }
 
-    private val _updateState: MutableStateFlow<UpdateState<Unit>> = MutableStateFlow(UpdateState.Init<Unit>())
-    val updateState: StateFlow<UpdateState<Unit>> = _updateState.asStateFlow()
+    private val _updateState: MutableStateFlow<UpdateState> = MutableStateFlow(UpdateState.Init)
+    val updateState: StateFlow<UpdateState> = _updateState.asStateFlow()
 
 
 
 }
 
-private fun <O : Any> RequestResult<O>.toUpdateState(): UpdateState<O> {
-    return when (this) {
-        is RequestResult.Error<*> -> UpdateState.Error(this.message ?: "Неизвестная ошибка")
-        is RequestResult.InProgress -> UpdateState.Loading()
-        is RequestResult.Initial<*> -> UpdateState.Init()
-        is RequestResult.Success<O> -> UpdateState.Success(data)
-    }
-}

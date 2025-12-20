@@ -1,7 +1,8 @@
 package ru.pavlig43.declarationform.internal.data
 
+import kotlinx.datetime.LocalDate
 import ru.pavlig43.core.data.ItemEssentialsUi
-import ru.pavlig43.core.getUTCNow
+import ru.pavlig43.core.getCurrentLocalDate
 import ru.pavlig43.database.data.declaration.Declaration
 import kotlin.time.ExperimentalTime
 
@@ -9,10 +10,10 @@ data class DeclarationEssentialsUi(
     override val id: Int = 0,
     val displayName: String = "",
     val isObserveFromNotification: Boolean = true,
-    val createdAt: Long? = null,
+    val createdAt: LocalDate = getCurrentLocalDate(),
     val vendorId: Int? = null,
     val vendorName: String? = null,
-    val bestBefore: Long? = null
+    val bestBefore: LocalDate = getCurrentLocalDate()
 ) : ItemEssentialsUi
 
 @Suppress("ThrowsCount")
@@ -20,11 +21,11 @@ data class DeclarationEssentialsUi(
 internal fun DeclarationEssentialsUi.toDto(): Declaration {
     return Declaration(
         displayName = displayName,
-        createdAt = createdAt ?: getUTCNow(),
+        createdAt = createdAt,
         id = id,
         vendorId = vendorId ?: throw IllegalArgumentException("VendorId  required"),
         vendorName = vendorName ?: throw IllegalArgumentException("Vendor name required"),
-        bestBefore = bestBefore ?: throw IllegalArgumentException("Best before required"),
+        bestBefore = bestBefore,
         observeFromNotification = isObserveFromNotification
     )
 }

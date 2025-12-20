@@ -4,7 +4,6 @@ import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
 import com.arkivanov.decompose.value.operator.map
 import org.koin.core.scope.Scope
-import ru.pavlig43.core.RequestResult
 import ru.pavlig43.core.component.EssentialComponentFactory
 import ru.pavlig43.core.tabs.TabNavigationComponent
 import ru.pavlig43.database.DataBaseTransaction
@@ -41,7 +40,7 @@ internal class DeclarationFormTabInnerTabsComponent(
 
                     DeclarationTab.Essentials -> EssentialTabSlot(
                         componentContext = context,
-                        itemStaticListDependencies = scope.get(),
+                        dependencies = scope.get(),
                         declarationId = declarationId,
                         updateRepository = scope.get(),
                         componentFactory = componentFactory,
@@ -60,7 +59,7 @@ internal class DeclarationFormTabInnerTabsComponent(
 
             },
         )
-    private suspend fun update():RequestResult<Unit> {
+    private suspend fun update(): Result<Unit> {
         val blocks = tabNavigationComponent.children.map { children->
             children.items.map { child-> suspend {child.instance.onUpdate()} } }
         return dbTransaction.transaction(blocks.value)

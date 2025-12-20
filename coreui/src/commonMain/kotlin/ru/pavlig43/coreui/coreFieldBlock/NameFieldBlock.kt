@@ -13,7 +13,7 @@ import ru.pavlig43.coreui.StringColumnField
 fun NameFieldBlock(
     name: String,
     onChangeName:(String)-> Unit,
-    modifier: Modifier = Modifier.Companion
+    modifier: Modifier = Modifier
 ){
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
         StringColumnField(

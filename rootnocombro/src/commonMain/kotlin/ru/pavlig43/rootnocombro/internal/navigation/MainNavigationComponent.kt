@@ -10,16 +10,14 @@ import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.database.data.transaction.TransactionType
 import ru.pavlig43.declarationform.api.DeclarationFormComponent
 import ru.pavlig43.document.api.component.DocumentFormComponent
-import ru.pavlig43.itemlist.core.refac.api.DeclarationListParamProvider
-import ru.pavlig43.itemlist.core.refac.api.DocumentBuilder
-import ru.pavlig43.itemlist.core.refac.api.DocumentListParamProvider
-import ru.pavlig43.itemlist.core.refac.api.BuilderData
-import ru.pavlig43.itemlist.core.refac.api.ProductListParamProvider
-import ru.pavlig43.itemlist.core.refac.api.TransactionListParamProvider
-import ru.pavlig43.itemlist.core.refac.api.VendorListParamProvider
-import ru.pavlig43.itemlist.core.refac.core.component.ImmutableTableBuilder
-import ru.pavlig43.itemlist.core.refac.core.component.ImmutableTableComponent
-import ru.pavlig43.itemlist.statik.api.component.StaticItemListFactoryComponent
+import ru.pavlig43.itemlist.api.component.BuilderData
+import ru.pavlig43.itemlist.api.component.DeclarationBuilder
+import ru.pavlig43.itemlist.api.component.DocumentBuilder
+import ru.pavlig43.itemlist.api.component.ImmutableTableComponentFactory
+import ru.pavlig43.itemlist.api.component.ProductBuilder
+import ru.pavlig43.itemlist.api.component.TransactionBuilder
+import ru.pavlig43.itemlist.api.component.VendorBuilder
+import ru.pavlig43.itemlist.api.model.IItemUi
 import ru.pavlig43.notification.api.component.PageNotificationComponent
 import ru.pavlig43.notification.api.data.NotificationItem
 import ru.pavlig43.product.api.component.ProductFormComponent
@@ -91,24 +89,12 @@ internal class MainNavigationComponent(
 
                 when (tabConfig) {
                     is Notification -> notificationComponent
-                    is DocumentList-> ImmutableTableBuilder.build(
-                        context = context,
-                        dependencies = scope.get(),
-                        onCreate = { tabNavigationComponent.addTab(DocumentForm(0)) },
-                        onItemClick = { tabNavigationComponent.addTab(DocumentForm(it.id)) },
-                        builderData = DocumentBuilder(
-                            fullListDocumentTypes = DocumentType.entries,
-                            withCheckbox = true
-                        )
-                    )
+
                     is ItemList -> createImmutableTableComponent(
                         tabConfig = tabConfig,
                         context = context
                     )
-                    is ItemList -> createItemListFactoryComponent(
-                        tabConfig = tabConfig,
-                        context = context
-                    )
+
 
                     is ItemForm -> createItemFormComponent(
                         tabConfig = tabConfig,
@@ -131,17 +117,25 @@ internal class MainNavigationComponent(
     private fun createImmutableTableComponent(
         tabConfig: ItemList,
         context: ComponentContext
-    ): ImmutableTableComponent<*,*,*>{
-        val a= DocumentBuilder(
-            fullListDocumentTypes = DocumentType.entries,
-            withCheckbox = true
-        )
-        val builderData: BuilderData<*> = when(tabConfig){
-            is DeclarationList -> a
-            is DocumentList -> a
-            is ProductList -> a
-            is ProductTransactionList -> a
-            is VendorList -> a
+    ): ImmutableTableComponentFactory {
+
+        val builderData: BuilderData<out IItemUi> = when(tabConfig){
+            is DeclarationList -> DeclarationBuilder(withCheckbox = true)
+            is DocumentList -> DocumentBuilder(
+                fullListDocumentTypes = DocumentType.entries,
+                withCheckbox = true
+            )
+            is ProductList -> ProductBuilder(
+                fullListProductTypes = ProductType.entries,
+                withCheckbox = true
+            )
+            is ProductTransactionList -> TransactionBuilder(
+                fullListTransactionTypes = TransactionType.entries,
+                withCheckbox = true
+            )
+            is VendorList -> VendorBuilder(
+                withCheckbox = true
+            )
         }
         fun itemForm(id: Int) = when (tabConfig) {
             is DeclarationList -> DeclarationForm(id)
@@ -150,8 +144,8 @@ internal class MainNavigationComponent(
             is VendorList -> VendorForm(id)
             is ProductTransactionList -> TransactionForm(id)
         }
-        return ImmutableTableBuilder.build(
-            context = context,
+        return ImmutableTableComponentFactory(
+            componentContext = context,
             dependencies = scope.get(),
             onCreate = { tabNavigationComponent.addTab(itemForm(0)) },
             onItemClick = { tabNavigationComponent.addTab(itemForm(it.id)) },
@@ -160,46 +154,6 @@ internal class MainNavigationComponent(
     }
 
 
-    private fun createItemListFactoryComponent(
-        tabConfig: ItemList,
-        context: ComponentContext
-
-    ): StaticItemListFactoryComponent {
-        val paramProvider = when (tabConfig) {
-            is DeclarationList -> DeclarationListParamProvider(withCheckbox = true)
-            is DocumentList -> DocumentListParamProvider(
-                fullListDocumentTypes = DocumentType.entries,
-                withCheckbox = true
-            )
-
-            is ProductList -> ProductListParamProvider(
-                fullListProductTypes = ProductType.entries,
-                withCheckbox = true
-            )
-
-            is VendorList -> VendorListParamProvider(withCheckbox = true)
-            is ProductTransactionList -> TransactionListParamProvider(
-                fullListTransactionTypes = TransactionType.entries,
-                withCheckbox = true
-            )
-        }
-
-        fun itemForm(id: Int) = when (tabConfig) {
-            is DeclarationList -> DeclarationForm(id)
-            is DocumentList -> DocumentForm(id)
-            is ProductList -> ProductForm(id)
-            is VendorList -> VendorForm(id)
-            is ProductTransactionList -> TransactionForm(id)
-        }
-        return StaticItemListFactoryComponent(
-            componentContext = context,
-            itemStaticListDependencies = scope.get(),
-            onCreate = { tabNavigationComponent.addTab(itemForm(0)) },
-            onItemClick = { tabNavigationComponent.addTab(itemForm(it.id)) },
-            immutableTableBuilder = paramProvider
-        )
-
-    }
     private fun createItemFormComponent(
         tabConfig: ItemForm,
         context: ComponentContext,

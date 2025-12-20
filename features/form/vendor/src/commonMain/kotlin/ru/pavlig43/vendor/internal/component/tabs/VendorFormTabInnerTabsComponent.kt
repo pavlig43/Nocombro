@@ -6,7 +6,6 @@ import com.arkivanov.decompose.value.Value
 import com.arkivanov.decompose.value.operator.map
 import org.koin.core.qualifier.named
 import org.koin.core.scope.Scope
-import ru.pavlig43.core.RequestResult
 import ru.pavlig43.core.component.EssentialComponentFactory
 import ru.pavlig43.core.tabs.TabNavigationComponent
 import ru.pavlig43.database.DataBaseTransaction
@@ -60,8 +59,8 @@ internal class VendorFormTabInnerTabsComponent(
 
             },
         )
-    private suspend fun update(): RequestResult<Unit> {
-        val blocks: Value<List<suspend () -> RequestResult<Unit>>> = tabNavigationComponent.children.map { children->
+    private suspend fun update(): Result<Unit> {
+        val blocks: Value<List<suspend () -> Result<Unit>>> = tabNavigationComponent.children.map { children->
             children.items.map { child-> suspend {child.instance.onUpdate()} } }
         println(tabNavigationComponent.children.map { it.items.map { it.instance.title } })
         return dbTransaction.transaction(blocks.value)

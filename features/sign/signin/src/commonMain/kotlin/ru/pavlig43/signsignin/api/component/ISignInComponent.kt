@@ -14,10 +14,10 @@ interface ISignInComponent {
 
 }
 interface SignInState {
-    class Initial : SignInState
-    class Loading : SignInState
-    class Success : SignInState
-    class Error(val message: String) : SignInState
+    data object  Initial : SignInState
+    data object Loading : SignInState
+    data object Success : SignInState
+    data class Error(val message: String) : SignInState
 }
 
 

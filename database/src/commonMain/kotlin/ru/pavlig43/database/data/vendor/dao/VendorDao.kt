@@ -19,7 +19,7 @@ interface VendorDao {
     suspend fun updateVendor(vendor: Vendor)
 
     @Query("DELETE FROM $VENDOR_TABLE_NAME WHERE id IN (:ids)")
-    suspend fun deleteVendorsByIds(ids: List<Int>)
+    suspend fun deleteVendorsByIds(ids: Set<Int>)
 
     @Query("SELECT * from $VENDOR_TABLE_NAME WHERE id = :id")
     suspend fun getVendor(id: Int): Vendor
@@ -27,13 +27,9 @@ interface VendorDao {
     @Query(
         """
     SELECT * FROM $VENDOR_TABLE_NAME
-    WHERE 
-        display_name LIKE '%' || :searchText || '%' 
-        OR comment LIKE '%' || :searchText || '%'
-        OR :searchText = ''
     """
     )
-    fun observeOnVendors(searchText: String): Flow<List<Vendor>>
+    fun observeOnVendors(): Flow<List<Vendor>>
 
     @Query(
         """

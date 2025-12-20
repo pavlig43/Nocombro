@@ -5,7 +5,7 @@ import ru.pavlig43.create.data.CreateEssentialsRepository
 import ru.pavlig43.database.DataBaseTransaction
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.transaction.ProductTransaction
-import ru.pavlig43.itemlist.statik.ItemStaticListDependencies
+import ru.pavlig43.itemlist.api.dependencies
 import ru.pavlig43.transaction.api.TransactionFormDependencies
 import ru.pavlig43.update.data.UpdateEssentialsRepository
 
@@ -13,7 +13,7 @@ internal fun createTransactionFormModule(dependencies: TransactionFormDependenci
     module {
         single<NocombroDatabase> { dependencies.db }
         single<DataBaseTransaction> { dependencies.dbTransaction }
-        single<ItemStaticListDependencies> { dependencies.itemStaticListDependencies }
+        single<dependencies> { dependencies.dependencies }
         single<CreateEssentialsRepository<ProductTransaction>> { getCreateRepository(get()) }
         single<UpdateEssentialsRepository<ProductTransaction>> { getUpdateRepository(get()) }
 //        single<UpdateCollectionRepository<TransactionProductBDOut, TransactionProductBDIn>>(
@@ -43,7 +43,6 @@ private fun getCreateRepository(
 ): CreateEssentialsRepository<ProductTransaction> {
     val dao = db.productTransactionDao
     return CreateEssentialsRepository(
-        tag = "Create Transaction Repository",
         create = dao::create,
         isCanSave = dao::isCanSave
     )
@@ -54,7 +53,6 @@ private fun getUpdateRepository(
 ): UpdateEssentialsRepository<ProductTransaction> {
     val dao = db.productTransactionDao
     return UpdateEssentialsRepository(
-        tag = "Update Transaction Repository",
         isCanSave = dao::isCanSave,
         loadItem = dao::getProductTransaction,
         updateItem = dao::updateTransaction

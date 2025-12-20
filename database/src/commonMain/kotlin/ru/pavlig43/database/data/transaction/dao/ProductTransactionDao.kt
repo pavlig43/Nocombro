@@ -8,7 +8,6 @@ import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 import ru.pavlig43.database.data.common.IsCanUpsertResult
 import ru.pavlig43.database.data.transaction.ProductTransaction
-import ru.pavlig43.database.data.transaction.TransactionType
 
 @Dao
 interface ProductTransactionDao {
@@ -21,23 +20,16 @@ suspend fun create(transaction: ProductTransaction): Long
     suspend fun updateTransaction(transaction: ProductTransaction)
 
     @Query("DELETE FROM product_transaction  WHERE id IN (:ids)")
-    suspend fun deleteProductTransactionsByIds(ids: List<Int>)
+    suspend fun deleteProductTransactionsByIds(ids: Set<Int>)
 
     @Query("SELECT * from product_transaction WHERE id = :id")
     suspend fun getProductTransaction(id: Int): ProductTransaction
 
     @Query("""
     SELECT * FROM product_transaction
-    WHERE transaction_type IN (:types)
-    AND (
-        comment LIKE '%' || :searchText || '%'
-        OR :searchText = ''
-    )
     ORDER BY created_at DESC
 """)
-    fun observeOnProductTransactions(
-        searchText: String,
-        types: List<TransactionType>): Flow<List<ProductTransaction>>
+    fun observeOnProductTransactions(): Flow<List<ProductTransaction>>
 
 
     //TODO сделать проверку транзакций

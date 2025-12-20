@@ -10,7 +10,6 @@ import ru.pavlig43.database.data.common.IsCanUpsertResult
 import ru.pavlig43.database.data.common.NotificationDTO
 import ru.pavlig43.database.data.document.DOCUMENT_TABLE_NAME
 import ru.pavlig43.database.data.document.Document
-import ru.pavlig43.database.data.document.DocumentType
 
 
 @Dao

@@ -2,7 +2,6 @@ package ru.pavlig43.update.component
 
 import com.arkivanov.decompose.ComponentContext
 import ru.pavlig43.core.FormTabSlot
-import ru.pavlig43.core.RequestResult
 import ru.pavlig43.core.component.EssentialComponentFactory
 import ru.pavlig43.core.component.EssentialsComponent
 import ru.pavlig43.core.data.ChangeSet
@@ -23,7 +22,7 @@ abstract class UpdateEssentialsComponent<I : GenericItem, T : ItemEssentialsUi>(
 ), FormTabSlot {
     override val title: String = "Основная информация"
 
-    override suspend fun onUpdate(): RequestResult<Unit> {
+    override suspend fun onUpdate(): Result<Unit> {
         val old = initDataComponent.firstData.value?.mapperToDTO()
         val new = itemFields.value.mapperToDTO()
         return updateEssentialsRepository.update(ChangeSet(old, new))

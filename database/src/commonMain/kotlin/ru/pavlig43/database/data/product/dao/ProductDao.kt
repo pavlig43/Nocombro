@@ -9,7 +9,6 @@ import kotlinx.coroutines.flow.Flow
 import ru.pavlig43.database.data.common.IsCanUpsertResult
 import ru.pavlig43.database.data.product.PRODUCT_TABLE_NAME
 import ru.pavlig43.database.data.product.Product
-import ru.pavlig43.database.data.product.ProductType
 
 @Dao
 interface ProductDao {
@@ -20,24 +19,16 @@ interface ProductDao {
     suspend fun updateProduct(product: Product)
 
     @Query("DELETE FROM product WHERE id IN (:ids)")
-    suspend fun deleteProductsByIds(ids: List<Int>)
+    suspend fun deleteProductsByIds(ids: Set<Int>)
 
     @Query("SELECT * from product WHERE id = :id")
     suspend fun getProduct(id: Int): Product
 
     @Query("""
     SELECT * FROM $PRODUCT_TABLE_NAME
-    WHERE type IN (:types)
-    AND (
-        LOWER(display_name) LIKE '%' || LOWER(:searchText) || '%'
-        OR LOWER(comment) LIKE '%' || LOWER(:searchText) || '%'
-        OR :searchText = ''
-    )
     ORDER BY created_at DESC
 """)
-    fun observeOnProducts(
-        searchText: String,
-        types: List<ProductType>): Flow<List<Product>>
+    fun observeOnProducts(): Flow<List<Product>>
 
     @Query(
         """

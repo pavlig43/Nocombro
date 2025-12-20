@@ -20,6 +20,7 @@ android {
 kotlin{
     commonMainDependencies {
         implementation(projects.core)
+        implementation(libs.kotlinx.datetime)
     }
 
 }

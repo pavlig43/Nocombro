@@ -3,6 +3,7 @@ package ru.pavlig43.database.data.document
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import kotlinx.datetime.LocalDate
 import ru.pavlig43.core.data.GenericItem
 
 
@@ -16,7 +17,7 @@ data class Document(
     val type: DocumentType,
 
     @ColumnInfo("created_at")
-     val createdAt: Long,
+     val createdAt: LocalDate,
 
     val comment:String ="",
 

@@ -4,6 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
+import kotlinx.datetime.LocalDate
 import ru.pavlig43.core.data.GenericDeclarationIn
 import ru.pavlig43.core.data.GenericDeclarationOut
 import ru.pavlig43.database.data.declaration.Declaration
@@ -45,7 +46,7 @@ data class ProductDeclarationOut(
     override val declarationId: Int,
     override val declarationName: String,
     override val vendorName: String,
-    override val bestBefore: Long,
+    override val bestBefore: LocalDate,
 ) : GenericDeclarationOut
 
 
