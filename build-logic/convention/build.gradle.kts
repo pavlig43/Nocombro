@@ -87,6 +87,7 @@ gradlePlugin {
             id = libs.plugins.pavlig43.feature.get().pluginId
             implementationClass = "FeaturePlugin"
         }
+
     }
 }
 

@@ -9,6 +9,9 @@ import ru.pavlig43.convention.extension.libs
 class KmpPlugin:Plugin<Project> {
     override fun apply(target: Project) {
         with(target){
+//            this.extensions.extensionsSchema.elements.forEach {
+//                println(it.publicType.concreteClass.name.substringAfterLast('.'))
+//            }
             apply(plugin = libs.plugins.kotlinMultiplatform.get().pluginId)
             configureTargets()
             commonMainDependencies {
