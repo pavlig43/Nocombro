@@ -8,16 +8,14 @@ import ru.pavlig43.convention.extension.libs
 class KoinPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         with(target) {
-            kotlinMultiplatformConfig {
-                commonMainDependencies {
-                    api(libs.koin.core)
-                    implementation(libs.koin.compose)
-                }
-                androidMainDependencies {
-                    implementation(libs.koin.android)
-                }
-
+            commonMainDependencies {
+                api(libs.koin.core)
+                implementation(libs.koin.compose)
             }
+            androidMainDependencies {
+                implementation(libs.koin.android)
+            }
+
         }
     }
 }

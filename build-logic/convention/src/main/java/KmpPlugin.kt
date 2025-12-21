@@ -1,19 +1,28 @@
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.apply
+import org.gradle.kotlin.dsl.configure
+import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import ru.pavlig43.convention.extension.commonMainDependencies
 import ru.pavlig43.convention.extension.commonTestDependencies
-import ru.pavlig43.convention.extension.configureTargets
 import ru.pavlig43.convention.extension.libs
+import ru.pavlig43.convention.extension.projectJavaVersion
 
-class KmpPlugin:Plugin<Project> {
+class KmpPlugin : Plugin<Project> {
     override fun apply(target: Project) {
-        with(target){
-//            this.extensions.extensionsSchema.elements.forEach {
-//                println(it.publicType.concreteClass.name.substringAfterLast('.'))
-//            }
+        with(target) {
+
             apply(plugin = libs.plugins.kotlinMultiplatform.get().pluginId)
-            configureTargets()
+
+
+            extensions.configure<KotlinMultiplatformExtension> {
+                androidTarget{
+                    compilerOptions {
+                        jvmTarget.set(jvmTarget)
+                    }
+                }
+                jvm("desktop")
+            }
             commonMainDependencies {
                 implementation(libs.kotlinx.datetime)
             }

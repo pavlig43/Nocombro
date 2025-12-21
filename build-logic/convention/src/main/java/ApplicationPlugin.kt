@@ -12,6 +12,7 @@ import ru.pavlig43.convention.extension.androidMainDependencies
 import ru.pavlig43.convention.extension.configureAndroid
 import ru.pavlig43.convention.extension.kotlinMultiplatformConfig
 import ru.pavlig43.convention.extension.libs
+import ru.pavlig43.convention.extension.projectJavaVersion
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -23,10 +24,17 @@ class ApplicationPlugin : Plugin<Project> {
             apply(plugin = libs.plugins.pavlig43.kmp.get().pluginId)
             apply(plugin = libs.plugins.pavlig43.compose.get().pluginId)
 
+
+
             extensions.configure<ApplicationExtension> {
                 configureAndroid(this)
+
                 androidMainDependencies {
                     implementation(libs.androidx.activity.compose)
+                }
+                compileOptions {
+                    sourceCompatibility = projectJavaVersion
+                    targetCompatibility = projectJavaVersion
                 }
                 defaultConfig {
 
@@ -79,6 +87,7 @@ class ApplicationPlugin : Plugin<Project> {
                 }
                 buildFeatures {
                     buildConfig = true
+                    compose = true
                 }
                 packaging {
                     resources {
@@ -107,7 +116,9 @@ class ApplicationPlugin : Plugin<Project> {
                     }
                 }
             }
+
             kotlinMultiplatformConfig {
+
                 targets
                     .filterIsInstance<KotlinNativeTarget>()
                     .forEach { nativeTarget ->
@@ -117,7 +128,6 @@ class ApplicationPlugin : Plugin<Project> {
                         }
                     }
             }
-
 
         }
 
