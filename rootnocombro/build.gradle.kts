@@ -6,9 +6,6 @@ plugins {
 
 }
 
-android {
-    namespace = "ru.pavlig43.rootnocombro"
-}
 kotlin {
     commonMainDependencies {
         implementation(projects.features.sign.root)

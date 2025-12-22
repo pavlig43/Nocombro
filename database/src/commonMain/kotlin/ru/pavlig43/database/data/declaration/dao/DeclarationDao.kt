@@ -6,8 +6,8 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
-import ru.pavlig43.database.data.common.IsCanUpsertResult
 import ru.pavlig43.database.data.common.NotificationDTO
+import ru.pavlig43.database.data.common.isCanSaveWithName
 import ru.pavlig43.database.data.declaration.DECLARATIONS_TABLE_NAME
 import ru.pavlig43.database.data.declaration.Declaration
 
@@ -45,10 +45,8 @@ interface DeclarationDao {
     )
     suspend fun isNameAllowed(id: Int, name: String): Boolean
 
-    suspend fun isCanSave(declaration: Declaration): IsCanUpsertResult{
-        if (declaration.displayName.isBlank()) return IsCanUpsertResult.NameBlank()
-        if (!isNameAllowed(declaration.id,declaration.displayName)) return IsCanUpsertResult.NameExists()
-        return IsCanUpsertResult.Ok()
+    suspend fun isCanSave(declaration: Declaration): Result<Unit> {
+        return isCanSaveWithName(declaration.id,declaration.displayName,::isNameAllowed)
     }
 
 

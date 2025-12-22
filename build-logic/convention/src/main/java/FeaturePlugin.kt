@@ -7,8 +7,7 @@ import ru.pavlig43.convention.extension.libs
 class FeaturePlugin:Plugin<Project> {
     override fun apply(target: Project) {
         with(target){
-            apply(plugin = libs.plugins.pavlig43.library.get().pluginId)
-            apply(plugin = libs.plugins.pavlig43.kmp.get().pluginId)
+            apply(plugin = libs.plugins.pavlig43.kmplibrary.get().pluginId)
             apply(plugin = libs.plugins.pavlig43.serialization.get().pluginId)
             apply(plugin = libs.plugins.pavlig43.coroutines.get().pluginId)
             apply(plugin = libs.plugins.pavlig43.compose.get().pluginId)

@@ -25,6 +25,9 @@ import dev.darkokoa.datetimewheelpicker.core.format.CjkSuffixConfig
 import dev.darkokoa.datetimewheelpicker.core.format.MonthDisplayStyle
 import dev.darkokoa.datetimewheelpicker.core.format.dateFormatter
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.format
+import kotlinx.datetime.format.char
 import ru.pavlig43.coreui.tooltip.IconButtonToolTip
 import kotlin.time.ExperimentalTime
 
@@ -77,4 +80,17 @@ fun DateFieldBlock(
         }
 
     }
+}
+@Composable
+fun DateText(date: LocalDate) {
+    val dateFormat = LocalDate.Format {
+        day()
+        char('.')
+        monthNumber()
+        char('.')
+        year()
+
+    }
+
+    Text(date.format(LocalDate.Formats.ISO_BASIC))
 }

@@ -20,6 +20,7 @@ tasks.withType<JavaCompile> {
     targetCompatibility = libs.versions.java.get()
 }
 
+
 dependencies {
     compileOnly(libs.android.gradlePlugin)
     compileOnly(libs.kotlin.gradlePlugin)
@@ -35,10 +36,7 @@ dependencies {
 gradlePlugin {
     plugins {
 
-        register("kmp") {
-            id = libs.plugins.pavlig43.kmp.get().pluginId
-            implementationClass = "KmpPlugin"
-        }
+
         register("application") {
             id = libs.plugins.pavlig43.application.get().pluginId
             implementationClass = "ApplicationPlugin"
@@ -86,6 +84,10 @@ gradlePlugin {
         register("feature"){
             id = libs.plugins.pavlig43.feature.get().pluginId
             implementationClass = "FeaturePlugin"
+        }
+        register("kmplibrary"){
+            id = libs.plugins.pavlig43.kmplibrary.get().pluginId
+            implementationClass = "KmpLibrary"
         }
 
     }

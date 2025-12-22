@@ -20,7 +20,7 @@ plugins {
     //    build-logic
     alias(libs.plugins.pavlig43.application) apply false
     alias(libs.plugins.pavlig43.library) apply false
-    alias(libs.plugins.pavlig43.kmp) apply false
+    alias(libs.plugins.pavlig43.kmplibrary) apply false
     alias(libs.plugins.pavlig43.serialization) apply false
     alias(libs.plugins.pavlig43.coroutines) apply false
     alias(libs.plugins.pavlig43.koin) apply false

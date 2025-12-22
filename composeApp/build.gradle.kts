@@ -1,5 +1,6 @@
 import com.android.build.api.dsl.androidLibrary
 import org.jetbrains.kotlin.compose.compiler.gradle.ComposeFeatureFlag
+import ru.pavlig43.convention.extension.androidMainDependencies
 import ru.pavlig43.convention.extension.libs
 
 plugins {
@@ -19,7 +20,9 @@ kotlin {
 
 
     sourceSets {
-
+        androidMainDependencies {
+            implementation(libs.androidx.activity.compose)
+        }
 
         commonMain.dependencies {
 
@@ -47,9 +50,5 @@ android {
 dependencies {
     debugImplementation(libs.leakcanary.android)
 }
-//composeDesktopApplication(
-//    mainClass = "ru.pavlig43.nocombro.MainKt",
-//    packageName = "ru.pavlig43.nocombro"
-//)
 
 

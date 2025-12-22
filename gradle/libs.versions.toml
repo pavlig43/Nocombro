@@ -22,7 +22,7 @@ java = "21"
 filekit = "0.12.0"
 junit = "4.13.2"
 koin = "4.1.1"
-kotlin = "2.2.21"
+kotlin = "2.3.0"
 kotlinx-coroutines = "1.10.2"
 ksp = "2.3.3"
 ktor = "3.3.3"
@@ -172,7 +172,6 @@ buildkonfig = { id = "com.github.gmazzo.buildconfig", version.ref = "buildkonfig
 
 
 #build-logic
-pavlig43-kmp = {id = "pavlig43.kmp"}
 pavlig43-application = { id = "pavlig43.application" }
 pavlig43-library = { id = "pavlig43.library" }
 pavlig43-compose = { id = "pavlig43.compose" }
@@ -184,6 +183,8 @@ pavlig43-feature = {id="pavlig43.feature"}
 pavlig43-decompose = {id="pavlig43.decompose"}
 
 pavlig43-sqldelight = {id="pavlig43.sqldelight"}
+
+pavlig43-kmplibrary = {id="pavlig43.kmplibrary"}
 
 
 pavlig43-room = { id = "pavlig43.room" }

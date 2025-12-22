@@ -4,9 +4,7 @@ plugins {
   alias(libs.plugins.pavlig43.feature)  
   }
 
-android {
-    namespace = "ru.pavlig43.manageitem.upsert"
-}
+
 kotlin{
     commonMainDependencies {
         implementation(projects.database)

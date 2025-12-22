@@ -6,7 +6,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
-import ru.pavlig43.database.data.common.IsCanUpsertResult
+import ru.pavlig43.database.data.common.isCanSaveWithName
 import ru.pavlig43.database.data.vendor.VENDOR_TABLE_NAME
 import ru.pavlig43.database.data.vendor.Vendor
 
@@ -41,10 +41,8 @@ interface VendorDao {
     )
     suspend fun isNameAllowed(id: Int, name: String): Boolean
 
-    suspend fun isCanSave(vendor: Vendor): IsCanUpsertResult{
-        if (vendor.displayName.isBlank()) return IsCanUpsertResult.NameBlank()
-        if (!isNameAllowed(vendor.id,vendor.displayName)) return IsCanUpsertResult.NameExists()
-        return IsCanUpsertResult.Ok()
+    suspend fun isCanSave(vendor: Vendor): Result<Unit> {
+        return isCanSaveWithName(vendor.id,vendor.displayName,::isNameAllowed)
     }
 
 

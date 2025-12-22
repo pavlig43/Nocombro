@@ -6,6 +6,7 @@ import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atTime
+import kotlinx.datetime.format.char
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
 import ru.pavlig43.database.data.document.DocumentType
@@ -70,9 +71,25 @@ class Converters {
         value.toInstant(TimeZone.currentSystemDefault())
             .toEpochMilliseconds()
 
+}
+private val dateTimeFormat = LocalDateTime.Format {
+    day()
+    char('.')
+    monthNumber()
+    char('.')
+    year()
+    char(' ')
+    hour()
+    char(':')
+    minute()
+}
 
 
-
-
+private val dateFormat = LocalDateTime.Format {
+    day()
+    char('.')
+    monthNumber()
+    char('.')
+    year()
 
 }

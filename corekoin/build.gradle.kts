@@ -1,10 +1,8 @@
 plugins{
-    alias(libs.plugins.pavlig43.library)
+    alias(libs.plugins.pavlig43.kmplibrary)
     alias(libs.plugins.pavlig43.koin)
     alias(libs.plugins.pavlig43.decompose)
 }
 
 
-android{
-    namespace = "ru.pavlig43.corekoin"
-}
+

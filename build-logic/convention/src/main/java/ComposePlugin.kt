@@ -1,7 +1,6 @@
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.apply
-import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.withType
 import org.jetbrains.compose.ComposeExtension
@@ -33,13 +32,13 @@ private val Project.compose
 
 internal fun Project.configureComposeKmp() {
 
-    dependencies{
-        add("debugImplementation",compose.uiTooling)
-    }
+
 
 
     androidMainDependencies  {
         implementation(compose.preview)
+
+
     }
     commonMainDependencies {
         implementation(compose.runtime)
@@ -51,6 +50,7 @@ internal fun Project.configureComposeKmp() {
         implementation(compose.materialIconsExtended)
         implementation(libs.androidx.lifecycle.runtime.compose)
         implementation(compose.components.resources)
+        implementation(compose.uiTooling)
     }
     desktopDependencies  {
         implementation(compose.desktop.currentOs)
@@ -75,3 +75,5 @@ internal fun Project.configureComposeKmp() {
         }
     }
 }
+
+

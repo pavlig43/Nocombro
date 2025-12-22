@@ -6,7 +6,6 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
-import ru.pavlig43.database.data.common.IsCanUpsertResult
 import ru.pavlig43.database.data.transaction.ProductTransaction
 
 @Dao
@@ -33,8 +32,8 @@ suspend fun create(transaction: ProductTransaction): Long
 
 
     //TODO сделать проверку транзакций
-    suspend fun isCanSave(transaction: ProductTransaction): IsCanUpsertResult{
-        return IsCanUpsertResult.Ok()
+    suspend fun isCanSave(transaction: ProductTransaction): Result<Unit> {
+        return Result.success(Unit)
     }
 
 }

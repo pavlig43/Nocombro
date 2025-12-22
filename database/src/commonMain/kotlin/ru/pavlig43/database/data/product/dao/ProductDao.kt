@@ -6,7 +6,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
-import ru.pavlig43.database.data.common.IsCanUpsertResult
+import ru.pavlig43.database.data.common.isCanSaveWithName
 import ru.pavlig43.database.data.product.PRODUCT_TABLE_NAME
 import ru.pavlig43.database.data.product.Product
 
@@ -40,10 +40,9 @@ interface ProductDao {
     )
     suspend fun isNameAllowed(id: Int, name: String): Boolean
 
-    suspend fun isCanSave(product: Product): IsCanUpsertResult{
-        if (product.displayName.isBlank()) return IsCanUpsertResult.NameBlank()
-        if (!isNameAllowed(product.id,product.displayName)) return IsCanUpsertResult.NameExists()
-        return IsCanUpsertResult.Ok()
+    suspend fun isCanSave(product: Product): Result<Unit> {
+        return isCanSaveWithName(product.id,product.displayName,::isNameAllowed)
+
     }
 
 

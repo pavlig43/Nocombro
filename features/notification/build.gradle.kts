@@ -4,9 +4,7 @@ plugins {
   alias(libs.plugins.pavlig43.feature)  
   }
 
-android {
-    namespace = "ru.pavlig43.notification"
-}
+
 commonMainDependencies {
     implementation(projects.database)
     
