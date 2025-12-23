@@ -6,7 +6,6 @@ import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.dependencies
 import ru.pavlig43.convention.extension.commonMainDependencies
-import ru.pavlig43.convention.extension.kotlinMultiplatformConfig
 import ru.pavlig43.convention.extension.libs
 
 class RoomPlugin:Plugin<Project> {

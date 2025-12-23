@@ -1,6 +1,5 @@
 package ru.pavlig43.signsignup.internal.di
 
-import org.koin.core.module.Module
 import org.koin.dsl.module
 import ru.pavlig43.signsignup.api.ISignUpDependencies
 

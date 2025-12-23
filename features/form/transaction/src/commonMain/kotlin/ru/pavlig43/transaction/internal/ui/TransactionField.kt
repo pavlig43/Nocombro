@@ -7,7 +7,7 @@ import ru.pavlig43.coreui.coreFieldBlock.ItemTypeField
 import ru.pavlig43.coreui.coreFieldBlock.LabelCheckBoxFieldBlock
 import ru.pavlig43.database.data.transaction.OperationType
 import ru.pavlig43.database.data.transaction.TransactionType
-import ru.pavlig43.transaction.internal.data.TransactionEssentialsUi
+import ru.pavlig43.transaction.internal.model.TransactionEssentialsUi
 
 @Composable
 internal fun TransactionFields(

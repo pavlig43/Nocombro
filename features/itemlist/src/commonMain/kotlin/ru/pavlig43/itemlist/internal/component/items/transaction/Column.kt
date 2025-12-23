@@ -3,7 +3,6 @@ package ru.pavlig43.itemlist.internal.component.items.transaction
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Checkbox
@@ -15,7 +14,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
-import ru.pavlig43.coreui.tooltip.IconButtonToolTip
+import kotlinx.datetime.format
+import ru.pavlig43.core.dateTimeFormat
 import ru.pavlig43.database.data.transaction.TransactionType
 import ru.pavlig43.itemlist.internal.component.SelectionUiEvent
 import ru.pavlig43.itemlist.internal.model.TableData
@@ -109,7 +109,7 @@ internal fun createTransactionColumn(
                 filter(TableFilterType.DateTableFilter())
                 cell { transaction, _ ->
                     Text(
-                        transaction.createdAt.toString()
+                        transaction.createdAt.format(dateTimeFormat)
                     )
                 }
                 sortable()

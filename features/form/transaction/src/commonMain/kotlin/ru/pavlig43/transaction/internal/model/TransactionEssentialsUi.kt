@@ -1,4 +1,4 @@
-package ru.pavlig43.transaction.internal.data
+package ru.pavlig43.transaction.internal.model
 
 import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.core.data.ItemEssentialsUi
@@ -41,7 +41,7 @@ internal fun TransactionEssentialsUi.toDto(): ProductTransaction {
     return ProductTransaction(
         transactionType = transactionType?:throw IllegalArgumentException("transaction type required"),
         operationType = operationType?:throw IllegalArgumentException("operation type required"),
-        createdAt = createdAt?:throw IllegalArgumentException("date require not null"),
+        createdAt = createdAt,
         comment = comment,
         isCompleted = isCompleted,
         id = id

@@ -18,6 +18,27 @@ fun getCurrentLocalDateTime(): LocalDateTime {
     return Clock.System.now()
         .toLocalDateTime(TimeZone.currentSystemDefault())
 }
+val dateTimeFormat = LocalDateTime.Format {
+    day()
+    char('.')
+    monthNumber()
+    char('.')
+    year()
+    char(' ')
+    hour()
+    char(':')
+    minute()
+}
+
+
+val dateFormat = LocalDate.Format {
+    day()
+    char('.')
+    monthNumber()
+    char('.')
+    year()
+
+}
 
 
 

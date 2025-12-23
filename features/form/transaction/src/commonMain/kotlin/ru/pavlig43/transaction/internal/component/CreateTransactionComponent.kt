@@ -5,8 +5,8 @@ import ru.pavlig43.core.component.EssentialComponentFactory
 import ru.pavlig43.create.component.CreateEssentialsComponent
 import ru.pavlig43.create.data.CreateEssentialsRepository
 import ru.pavlig43.database.data.transaction.ProductTransaction
-import ru.pavlig43.transaction.internal.data.TransactionEssentialsUi
-import ru.pavlig43.transaction.internal.data.toDto
+import ru.pavlig43.transaction.internal.model.TransactionEssentialsUi
+import ru.pavlig43.transaction.internal.model.toDto
 
 internal class CreateTransactionComponent(
     componentContext: ComponentContext,

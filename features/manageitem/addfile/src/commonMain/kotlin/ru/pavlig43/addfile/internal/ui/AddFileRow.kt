@@ -1,11 +1,6 @@
 package ru.pavlig43.addfile.internal.ui
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
@@ -32,11 +27,7 @@ import ru.pavlig43.addfile.api.data.UploadState
 import ru.pavlig43.coreui.ProgressIndicator
 import ru.pavlig43.coreui.tooltip.IconButtonToolTip
 import ru.pavlig43.coreui.tooltip.ProjectToolTip
-import ru.pavlig43.theme.Res
-import ru.pavlig43.theme.excel
-import ru.pavlig43.theme.pdf
-import ru.pavlig43.theme.unknown
-import ru.pavlig43.theme.word
+import ru.pavlig43.theme.*
 
 @Composable
 internal fun AddFileRow(

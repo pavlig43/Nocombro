@@ -9,11 +9,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.intl.Locale
@@ -25,9 +21,8 @@ import dev.darkokoa.datetimewheelpicker.core.format.CjkSuffixConfig
 import dev.darkokoa.datetimewheelpicker.core.format.MonthDisplayStyle
 import dev.darkokoa.datetimewheelpicker.core.format.dateFormatter
 import kotlinx.datetime.LocalDate
-import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.format
-import kotlinx.datetime.format.char
+import ru.pavlig43.core.dateFormat
 import ru.pavlig43.coreui.tooltip.IconButtonToolTip
 import kotlin.time.ExperimentalTime
 
@@ -46,7 +41,7 @@ fun DateFieldBlock(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(dateName)
-        Text(date.toString(), textDecoration = TextDecoration.Underline)
+        Text(date.format(dateFormat), textDecoration = TextDecoration.Underline)
         var isDatePickerVisible by remember { mutableStateOf(false) }
         IconButtonToolTip(
             tooltipText = "Дата",
@@ -80,17 +75,4 @@ fun DateFieldBlock(
         }
 
     }
-}
-@Composable
-fun DateText(date: LocalDate) {
-    val dateFormat = LocalDate.Format {
-        day()
-        char('.')
-        monthNumber()
-        char('.')
-        year()
-
-    }
-
-    Text(date.format(LocalDate.Formats.ISO_BASIC))
 }

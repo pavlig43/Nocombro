@@ -9,6 +9,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.datetime.format
+import ru.pavlig43.core.dateFormat
 import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.itemlist.internal.component.SelectionUiEvent
 import ru.pavlig43.itemlist.internal.model.TableData
@@ -94,7 +96,7 @@ internal fun createProductColumn(
                 filter(TableFilterType.DateTableFilter())
                 cell { document, _ ->
                     Text(
-                        document.createdAt.toString()
+                        document.createdAt.format(dateFormat)
                     )
                 }
                 sortable()

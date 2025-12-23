@@ -8,11 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -86,6 +82,7 @@ private fun <I : IItemUi, C, E : TableData<I>> ImmutableTable(
         settings = TableSettings(
             stripedRows = true,
             autoApplyFilters = true,
+            showFastFilters = true,
             showActiveFiltersHeader = true,
             selectionMode = SelectionMode.Multiple,
             pinnedColumnsCount = 3
@@ -105,6 +102,7 @@ private fun <I : IItemUi, C, E : TableData<I>> ImmutableTable(
             itemsCount = items.size,
             itemAt = { index -> items.getOrNull(index) },
             state = state,
+            strings = RussianStringProvider,
             customization = DefaultTableCustomization(),
             tableData = tableData,
             columns = columns,

@@ -8,7 +8,6 @@ import org.jetbrains.compose.ComposeExtension
 import org.jetbrains.compose.desktop.DesktopExtension
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
-import ru.pavlig43.convention.extension.androidMainDependencies
 import ru.pavlig43.convention.extension.configTargetWithoutAndroid
 import ru.pavlig43.convention.extension.kotlinMultiplatformConfig
 import ru.pavlig43.convention.extension.libs

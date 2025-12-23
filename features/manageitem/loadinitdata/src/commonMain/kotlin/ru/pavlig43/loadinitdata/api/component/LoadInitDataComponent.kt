@@ -7,7 +7,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import ru.pavlig43.core.componentCoroutineScope
-import ru.pavlig43.loadinitdata.api.ui.LoadInitDataScreen
 
 class LoadInitDataComponent<I : Any>(
     componentContext: ComponentContext,

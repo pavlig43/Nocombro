@@ -1,7 +1,7 @@
 package ru.pavlig43.convention.extension.templates
 
 import java.io.File
-import java.util.Locale
+import java.util.*
 
 fun createKmpLib(moduleName: String){
 

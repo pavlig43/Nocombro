@@ -17,11 +17,7 @@ import ru.pavlig43.addfile.api.ui.FilesScreen
 import ru.pavlig43.core.ui.EssentialBlockScreen
 import ru.pavlig43.declaration.api.ui.ProductDeclarationScreen
 import ru.pavlig43.product.api.component.ProductFormComponent
-import ru.pavlig43.product.internal.component.tabs.tabslot.CompositionTabSlot
-import ru.pavlig43.product.internal.component.tabs.tabslot.EssentialTabSlot
-import ru.pavlig43.product.internal.component.tabs.tabslot.ProductDeclarationTabSlot
-import ru.pavlig43.product.internal.component.tabs.tabslot.ProductFileTabSlot
-import ru.pavlig43.product.internal.component.tabs.tabslot.ProductTabSlot
+import ru.pavlig43.product.internal.component.tabs.tabslot.*
 import ru.pavlig43.product.internal.ui.CompositionScreen
 import ru.pavlig43.product.internal.ui.CreateProductScreen
 import ru.pavlig43.product.internal.ui.ProductFields

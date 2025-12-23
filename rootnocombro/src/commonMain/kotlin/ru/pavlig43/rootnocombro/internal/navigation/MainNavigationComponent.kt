@@ -10,13 +10,7 @@ import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.database.data.transaction.TransactionType
 import ru.pavlig43.declarationform.api.DeclarationFormComponent
 import ru.pavlig43.document.api.component.DocumentFormComponent
-import ru.pavlig43.itemlist.api.component.BuilderData
-import ru.pavlig43.itemlist.api.component.DeclarationBuilder
-import ru.pavlig43.itemlist.api.component.DocumentBuilder
-import ru.pavlig43.itemlist.api.component.ImmutableTableComponentFactory
-import ru.pavlig43.itemlist.api.component.ProductBuilder
-import ru.pavlig43.itemlist.api.component.TransactionBuilder
-import ru.pavlig43.itemlist.api.component.VendorBuilder
+import ru.pavlig43.itemlist.api.component.*
 import ru.pavlig43.itemlist.api.model.IItemUi
 import ru.pavlig43.notification.api.component.PageNotificationComponent
 import ru.pavlig43.notification.api.data.NotificationItem
@@ -25,19 +19,9 @@ import ru.pavlig43.rootnocombro.internal.navigation.drawer.component.DrawerCompo
 import ru.pavlig43.rootnocombro.internal.navigation.drawer.component.DrawerDestination
 import ru.pavlig43.rootnocombro.internal.navigation.drawer.component.IDrawerComponent
 import ru.pavlig43.rootnocombro.internal.navigation.tab.TabConfig
-import ru.pavlig43.rootnocombro.internal.navigation.tab.TabConfig.ItemForm
-import ru.pavlig43.rootnocombro.internal.navigation.tab.TabConfig.ItemForm.DeclarationForm
-import ru.pavlig43.rootnocombro.internal.navigation.tab.TabConfig.ItemForm.DocumentForm
-import ru.pavlig43.rootnocombro.internal.navigation.tab.TabConfig.ItemForm.ProductForm
-import ru.pavlig43.rootnocombro.internal.navigation.tab.TabConfig.ItemForm.TransactionForm
-import ru.pavlig43.rootnocombro.internal.navigation.tab.TabConfig.ItemForm.VendorForm
-import ru.pavlig43.rootnocombro.internal.navigation.tab.TabConfig.ItemList
-import ru.pavlig43.rootnocombro.internal.navigation.tab.TabConfig.ItemList.DeclarationList
-import ru.pavlig43.rootnocombro.internal.navigation.tab.TabConfig.ItemList.DocumentList
-import ru.pavlig43.rootnocombro.internal.navigation.tab.TabConfig.ItemList.ProductList
-import ru.pavlig43.rootnocombro.internal.navigation.tab.TabConfig.ItemList.ProductTransactionList
-import ru.pavlig43.rootnocombro.internal.navigation.tab.TabConfig.ItemList.VendorList
-import ru.pavlig43.rootnocombro.internal.navigation.tab.TabConfig.Notification
+import ru.pavlig43.rootnocombro.internal.navigation.tab.TabConfig.*
+import ru.pavlig43.rootnocombro.internal.navigation.tab.TabConfig.ItemForm.*
+import ru.pavlig43.rootnocombro.internal.navigation.tab.TabConfig.ItemList.*
 import ru.pavlig43.transaction.api.component.TransactionFormComponent
 import ru.pavlig43.vendor.component.VendorFormComponent
 

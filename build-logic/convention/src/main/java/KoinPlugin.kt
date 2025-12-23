@@ -2,7 +2,6 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import ru.pavlig43.convention.extension.androidMainDependencies
 import ru.pavlig43.convention.extension.commonMainDependencies
-import ru.pavlig43.convention.extension.kotlinMultiplatformConfig
 import ru.pavlig43.convention.extension.libs
 
 class KoinPlugin : Plugin<Project> {

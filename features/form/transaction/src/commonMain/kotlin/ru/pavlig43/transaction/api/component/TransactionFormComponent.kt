@@ -19,9 +19,9 @@ import ru.pavlig43.database.data.transaction.ProductTransaction
 import ru.pavlig43.transaction.api.TransactionFormDependencies
 import ru.pavlig43.transaction.internal.component.CreateTransactionComponent
 import ru.pavlig43.transaction.internal.component.tabs.tabslot.TransactionFormTabInnerTabsComponent
-import ru.pavlig43.transaction.internal.data.TransactionEssentialsUi
-import ru.pavlig43.transaction.internal.data.toUi
 import ru.pavlig43.transaction.internal.di.createTransactionFormModule
+import ru.pavlig43.transaction.internal.model.TransactionEssentialsUi
+import ru.pavlig43.transaction.internal.model.toUi
 
 class TransactionFormComponent(
     transactionId: Int,

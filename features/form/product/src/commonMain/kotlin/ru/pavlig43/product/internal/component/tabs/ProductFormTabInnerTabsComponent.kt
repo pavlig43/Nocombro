@@ -9,11 +9,7 @@ import ru.pavlig43.core.component.EssentialComponentFactory
 import ru.pavlig43.core.tabs.TabNavigationComponent
 import ru.pavlig43.database.DataBaseTransaction
 import ru.pavlig43.database.data.product.Product
-import ru.pavlig43.product.internal.component.tabs.tabslot.CompositionTabSlot
-import ru.pavlig43.product.internal.component.tabs.tabslot.EssentialTabSlot
-import ru.pavlig43.product.internal.component.tabs.tabslot.ProductDeclarationTabSlot
-import ru.pavlig43.product.internal.component.tabs.tabslot.ProductFileTabSlot
-import ru.pavlig43.product.internal.component.tabs.tabslot.ProductTabSlot
+import ru.pavlig43.product.internal.component.tabs.tabslot.*
 import ru.pavlig43.product.internal.data.ProductEssentialsUi
 import ru.pavlig43.product.internal.di.UpdateCollectionRepositoryType
 import ru.pavlig43.update.component.IItemFormInnerTabsComponent

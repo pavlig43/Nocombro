@@ -11,11 +11,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.serialization.Serializable
 import ru.pavlig43.core.data.ChangeSet
-import ru.pavlig43.database.data.product.ProductComposition
-import ru.pavlig43.database.data.product.ProductCompositionIn
-import ru.pavlig43.database.data.product.ProductCompositionOut
-import ru.pavlig43.database.data.product.ProductIngredientIn
-import ru.pavlig43.database.data.product.ProductType
+import ru.pavlig43.database.data.product.*
 import ru.pavlig43.itemlist.api.component.MBSImmutableTableComponent
 import ru.pavlig43.itemlist.api.component.ProductBuilder
 import ru.pavlig43.itemlist.api.dependencies

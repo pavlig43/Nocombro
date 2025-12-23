@@ -8,6 +8,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.datetime.format
+import ru.pavlig43.core.dateFormat
 import ru.pavlig43.itemlist.internal.component.SelectionUiEvent
 import ru.pavlig43.itemlist.internal.model.TableData
 import ru.pavlig43.itemlist.internal.ui.createButtonNew
@@ -90,7 +92,7 @@ internal fun createDeclarationColumn(
                 filter(TableFilterType.DateTableFilter())
                 cell { declaration, _ ->
                     Text(
-                        declaration.createdAt.toString()
+                        declaration.createdAt.format(dateFormat)
                     )
                 }
                 sortable()
@@ -101,7 +103,7 @@ internal fun createDeclarationColumn(
                 filter(TableFilterType.DateTableFilter())
                 cell { declaration, _ ->
                     Text(
-                        declaration.createdAt.toString()
+                        declaration.createdAt.format(dateFormat)
                     )
                 }
                 sortable()

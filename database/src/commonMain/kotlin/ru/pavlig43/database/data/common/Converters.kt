@@ -1,14 +1,7 @@
 package ru.pavlig43.database.data.common
 
 import androidx.room.TypeConverter
-import kotlinx.datetime.LocalDate
-import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.LocalTime
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.atTime
-import kotlinx.datetime.format.char
-import kotlinx.datetime.toInstant
-import kotlinx.datetime.toLocalDateTime
+import kotlinx.datetime.*
 import ru.pavlig43.database.data.document.DocumentType
 import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.database.data.product.ProductUnit
@@ -70,26 +63,5 @@ class Converters {
     fun fromLocalDateTime(value: LocalDateTime): Long =
         value.toInstant(TimeZone.currentSystemDefault())
             .toEpochMilliseconds()
-
-}
-private val dateTimeFormat = LocalDateTime.Format {
-    day()
-    char('.')
-    monthNumber()
-    char('.')
-    year()
-    char(' ')
-    hour()
-    char(':')
-    minute()
-}
-
-
-private val dateFormat = LocalDateTime.Format {
-    day()
-    char('.')
-    monthNumber()
-    char('.')
-    year()
 
 }

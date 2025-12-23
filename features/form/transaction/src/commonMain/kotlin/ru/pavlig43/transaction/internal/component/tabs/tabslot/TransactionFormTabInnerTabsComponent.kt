@@ -9,7 +9,7 @@ import ru.pavlig43.core.tabs.TabNavigationComponent
 import ru.pavlig43.database.DataBaseTransaction
 import ru.pavlig43.database.data.transaction.ProductTransaction
 import ru.pavlig43.transaction.internal.component.tabs.TransactionTab
-import ru.pavlig43.transaction.internal.data.TransactionEssentialsUi
+import ru.pavlig43.transaction.internal.model.TransactionEssentialsUi
 import ru.pavlig43.update.component.IItemFormInnerTabsComponent
 import ru.pavlig43.update.component.UpdateComponent
 
