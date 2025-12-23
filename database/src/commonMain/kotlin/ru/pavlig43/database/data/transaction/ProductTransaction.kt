@@ -14,9 +14,6 @@ data class ProductTransaction(
     @ColumnInfo("transaction_type")
     val transactionType: TransactionType,
 
-    @ColumnInfo("operation_type")
-    val operationType: OperationType,
-
     @ColumnInfo("created_at")
     val createdAt: LocalDateTime,
 

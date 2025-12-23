@@ -12,8 +12,6 @@ import kotlin.time.ExperimentalTime
 internal data class TransactionEssentialsUi(
     val transactionType: TransactionType? = null,
 
-    val operationType: OperationType? = null,
-
     val createdAt: LocalDateTime = getCurrentLocalDateTime(),
 
     val comment: String ="",
@@ -46,4 +44,10 @@ internal fun TransactionEssentialsUi.toDto(): ProductTransaction {
         isCompleted = isCompleted,
         id = id
     )
+}
+private fun TransactionType.toOperationType(): OperationType = when(this){
+    TransactionType.TRANSFER -> TODO()
+    TransactionType.SALE -> TODO()
+    TransactionType.WRITE_OFF -> TODO()
+    TransactionType.INVENTORY -> TODO()
 }
