@@ -4,7 +4,7 @@ import org.koin.dsl.module
 import ru.pavlig43.create.data.CreateEssentialsRepository
 import ru.pavlig43.database.DataBaseTransaction
 import ru.pavlig43.database.NocombroDatabase
-import ru.pavlig43.database.data.transaction.ProductTransaction
+import ru.pavlig43.database.data.transaction.Transaction
 import ru.pavlig43.itemlist.api.dependencies
 import ru.pavlig43.transaction.api.TransactionFormDependencies
 import ru.pavlig43.update.data.UpdateEssentialsRepository
@@ -14,8 +14,8 @@ internal fun createTransactionFormModule(dependencies: TransactionFormDependenci
         single<NocombroDatabase> { dependencies.db }
         single<DataBaseTransaction> { dependencies.dbTransaction }
         single<dependencies> { dependencies.dependencies }
-        single<CreateEssentialsRepository<ProductTransaction>> { getCreateRepository(get()) }
-        single<UpdateEssentialsRepository<ProductTransaction>> { getUpdateRepository(get()) }
+        single<CreateEssentialsRepository<Transaction>> { getCreateRepository(get()) }
+        single<UpdateEssentialsRepository<Transaction>> { getUpdateRepository(get()) }
 //        single<UpdateCollectionRepository<TransactionProductBDOut, TransactionProductBDIn>>(
 //            named(UpdateCollectionRepositoryType.BatchesRow.name)
 //        ) { getUpdateDeclarationRepository(get()) }
@@ -40,7 +40,7 @@ internal fun createTransactionFormModule(dependencies: TransactionFormDependenci
 
 private fun getCreateRepository(
     db: NocombroDatabase
-): CreateEssentialsRepository<ProductTransaction> {
+): CreateEssentialsRepository<Transaction> {
     val dao = db.productTransactionDao
     return CreateEssentialsRepository(
         create = dao::create,
@@ -50,11 +50,11 @@ private fun getCreateRepository(
 
 private fun getUpdateRepository(
     db: NocombroDatabase
-): UpdateEssentialsRepository<ProductTransaction> {
+): UpdateEssentialsRepository<Transaction> {
     val dao = db.productTransactionDao
     return UpdateEssentialsRepository(
         isCanSave = dao::isCanSave,
-        loadItem = dao::getProductTransaction,
+        loadItem = dao::getTransaction,
         updateItem = dao::updateTransaction
     )
 }

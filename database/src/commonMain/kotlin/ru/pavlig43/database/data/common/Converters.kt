@@ -1,11 +1,17 @@
 package ru.pavlig43.database.data.common
 
 import androidx.room.TypeConverter
-import kotlinx.datetime.*
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.LocalTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.atTime
+import kotlinx.datetime.toInstant
+import kotlinx.datetime.toLocalDateTime
 import ru.pavlig43.database.data.document.DocumentType
 import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.database.data.product.ProductUnit
-import ru.pavlig43.database.data.transaction.OperationType
+import ru.pavlig43.database.data.transaction.MovementType
 import ru.pavlig43.database.data.transaction.TransactionType
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
@@ -32,10 +38,10 @@ class Converters {
     fun fromProductUnit(value: ProductUnit): String = value.name
 
     @TypeConverter
-    fun toOperationType(value: String) = enumValueOf<OperationType>(value)
+    fun toOperationType(value: String) = enumValueOf<MovementType>(value)
 
     @TypeConverter
-    fun fromOperationType(value: OperationType) = value.name
+    fun fromOperationType(value: MovementType) = value.name
 
     @TypeConverter
     fun toTransactionType(value: String): TransactionType = enumValueOf<TransactionType>(value)

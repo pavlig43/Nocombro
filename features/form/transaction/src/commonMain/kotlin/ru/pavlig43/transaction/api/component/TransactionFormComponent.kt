@@ -15,10 +15,10 @@ import org.koin.core.scope.Scope
 import ru.pavlig43.core.SlotComponent
 import ru.pavlig43.core.component.EssentialComponentFactory
 import ru.pavlig43.corekoin.ComponentKoinContext
-import ru.pavlig43.database.data.transaction.ProductTransaction
+import ru.pavlig43.database.data.transaction.Transaction
 import ru.pavlig43.transaction.api.TransactionFormDependencies
 import ru.pavlig43.transaction.internal.component.CreateTransactionComponent
-import ru.pavlig43.transaction.internal.component.tabs.tabslot.TransactionFormTabInnerTabsComponent
+import ru.pavlig43.transaction.internal.component.tabs.tabslot.transactionvariables.buy.BuyFormTabInnerTabsComponent
 import ru.pavlig43.transaction.internal.di.createTransactionFormModule
 import ru.pavlig43.transaction.internal.model.TransactionEssentialsUi
 import ru.pavlig43.transaction.internal.model.toUi
@@ -44,11 +44,11 @@ class TransactionFormComponent(
 
 
     private val essentialFactory =
-        EssentialComponentFactory<ProductTransaction, TransactionEssentialsUi>(
+        EssentialComponentFactory<Transaction, TransactionEssentialsUi>(
             initItem = TransactionEssentialsUi(),
-            isValidValuesFactory = { transactionType != null && operationType != null && createdAt != null },
+            isValidValuesFactory = { transactionType != null },
             mapperToUi = { toUi() },
-            vendorInfoForTabName = { onChangeValueForMainTab("*Операция ${it.transactionType}") }
+            vendorInfoForTabName = { onChangeValueForMainTab(it.transactionType?.displayName ?: "* Транзакция") }
         )
 
     private fun onChangeValueForMainTab(title: String) {
@@ -73,7 +73,7 @@ class TransactionFormComponent(
             )
 
             is Config.Update -> Child.Update(
-                TransactionFormTabInnerTabsComponent(
+                BuyFormTabInnerTabsComponent(
                     componentContext = componentContext,
                     essentialFactory = essentialFactory,
                     scope = scope,
@@ -105,6 +105,6 @@ class TransactionFormComponent(
 
     internal sealed class Child {
         class Create(val component: CreateTransactionComponent) : Child()
-        class Update(val component: TransactionFormTabInnerTabsComponent) : Child()
+        class Update(val component: BuyFormTabInnerTabsComponent) : Child()
     }
 }

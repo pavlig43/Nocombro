@@ -15,6 +15,10 @@ kotlin{
         implementation(projects.features.itemlist)
         implementation(projects.database)
 
+        implementation(libs.wwind.table.core)
+        implementation(libs.wwind.table.format)
+        implementation(libs.collections.immutable)
+
 
     }
 }

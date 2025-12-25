@@ -6,7 +6,7 @@ import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.database.data.document.Document
 import ru.pavlig43.database.data.product.Product
-import ru.pavlig43.database.data.transaction.ProductTransaction
+import ru.pavlig43.database.data.transaction.Transaction
 import ru.pavlig43.database.data.vendor.Vendor
 import ru.pavlig43.itemlist.api.dependencies
 import ru.pavlig43.itemlist.internal.data.ImmutableListRepository
@@ -69,10 +69,10 @@ private fun createVendorRepository(db: NocombroDatabase): ImmutableListRepositor
     )
 }
 
-private fun createTransactionRepository(db: NocombroDatabase): ImmutableListRepository<ProductTransaction> {
+private fun createTransactionRepository(db: NocombroDatabase): ImmutableListRepository<Transaction> {
     val dao = db.productTransactionDao
     return ImmutableListRepository(
-        delete = dao::deleteProductTransactionsByIds,
+        delete = dao::deleteTransactionsByIds,
         observe = dao::observeOnProductTransactions,
     )
 }

@@ -6,7 +6,7 @@ import ru.pavlig43.itemlist.api.model.IItemUi
 import ua.wwind.table.filter.data.FilterConstraint
 import ua.wwind.table.filter.data.TableFilterState
 
-internal abstract class FilterMatcher<I : IItemUi, C> {
+abstract class FilterMatcher<I, C> {
 
 
     protected abstract fun matchesRules(item:I,column:C,stateAny:  TableFilterState<*>): Boolean

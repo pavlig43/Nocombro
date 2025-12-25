@@ -9,6 +9,7 @@ class FeaturePlugin:Plugin<Project> {
         with(target){
             apply(plugin = libs.plugins.pavlig43.kmplibrary.get().pluginId)
             apply(plugin = libs.plugins.pavlig43.serialization.get().pluginId)
+            apply(plugin = libs.plugins.pavlig43.koin.get().pluginId)
             apply(plugin = libs.plugins.pavlig43.coroutines.get().pluginId)
             apply(plugin = libs.plugins.pavlig43.compose.get().pluginId)
             apply(plugin = libs.plugins.pavlig43.decompose.get().pluginId)

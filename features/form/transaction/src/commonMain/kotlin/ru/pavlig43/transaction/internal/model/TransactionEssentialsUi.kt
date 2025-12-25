@@ -3,8 +3,7 @@ package ru.pavlig43.transaction.internal.model
 import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.core.data.ItemEssentialsUi
 import ru.pavlig43.core.getCurrentLocalDateTime
-import ru.pavlig43.database.data.transaction.OperationType
-import ru.pavlig43.database.data.transaction.ProductTransaction
+import ru.pavlig43.database.data.transaction.Transaction
 import ru.pavlig43.database.data.transaction.TransactionType
 import kotlin.time.ExperimentalTime
 
@@ -23,31 +22,23 @@ internal data class TransactionEssentialsUi(
     ) : ItemEssentialsUi
 
 
-internal fun ProductTransaction.toUi(): TransactionEssentialsUi {
+internal fun Transaction.toUi(): TransactionEssentialsUi {
     return TransactionEssentialsUi(
         createdAt = createdAt,
         comment = comment,
         id = id,
         transactionType = transactionType,
-        operationType = operationType,
         isCompleted = isCompleted
     )
 }
 
 
-internal fun TransactionEssentialsUi.toDto(): ProductTransaction {
-    return ProductTransaction(
+internal fun TransactionEssentialsUi.toDto(): Transaction {
+    return Transaction(
         transactionType = transactionType?:throw IllegalArgumentException("transaction type required"),
-        operationType = operationType?:throw IllegalArgumentException("operation type required"),
         createdAt = createdAt,
         comment = comment,
         isCompleted = isCompleted,
         id = id
     )
-}
-private fun TransactionType.toOperationType(): OperationType = when(this){
-    TransactionType.TRANSFER -> TODO()
-    TransactionType.SALE -> TODO()
-    TransactionType.WRITE_OFF -> TODO()
-    TransactionType.INVENTORY -> TODO()
 }

@@ -28,7 +28,7 @@ import ru.pavlig43.database.data.product.Product
             onDelete = RESTRICT
         ),
         ForeignKey(
-            entity = ProductTransaction::class,
+            entity = Transaction::class,
             parentColumns = ["id"],
             childColumns = ["transaction_id"],
             onDelete = CASCADE
@@ -72,70 +72,3 @@ data class TransactionProductBDOut(
 ) : CollectionObject
 
 
-@Entity(
-    tableName = "movement",
-    foreignKeys = [
-        ForeignKey(
-            entity = ProductTransaction::class,
-            parentColumns = ["id"],
-            childColumns = ["transaction_id"],
-            onDelete = CASCADE
-        )
-    ]
-)
-data class Movement(
-    val transactionId: Int,
-    val type: MovementType,
-)
-
-@Entity
-data class MovementProduct(
-
-)
-
-@Entity(
-    tableName = "storage_product",
-    foreignKeys = [
-        ForeignKey(
-            entity = Product::class,
-            parentColumns = ["id"],
-            childColumns = ["product_id"],
-            onDelete = RESTRICT
-        ),
-        ForeignKey(
-            entity = Declaration::class,
-            parentColumns = ["id"],
-            childColumns = ["declaration_id"],
-            onDelete = RESTRICT
-        ),
-        ForeignKey(
-            entity = ProductTransaction::class,
-            parentColumns = ["id"],
-            childColumns = ["transaction_id"],
-            onDelete = CASCADE
-        )
-    ]
-)
-data class StorageProductBDIn(
-
-    @ColumnInfo("product_id")
-    val productId: Int,
-
-    @ColumnInfo("declaration_id")
-    val declarationId: Int,
-
-    @ColumnInfo("date_born")
-    val dateBorn: LocalDate,
-
-    @ColumnInfo("batch")
-    val batch: Int,
-
-    @ColumnInfo("transaction_id")
-    val transactionId: Int,
-
-    @ColumnInfo("count")
-    val count: Int,
-
-    @PrimaryKey(autoGenerate = true)
-    override val id: Int = 0
-) : CollectionObject

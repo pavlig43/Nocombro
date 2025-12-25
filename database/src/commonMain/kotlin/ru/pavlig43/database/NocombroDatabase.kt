@@ -20,7 +20,7 @@ import ru.pavlig43.database.data.product.dao.CompositionDao
 import ru.pavlig43.database.data.product.dao.ProductDao
 import ru.pavlig43.database.data.product.dao.ProductDeclarationDao
 import ru.pavlig43.database.data.product.dao.ProductFilesDao
-import ru.pavlig43.database.data.transaction.ProductTransaction
+import ru.pavlig43.database.data.transaction.Transaction
 import ru.pavlig43.database.data.transaction.TransactionProductBDIn
 import ru.pavlig43.database.data.transaction.dao.ProductTransactionDao
 import ru.pavlig43.database.data.vendor.Vendor
@@ -47,7 +47,7 @@ import kotlin.time.ExperimentalTime
         ProductIngredientIn::class,
 
 
-        ProductTransaction::class,
+        Transaction::class,
         TransactionProductBDIn::class,
     ],
 

@@ -12,7 +12,7 @@ import ru.pavlig43.corekoin.ComponentKoinContext
 import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.database.data.document.Document
 import ru.pavlig43.database.data.product.Product
-import ru.pavlig43.database.data.transaction.ProductTransaction
+import ru.pavlig43.database.data.transaction.Transaction
 import ru.pavlig43.database.data.vendor.Vendor
 import ru.pavlig43.itemlist.api.dependencies
 import ru.pavlig43.itemlist.api.model.IItemUi
@@ -82,7 +82,7 @@ class ImmutableTableComponentFactory(
                 tableBuilder = builderData,
                 onCreate = onCreate,
                 onItemClick = onItemClick,
-                repository = scope.get<ImmutableListRepository<ProductTransaction>>(
+                repository = scope.get<ImmutableListRepository<Transaction>>(
                     ImmutableTableRepositoryType.TRANSACTION.qualifier
                 ),
             )

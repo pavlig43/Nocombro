@@ -9,7 +9,7 @@ import ru.pavlig43.core.data.GenericItem
 @Entity(
     tableName = "product_transaction"
 )
-data class ProductTransaction(
+data class Transaction(
 
     @ColumnInfo("transaction_type")
     val transactionType: TransactionType,

@@ -21,7 +21,7 @@ enum class DrawerDestination(val title: String) {
     VendorList("Поставщики"),
     DeclarationList("Декларации"),
 
-    ProductTransactionList("Операции")
+    ProductTransactionList("Транзакции")
 
 }
 

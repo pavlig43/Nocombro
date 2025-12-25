@@ -43,5 +43,5 @@ data class TransactionBuilder(
     val fullListTransactionTypes: List<TransactionType>,
     override val withCheckbox: Boolean,
 ): BuilderData<ru.pavlig43.itemlist.internal.component.items.transaction.TransactionItemUi> {
-    override val tabTitle: String = "Операции"
+    override val tabTitle: String = "Транзакции"
 }
