@@ -3,9 +3,9 @@ package ru.pavlig43.itemlist.internal.component.items.transaction
 import ru.pavlig43.itemlist.internal.utils.FilterMatcher
 import ua.wwind.table.filter.data.TableFilterState
 
-internal object TransactionFilterMatcher: FilterMatcher<TransactionItemUi, TransactionField>() {
+internal object TransactionFilterMatcher: FilterMatcher<TransactionTableUi, TransactionField>() {
     override fun matchesRules(
-        item: TransactionItemUi,
+        item: TransactionTableUi,
         column: TransactionField,
         stateAny: TableFilterState<*>
     ): Boolean {

@@ -32,12 +32,12 @@ internal enum class DeclarationField {
 internal fun createDeclarationColumn(
     onCreate: () -> Unit,
     onEvent: (SelectionUiEvent) -> Unit,
-): ImmutableList<ColumnSpec<DeclarationItemUi, DeclarationField, TableData<DeclarationItemUi>>> {
+): ImmutableList<ColumnSpec<DeclarationTableUi, DeclarationField, TableData<DeclarationTableUi>>> {
     val columns =
-        tableColumns<DeclarationItemUi, DeclarationField, TableData<DeclarationItemUi>> {
+        tableColumns<DeclarationTableUi, DeclarationField, TableData<DeclarationTableUi>> {
 
 
-            column(DeclarationField.SELECTION, valueOf = { it.id }) {
+            column(DeclarationField.SELECTION, valueOf = { it.composeId }) {
 
                 title { createButtonNew(onCreate) }
                 autoWidth(48.dp)
@@ -48,9 +48,9 @@ internal fun createDeclarationColumn(
                             modifier = Modifier.fillMaxSize(),
                         ) {
                             Checkbox(
-                                checked = doc.id in tableData.selectedIds,
+                                checked = doc.composeId in tableData.selectedIds,
                                 onCheckedChange = {
-                                    onEvent(SelectionUiEvent.ToggleSelection(doc.id))
+                                    onEvent(SelectionUiEvent.ToggleSelection(doc.composeId))
                                 },
                             )
                         }
@@ -61,10 +61,10 @@ internal fun createDeclarationColumn(
 
             }
 
-            column(DeclarationField.ID, valueOf = { it.id }) {
+            column(DeclarationField.ID, valueOf = { it.composeId }) {
                 header("Ид")
                 align(Alignment.Center)
-                cell { document, _ -> Text(document.id.toString()) }
+                cell { document, _ -> Text(document.composeId.toString()) }
                 // Enable built‑in Text filter UI in header
                 // Auto‑fit to content with optional max cap
                 autoWidth(max = 500.dp)

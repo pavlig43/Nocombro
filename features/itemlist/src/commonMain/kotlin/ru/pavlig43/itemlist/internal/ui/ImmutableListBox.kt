@@ -16,7 +16,7 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import ru.pavlig43.coreui.ErrorScreen
 import ru.pavlig43.coreui.LoadingScreen
-import ru.pavlig43.itemlist.api.model.IItemUi
+import ru.pavlig43.itemlist.api.model.ITableUi
 import ru.pavlig43.itemlist.internal.component.ImmutableTableComponent
 import ru.pavlig43.itemlist.internal.component.ItemListState
 import ru.pavlig43.itemlist.internal.component.SelectionUiEvent
@@ -34,7 +34,7 @@ import ua.wwind.table.state.rememberTableState
 
 @OptIn(ExperimentalTableApi::class)
 @Composable
-internal fun <I : IItemUi, C> ImmutableTableBox(
+internal fun <I : ITableUi, C> ImmutableTableBox(
     component: ImmutableTableComponent<*, I, C>,
     modifier: Modifier = Modifier
 ) {
@@ -49,7 +49,7 @@ internal fun <I : IItemUi, C> ImmutableTableBox(
             is ItemListState.Error -> ErrorScreen(state.message)
             is ItemListState.Loading -> LoadingScreen()
             is ItemListState.Success -> {
-                ImmutableTable(
+                MyTable(
                     columns = component.columns,
                     items = tableData.displayedItems,
                     onRowClick = { component.onItemClick(it) },
@@ -67,7 +67,7 @@ internal fun <I : IItemUi, C> ImmutableTableBox(
 @Suppress("LongParameterList", "LongMethod")
 @OptIn(ExperimentalTableApi::class)
 @Composable
-private fun <I : IItemUi, C, E : TableData<I>> ImmutableTable(
+fun <I : ITableUi, C, E : TableData<I>> MyTable(
     columns: ImmutableList<ColumnSpec<I, C, E>>,
     items: List<I>,
     onFiltersChanged: (Map<C, TableFilterState<*>>) -> Unit,

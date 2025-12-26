@@ -1,13 +1,13 @@
 package ru.pavlig43.itemlist.internal.component.items.declaration
 
 import kotlinx.datetime.LocalDate
-import ru.pavlig43.itemlist.api.model.IItemUi
+import ru.pavlig43.itemlist.api.model.ITableUi
 
-data class DeclarationItemUi(
+data class DeclarationTableUi(
 
     val displayName: String="",
 
-    val createdAt: LocalDate ,
+    val createdAt: LocalDate,
 
     val vendorId: Int = 0,
 
@@ -15,5 +15,5 @@ data class DeclarationItemUi(
 
     val bestBefore: LocalDate,
 
-    override val id: Int = 0,
-): IItemUi
+    override val composeId: Int = 0,
+): ITableUi

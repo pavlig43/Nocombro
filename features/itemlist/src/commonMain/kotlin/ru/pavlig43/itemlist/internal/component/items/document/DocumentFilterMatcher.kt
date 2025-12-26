@@ -8,9 +8,9 @@ import ua.wwind.table.filter.data.TableFilterState
  * Utility class for filtering Person objects based on filter constraints.
  */
 
-internal object DocumentFilterMatcher: FilterMatcher<DocumentItemUi, DocumentField>() {
+internal object DocumentFilterMatcher: FilterMatcher<DocumentTableUi, DocumentField>() {
     override fun matchesRules(
-        item: DocumentItemUi,
+        item: DocumentTableUi,
         column: DocumentField,
         stateAny: TableFilterState<*>
     ): Boolean {
@@ -18,7 +18,7 @@ internal object DocumentFilterMatcher: FilterMatcher<DocumentItemUi, DocumentFie
             when (column) {
                 DocumentField.NAME -> matchesTextField(item.displayName, stateAny)
                 DocumentField.SELECTION -> true
-                DocumentField.ID -> matchesIntField(item.id, stateAny)
+                DocumentField.ID -> matchesIntField(item.composeId, stateAny)
                 DocumentField.TYPE -> matchesTypeField(item.type, stateAny)
                 DocumentField.CREATED_AT -> matchesDateField(item.createdAt,stateAny)
                 DocumentField.COMMENT -> matchesTextField(item.comment, stateAny)

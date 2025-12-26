@@ -40,12 +40,12 @@ internal fun createTransactionColumn(
     onCreate: () -> Unit,
     listTypeForFilter: List<TransactionType>,
     onEvent: (SelectionUiEvent) -> Unit,
-): ImmutableList<ColumnSpec<TransactionItemUi, TransactionField, TableData<TransactionItemUi>>> {
+): ImmutableList<ColumnSpec<TransactionTableUi, TransactionField, TableData<TransactionTableUi>>> {
     val columns =
-        tableColumns<TransactionItemUi, TransactionField, TableData<TransactionItemUi>> {
+        tableColumns<TransactionTableUi, TransactionField, TableData<TransactionTableUi>> {
 
 
-            column(TransactionField.SELECTION, valueOf = { it.id }) {
+            column(TransactionField.SELECTION, valueOf = { it.composeId }) {
 
                 title { createButtonNew(onCreate) }
                 autoWidth(48.dp)
@@ -56,9 +56,9 @@ internal fun createTransactionColumn(
                             modifier = Modifier.fillMaxSize(),
                         ) {
                             Checkbox(
-                                checked = doc.id in tableData.selectedIds,
+                                checked = doc.composeId in tableData.selectedIds,
                                 onCheckedChange = {
-                                    onEvent(SelectionUiEvent.ToggleSelection(doc.id))
+                                    onEvent(SelectionUiEvent.ToggleSelection(doc.composeId))
                                 },
                             )
                         }
@@ -69,10 +69,10 @@ internal fun createTransactionColumn(
 
             }
 
-            column(TransactionField.ID, valueOf = { it.id }) {
+            column(TransactionField.ID, valueOf = { it.composeId }) {
                 header("Ид")
                 align(Alignment.Center)
-                cell { transaction, _ -> Text(transaction.id.toString()) }
+                cell { transaction, _ -> Text(transaction.composeId.toString()) }
                 // Enable built‑in Text filter UI in header
                 // Auto‑fit to content with optional max cap
                 autoWidth(max = 500.dp)

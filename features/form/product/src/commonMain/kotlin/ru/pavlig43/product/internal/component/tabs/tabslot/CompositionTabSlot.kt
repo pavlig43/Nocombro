@@ -15,7 +15,7 @@ import ru.pavlig43.database.data.product.*
 import ru.pavlig43.itemlist.api.component.MBSImmutableTableComponent
 import ru.pavlig43.itemlist.api.component.ProductBuilder
 import ru.pavlig43.itemlist.api.dependencies
-import ru.pavlig43.itemlist.internal.component.items.product.ProductItemUi
+import ru.pavlig43.itemlist.internal.component.items.product.ProductTableUi
 import ru.pavlig43.loadinitdata.api.component.LoadInitDataComponent
 import ru.pavlig43.product.internal.data.CompositionUi
 import ru.pavlig43.product.internal.data.ProductIngredientUi
@@ -195,7 +195,7 @@ internal class CompositionTabSlot(
             serializer = MBSIngredientDialog.serializer(),
             handleBackButton = true,
         ) { config: MBSIngredientDialog, context ->
-            MBSImmutableTableComponent<ProductItemUi>(
+            MBSImmutableTableComponent<ProductTableUi>(
                 componentContext = context,
                 onDismissed = dialogNavigation::dismiss,
                 dependencies = dependencies,
@@ -205,7 +205,7 @@ internal class CompositionTabSlot(
                     withCheckbox = false
                 ),
                 onItemClick = {
-                    addIngredient(config.compositionId, it.id, it.displayName)
+                    addIngredient(config.compositionId, it.composeId, it.displayName)
                     dialogNavigation.dismiss()
                 },
             )

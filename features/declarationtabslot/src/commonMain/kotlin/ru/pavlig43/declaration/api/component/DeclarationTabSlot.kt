@@ -19,7 +19,7 @@ import ru.pavlig43.declaration.api.data.ItemDeclarationUi
 import ru.pavlig43.itemlist.api.component.DeclarationBuilder
 import ru.pavlig43.itemlist.api.component.MBSImmutableTableComponent
 import ru.pavlig43.itemlist.api.dependencies
-import ru.pavlig43.itemlist.internal.component.items.declaration.DeclarationItemUi
+import ru.pavlig43.itemlist.internal.component.items.declaration.DeclarationTableUi
 import ru.pavlig43.loadinitdata.api.component.LoadInitDataComponent
 import ru.pavlig43.update.data.UpdateCollectionRepository
 import kotlin.time.ExperimentalTime
@@ -48,7 +48,7 @@ abstract class DeclarationTabSlot<Out : GenericDeclarationOut, In : GenericDecla
         serializer = DialogConfig.serializer(),
         handleBackButton = true,
     ) { _, context ->
-        MBSImmutableTableComponent<DeclarationItemUi>(
+        MBSImmutableTableComponent<DeclarationTableUi>(
             componentContext = context,
             onDismissed = dialogNavigation::dismiss,
             onCreate = { openDeclarationTab(0) },
@@ -96,12 +96,12 @@ internal class ProductDeclarationListComponent<Out : GenericDeclarationOut>(
     }
 
 
-    fun addDeclaration(declaration: DeclarationItemUi) {
-        if (declaration.id in _itemDeclarationUiList.value.map { it.declarationId }) return
+    fun addDeclaration(declaration: DeclarationTableUi) {
+        if (declaration.composeId in _itemDeclarationUiList.value.map { it.declarationId }) return
         val composeKey = _itemDeclarationUiList.value.maxOfOrNull { it.composeKey }?.plus(1) ?: 0
         val itemDeclarationUi = ItemDeclarationUi(
             id = 0,
-            declarationId = declaration.id,
+            declarationId = declaration.composeId,
             composeKey = composeKey,
             declarationName = declaration.displayName,
             vendorName = declaration.vendorName,

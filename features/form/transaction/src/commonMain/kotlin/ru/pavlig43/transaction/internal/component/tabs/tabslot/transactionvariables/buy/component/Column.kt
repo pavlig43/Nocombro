@@ -11,7 +11,6 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -19,12 +18,14 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.datetime.format
 import ru.pavlig43.core.dateFormat
 import ru.pavlig43.coreui.tooltip.IconButtonToolTip
+import ru.pavlig43.itemlist.internal.component.SelectionUiEvent
+import ru.pavlig43.itemlist.internal.model.TableData
 import ru.pavlig43.transaction.internal.component.tabs.tabslot.transactionvariables.buy.BuyBaseUi
 import ua.wwind.table.ColumnSpec
 import ua.wwind.table.filter.data.TableFilterType
 import ua.wwind.table.tableColumns
 
-internal enum class BuyBaseField {
+enum class BuyBaseField {
     SELECTION,
     COMPOSE_KEY,
     PRODUCT_NAME,
@@ -40,13 +41,13 @@ internal enum class BuyBaseField {
 internal fun createBuyBaseColumn(
     onCreate: () -> Unit,
     onCallProductDialog: () -> Unit,
-    onEvent: (BuyBaseOnEvent) -> Unit,
+    onEvent: (SelectionUiEvent) -> Unit,
 ): ImmutableList<ColumnSpec<BuyBaseUi, BuyBaseField, TableData<BuyBaseUi>>> {
     val columns =
         tableColumns<BuyBaseUi, BuyBaseField, TableData<BuyBaseUi>> {
 
 
-            column(BuyBaseField.SELECTION, valueOf = { it.composeKey }) {
+            column(BuyBaseField.SELECTION, valueOf = { it.composeId }) {
 
                 title { createButtonNew(onCreate) }
                 autoWidth(48.dp)
@@ -56,9 +57,9 @@ internal fun createBuyBaseColumn(
                         modifier = Modifier.Companion.fillMaxSize(),
                     ) {
                         Checkbox(
-                            checked = row.composeKey in tableData.selectedIds,
+                            checked = row.composeId in tableData.selectedIds,
                             onCheckedChange = {
-                                onEvent(BuyBaseOnEvent.ToggleSelection(row.composeKey))
+                                onEvent(SelectionUiEvent.ToggleSelection(row.composeId))
                             },
                         )
                     }
@@ -68,10 +69,10 @@ internal fun createBuyBaseColumn(
 
             }
 
-            column(BuyBaseField.COMPOSE_KEY, valueOf = { it.composeKey }) {
+            column(BuyBaseField.COMPOSE_KEY, valueOf = { it.composeId }) {
                 header("Ид")
                 align(Alignment.Companion.Center)
-                cell { row, _ -> Text(row.composeKey.toString()) }
+                cell { row, _ -> Text(row.composeId.toString()) }
                 // Enable built‑in Text filter UI in header
                 // Auto‑fit to content with optional max cap
                 autoWidth(max = 500.dp)
@@ -152,11 +153,3 @@ internal val createButtonNew: @Composable (onCreate: () -> Unit) -> String = { o
     ""
 }
 
-@Immutable
-internal data class TableData<I>(
-
-    val displayedItems: List<I> = emptyList(),
-    /** IDs of selected  */
-    val selectedIds: Set<Int> = emptySet(),
-
-    )

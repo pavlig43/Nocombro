@@ -34,12 +34,12 @@ internal fun createProductColumn(
     onCreate: () -> Unit,
     listTypeForFilter: List<ProductType>,
     onEvent: (SelectionUiEvent) -> Unit,
-): ImmutableList<ColumnSpec<ProductItemUi, ProductField, TableData<ProductItemUi>>> {
+): ImmutableList<ColumnSpec<ProductTableUi, ProductField, TableData<ProductTableUi>>> {
     val columns =
-        tableColumns<ProductItemUi, ProductField, TableData<ProductItemUi>> {
+        tableColumns<ProductTableUi, ProductField, TableData<ProductTableUi>> {
 
 
-            column(ProductField.SELECTION, valueOf = { it.id }) {
+            column(ProductField.SELECTION, valueOf = { it.composeId }) {
 
                 title { createButtonNew(onCreate) }
                 autoWidth(48.dp)
@@ -50,9 +50,9 @@ internal fun createProductColumn(
                             modifier = Modifier.fillMaxSize(),
                         ) {
                             Checkbox(
-                                checked = doc.id in tableData.selectedIds,
+                                checked = doc.composeId in tableData.selectedIds,
                                 onCheckedChange = {
-                                    onEvent(SelectionUiEvent.ToggleSelection(doc.id))
+                                    onEvent(SelectionUiEvent.ToggleSelection(doc.composeId))
                                 },
                             )
                         }
@@ -63,10 +63,10 @@ internal fun createProductColumn(
 
             }
 
-            column(ProductField.ID, valueOf = { it.id }) {
+            column(ProductField.ID, valueOf = { it.composeId }) {
                 header("Ид")
                 align(Alignment.Center)
-                cell { document, _ -> Text(document.id.toString()) }
+                cell { document, _ -> Text(document.composeId.toString()) }
                 // Enable built‑in Text filter UI in header
                 // Auto‑fit to content with optional max cap
                 autoWidth(max = 500.dp)

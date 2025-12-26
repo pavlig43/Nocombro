@@ -25,12 +25,12 @@ internal enum class VendorField {
 
 internal fun createVendorColumn(
     onEvent: (SelectionUiEvent) -> Unit,
-): ImmutableList<ColumnSpec<VendorItemUi, VendorField, TableData<VendorItemUi>>> {
+): ImmutableList<ColumnSpec<VendorTableUi, VendorField, TableData<VendorTableUi>>> {
     val columns =
-        tableColumns<VendorItemUi, VendorField, TableData<VendorItemUi>> {
+        tableColumns<VendorTableUi, VendorField, TableData<VendorTableUi>> {
 
 
-            column(VendorField.SELECTION, valueOf = { it.id }) {
+            column(VendorField.SELECTION, valueOf = { it.composeId }) {
 
                 title { "" }
                 autoWidth(48.dp)
@@ -41,9 +41,9 @@ internal fun createVendorColumn(
                             modifier = Modifier.fillMaxSize(),
                         ) {
                             Checkbox(
-                                checked = doc.id in tableData.selectedIds,
+                                checked = doc.composeId in tableData.selectedIds,
                                 onCheckedChange = {
-                                    onEvent(SelectionUiEvent.ToggleSelection(doc.id))
+                                    onEvent(SelectionUiEvent.ToggleSelection(doc.composeId))
                                 },
                             )
                         }
@@ -54,10 +54,10 @@ internal fun createVendorColumn(
 
             }
 
-            column(VendorField.ID, valueOf = { it.id }) {
+            column(VendorField.ID, valueOf = { it.composeId }) {
                 header("Ид")
                 align(Alignment.Center)
-                cell { document, _ -> Text(document.id.toString()) }
+                cell { document, _ -> Text(document.composeId.toString()) }
                 // Enable built‑in Text filter UI in header
                 // Auto‑fit to content with optional max cap
                 autoWidth(max = 500.dp)

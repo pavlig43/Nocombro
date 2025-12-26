@@ -11,7 +11,7 @@ import ru.pavlig43.database.data.transaction.TransactionType
 import ru.pavlig43.declarationform.api.DeclarationFormComponent
 import ru.pavlig43.document.api.component.DocumentFormComponent
 import ru.pavlig43.itemlist.api.component.*
-import ru.pavlig43.itemlist.api.model.IItemUi
+import ru.pavlig43.itemlist.api.model.ITableUi
 import ru.pavlig43.notification.api.component.PageNotificationComponent
 import ru.pavlig43.notification.api.data.NotificationItem
 import ru.pavlig43.product.api.component.ProductFormComponent
@@ -103,7 +103,7 @@ internal class MainNavigationComponent(
         context: ComponentContext
     ): ImmutableTableComponentFactory {
 
-        val builderData: BuilderData<out IItemUi> = when(tabConfig){
+        val builderData: BuilderData<out ITableUi> = when(tabConfig){
             is DeclarationList -> DeclarationBuilder(withCheckbox = true)
             is DocumentList -> DocumentBuilder(
                 fullListDocumentTypes = DocumentType.entries,
@@ -132,7 +132,7 @@ internal class MainNavigationComponent(
             componentContext = context,
             dependencies = scope.get(),
             onCreate = { tabNavigationComponent.addTab(itemForm(0)) },
-            onItemClick = { tabNavigationComponent.addTab(itemForm(it.id)) },
+            onItemClick = { tabNavigationComponent.addTab(itemForm(it.composeId)) },
             builderData = builderData
         )
     }

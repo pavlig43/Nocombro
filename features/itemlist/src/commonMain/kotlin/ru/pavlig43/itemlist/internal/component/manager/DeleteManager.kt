@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import ru.pavlig43.core.componentCoroutineScope
 
-internal class DeleteManager(
+class DeleteManager(
     componentContext: ComponentContext,
     private val clearSelection: () -> Unit,
     private val deleteFn: suspend (Set<Int>) -> Result<Unit>
@@ -34,7 +34,7 @@ internal class DeleteManager(
     }
 }
 
-internal sealed interface DeleteState {
+sealed interface DeleteState {
     data object Initial : DeleteState
     data object Loading : DeleteState
     data object Success : DeleteState

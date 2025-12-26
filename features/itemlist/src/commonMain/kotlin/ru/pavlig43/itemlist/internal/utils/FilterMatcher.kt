@@ -2,7 +2,7 @@ package ru.pavlig43.itemlist.internal.utils
 
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
-import ru.pavlig43.itemlist.api.model.IItemUi
+import ru.pavlig43.itemlist.internal.model.TableData
 import ua.wwind.table.filter.data.FilterConstraint
 import ua.wwind.table.filter.data.TableFilterState
 

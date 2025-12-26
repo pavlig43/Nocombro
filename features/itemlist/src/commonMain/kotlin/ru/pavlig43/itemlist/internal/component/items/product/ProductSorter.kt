@@ -4,18 +4,18 @@ import ru.pavlig43.itemlist.internal.utils.SortMatcher
 import ua.wwind.table.data.SortOrder
 import ua.wwind.table.state.SortState
 
-internal object ProductSorter: SortMatcher<ProductItemUi, ProductField> {
+internal object ProductSorter: SortMatcher<ProductTableUi, ProductField> {
     override fun sort(
-        items: List<ProductItemUi>,
+        items: List<ProductTableUi>,
         sort: SortState<ProductField>?,
-    ): List<ProductItemUi>{
+    ): List<ProductTableUi>{
         if (sort == null) {
             return items
         }
 
         val sortedList =
             when (sort.column) {
-                ProductField.ID -> items.sortedBy { it.id }
+                ProductField.ID -> items.sortedBy { it.composeId }
                 ProductField.NAME -> items.sortedBy { it.displayName.lowercase() }
                 ProductField.TYPE -> items.sortedBy { it.type.displayName.lowercase() }
                 ProductField.CREATED_AT -> items.sortedBy { it.createdAt }

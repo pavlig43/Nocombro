@@ -13,9 +13,9 @@ internal class ProductTableComponent(
     componentContext: ComponentContext,
     tableBuilder: ProductBuilder,
     onCreate: () -> Unit,
-    onItemClick: (ProductItemUi) -> Unit,
+    onItemClick: (ProductTableUi) -> Unit,
     repository: ImmutableListRepository<Product>,
-) : ImmutableTableComponent<Product, ProductItemUi, ProductField>(
+) : ImmutableTableComponent<Product, ProductTableUi, ProductField>(
     componentContext = componentContext,
     tableBuilder = tableBuilder,
     onCreate = onCreate,
@@ -26,13 +26,13 @@ internal class ProductTableComponent(
     repository = repository,
 ) {
 
-    override val columns: ImmutableList<ColumnSpec<ProductItemUi, ProductField, TableData<ProductItemUi>>> =
+    override val columns: ImmutableList<ColumnSpec<ProductTableUi, ProductField, TableData<ProductTableUi>>> =
         createProductColumn(onCreate,tableBuilder.fullListProductTypes,::onEvent)
 
 }
-private fun Product.toUi(): ProductItemUi {
-    return ProductItemUi(
-        id = id,
+private fun Product.toUi(): ProductTableUi {
+    return ProductTableUi(
+        composeId = id,
         displayName = displayName,
         type = type,
         createdAt = createdAt,

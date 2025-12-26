@@ -3,10 +3,10 @@ package ru.pavlig43.itemlist.api.component
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
 import ru.pavlig43.itemlist.api.dependencies
-import ru.pavlig43.itemlist.api.model.IItemUi
+import ru.pavlig43.itemlist.api.model.ITableUi
 
 @Suppress("UNCHECKED_CAST")
-class MBSImmutableTableComponent<I: IItemUi>(
+class MBSImmutableTableComponent<I: ITableUi>(
     componentContext: ComponentContext,
     builderData: BuilderData<I>,
     onItemClick: (I) -> Unit,
@@ -20,7 +20,7 @@ class MBSImmutableTableComponent<I: IItemUi>(
         dependencies = dependencies,
         builderData = builderData,
         onCreate = onCreate,
-        onItemClick = { ui: IItemUi -> onItemClick(ui as I) },
+        onItemClick = { ui: ITableUi -> onItemClick(ui as I) },
     )
 
 

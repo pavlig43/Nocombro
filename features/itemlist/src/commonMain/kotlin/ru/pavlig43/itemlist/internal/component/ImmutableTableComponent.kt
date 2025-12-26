@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import ru.pavlig43.core.componentCoroutineScope
 import ru.pavlig43.itemlist.api.component.BuilderData
-import ru.pavlig43.itemlist.api.model.IItemUi
+import ru.pavlig43.itemlist.api.model.ITableUi
 import ru.pavlig43.itemlist.internal.component.manager.DeleteManager
 import ru.pavlig43.itemlist.internal.component.manager.FilterManager
 import ru.pavlig43.itemlist.internal.component.manager.SelectionManager
@@ -30,7 +30,7 @@ internal sealed interface ItemListState<out O> {
 
 
 @Suppress("LongParameterList")
-internal abstract class ImmutableTableComponent<BD, UI : IItemUi, C>(
+internal abstract class ImmutableTableComponent<BD, UI : ITableUi, C>(
     componentContext: ComponentContext,
     tableBuilder: BuilderData<UI>,
     val onCreate: () -> Unit,
@@ -111,7 +111,7 @@ internal abstract class ImmutableTableComponent<BD, UI : IItemUi, C>(
             }
 
             is SelectionUiEvent.ToggleSelectAll -> {
-                selectionManager.toggleSelectAll(tableData.value.displayedItems.map { it.id }
+                selectionManager.toggleSelectAll(tableData.value.displayedItems.map { it.composeId }
                     .toSet())
             }
 

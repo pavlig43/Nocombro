@@ -14,9 +14,9 @@ internal class TransactionTableComponent(
     componentContext: ComponentContext,
     tableBuilder: TransactionBuilder,
     onCreate: () -> Unit,
-    onItemClick: (TransactionItemUi) -> Unit,
+    onItemClick: (TransactionTableUi) -> Unit,
     repository: ImmutableListRepository<Transaction>,
-) : ImmutableTableComponent<Transaction, TransactionItemUi, TransactionField>(
+) : ImmutableTableComponent<Transaction, TransactionTableUi, TransactionField>(
     componentContext = componentContext,
     tableBuilder = tableBuilder,
     onCreate = onCreate,
@@ -27,7 +27,7 @@ internal class TransactionTableComponent(
     repository = repository,
 ) {
 
-    override val columns: ImmutableList<ColumnSpec<TransactionItemUi, TransactionField, TableData<TransactionItemUi>>> =
+    override val columns: ImmutableList<ColumnSpec<TransactionTableUi, TransactionField, TableData<TransactionTableUi>>> =
         createTransactionColumn(
             onCreate = onCreate,
             listTypeForFilter = tableBuilder.fullListTransactionTypes,
@@ -36,9 +36,9 @@ internal class TransactionTableComponent(
 
 }
 
-private fun Transaction.toUi(): TransactionItemUi {
-    return TransactionItemUi(
-        id = id,
+private fun Transaction.toUi(): TransactionTableUi {
+    return TransactionTableUi(
+        composeId = id,
         createdAt = createdAt,
         transactionType = transactionType,
         comment = comment,

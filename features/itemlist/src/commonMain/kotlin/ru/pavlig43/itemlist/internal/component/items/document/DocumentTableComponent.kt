@@ -15,9 +15,9 @@ internal class DocumentTableComponent(
     componentContext: ComponentContext,
     tableBuilder: DocumentBuilder,
     onCreate: () -> Unit,
-    onItemClick: (DocumentItemUi) -> Unit,
+    onItemClick: (DocumentTableUi) -> Unit,
     repository: ImmutableListRepository<Document>,
-) : ImmutableTableComponent<Document, DocumentItemUi, DocumentField>(
+) : ImmutableTableComponent<Document, DocumentTableUi, DocumentField>(
     componentContext = componentContext,
     tableBuilder = tableBuilder,
     onCreate = onCreate,
@@ -28,17 +28,17 @@ internal class DocumentTableComponent(
     repository = repository
 ) {
 
-    override val columns: ImmutableList<ColumnSpec<DocumentItemUi, DocumentField, TableData<DocumentItemUi>>> =
+    override val columns: ImmutableList<ColumnSpec<DocumentTableUi, DocumentField, TableData<DocumentTableUi>>> =
         createDocumentColumn(onCreate,tableBuilder.fullListDocumentTypes,::onEvent)
 
 }
 
 
 @OptIn(ExperimentalTime::class)
-fun Document.toUi(): DocumentItemUi {
+fun Document.toUi(): DocumentTableUi {
 
-    return DocumentItemUi(
-        id = id,
+    return DocumentTableUi(
+        composeId = id,
         displayName = displayName,
         type = type,
         createdAt = createdAt,

@@ -8,7 +8,7 @@ import com.arkivanov.decompose.router.slot.dismiss
 import ru.pavlig43.itemlist.api.component.MBSImmutableTableComponent
 import ru.pavlig43.itemlist.api.component.VendorBuilder
 import ru.pavlig43.itemlist.api.dependencies
-import ru.pavlig43.itemlist.internal.component.items.vendor.VendorItemUi
+import ru.pavlig43.itemlist.internal.component.items.vendor.VendorTableUi
 
 internal class VendorDialogComponent(
     parentComponentContext: ComponentContext,
@@ -25,7 +25,7 @@ internal class VendorDialogComponent(
             serializer = MBSVendorDialog.serializer(),
             handleBackButton = true,
         ) { _: MBSVendorDialog, context ->
-            MBSImmutableTableComponent<VendorItemUi>(
+            MBSImmutableTableComponent<VendorTableUi>(
                 componentContext = context,
                 onDismissed = dialogNavigation::dismiss,
                 dependencies = dependencies,
@@ -34,7 +34,7 @@ internal class VendorDialogComponent(
                     withCheckbox = false
                 ),
                 onItemClick = {
-                    onChangeVendor(it.id, it.displayName)
+                    onChangeVendor(it.composeId, it.displayName)
                     dialogNavigation.dismiss()
                 },
             )

@@ -7,12 +7,12 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import ru.pavlig43.itemlist.api.component.MBSImmutableTableComponent
-import ru.pavlig43.itemlist.api.model.IItemUi
+import ru.pavlig43.itemlist.api.model.ITableUi
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MBSImmutableTable(
-    component: MBSImmutableTableComponent<out IItemUi>,
+    component: MBSImmutableTableComponent<out ITableUi>,
     modifier: Modifier = Modifier
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)

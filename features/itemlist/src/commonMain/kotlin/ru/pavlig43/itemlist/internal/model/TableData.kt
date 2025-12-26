@@ -1,10 +1,10 @@
 package ru.pavlig43.itemlist.internal.model
 
 import androidx.compose.runtime.Immutable
-import ru.pavlig43.itemlist.api.model.IItemUi
+import ru.pavlig43.itemlist.api.model.ITableUi
 
 @Immutable
-internal data class TableData<I: IItemUi>(
+data class TableData<I: ITableUi>(
 
     val displayedItems: List<I> = emptyList(),
     /** IDs of selected  */

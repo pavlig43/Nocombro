@@ -1,6 +1,6 @@
 package ru.pavlig43.itemlist.internal.component
 
-internal sealed class SelectionUiEvent {
+sealed class SelectionUiEvent {
 
 
     /** Toggle selection for a  item by ID */

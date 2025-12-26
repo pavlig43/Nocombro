@@ -3,9 +3,9 @@ package ru.pavlig43.itemlist.internal.component.items.vendor
 import ru.pavlig43.itemlist.internal.utils.FilterMatcher
 import ua.wwind.table.filter.data.TableFilterState
 
-internal object VendorFilterMatcher : FilterMatcher<VendorItemUi, VendorField>() {
+internal object VendorFilterMatcher : FilterMatcher<VendorTableUi, VendorField>() {
     override fun matchesRules(
-        item: VendorItemUi,
+        item: VendorTableUi,
         column: VendorField,
         stateAny: TableFilterState<*>
     ): Boolean {

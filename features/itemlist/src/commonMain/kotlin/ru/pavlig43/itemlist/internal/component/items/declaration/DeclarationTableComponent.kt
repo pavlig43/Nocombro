@@ -14,9 +14,9 @@ internal class DeclarationTableComponent(
     componentContext: ComponentContext,
     tableBuilder: DeclarationBuilder,
     onCreate: () -> Unit,
-    onItemClick: (DeclarationItemUi) -> Unit,
+    onItemClick: (DeclarationTableUi) -> Unit,
     repository: ImmutableListRepository<Declaration>,
-) : ImmutableTableComponent<Declaration, DeclarationItemUi, DeclarationField>(
+) : ImmutableTableComponent<Declaration, DeclarationTableUi, DeclarationField>(
     componentContext = componentContext,
     tableBuilder = tableBuilder,
     onCreate = onCreate,
@@ -27,13 +27,13 @@ internal class DeclarationTableComponent(
     repository = repository,
 ) {
 
-    override val columns: ImmutableList<ColumnSpec<DeclarationItemUi, DeclarationField, TableData<DeclarationItemUi>>> =
+    override val columns: ImmutableList<ColumnSpec<DeclarationTableUi, DeclarationField, TableData<DeclarationTableUi>>> =
         createDeclarationColumn(onCreate,::onEvent)
 
 }
-private fun Declaration.toUi(): DeclarationItemUi {
-    return DeclarationItemUi(
-        id = id,
+private fun Declaration.toUi(): DeclarationTableUi {
+    return DeclarationTableUi(
+        composeId = id,
         vendorId = vendorId,
         vendorName = vendorName,
         bestBefore = bestBefore,

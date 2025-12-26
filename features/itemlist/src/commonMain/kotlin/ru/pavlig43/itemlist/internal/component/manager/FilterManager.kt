@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import ua.wwind.table.filter.data.TableFilterState
 
-internal class FilterManager<C>(
+class FilterManager<C>(
     componentContext: ComponentContext
 ): ComponentContext by componentContext {
     private val _filters = MutableStateFlow<Map<C, TableFilterState<*>>>(emptyMap())

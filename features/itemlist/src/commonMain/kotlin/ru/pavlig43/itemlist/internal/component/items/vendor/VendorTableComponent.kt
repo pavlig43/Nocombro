@@ -14,9 +14,9 @@ internal class VendorTableComponent(
     componentContext: ComponentContext,
     tableBuilder: VendorBuilder,
     onCreate: () -> Unit,
-    onItemClick: (VendorItemUi) -> Unit,
+    onItemClick: (VendorTableUi) -> Unit,
     repository: ImmutableListRepository<Vendor>,
-) : ImmutableTableComponent<Vendor, VendorItemUi, VendorField>(
+) : ImmutableTableComponent<Vendor, VendorTableUi, VendorField>(
     componentContext = componentContext,
     tableBuilder = tableBuilder,
     onCreate = onCreate,
@@ -27,13 +27,13 @@ internal class VendorTableComponent(
     repository = repository,
 ) {
 
-    override val columns: ImmutableList<ColumnSpec<VendorItemUi, VendorField, TableData<VendorItemUi>>> =
+    override val columns: ImmutableList<ColumnSpec<VendorTableUi, VendorField, TableData<VendorTableUi>>> =
         createVendorColumn(::onEvent)
 
 }
-private fun Vendor.toUi(): VendorItemUi {
-    return VendorItemUi(
-        id = id,
+private fun Vendor.toUi(): VendorTableUi {
+    return VendorTableUi(
+        composeId = id,
         displayName = displayName,
         comment = comment
     )

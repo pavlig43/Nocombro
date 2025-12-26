@@ -1,11 +1,10 @@
 package ru.pavlig43.itemlist.internal.component.items.transaction
 
 import kotlinx.datetime.LocalDateTime
-import ru.pavlig43.database.data.transaction.MovementType
 import ru.pavlig43.database.data.transaction.TransactionType
-import ru.pavlig43.itemlist.api.model.IItemUi
+import ru.pavlig43.itemlist.api.model.ITableUi
 
-data class TransactionItemUi(
+data class TransactionTableUi(
 
     val transactionType: TransactionType,
 
@@ -16,7 +15,7 @@ data class TransactionItemUi(
 
     val isCompleted: Boolean,
 
-    override val id: Int = 0,
+    override val composeId: Int = 0,
 
 
-    ) : IItemUi
+    ) : ITableUi

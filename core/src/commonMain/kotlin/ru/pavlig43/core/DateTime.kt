@@ -13,11 +13,13 @@ import kotlin.time.ExperimentalTime
 fun getCurrentLocalDate(): LocalDate {
     return getCurrentLocalDateTime().date
 }
+
 @OptIn(ExperimentalTime::class)
 fun getCurrentLocalDateTime(): LocalDateTime {
     return Clock.System.now()
         .toLocalDateTime(TimeZone.currentSystemDefault())
 }
+
 val dateTimeFormat = LocalDateTime.Format {
     day()
     char('.')
@@ -39,6 +41,7 @@ val dateFormat = LocalDate.Format {
     year()
 
 }
+val emptyDate = LocalDate(1900, 1, 1)
 
 
 

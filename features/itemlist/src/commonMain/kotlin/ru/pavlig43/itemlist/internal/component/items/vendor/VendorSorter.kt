@@ -4,18 +4,18 @@ import ru.pavlig43.itemlist.internal.utils.SortMatcher
 import ua.wwind.table.data.SortOrder
 import ua.wwind.table.state.SortState
 
-internal object VendorSorter: SortMatcher<VendorItemUi, VendorField> {
+internal object VendorSorter: SortMatcher<VendorTableUi, VendorField> {
     override fun sort(
-        items: List<VendorItemUi>,
+        items: List<VendorTableUi>,
         sort: SortState<VendorField>?,
-    ): List<VendorItemUi>{
+    ): List<VendorTableUi>{
         if (sort == null) {
             return items
         }
 
         val sortedList =
             when (sort.column) {
-                VendorField.ID -> items.sortedBy { it.id }
+                VendorField.ID -> items.sortedBy { it.composeId }
                 VendorField.COMMENT -> items.sortedBy { it.comment.lowercase() }
                 else -> items
             }

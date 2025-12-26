@@ -15,7 +15,7 @@ import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.transaction.Transaction
 import ru.pavlig43.database.data.vendor.Vendor
 import ru.pavlig43.itemlist.api.dependencies
-import ru.pavlig43.itemlist.api.model.IItemUi
+import ru.pavlig43.itemlist.api.model.ITableUi
 import ru.pavlig43.itemlist.internal.component.ImmutableTableComponent
 import ru.pavlig43.itemlist.internal.component.items.declaration.DeclarationTableComponent
 import ru.pavlig43.itemlist.internal.component.items.document.DocumentTableComponent
@@ -29,9 +29,9 @@ import ru.pavlig43.itemlist.internal.di.moduleFactory
 class ImmutableTableComponentFactory(
     componentContext: ComponentContext,
     dependencies: dependencies,
-    private val builderData: BuilderData<out IItemUi>,
+    private val builderData: BuilderData<out ITableUi>,
     private val onCreate: () -> Unit,
-    private val onItemClick: (IItemUi) -> Unit,
+    private val onItemClick: (ITableUi) -> Unit,
 ) : ComponentContext by componentContext, SlotComponent {
     private val koinComponent = instanceKeeper.getOrCreate { ComponentKoinContext() }
     private val scope = koinComponent.getOrCreateKoinScope(
@@ -42,10 +42,10 @@ class ImmutableTableComponentFactory(
     private val _model = MutableStateFlow(SlotComponent.TabModel(builderData.tabTitle))
     override val model: StateFlow<SlotComponent.TabModel> = _model.asStateFlow()
 
-    internal val tableComponent = build<IItemUi>(context = childContext("table"))
+    internal val tableComponent = build<ITableUi>(context = childContext("table"))
 
     @Suppress("UNCHECKED_CAST")
-    private fun <I : IItemUi> build(
+    private fun <I : ITableUi> build(
         context: ComponentContext,
     ): ImmutableTableComponent<*, I, *> {
         return when (builderData) {

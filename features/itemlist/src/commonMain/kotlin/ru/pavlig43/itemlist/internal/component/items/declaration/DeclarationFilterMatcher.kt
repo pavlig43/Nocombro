@@ -3,11 +3,11 @@ package ru.pavlig43.itemlist.internal.component.items.declaration
 import ru.pavlig43.itemlist.internal.utils.FilterMatcher
 import ua.wwind.table.filter.data.TableFilterState
 
-internal object DeclarationFilterMatcher: FilterMatcher<DeclarationItemUi, DeclarationField>() {
+internal object DeclarationFilterMatcher: FilterMatcher<DeclarationTableUi, DeclarationField>() {
 
 
     override fun matchesRules(
-        item: DeclarationItemUi,
+        item: DeclarationTableUi,
         column: DeclarationField,
         stateAny: TableFilterState<*>
     ): Boolean {

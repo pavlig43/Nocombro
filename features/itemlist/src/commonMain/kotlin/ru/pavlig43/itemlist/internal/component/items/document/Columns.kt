@@ -35,12 +35,12 @@ internal fun createDocumentColumn(
     onCreate: () -> Unit,
     listTypeForFilter: List<DocumentType>,
     onEvent: (SelectionUiEvent) -> Unit,
-): ImmutableList<ColumnSpec<DocumentItemUi, DocumentField, TableData<DocumentItemUi>>> {
+): ImmutableList<ColumnSpec<DocumentTableUi, DocumentField, TableData<DocumentTableUi>>> {
     val columns =
-        tableColumns<DocumentItemUi, DocumentField, TableData<DocumentItemUi>> {
+        tableColumns<DocumentTableUi, DocumentField, TableData<DocumentTableUi>> {
 
 
-                column(DocumentField.SELECTION, valueOf = { it.id }) {
+                column(DocumentField.SELECTION, valueOf = { it.composeId }) {
 
                     title { createButtonNew(onCreate) }
                     autoWidth(48.dp)
@@ -51,9 +51,9 @@ internal fun createDocumentColumn(
                                 modifier = Modifier.fillMaxSize(),
                             ) {
                                 Checkbox(
-                                    checked = doc.id in tableData.selectedIds,
+                                    checked = doc.composeId in tableData.selectedIds,
                                     onCheckedChange = {
-                                        onEvent(SelectionUiEvent.ToggleSelection(doc.id))
+                                        onEvent(SelectionUiEvent.ToggleSelection(doc.composeId))
                                     },
                                 )
                             }
@@ -64,10 +64,10 @@ internal fun createDocumentColumn(
 
                 }
 
-            column(DocumentField.ID, valueOf = { it.id }) {
+            column(DocumentField.ID, valueOf = { it.composeId }) {
                 header("Ид")
                 align(Alignment.Center)
-                cell { document, _ -> Text(document.id.toString()) }
+                cell { document, _ -> Text(document.composeId.toString()) }
                 // Enable built‑in Text filter UI in header
                 // Auto‑fit to content with optional max cap
                 autoWidth(max = 500.dp)
