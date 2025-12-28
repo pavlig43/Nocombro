@@ -10,7 +10,7 @@ kotlin {
     commonMainDependencies {
         implementation(projects.features.sign.root)
         implementation(projects.features.notification)
-        implementation(projects.features.itemlist)
+        implementation(projects.features.table.immutable)
 
         implementation(projects.database)
         implementation(projects.datastore)

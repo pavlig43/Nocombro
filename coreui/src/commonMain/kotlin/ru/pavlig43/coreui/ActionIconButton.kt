@@ -1,10 +1,12 @@
 package ru.pavlig43.coreui
 
 import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -19,7 +21,6 @@ fun ActionIconButton(
     badge: @Composable BoxScope.() -> Unit = {},
 
     ) {
-
     IconButton(onClick, modifier) {
         BadgedBox(
             badge = badge

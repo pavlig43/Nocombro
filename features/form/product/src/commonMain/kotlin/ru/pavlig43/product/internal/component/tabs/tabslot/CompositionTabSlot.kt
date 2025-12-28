@@ -12,10 +12,10 @@ import kotlinx.coroutines.flow.update
 import kotlinx.serialization.Serializable
 import ru.pavlig43.core.data.ChangeSet
 import ru.pavlig43.database.data.product.*
-import ru.pavlig43.itemlist.api.component.MBSImmutableTableComponent
-import ru.pavlig43.itemlist.api.component.ProductBuilder
-import ru.pavlig43.itemlist.api.dependencies
-import ru.pavlig43.itemlist.internal.component.items.product.ProductTableUi
+import ru.pavlig43.immutable.api.component.MBSImmutableTableComponent
+import ru.pavlig43.immutable.api.component.ProductImmutableTableBuilder
+import ru.pavlig43.immutable.api.ImmutableTableDependencies
+import ru.pavlig43.immutable.internal.component.items.product.ProductTableUi
 import ru.pavlig43.loadinitdata.api.component.LoadInitDataComponent
 import ru.pavlig43.product.internal.data.CompositionUi
 import ru.pavlig43.product.internal.data.ProductIngredientUi
@@ -37,7 +37,7 @@ import ru.pavlig43.update.data.UpdateCollectionRepository
 internal class CompositionTabSlot(
     componentContext: ComponentContext,
     private val productId: Int,
-    dependencies: dependencies,
+    dependencies: ImmutableTableDependencies,
     val openProductTab: (Int) -> Unit,
     private val updateCompositionRepository: UpdateCollectionRepository<ProductCompositionOut, ProductCompositionIn>
 ) : ComponentContext by componentContext, ProductTabSlot {
@@ -74,7 +74,7 @@ internal class CompositionTabSlot(
      */
     fun removeComposition(composeKey: Int) {
         updateCompositionList { lst ->
-            lst.removeIf { it.composeKey == composeKey }
+            lst.removeAll { it.composeKey == composeKey }
             lst
         }
     }
@@ -125,7 +125,7 @@ internal class CompositionTabSlot(
         val updatedIngredients = updateAction(productIngredients)
         val updatedComposition = composition.copy(productIngredients = updatedIngredients)
         updateCompositionList { lst ->
-            lst.removeIf { it.composeKey == compositionComposeKey }
+            lst.removeAll { it.composeKey == compositionComposeKey }
             lst.add(compositionComposeKey, updatedComposition)
             lst
 
@@ -140,7 +140,7 @@ internal class CompositionTabSlot(
      */
     fun removeIngredients(compositionComposeKey: Int, ingredientComposeKey: Int) {
         updateIngredientsList(compositionComposeKey) { lst ->
-            lst.removeIf { it.composeKey == ingredientComposeKey }
+            lst.removeAll { it.composeKey == ingredientComposeKey }
             lst
         }
     }
@@ -180,7 +180,7 @@ internal class CompositionTabSlot(
         updatedIngredients.add(ingredientComposeKey, ingredient)
         val updatedComposition = composition.copy(productIngredients = updatedIngredients)
         updateCompositionList { lst ->
-            lst.removeIf { it.composeKey == compositionComposeKey }
+            lst.removeAll { it.composeKey == compositionComposeKey }
             lst.add(compositionComposeKey, updatedComposition)
             lst
         }
@@ -200,7 +200,7 @@ internal class CompositionTabSlot(
                 onDismissed = dialogNavigation::dismiss,
                 dependencies = dependencies,
                 onCreate = { openProductTab(0) },
-                builderData = ProductBuilder(
+                immutableTableBuilderData = ProductImmutableTableBuilder(
                     fullListProductTypes = ProductType.entries,
                     withCheckbox = false
                 ),

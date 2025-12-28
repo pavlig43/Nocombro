@@ -8,7 +8,7 @@ plugins {
 kotlin{
     commonMainDependencies {
         implementation(projects.features.manageitem.addfile)
-        implementation(projects.features.itemlist)
+        implementation(projects.features.table.immutable)
         implementation(projects.features.manageitem.upsert)
         implementation(projects.features.manageitem.loadinitdata)
         

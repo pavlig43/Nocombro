@@ -6,14 +6,14 @@ import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.declarationform.internal.component.VendorDialogComponent
 import ru.pavlig43.declarationform.internal.data.DeclarationEssentialsUi
 import ru.pavlig43.declarationform.internal.data.toDto
-import ru.pavlig43.itemlist.api.dependencies
+import ru.pavlig43.immutable.api.ImmutableTableDependencies
 import ru.pavlig43.update.component.UpdateEssentialsComponent
 import ru.pavlig43.update.data.UpdateEssentialsRepository
 
 internal class EssentialTabSlot(
     componentContext: ComponentContext,
     declarationId: Int,
-    dependencies: dependencies,
+    dependencies: ImmutableTableDependencies,
     onOpenVendorTab:(Int)-> Unit,
     updateRepository: UpdateEssentialsRepository<Declaration>,
     componentFactory: EssentialComponentFactory<Declaration, DeclarationEssentialsUi>,

@@ -10,8 +10,8 @@ import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.database.data.transaction.TransactionType
 import ru.pavlig43.declarationform.api.DeclarationFormComponent
 import ru.pavlig43.document.api.component.DocumentFormComponent
-import ru.pavlig43.itemlist.api.component.*
-import ru.pavlig43.itemlist.api.model.ITableUi
+import ru.pavlig43.immutable.api.component.*
+import ru.pavlig43.tablecore.model.ITableUi
 import ru.pavlig43.notification.api.component.PageNotificationComponent
 import ru.pavlig43.notification.api.data.NotificationItem
 import ru.pavlig43.product.api.component.ProductFormComponent
@@ -103,21 +103,21 @@ internal class MainNavigationComponent(
         context: ComponentContext
     ): ImmutableTableComponentFactory {
 
-        val builderData: BuilderData<out ITableUi> = when(tabConfig){
-            is DeclarationList -> DeclarationBuilder(withCheckbox = true)
-            is DocumentList -> DocumentBuilder(
+        val immutableTableBuilderData: ImmutableTableBuilderData<out ITableUi> = when(tabConfig){
+            is DeclarationList -> DeclarationImmutableTableBuilder(withCheckbox = true)
+            is DocumentList -> DocumentImmutableTableBuilder(
                 fullListDocumentTypes = DocumentType.entries,
                 withCheckbox = true
             )
-            is ProductList -> ProductBuilder(
+            is ProductList -> ProductImmutableTableBuilder(
                 fullListProductTypes = ProductType.entries,
                 withCheckbox = true
             )
-            is ProductTransactionList -> TransactionBuilder(
+            is ProductTransactionList -> TransactionImmutableTableBuilder(
                 fullListTransactionTypes = TransactionType.entries,
                 withCheckbox = true
             )
-            is VendorList -> VendorBuilder(
+            is VendorList -> VendorImmutableTableBuilder(
                 withCheckbox = true
             )
         }
@@ -133,7 +133,7 @@ internal class MainNavigationComponent(
             dependencies = scope.get(),
             onCreate = { tabNavigationComponent.addTab(itemForm(0)) },
             onItemClick = { tabNavigationComponent.addTab(itemForm(it.composeId)) },
-            builderData = builderData
+            immutableTableBuilderData = immutableTableBuilderData
         )
     }
 

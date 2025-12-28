@@ -2,10 +2,10 @@ package ru.pavlig43.product.api
 
 import ru.pavlig43.database.DataBaseTransaction
 import ru.pavlig43.database.NocombroDatabase
-import ru.pavlig43.itemlist.api.dependencies
+import ru.pavlig43.immutable.api.ImmutableTableDependencies
 
 class ProductFormDependencies(
     val db: NocombroDatabase,
     val transaction: DataBaseTransaction,
-    val dependencies: dependencies
+    val dependencies: ImmutableTableDependencies
 )

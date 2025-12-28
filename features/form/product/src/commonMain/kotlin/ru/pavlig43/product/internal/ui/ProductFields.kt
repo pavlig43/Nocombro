@@ -23,6 +23,8 @@ internal fun ProductFields(
         onChangeType = { updateProduct(product.copy(type = it)) }
     )
 
+
+
     CommentFieldBlock(
         comment = product.comment,
         onChangeComment = { updateProduct(product.copy(comment = it)) }

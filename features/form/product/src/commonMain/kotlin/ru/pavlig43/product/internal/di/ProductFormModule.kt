@@ -6,7 +6,7 @@ import ru.pavlig43.create.data.CreateEssentialsRepository
 import ru.pavlig43.database.DataBaseTransaction
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.product.*
-import ru.pavlig43.itemlist.api.dependencies
+import ru.pavlig43.immutable.api.ImmutableTableDependencies
 import ru.pavlig43.product.api.ProductFormDependencies
 import ru.pavlig43.update.data.UpdateCollectionRepository
 import ru.pavlig43.update.data.UpdateEssentialsRepository
@@ -15,7 +15,7 @@ internal fun createProductFormModule(dependencies: ProductFormDependencies) = li
     module {
         single<NocombroDatabase> { dependencies.db }
         single<DataBaseTransaction> { dependencies.transaction }
-        single<dependencies> { dependencies.dependencies }
+        single<ImmutableTableDependencies> { dependencies.dependencies }
         single<CreateEssentialsRepository<Product>> { getCreateRepository(get()) }
         single<UpdateEssentialsRepository<Product>> { getUpdateRepository(get()) }
 
@@ -27,7 +27,7 @@ internal fun createProductFormModule(dependencies: ProductFormDependencies) = li
             )
         ) { getFilesRepository(get()) }
 
-        single<UpdateCollectionRepository<ProductDeclarationOut, ProductDeclaration>>(
+        single<UpdateCollectionRepository<ProductDeclarationOut, ProductDeclarationIn>>(
             named(UpdateCollectionRepositoryType.Declaration.name)
         ) { getUpdateDeclarationRepository(get()) }
 
@@ -82,7 +82,7 @@ private fun getFilesRepository(
 
 private fun getUpdateDeclarationRepository(
     db: NocombroDatabase
-): UpdateCollectionRepository<ProductDeclarationOut, ProductDeclaration> {
+): UpdateCollectionRepository<ProductDeclarationOut, ProductDeclarationIn> {
     val dao = db.productDeclarationDao
     return UpdateCollectionRepository(
         tag = "Update Collection Respository",

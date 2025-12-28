@@ -8,7 +8,7 @@ plugins {
 kotlin{
     commonMainDependencies {
         implementation(projects.database)
-        implementation(projects.features.itemlist)
+        implementation(projects.features.table.immutable)
         implementation(projects.features.manageitem.loadinitdata)
         
     }

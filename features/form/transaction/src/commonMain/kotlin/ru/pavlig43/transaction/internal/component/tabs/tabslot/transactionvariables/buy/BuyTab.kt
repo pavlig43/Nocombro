@@ -7,7 +7,7 @@ internal sealed interface BuyTab {
     @Serializable
     data object Essentials: BuyTab
 
-    @Serializable
-    data object BaseProduct: BuyTab
+//    @Serializable
+//    data object BaseProduct: BuyTab
 
 }

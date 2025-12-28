@@ -6,16 +6,17 @@ import ru.pavlig43.core.component.EssentialComponentFactory
 import ru.pavlig43.create.component.CreateEssentialsComponent
 import ru.pavlig43.create.data.CreateEssentialsRepository
 import ru.pavlig43.database.data.declaration.Declaration
+import ru.pavlig43.declarationform.api.DeclarationFormDependencies
 import ru.pavlig43.declarationform.internal.data.DeclarationEssentialsUi
 import ru.pavlig43.declarationform.internal.data.toDto
-import ru.pavlig43.itemlist.api.dependencies
+import ru.pavlig43.immutable.api.ImmutableTableDependencies
 
 
 internal class CreateDeclarationComponent(
     componentContext: ComponentContext,
     onSuccessCreate: (Int) -> Unit,
     createDeclarationRepository: CreateEssentialsRepository<Declaration>,
-    dependencies: dependencies,
+    dependencies: ImmutableTableDependencies,
     onOpenVendorTab: (Int) -> Unit,
     componentFactory: EssentialComponentFactory<Declaration, DeclarationEssentialsUi>
 ) : CreateEssentialsComponent<Declaration, DeclarationEssentialsUi>(

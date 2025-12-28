@@ -29,7 +29,7 @@ internal class BuyFormTabInnerTabsComponent(
             componentContext = childContext("tab"),
             startConfigurations = listOf(
                 BuyTab.Essentials,
-                BuyTab.BaseProduct
+//                BuyTab.BaseProduct
             ),
             serializer = BuyTab.serializer(),
             slotFactory = { context, tabConfig: BuyTab, _: () -> Unit ->
@@ -42,10 +42,10 @@ internal class BuyFormTabInnerTabsComponent(
                         updateRepository = scope.get(),
                     )
 
-                    BuyTab.BaseProduct -> BuyBaseProductFormSlot(
-                        componentContext = context,
-
-                        )
+//                    BuyTab.BaseProduct -> BuyBaseProductFormSlot(
+//                        componentContext = context,
+//
+//                        )
                 }
 
             },

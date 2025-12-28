@@ -72,9 +72,4 @@ private fun highlightText(
         }
     }
 }
-fun main() {
-    val value = "м"
-    val template = " ПРивет МИР"
-    println(template.indexOf(value, ))
-    println(template.indexOf(value, ignoreCase = true))
-}
+

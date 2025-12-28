@@ -15,11 +15,15 @@ import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import ru.pavlig43.addfile.api.ui.FilesScreen
 import ru.pavlig43.core.ui.EssentialBlockScreen
-import ru.pavlig43.declaration.api.ui.ProductDeclarationScreen
 import ru.pavlig43.product.api.component.ProductFormComponent
-import ru.pavlig43.product.internal.component.tabs.tabslot.*
+import ru.pavlig43.product.internal.component.tabs.tabslot.CompositionTabSlot
+import ru.pavlig43.product.internal.component.tabs.tabslot.DeclarationTabSlot1
+import ru.pavlig43.product.internal.component.tabs.tabslot.EssentialTabSlot
+import ru.pavlig43.product.internal.component.tabs.tabslot.ProductFileTabSlot
+import ru.pavlig43.product.internal.component.tabs.tabslot.ProductTabSlot
 import ru.pavlig43.product.internal.ui.CompositionScreen
 import ru.pavlig43.product.internal.ui.CreateProductScreen
+import ru.pavlig43.product.internal.ui.DeclarationScreen
 import ru.pavlig43.product.internal.ui.ProductFields
 import ru.pavlig43.update.ui.ItemTabsUi
 
@@ -61,13 +65,14 @@ private fun ProductSlotScreen(productSlot: ProductTabSlot?) {
             is EssentialTabSlot -> UpdateEssentialsBlock(productSlot)
 
             is ProductFileTabSlot -> FilesScreen(productSlot.fileComponent)
+            is DeclarationTabSlot1 -> DeclarationScreen(productSlot)
 
-            is ProductDeclarationTabSlot -> ProductDeclarationScreen(productSlot)
 
             is CompositionTabSlot -> CompositionScreen(productSlot)
 
 
             null -> Box(Modifier)
+
         }
     }
 

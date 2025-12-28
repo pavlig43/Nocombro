@@ -5,7 +5,7 @@ import ru.pavlig43.create.data.CreateEssentialsRepository
 import ru.pavlig43.database.DataBaseTransaction
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.transaction.Transaction
-import ru.pavlig43.itemlist.api.dependencies
+import ru.pavlig43.immutable.api.ImmutableTableDependencies
 import ru.pavlig43.transaction.api.TransactionFormDependencies
 import ru.pavlig43.update.data.UpdateEssentialsRepository
 
@@ -13,7 +13,7 @@ internal fun createTransactionFormModule(dependencies: TransactionFormDependenci
     module {
         single<NocombroDatabase> { dependencies.db }
         single<DataBaseTransaction> { dependencies.dbTransaction }
-        single<dependencies> { dependencies.dependencies }
+        single<ImmutableTableDependencies> { dependencies.dependencies }
         single<CreateEssentialsRepository<Transaction>> { getCreateRepository(get()) }
         single<UpdateEssentialsRepository<Transaction>> { getUpdateRepository(get()) }
 //        single<UpdateCollectionRepository<TransactionProductBDOut, TransactionProductBDIn>>(

@@ -4,6 +4,7 @@ import androidx.room.*
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 import ru.pavlig43.database.data.common.Converters
@@ -42,7 +43,7 @@ import kotlin.time.ExperimentalTime
 
         Product::class,
         ProductFile::class,
-        ProductDeclaration::class,
+        ProductDeclarationIn::class,
         ProductComposition::class,
         ProductIngredientIn::class,
 
@@ -122,21 +123,21 @@ suspend fun initData(db: NocombroDatabase) {
     } catch (_: Exception) {
         val products = listOf(
             Product(
-                type = ProductType.BASE,
+                type = ProductType.Food.Base,
                 displayName = "Соль",
                 createdAt = LocalDate.fromEpochDays(0),
                 comment = "",
                 id = 1
             ),
             Product(
-                type = ProductType.NOCOMBRO_SPICE,
+                type = ProductType.Food.Pf,
                 displayName = "БАварские",
                 createdAt = LocalDate.fromEpochDays(0),
                 comment = "",
                 id = 2
             ),
             Product(
-                type = ProductType.BASE,
+                type = ProductType.Food.Base,
                 displayName = "Декстроза",
                 createdAt = LocalDate.fromEpochDays(0),
                 comment = "",
@@ -190,17 +191,17 @@ suspend fun initData(db: NocombroDatabase) {
             )
         )
         val productDeclarationDeps = listOf(
-            ProductDeclaration(
+            ProductDeclarationIn(
                 productId = 2,
                 declarationId = 1,
                 id = 1
             ),
-            ProductDeclaration(
+            ProductDeclarationIn(
                 productId = 2,
                 declarationId = 2,
                 id = 2
             ),
-            ProductDeclaration(
+            ProductDeclarationIn(
                 productId = 2,
                 declarationId = 3,
                 id = 3

@@ -15,8 +15,6 @@ import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import ru.pavlig43.core.ui.EssentialBlockScreen
 import ru.pavlig43.transaction.api.component.TransactionFormComponent
-import ru.pavlig43.transaction.internal.component.tabs.tabslot.transactionvariables.buy.BuyBaseProductFormSlot
-import ru.pavlig43.transaction.internal.component.tabs.tabslot.transactionvariables.buy.BuyBaseTable
 import ru.pavlig43.transaction.internal.component.tabs.tabslot.transactionvariables.buy.BuyEssentialFormSlot
 import ru.pavlig43.transaction.internal.component.tabs.tabslot.transactionvariables.buy.BuyFormSlot
 import ru.pavlig43.transaction.internal.ui.CreateTransactionScreen
@@ -60,7 +58,7 @@ private fun SlotScreen(
 ) {
     when (slot) {
         is BuyEssentialFormSlot -> UpdateEssentialsBlock(slot)
-        is BuyBaseProductFormSlot -> BuyBaseTable((slot))
+//        is BuyBaseProductFormSlot -> BuyBaseTable((slot))
 
         null -> Box(Modifier)
 

@@ -3,12 +3,15 @@ package ru.pavlig43.product.internal.data
 import kotlinx.datetime.LocalDate
 import ru.pavlig43.core.data.ItemEssentialsUi
 import ru.pavlig43.core.getCurrentLocalDate
-import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductType
+import ru.pavlig43.database.data.product.Product
 import kotlin.time.ExperimentalTime
 
 internal data class ProductEssentialsUi(
     val displayName: String = "",
+
+    val productType: ProductType? = null,
+
 
     val type: ProductType? = null,
 

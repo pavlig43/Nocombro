@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.Flow
 import ru.pavlig43.database.data.common.NotificationDTO
 import ru.pavlig43.database.data.declaration.DECLARATIONS_TABLE_NAME
 import ru.pavlig43.database.data.product.PRODUCT_TABLE_NAME
-import ru.pavlig43.database.data.product.ProductDeclaration
+import ru.pavlig43.database.data.product.ProductDeclarationIn
 import ru.pavlig43.database.data.product.ProductDeclarationOut
 import ru.pavlig43.database.data.vendor.VENDOR_TABLE_NAME
 
@@ -15,7 +15,7 @@ import ru.pavlig43.database.data.vendor.VENDOR_TABLE_NAME
 interface ProductDeclarationDao {
 
     @Upsert
-    suspend fun upsertProductDeclarations(declaration: List<ProductDeclaration>)
+    suspend fun upsertProductDeclarations(declaration: List<ProductDeclarationIn>)
 
     @Query("DELETE FROM product_declaration WHERE id in(:ids)")
     suspend fun deleteDeclarations(ids:List<Int>)

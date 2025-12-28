@@ -14,6 +14,7 @@ import kotlinx.serialization.Serializable
 import org.koin.core.scope.Scope
 import ru.pavlig43.core.SlotComponent
 import ru.pavlig43.core.component.EssentialComponentFactory
+import ru.pavlig43.core.emptyDate
 import ru.pavlig43.corekoin.ComponentKoinContext
 import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.declarationform.internal.component.CreateDeclarationComponent
@@ -46,7 +47,7 @@ class DeclarationFormComponent(
 
     private val componentFactory = EssentialComponentFactory<Declaration, DeclarationEssentialsUi>(
         initItem = DeclarationEssentialsUi(),
-        isValidValuesFactory = { displayName.isNotBlank() && vendorId != null && bestBefore != null },
+        isValidValuesFactory = { displayName.isNotBlank() && vendorId != null && bestBefore != emptyDate },
         mapperToUi = { toUi() },
         vendorInfoForTabName = {onChangeValueForMainTab("Деларация ${it.displayName}")}
     )

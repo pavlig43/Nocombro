@@ -43,7 +43,12 @@ include(":database")
 include(":datastore")
 include(":theme")
 
-include(":features:itemlist",)
+include(
+    ":features:table:core",
+    ":features:table:immutable",
+    ":features:table:mutable",
+)
+
 
 include(
     ":features:form:document",
@@ -66,5 +71,4 @@ include(
 )
 
 include(":features:notification")
-include(":features:declarationtabslot",)
 

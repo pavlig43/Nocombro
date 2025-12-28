@@ -5,15 +5,16 @@ import com.arkivanov.decompose.router.slot.SlotNavigation
 import com.arkivanov.decompose.router.slot.activate
 import com.arkivanov.decompose.router.slot.childSlot
 import com.arkivanov.decompose.router.slot.dismiss
-import ru.pavlig43.itemlist.api.component.MBSImmutableTableComponent
-import ru.pavlig43.itemlist.api.component.VendorBuilder
-import ru.pavlig43.itemlist.api.dependencies
-import ru.pavlig43.itemlist.internal.component.items.vendor.VendorTableUi
+import ru.pavlig43.immutable.api.ImmutableTableDependencies
+import ru.pavlig43.immutable.api.component.MBSImmutableTableComponent
+import ru.pavlig43.immutable.api.component.VendorImmutableTableBuilder
+
+import ru.pavlig43.immutable.internal.component.items.vendor.VendorTableUi
 
 internal class VendorDialogComponent(
     parentComponentContext: ComponentContext,
     private val onChangeVendor: (Int, String) -> Unit,
-    dependencies: dependencies,
+    dependencies: ImmutableTableDependencies,
     onOpenVendorTab: (Int) -> Unit,
 ) {
     private val dialogNavigation = SlotNavigation<MBSVendorDialog>()
@@ -30,7 +31,7 @@ internal class VendorDialogComponent(
                 onDismissed = dialogNavigation::dismiss,
                 dependencies = dependencies,
                 onCreate = { onOpenVendorTab(0) },
-                builderData = VendorBuilder(
+                immutableTableBuilderData = VendorImmutableTableBuilder(
                     withCheckbox = false
                 ),
                 onItemClick = {

@@ -19,11 +19,18 @@ import kotlin.time.Instant
 @OptIn(ExperimentalTime::class)
 class Converters {
 
-    @TypeConverter
-    fun toProductType(value: String) = enumValueOf<ProductType>(value)
 
     @TypeConverter
-    fun fromProductType(value: ProductType) = value.name
+    fun fromProductType(productType: ProductType): String {
+        return productType.enumValue.name
+
+    }
+
+    @TypeConverter
+    fun toProductType(value: String): ProductType {
+        return ProductType.entries.firstOrNull { it.enumValue.name == value }
+            ?: throw IllegalArgumentException("Unknown ProdType: $value")
+    }
 
     @TypeConverter
     fun toDocumentType(value: String) = enumValueOf<DocumentType>(value)

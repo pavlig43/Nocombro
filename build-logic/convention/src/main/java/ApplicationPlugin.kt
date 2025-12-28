@@ -1,4 +1,5 @@
 import com.android.build.api.dsl.ApplicationExtension
+import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.apply
@@ -73,6 +74,12 @@ private fun Project.configAndroidApplication() {
         lint {
             checkDependencies = true
         }
+        compileOptions {
+            sourceCompatibility = JavaVersion.toVersion(libs.versions.java.get().toInt())
+            targetCompatibility = JavaVersion.toVersion(libs.versions.java.get().toInt())
+        }
+
+
         defaultConfig {
             minSdk = libs.versions.android.minSdk.get().toInt()
         }

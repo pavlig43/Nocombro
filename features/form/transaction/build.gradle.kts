@@ -12,12 +12,14 @@ kotlin{
         implementation(projects.features.manageitem.loadinitdata)
 
 
-        implementation(projects.features.itemlist)
+        implementation(projects.features.table.immutable)
         implementation(projects.database)
 
         implementation(libs.wwind.table.core)
         implementation(libs.wwind.table.format)
         implementation(libs.collections.immutable)
+        implementation(projects.features.table.core)
+
 
 
     }

@@ -7,7 +7,7 @@ import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.database.data.declaration.DeclarationFile
 import ru.pavlig43.declarationform.api.DeclarationFormDependencies
-import ru.pavlig43.itemlist.api.dependencies
+import ru.pavlig43.immutable.api.ImmutableTableDependencies
 import ru.pavlig43.update.data.UpdateCollectionRepository
 import ru.pavlig43.update.data.UpdateEssentialsRepository
 
@@ -17,7 +17,7 @@ internal fun createDeclarationFormModule(dependencies: DeclarationFormDependenci
         single<DataBaseTransaction> { dependencies.transaction }
         single<CreateEssentialsRepository<Declaration>> {  getCreateRepository(get())}
         single<UpdateEssentialsRepository<Declaration>> {  getUpdateRepository(get())}
-        single<dependencies> {dependencies.dependencies  }
+        single<ImmutableTableDependencies> {dependencies.dependencies  }
 
         single<UpdateCollectionRepository<DeclarationFile, DeclarationFile>> {
             getFilesRepository(

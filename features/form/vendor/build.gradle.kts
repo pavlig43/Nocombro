@@ -12,7 +12,7 @@ kotlin{
         implementation(projects.features.manageitem.loadinitdata)
 
         
-        implementation(projects.features.itemlist)
+        implementation(projects.features.table.immutable)
         implementation(projects.database)
 
     }

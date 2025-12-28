@@ -14,9 +14,11 @@ class DetektPlugin : Plugin<Project> {
 
         target.plugins.withType(KotlinBasePlugin::class.java) {
             with(target) {
+
                 apply(plugin = libs.plugins.detekt.get().pluginId)
 
                 extensions.configure<DetektExtension>() {
+
                     config.setFrom(rootProject.files("default-detekt-config.yml"))
                     buildUponDefaultConfig = false
                     autoCorrect = true
@@ -38,7 +40,7 @@ class DetektPlugin : Plugin<Project> {
                         }
                     }
                     withType<Detekt>().configureEach {
-                        jvmTarget = libs.versions.java.get().toString()
+                        jvmTarget = libs.versions.java.get()
                     }
                     withType<DetektGenerateConfigTask>().configureEach {
                         enabled = false

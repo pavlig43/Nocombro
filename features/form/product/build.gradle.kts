@@ -13,7 +13,7 @@ kotlin{
         implementation(projects.features.manageitem.loadinitdata)
         
         
-        implementation(projects.features.declarationtabslot)
-        implementation(projects.features.itemlist)
+        
+        implementation(projects.features.table.immutable)
     }
 }

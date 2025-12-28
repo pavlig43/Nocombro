@@ -57,7 +57,7 @@ internal class ProductFormTabInnerTabsComponent(
                         componentContext = context
                     )
 
-                    ProductTab.Declaration -> ProductDeclarationTabSlot(
+                    ProductTab.Declaration -> DeclarationTabSlot1(
                         componentContext = context,
                         productId = productId,
                         updateRepository = scope.get(named(UpdateCollectionRepositoryType.Declaration.name)),

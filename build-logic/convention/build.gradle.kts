@@ -4,9 +4,10 @@ plugins {
     `kotlin-dsl`
 }
 group = "ru.pavlig43.buildlogic"
-private val projectJavaVersion: JavaVersion = JavaVersion.toVersion(libs.versions.java.get())
+ val projectJavaVersion: JavaVersion = JavaVersion.toVersion(libs.versions.java.get())
 
 java {
+
     sourceCompatibility = projectJavaVersion
     targetCompatibility = projectJavaVersion
 }
@@ -81,11 +82,11 @@ gradlePlugin {
             id = libs.plugins.pavlig43.decompose.get().pluginId
             implementationClass = "DecomposePlugin"
         }
-        register("feature"){
+        register("feature") {
             id = libs.plugins.pavlig43.feature.get().pluginId
             implementationClass = "FeaturePlugin"
         }
-        register("kmplibrary"){
+        register("kmplibrary") {
             id = libs.plugins.pavlig43.kmplibrary.get().pluginId
             implementationClass = "KmpLibrary"
         }
