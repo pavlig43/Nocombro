@@ -15,8 +15,10 @@ import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import ru.pavlig43.addfile.api.ui.FilesScreen
 import ru.pavlig43.core.ui.EssentialBlockScreen
+import ru.pavlig43.mutable.api.ui.MutableTableBox
 import ru.pavlig43.product.api.component.ProductFormComponent
 import ru.pavlig43.product.internal.component.tabs.tabslot.CompositionTabSlot
+import ru.pavlig43.product.internal.component.tabs.tabslot.CompositionTabSlot1
 import ru.pavlig43.product.internal.component.tabs.tabslot.DeclarationTabSlot1
 import ru.pavlig43.product.internal.component.tabs.tabslot.EssentialTabSlot
 import ru.pavlig43.product.internal.component.tabs.tabslot.ProductFileTabSlot
@@ -72,7 +74,7 @@ private fun ProductSlotScreen(productSlot: ProductTabSlot?) {
 
 
             null -> Box(Modifier)
-
+            is CompositionTabSlot1 -> MutableTableBox(productSlot)
         }
     }
 

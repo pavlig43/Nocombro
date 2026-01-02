@@ -4,7 +4,6 @@ import ru.pavlig43.core.data.ChangeSet
 import ru.pavlig43.core.data.CollectionObject
 
 class UpdateCollectionRepository<DBOut: CollectionObject,DBIn : CollectionObject>(
-    private val tag: String,
     private val loadCollection: suspend (parentId: Int) -> List<DBOut>,
     private val deleteCollection: suspend (ids: List<Int>) -> Unit,
     private val upsertCollection: suspend (collection: List<DBIn>) -> Unit

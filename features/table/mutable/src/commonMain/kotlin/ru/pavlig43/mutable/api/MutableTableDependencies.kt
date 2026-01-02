@@ -1,4 +1,4 @@
-package ru.pavlig43.immutable.api
+package ru.pavlig43.mutable.api
 
 import ru.pavlig43.database.NocombroDatabase
 

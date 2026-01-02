@@ -1,4 +1,4 @@
-package ru.pavlig43.immutable.internal.ui
+package ru.pavlig43.mutable.api.ui
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
@@ -27,7 +27,7 @@ import androidx.compose.ui.unit.dp
  * @param modifier Modifier for the composable
  */
 @Composable
-internal fun SelectionActionBar(
+ fun SelectionActionBar(
     selectedCount: Int,
     onDeleteClick: () -> Unit,
     onClearSelection: () -> Unit,

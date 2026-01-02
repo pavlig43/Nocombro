@@ -9,6 +9,7 @@ kotlin{
     commonMainDependencies {
         implementation(projects.database)
         implementation(projects.features.manageitem.loadinitdata)
+        implementation(projects.features.manageitem.upsert)
         implementation(libs.wwind.table.core)
         implementation(libs.wwind.table.format)
         implementation(libs.collections.immutable)

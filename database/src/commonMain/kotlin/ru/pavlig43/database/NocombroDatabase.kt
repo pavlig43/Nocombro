@@ -18,6 +18,7 @@ import ru.pavlig43.database.data.document.dao.DocumentDao
 import ru.pavlig43.database.data.document.dao.DocumentFilesDao
 import ru.pavlig43.database.data.product.*
 import ru.pavlig43.database.data.product.dao.CompositionDao
+import ru.pavlig43.database.data.product.dao.CompositionDao1
 import ru.pavlig43.database.data.product.dao.ProductDao
 import ru.pavlig43.database.data.product.dao.ProductDeclarationDao
 import ru.pavlig43.database.data.product.dao.ProductFilesDao
@@ -43,6 +44,7 @@ import kotlin.time.ExperimentalTime
 
         Product::class,
         ProductFile::class,
+        CompositionIn::class,
         ProductDeclarationIn::class,
         ProductComposition::class,
         ProductIngredientIn::class,
@@ -71,6 +73,9 @@ abstract class NocombroDatabase : RoomDatabase() {
     abstract val productFilesDao: ProductFilesDao
     abstract val productDeclarationDao: ProductDeclarationDao
     abstract val compositionDao: CompositionDao
+
+    abstract val compositionDao1: CompositionDao1
+
 
     abstract val productTransactionDao: ProductTransactionDao
 }

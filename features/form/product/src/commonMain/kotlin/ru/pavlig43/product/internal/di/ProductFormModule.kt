@@ -1,6 +1,7 @@
 package ru.pavlig43.product.internal.di
 
 import org.koin.core.qualifier.named
+import org.koin.core.qualifier.qualifier
 import org.koin.dsl.module
 import ru.pavlig43.create.data.CreateEssentialsRepository
 import ru.pavlig43.database.DataBaseTransaction
@@ -22,18 +23,22 @@ internal fun createProductFormModule(dependencies: ProductFormDependencies) = li
 
 
         single<UpdateCollectionRepository<ProductFile, ProductFile>>(
-            named(
-                UpdateCollectionRepositoryType.Files.name
-            )
+
+                UpdateCollectionRepositoryType.Files.qualifier
+
         ) { getFilesRepository(get()) }
 
         single<UpdateCollectionRepository<ProductDeclarationOut, ProductDeclarationIn>>(
-            named(UpdateCollectionRepositoryType.Declaration.name)
+            UpdateCollectionRepositoryType.Declaration.qualifier
         ) { getUpdateDeclarationRepository(get()) }
 
         single<UpdateCollectionRepository<ProductCompositionOut, ProductCompositionIn>>(
-            named(UpdateCollectionRepositoryType.Composition.name)
+            UpdateCollectionRepositoryType.Composition.qualifier
         ) { getUpdateCompositionRepository(get()) }
+
+        single<UpdateCollectionRepository<CompositionOut, CompositionIn>>(
+            UpdateCollectionRepositoryType.Composition1.qualifier
+        ) { createUpdateCompositionRepository(get()) }
 
     }
 
@@ -65,15 +70,24 @@ internal enum class UpdateCollectionRepositoryType {
     Files,
     Declaration,
     Composition,
+    Composition1,
 
 }
-
+private fun createUpdateCompositionRepository(
+    db: NocombroDatabase
+): UpdateCollectionRepository<CompositionOut, CompositionIn>{
+    val dao = db.compositionDao1
+    return UpdateCollectionRepository(
+        loadCollection = dao::getCompositionOut,
+        deleteCollection = dao::deleteCompositions,
+        upsertCollection = dao::upsertComposition
+    )
+}
 private fun getFilesRepository(
     db: NocombroDatabase
 ): UpdateCollectionRepository<ProductFile, ProductFile> {
     val fileDao = db.productFilesDao
     return UpdateCollectionRepository(
-        tag = "Product FilesRepository",
         loadCollection = fileDao::getFiles,
         deleteCollection = fileDao::deleteFiles,
         upsertCollection = fileDao::upsertProductFiles
@@ -85,7 +99,6 @@ private fun getUpdateDeclarationRepository(
 ): UpdateCollectionRepository<ProductDeclarationOut, ProductDeclarationIn> {
     val dao = db.productDeclarationDao
     return UpdateCollectionRepository(
-        tag = "Update Collection Respository",
         loadCollection = dao::getProductDeclarationWithDocumentName,
         deleteCollection = dao::deleteDeclarations,
         upsertCollection = dao::upsertProductDeclarations
@@ -98,7 +111,6 @@ private fun getUpdateCompositionRepository(
 ): UpdateCollectionRepository<ProductCompositionOut, ProductCompositionIn> {
     val dao = db.compositionDao
     return UpdateCollectionRepository(
-        tag = "Product Composition Repository",
         loadCollection = dao::getCompositions,
         deleteCollection = dao::deleteCompositions,
         upsertCollection = dao::upsertCompositions

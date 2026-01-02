@@ -1,36 +1,21 @@
-package ru.pavlig43.immutable.internal.component.items.composition
+package ru.pavlig43.product.internal.component.tabs.tabslot.compositionData
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Text
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.ImmutableList
-import ru.pavlig43.immutable.internal.component.MutableUiEvent
+import ru.pavlig43.mutable.api.component.MutableUiEvent
 import ru.pavlig43.tablecore.manger.SelectionUiEvent
-import ru.pavlig43.tablecore.model.ITableUi
 import ru.pavlig43.tablecore.model.TableData
+import ru.pavlig43.tablecore.ui.TableCellTextFieldNumber
+import ru.pavlig43.tablecore.ui.createButtonNew
 import ua.wwind.table.ColumnSpec
-import ua.wwind.table.component.TableCellTextFieldWithTooltipError
 import ua.wwind.table.editableTableColumns
 import ua.wwind.table.filter.data.TableFilterType
-import ua.wwind.table.tableColumns
-
-internal data class CompositionUi(
-    override val composeId: Int,
-    val productId: Int,
-    val productName: String,
-    val count: Double,
-) : ITableUi
 
 internal enum class CompositionField {
     COMPOSE_ID,
@@ -41,13 +26,19 @@ internal enum class CompositionField {
 }
 
 internal fun createCompositionColumn(
-    onEvent: (CompositionUiEvent) -> Unit,
-) {
+    onEvent: (MutableUiEvent) -> Unit,
+): ImmutableList<ColumnSpec<CompositionUi, CompositionField, TableData<CompositionUi>>> {
     val columns =
         editableTableColumns<CompositionUi, CompositionField, TableData<CompositionUi>> {
 
             column(CompositionField.SELECTION, valueOf = { it.composeId }) {
-                title { "" }
+                title {
+                    createButtonNew {
+                        onEvent(
+                            MutableUiEvent.CreateNewItem
+                        )
+                    }
+                }
                 autoWidth(48.dp)
                 cell { item, tableData ->
                     Box(
@@ -58,7 +49,7 @@ internal fun createCompositionColumn(
                             checked = item.composeId in tableData.selectedIds,
                             onCheckedChange = {
                                 onEvent(
-                                    CompositionUiEvent.Selection(
+                                    MutableUiEvent.Selection(
                                         SelectionUiEvent.ToggleSelection(
                                             item.composeId
                                         )
@@ -74,6 +65,7 @@ internal fun createCompositionColumn(
                 align(Alignment.Center)
                 filter(TableFilterType.TextTableFilter())
                 cell { item, _ -> Text(item.productName) }
+
                 sortable()
             }
 
@@ -81,29 +73,23 @@ internal fun createCompositionColumn(
                 header("Количество")
                 align(Alignment.Center)
                 filter(TableFilterType.TextTableFilter())
+                cell { item, _ -> Text(item.count.toString()) }
                 editCell { item: CompositionUi, tableData: TableData<CompositionUi>, onComplete: () -> Unit ->
-                    TableCellTextFieldWithTooltipError(
-                        value = item.count.toString(),
-                        onValueChange = {
-                            onEvent(CompositionUiEvent.UpdateCount(item.composeId,it.toDouble()))
+
+                    TableCellTextFieldNumber(
+                        value = item.count,
+                        saveInModel = {
+                            onEvent(MutableUiEvent.UpdateItem(item.copy(count = it)))
                         },
-                        errorMessage = "",
-                        singleLine = true,
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                        keyboardActions =
-                            KeyboardActions(
-                                onDone = { onComplete() },
-                            ),
+                        countDigitsAfterDot = 3,
+                        onComplete = onComplete,
                     )
                 }
-//                cell { item, _ -> Text(item.count.toString()) }
                 sortable()
             }
 
 
         }
+    return columns
 
 }
-
-
-

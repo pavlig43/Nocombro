@@ -1,22 +1,21 @@
-package ru.pavlig43.immutable.internal.component.items.vendor
+package ru.pavlig43.product.internal.component.tabs.tabslot.compositionData
 
 import ru.pavlig43.tablecore.utils.SortMatcher
 import ua.wwind.table.data.SortOrder
 import ua.wwind.table.state.SortState
 
-internal object VendorSorter: SortMatcher<VendorTableUi, VendorField> {
+internal object CompositionSorter:SortMatcher<CompositionUi, CompositionField> {
     override fun sort(
-        items: List<VendorTableUi>,
-        sort: SortState<VendorField>?,
-    ): List<VendorTableUi>{
+        items: List<CompositionUi>,
+        sort: SortState<CompositionField>?
+    ): List<CompositionUi> {
         if (sort == null) {
             return items
         }
-
         val sortedList =
             when (sort.column) {
-                VendorField.ID -> items.sortedBy { it.composeId }
-                VendorField.COMMENT -> items.sortedBy { it.comment.lowercase() }
+                CompositionField.PRODUCT_NAME -> items.sortedBy { it.productName }
+                CompositionField.COUNT -> items.sortedBy { it.count }
                 else -> items
             }
         return if (sort.order == SortOrder.DESCENDING) {

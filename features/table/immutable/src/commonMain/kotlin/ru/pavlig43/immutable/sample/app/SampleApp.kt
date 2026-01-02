@@ -24,7 +24,7 @@ import ua.wwind.table.state.rememberTableState
 @Suppress("ViewModelConstructorInComposable")
 @OptIn(ExperimentalTableApi::class)
 @Composable
-fun SampleApp(modifier: Modifier = Modifier,context: ComponentContext) {
+fun SampleApp(context: ComponentContext,modifier: Modifier = Modifier,) {
     var isDarkTheme by remember { mutableStateOf(false) }
 
     val viewModel: ua.wwind.table.sample.viewmodel.SampleViewModel =

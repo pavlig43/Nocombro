@@ -1,4 +1,4 @@
-package ru.pavlig43.immutable.internal.ui
+package ru.pavlig43.mutable.api.ui
 
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Box
@@ -13,9 +13,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.ImmutableList
 import ru.pavlig43.tablecore.model.ITableUi
-import ru.pavlig43.immutable.internal.component.MutableTableComponent
-import ru.pavlig43.immutable.internal.component.MutableUiEvent
+
 import ru.pavlig43.loadinitdata.api.ui.LoadInitDataScreen
+import ru.pavlig43.mutable.api.component.MutableTableComponent
+import ru.pavlig43.mutable.api.component.MutableUiEvent
 import ru.pavlig43.tablecore.manger.SelectionUiEvent
 import ru.pavlig43.tablecore.model.TableData
 import ru.pavlig43.tablecore.ui.TableBox
@@ -28,8 +29,8 @@ import ua.wwind.table.strings.StringProvider
 
 @OptIn(ExperimentalTableApi::class)
 @Composable
-internal fun <I : ITableUi, C> MutableTableBox(
-    component: MutableTableComponent<*, I, C, *>,
+fun <I : ITableUi, C> MutableTableBox(
+    component: MutableTableComponent<*, *, I, C>,
     modifier: Modifier = Modifier
 ) {
 
@@ -90,6 +91,13 @@ private fun <I : ITableUi, C, E : TableData<I>> BoxScope.MutableTable(
         customization = DefaultTableCustomization(),
         tableData = tableData,
         columns = columns,
+        onRowEditStart = { item, _ ->
+            println(item)
+        },
+        onRowEditComplete = {
+            println(it)
+            true
+        },
         verticalState = verticalState,
         horizontalState = horizontalState,
         modifier = modifier

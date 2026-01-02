@@ -1,4 +1,4 @@
-package ru.pavlig43.immutable.internal.component
+package ru.pavlig43.mutable.api.component
 
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
@@ -11,7 +11,10 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.datetime.LocalDate
+import ru.pavlig43.core.FormTabSlot
 import ru.pavlig43.core.componentCoroutineScope
+import ru.pavlig43.core.data.ChangeSet
+import ru.pavlig43.core.data.CollectionObject
 import ru.pavlig43.core.emptyDate
 import ru.pavlig43.tablecore.model.ITableUi
 import ru.pavlig43.loadinitdata.api.component.LoadInitDataComponent
@@ -21,12 +24,11 @@ import ru.pavlig43.tablecore.manger.SortManager
 import ru.pavlig43.tablecore.model.TableData
 import ru.pavlig43.tablecore.utils.FilterMatcher
 import ru.pavlig43.tablecore.utils.SortMatcher
+import ru.pavlig43.update.data.UpdateCollectionRepository
 
 import ua.wwind.table.ColumnSpec
 import ua.wwind.table.filter.data.TableFilterState
 import ua.wwind.table.state.SortState
-
-
 
 
 data class BuyBaseUi(
@@ -42,34 +44,33 @@ data class BuyBaseUi(
 ) : ITableUi
 
 
-internal abstract class MutableTableComponent<BD, UI : ITableUi, C,E: MutableUiEvent>(
+abstract class MutableTableComponent<BDOut: CollectionObject,BDIn:CollectionObject, UI : ITableUi, C>(
     componentContext: ComponentContext,
-//    private val componentFactory: EssentialComponentFactory<I, T>,
-    getInitData: suspend () -> Result<List<BD>>,
+    parentId: Int,
+    override val title: String,
+    sortMatcher: SortMatcher<UI, C>,
+    private  val repository: UpdateCollectionRepository<BDOut, BDIn>
 
-    ) : ComponentContext by componentContext {
+    ) : ComponentContext by componentContext, FormTabSlot {
+
     protected val coroutineScope = componentCoroutineScope()
 
 
-    internal abstract val columns: ImmutableList<ColumnSpec<UI, C, TableData<UI>>>
+
+    abstract val columns: ImmutableList<ColumnSpec<UI, C, TableData<UI>>>
     protected abstract fun createNewItem(composeId: Int): UI
-    protected abstract fun BD.toUi(composeId: Int): UI
-    protected abstract val filterMatcher: FilterMatcher<UI,C>
-    protected abstract val sortMatcher: SortMatcher<UI,C>
+    protected abstract fun BDOut.toUi(composeId: Int): UI
+
+    protected abstract fun UI.toBDIn(): BDIn
+    protected abstract val filterMatcher: FilterMatcher<UI, C>
+//    protected abstract val sortMatcher: SortMatcher<UI, C>
     private val _itemList = MutableStateFlow<List<UI>>(emptyList())
     val itemList = _itemList.asStateFlow()
-    fun addNew() {
-        _itemList.update { lst ->
-            val composeId = _itemList.value.maxOfOrNull { it.composeId } ?: 0
-            val newItem = createNewItem(composeId)
-            lst + newItem
-        }
-    }
 
     val initDataComponent = LoadInitDataComponent<List<UI>>(
         componentContext = childContext("init"),
         getInitData = {
-            getInitData().map { lst ->
+            repository.getInit(parentId).map { lst ->
                 lst.mapIndexed { index, bd -> bd.toUi(index) }
             }
         },
@@ -77,12 +78,12 @@ internal abstract class MutableTableComponent<BD, UI : ITableUi, C,E: MutableUiE
             _itemList.update { lst }
         }
     )
-    val selectionManager =
+    protected val selectionManager =
         SelectionManager(
             childContext("selection")
         )
-    val filterManager = FilterManager<C>(childContext("filter"))
-    val sortManager = SortManager<C>(childContext("sort"))
+    protected val filterManager = FilterManager<C>(childContext("filter"))
+    protected val sortManager = SortManager<C>(childContext("sort"))
 
     val tableData = combine(
         _itemList,
@@ -91,7 +92,7 @@ internal abstract class MutableTableComponent<BD, UI : ITableUi, C,E: MutableUiE
         sortManager.sort,
     ) { fields, selectedIds, filters, sort ->
         val filtered = fields.filter { ui ->
-           filterMatcher.matchesItem(ui, filters)
+            filterMatcher.matchesItem(ui, filters)
         }
         val displayed = sortMatcher.sort(filtered, sort)
         TableData(
@@ -105,15 +106,10 @@ internal abstract class MutableTableComponent<BD, UI : ITableUi, C,E: MutableUiE
         TableData(isSelectionMode = true)
     )
 
+    protected abstract fun UI.isValidate(): Boolean
 
-    fun onChangeItem(item: List<UI>) {
-        _itemList.update { item }
-
-    }
-
-    //TODO
-    val isValidFields = _itemList.map { item ->
-        true
+    val isValidFields = _itemList.map { items ->
+        items.all { it.isValidate() }
     }.stateIn(
         coroutineScope,
         SharingStarted.Eagerly,
@@ -129,8 +125,45 @@ internal abstract class MutableTableComponent<BD, UI : ITableUi, C,E: MutableUiE
         sortManager.update(sort)
     }
 
-    internal abstract fun onEvent(event: MutableUiEvent)
+    @Suppress("UNCHECKED_CAST")
+    fun onEvent(event: MutableUiEvent) {
+        when (event) {
+            is MutableUiEvent.DeleteSelected -> {
+                _itemList.update { lst ->
 
+                    val updatedList = lst - lst.filter { it.composeId in selectionManager.selectedIds }.toSet()
+                    selectionManager.clearSelected()
+                    updatedList
+                }
+            }
+
+            is MutableUiEvent.Selection -> {selectionManager.onEvent(event.selectionUiEvent)}
+            is MutableUiEvent.UpdateItem -> {
+                _itemList.update { lst ->
+                    lst.map { ui ->
+                        (if (ui.composeId == event.item.composeId) {
+                            event.item
+                        } else {
+                            ui
+                        }) as UI
+                    }
+                }
+            }
+
+            MutableUiEvent.CreateNewItem -> {
+                _itemList.update { lst ->
+                    val composeId = lst.maxOfOrNull { it.composeId }?.plus(1) ?: 0
+                    lst + createNewItem(composeId)
+                }
+            }
+        }
+
+    }
+    override suspend fun onUpdate(): Result<Unit> {
+        val old = initDataComponent.firstData.value?.map { it.toBDIn() }
+        val new = _itemList.value.map { it.toBDIn() }
+        return repository.update(ChangeSet(old, new))
+    }
 }
 
 

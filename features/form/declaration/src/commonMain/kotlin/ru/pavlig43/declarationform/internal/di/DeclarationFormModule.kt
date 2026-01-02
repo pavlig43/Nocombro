@@ -52,7 +52,6 @@ private fun getFilesRepository(
 ): UpdateCollectionRepository<DeclarationFile, DeclarationFile> {
     val fileDao = db.declarationFilesDao
     return UpdateCollectionRepository(
-        tag = "Declaration FilesRepository",
         loadCollection = fileDao::getFiles,
         deleteCollection = fileDao::deleteFiles,
         upsertCollection = fileDao::upsertFiles

@@ -11,6 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.Child
+import com.arkivanov.decompose.DefaultComponentContext
 import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import kotlinx.coroutines.launch
@@ -38,6 +39,7 @@ import ru.pavlig43.transaction.api.component.TransactionFormComponent
 import ru.pavlig43.transaction.api.ui.TransactionFormScreen
 import ru.pavlig43.vendor.api.ui.VendorFormScreen
 import ru.pavlig43.vendor.component.VendorFormComponent
+import ua.wwind.table.sample.app.SampleApp
 
 
 @Suppress("LongMethod")
@@ -48,7 +50,7 @@ fun RootNocombroScreen(rootNocombroComponent: IRootNocombroComponent) {
     val drawerState = rememberDrawerState(DrawerValue.Closed)
 
 
-//    SampleApp()
+
     Surface {
 
         Children(

@@ -34,6 +34,8 @@ kotlin {
             implementation(projects.rootnocombro)
             implementation(libs.filekit.dialogs)
 
+            implementation(projects.features.table.immutable)
+
         }
 
 

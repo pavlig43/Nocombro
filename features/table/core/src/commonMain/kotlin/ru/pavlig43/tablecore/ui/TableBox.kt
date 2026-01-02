@@ -51,6 +51,7 @@ fun <I : ITableUi, C, E : TableData<I>> TableBox(
             autoApplyFilters = true,
             showFastFilters = true,
             showActiveFiltersHeader = true,
+            editingEnabled = true,
             selectionMode = SelectionMode.Multiple,
             pinnedColumnsCount = 3
         )
