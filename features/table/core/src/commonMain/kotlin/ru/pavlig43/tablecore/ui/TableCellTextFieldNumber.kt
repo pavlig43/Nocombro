@@ -13,10 +13,8 @@ import ua.wwind.table.component.TableCellTextFieldWithTooltipError
 import kotlin.math.pow
 
 private fun Int.toDoubleFormat(digitsAfterDot: Int): String {
-    val value = this.toDouble()
-    val intPart = value.toInt()
-    val fracPart = ((value - intPart) * 10.0.pow(digitsAfterDot)).toInt()
-    return "${intPart}.${fracPart.toString().padStart(digitsAfterDot, '0')}"
+    return (this / (10.0.pow(digitsAfterDot))).toString()
+
 }
 
 @Composable
@@ -33,11 +31,11 @@ fun TableCellTextFieldNumber(
         value = displayValue,
         onValueChange = { input ->
 
-
-
-            val lastChar = input.last()
+//            val a = if (input.contains("[0-9]".toRegex()) || input.con)
+            val lastChar = input.lastOrNull()
             val newText = when {
-                lastChar.isDigit() -> input
+                input.substringAfter('.').length > countDigitsAfterDot -> input
+                lastChar?.isDigit() == true -> input
                 input.dropLast(1).contains('.') -> input.dropLast(1)
                 else -> input.dropLast(1) + '.'
             }
