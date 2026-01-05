@@ -20,6 +20,7 @@ fun NameFieldBlock(
             value = name,
             onValueChange = onChangeName,
             headText = "Имя",
+
         )
         if (name.isBlank()) {
             Text("Имя не должно быть пустым")

@@ -12,9 +12,6 @@ internal data class ProductEssentialsUi(
 
     val productType: ProductType? = null,
 
-
-    val type: ProductType? = null,
-
     val createdAt: LocalDate = getCurrentLocalDate(),
 
     val comment:String ="",
@@ -24,7 +21,7 @@ internal data class ProductEssentialsUi(
 internal fun Product.toUi(): ProductEssentialsUi {
     return ProductEssentialsUi(
         displayName = displayName,
-        type = type,
+        productType = type,
         createdAt = createdAt,
         comment = comment,
         id = id
@@ -33,7 +30,7 @@ internal fun Product.toUi(): ProductEssentialsUi {
 @OptIn(ExperimentalTime::class)
 internal fun ProductEssentialsUi.toDto(): Product {
     return Product(
-        type = type?: throw IllegalArgumentException("product type require") ,
+        type = productType?: throw IllegalArgumentException("product type require") ,
         displayName = displayName,
         createdAt = createdAt,
         comment = comment,

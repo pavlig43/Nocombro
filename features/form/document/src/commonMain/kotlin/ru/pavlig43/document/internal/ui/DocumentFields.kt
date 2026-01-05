@@ -2,8 +2,8 @@ package ru.pavlig43.document.internal.ui
 
 import androidx.compose.runtime.Composable
 import ru.pavlig43.coreui.coreFieldBlock.CommentFieldBlock
-import ru.pavlig43.coreui.coreFieldBlock.ItemTypeField
 import ru.pavlig43.coreui.coreFieldBlock.NameFieldBlock
+import ru.pavlig43.coreui.coreFieldBlock.ReadWriteItemTypeField
 import ru.pavlig43.database.data.document.DocumentType
 import ru.pavlig43.document.internal.data.DocumentEssentialsUi
 
@@ -16,12 +16,14 @@ internal fun DocumentFields(
         document.displayName,
         { updateDocument(document.copy(displayName = it)) }
     )
-
-    ItemTypeField(
+    ReadWriteItemTypeField(
+        readOnly = document.id != 0,
         typeVariants = DocumentType.entries,
         currentType = document.type,
         onChangeType = { updateDocument(document.copy(type = it)) }
     )
+
+
 
     CommentFieldBlock(
         comment = document.comment,

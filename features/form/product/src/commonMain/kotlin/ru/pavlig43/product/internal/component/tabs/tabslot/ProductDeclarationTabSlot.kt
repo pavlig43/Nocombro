@@ -7,6 +7,7 @@ import com.arkivanov.decompose.router.slot.activate
 import com.arkivanov.decompose.router.slot.childSlot
 import com.arkivanov.decompose.router.slot.dismiss
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.datetime.LocalDate
@@ -78,6 +79,9 @@ class DeclarationTabSlot(
         val new = declarationListComponent.declarationList.value.map { it.mapper(productId) }
         return updateRepository.update(ChangeSet(old, new))
     }
+
+//    override val errorMessages: StateFlow<List<String>>
+//        get() = TODO("Not yet implemented")
 
 }
 

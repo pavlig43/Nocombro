@@ -1,9 +1,11 @@
 package ru.pavlig43.core.ui
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import ru.pavlig43.core.component.EssentialsComponent
 import ru.pavlig43.core.data.GenericItem
@@ -20,7 +22,6 @@ fun <I : ItemEssentialsUi> EssentialBlockScreen(
     Column(modifier) {
         val item by component.itemFields.collectAsState()
         LoadInitDataScreen(component.initDataComponent) {
-
             fieldsBody(item, component::onChangeItem)
         }
     }

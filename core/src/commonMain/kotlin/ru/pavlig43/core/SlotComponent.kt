@@ -14,6 +14,9 @@ interface FormTabSlot {
     val title: String
     suspend fun onUpdate(): Result<Unit>
 
+//    val errorMessages: StateFlow<List<String>>
+
+
 }
 
 

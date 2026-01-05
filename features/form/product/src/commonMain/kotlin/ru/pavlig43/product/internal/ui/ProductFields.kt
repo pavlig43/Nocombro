@@ -2,8 +2,8 @@ package ru.pavlig43.product.internal.ui
 
 import androidx.compose.runtime.Composable
 import ru.pavlig43.coreui.coreFieldBlock.CommentFieldBlock
-import ru.pavlig43.coreui.coreFieldBlock.ItemTypeField
 import ru.pavlig43.coreui.coreFieldBlock.NameFieldBlock
+import ru.pavlig43.coreui.coreFieldBlock.ReadWriteItemTypeField
 import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.product.internal.data.ProductEssentialsUi
 
@@ -16,14 +16,12 @@ internal fun ProductFields(
         product.displayName,
         { updateProduct(product.copy(displayName = it)) }
     )
-
-    ItemTypeField(
+    ReadWriteItemTypeField(
+        readOnly = product.id != 0,
+        currentType = product.productType,
         typeVariants = ProductType.entries,
-        currentType = product.type,
-        onChangeType = { updateProduct(product.copy(type = it)) }
+        onChangeType = { updateProduct(product.copy(productType = it)) }
     )
-
-
 
     CommentFieldBlock(
         comment = product.comment,

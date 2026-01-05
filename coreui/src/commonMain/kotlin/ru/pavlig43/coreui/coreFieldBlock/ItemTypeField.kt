@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowDropUp
+import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
@@ -31,14 +33,37 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import ru.pavlig43.core.data.ItemType
 
+@Composable
+fun<I:ItemType> ReadWriteItemTypeField(
+    readOnly: Boolean,
+    currentType:I?,
+    typeVariants: List<I>,
+    onChangeType:(I?)-> Unit,
+){
+    if (readOnly){
+        Card(Modifier.padding(vertical = 16.dp)) {
+            Text(currentType?.displayName ?: "*", Modifier.padding(4.dp))
+        }
+    }
+    else{
+        ItemTypeField(
+            currentType = currentType,
+            typeVariants = typeVariants,
+            onChangeType = onChangeType
+        )
+}
+}
+
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun <I: ItemType> ItemTypeField(
+private fun <I: ItemType> ItemTypeField(
     currentType:I?,
     typeVariants: List<I>,
     onChangeType:(I?)-> Unit,
     modifier: Modifier = Modifier
 ) {
+
     var expanded by remember { mutableStateOf(false) }
     ExposedDropdownMenuBox(
         expanded = expanded,
