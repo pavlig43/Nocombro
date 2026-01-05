@@ -8,6 +8,11 @@ import androidx.room.Upsert
 import ru.pavlig43.database.data.product.CompositionIn
 import ru.pavlig43.database.data.product.CompositionOut
 import ru.pavlig43.database.data.product.Product
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
+import ru.pavlig43.database.data.common.NotificationDTO
+import ru.pavlig43.database.data.product.ProductType
 
 @Dao
 abstract class CompositionDao {
@@ -25,26 +30,45 @@ abstract class CompositionDao {
     @Query("DELETE FROM composition WHERE id in(:ids)")
     abstract suspend fun deleteCompositions(ids: List<Int>)
 
+    @Query(
+        """
+        SELECT * FROM composition
+    """
+    )
+    internal abstract fun observeOnComposition(): Flow<List<CompositionIn>>
+
+
+    fun observeProductWithoutComposition(observeOnAllProduct: () -> Flow<List<Product>>): Flow<List<NotificationDTO>> {
+        return combine(
+            observeOnAllProduct(),
+            observeOnComposition()
+        ) { products, compositions ->
+            val productWithComposition = compositions.map { it.parentId }.toSet()
+            products.filter { it.type == ProductType.Food.Pf && it.id !in productWithComposition }
+                .map { NotificationDTO(it.id, "В продукте ${it.displayName} нет состава") }
+        }
+
+    }
 }
 
-internal data class InternalComposition(
-    @Embedded
-    val composition: CompositionIn,
-    @Relation(
-        entity = Product::class,
-        parentColumn = "product_id",
-        entityColumn = "id"
-    )
-    val product: Product,
+    internal data class InternalComposition(
+        @Embedded
+        val composition: CompositionIn,
+        @Relation(
+            entity = Product::class,
+            parentColumn = "product_id",
+            entityColumn = "id"
+        )
+        val product: Product,
 
-    )
+        )
 
-private fun InternalComposition.toCompositionOut(): CompositionOut {
-    return CompositionOut(
-        id = composition.id,
-        productId = product.id,
-        productName = product.displayName,
-        productType = product.type,
-        count = composition.count
-    )
-}
+    private fun InternalComposition.toCompositionOut(): CompositionOut {
+        return CompositionOut(
+            id = composition.id,
+            productId = product.id,
+            productName = product.displayName,
+            productType = product.type,
+            count = composition.count
+        )
+    }

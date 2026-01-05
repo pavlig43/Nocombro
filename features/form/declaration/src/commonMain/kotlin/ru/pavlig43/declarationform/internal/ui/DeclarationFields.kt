@@ -22,6 +22,12 @@ internal fun DeclarationFields(
         onOpenVendorDialog = onOpenVendorDialog
     )
     DateFieldBlock(
+        date = declaration.bornDate,
+        onSelectDate = { updateDeclaration(declaration.copy(bornDate = it)) },
+        dateName = "Создана",
+
+        )
+    DateFieldBlock(
         date = declaration.bestBefore,
         onSelectDate = { updateDeclaration(declaration.copy(bestBefore = it)) },
         dateName = "Истекает",

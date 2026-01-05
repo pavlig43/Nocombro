@@ -35,6 +35,9 @@ data class Declaration(
     @ColumnInfo("vendor_name")
     val vendorName: String,
 
+    @ColumnInfo("born_date")
+    val bornDate: LocalDate,
+
     @ColumnInfo("best_before")
     val bestBefore: LocalDate,
 

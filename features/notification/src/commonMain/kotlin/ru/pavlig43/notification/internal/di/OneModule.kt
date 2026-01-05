@@ -5,10 +5,10 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import org.koin.core.qualifier.Qualifier
 import org.koin.dsl.module
+import ru.pavlig43.core.DateThreshold
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.notification.api.data.NotificationItem
 import ru.pavlig43.notification.api.data.NotificationLevel
-import ru.pavlig43.notification.internal.ONE_MONTH
 import ru.pavlig43.notification.internal.data.INotificationRepository
 import ru.pavlig43.notification.internal.data.NotificationUi
 
@@ -29,11 +29,11 @@ private class DeclarationOneRepository(
 ) : INotificationRepository {
 
     private val getOnOneMountExpiredDeclaration =
-        db.declarationDao.observeOnExpiredDeclaration(ONE_MONTH).map { lst ->
+        db.declarationDao.observeOnExpiredDeclaration(DateThreshold.OneMonth).map { lst ->
             lst.map { notificationDTO ->
                 NotificationUi(
                     id = notificationDTO.id,
-                    text = "Декларация ${notificationDTO.displayName} через месяц или раньше просрочена"
+                    text = notificationDTO.displayName
                 )
             }
         }

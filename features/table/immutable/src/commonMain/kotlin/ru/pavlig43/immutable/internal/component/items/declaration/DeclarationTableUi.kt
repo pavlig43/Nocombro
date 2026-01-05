@@ -1,6 +1,7 @@
 package ru.pavlig43.immutable.internal.component.items.declaration
 
 import kotlinx.datetime.LocalDate
+import ru.pavlig43.core.getCurrentLocalDate
 import ru.pavlig43.tablecore.model.ITableUi
 
 
@@ -17,4 +18,6 @@ data class DeclarationTableUi(
     val bestBefore: LocalDate,
 
     override val composeId: Int = 0,
-): ITableUi
+): ITableUi{
+    val isActual: Boolean = bestBefore > getCurrentLocalDate()
+}

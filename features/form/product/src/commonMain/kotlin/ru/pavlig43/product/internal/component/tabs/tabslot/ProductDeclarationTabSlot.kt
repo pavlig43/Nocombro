@@ -28,7 +28,6 @@ import ru.pavlig43.update.data.UpdateCollectionRepository
 import kotlin.time.ExperimentalTime
 
 
-
 class DeclarationTabSlot(
     componentContext: ComponentContext,
     private val productId: Int,
@@ -60,7 +59,7 @@ class DeclarationTabSlot(
             immutableTableBuilderData = DeclarationImmutableTableBuilder(
                 withCheckbox = false
             ),
-            onItemClick = {dec ->
+            onItemClick = { dec ->
                 declarationListComponent.addDeclaration(dec)
                 dialogNavigation.dismiss()
             },
@@ -78,21 +77,26 @@ class DeclarationTabSlot(
 
     override suspend fun onUpdate(): Result<Unit> {
         val old =
-            declarationListComponent.loadInitDataComponent.firstData.value?.map { it.mapper(productId) }
+            declarationListComponent.loadInitDataComponent.firstData.value?.map {
+                it.mapper(
+                    productId
+                )
+            }
         val new = declarationListComponent.declarationList.value.map { it.mapper(productId) }
         return updateRepository.update(ChangeSet(old, new))
     }
 
-    override val errorMessages: Flow<List<String>> = declarationListComponent.declarationList.map { lst->
-        buildList {
-            if (lst.isEmpty()){
-                add("Необходимо добавить хотя бы одну декларацию")
-            }
-            if (lst.any { !it.isActual }){
-                add("Все декларации просрочены")
+    override val errorMessages: Flow<List<String>> =
+        declarationListComponent.declarationList.map { lst ->
+            buildList {
+                if (lst.isEmpty()) {
+                    add("Необходимо добавить хотя бы одну декларацию")
+                }
+                if (lst.all { !it.isActual }) {
+                    add("Все декларации просрочены")
+                }
             }
         }
-    }
 
 
 }
@@ -105,7 +109,7 @@ internal class DeclarationListComponent(
 ) : ComponentContext by componentContext {
 
     fun removeDeclaration(index: Int) {
-        _declarationList.update { lst->
+        _declarationList.update { lst ->
             lst.toMutableList().apply { removeAll { it.composeKey == index } }
         }
     }
@@ -120,9 +124,7 @@ internal class DeclarationListComponent(
             composeKey = composeKey,
             declarationName = declaration.displayName,
             vendorName = declaration.vendorName,
-            isActual = true,
-
-            bestBefore = getCurrentLocalDate()
+            isActual = declaration.isActual,
         )
         _declarationList.update {
             it + itemDeclarationUi
@@ -158,11 +160,10 @@ private fun ProductDeclarationOut.toUi(composeKey: Int): DeclarationUi {
     return DeclarationUi(
         id = id,
         declarationId = declarationId,
-        isActual = bestBefore > getCurrentLocalDate(),
+        isActual = isActual,
         composeKey = composeKey,
         declarationName = declarationName,
         vendorName = vendorName,
-        bestBefore = bestBefore
     )
 }
 
@@ -173,6 +174,7 @@ private fun DeclarationUi.mapper(productId: Int): ProductDeclarationIn {
         id = id
     )
 }
+
 data class DeclarationUi(
     val id: Int,
     val composeKey: Int,
@@ -180,7 +182,6 @@ data class DeclarationUi(
     val declarationName: String,
     val vendorName: String,
     val isActual: Boolean,
-    val bestBefore: LocalDate
 )
 
 

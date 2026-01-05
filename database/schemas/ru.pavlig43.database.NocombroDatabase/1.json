@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "72c20090319a71f0a3a4f8d5a254ffdb",
+    "identityHash": "396ae7deac6c904a2421bc07a095bd3f",
     "entities": [
       {
         "tableName": "document",
@@ -164,7 +164,7 @@
       },
       {
         "tableName": "declaration",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`display_name` TEXT NOT NULL, `created_at` INTEGER NOT NULL, `vendor_id` INTEGER NOT NULL, `vendor_name` TEXT NOT NULL, `best_before` INTEGER NOT NULL, `observe_from_notification` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, FOREIGN KEY(`vendor_id`) REFERENCES `vendor`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`display_name` TEXT NOT NULL, `created_at` INTEGER NOT NULL, `vendor_id` INTEGER NOT NULL, `vendor_name` TEXT NOT NULL, `born_date` INTEGER NOT NULL, `best_before` INTEGER NOT NULL, `observe_from_notification` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, FOREIGN KEY(`vendor_id`) REFERENCES `vendor`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "displayName",
@@ -188,6 +188,12 @@
             "fieldPath": "vendorName",
             "columnName": "vendor_name",
             "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "bornDate",
+            "columnName": "born_date",
+            "affinity": "INTEGER",
             "notNull": true
           },
           {
@@ -594,7 +600,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '72c20090319a71f0a3a4f8d5a254ffdb')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '396ae7deac6c904a2421bc07a095bd3f')"
     ]
   }
 }

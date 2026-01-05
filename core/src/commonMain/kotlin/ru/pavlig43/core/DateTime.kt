@@ -1,13 +1,35 @@
 package ru.pavlig43.core
 
+import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.format.char
+import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
+sealed interface DateThreshold {
+    val value: LocalDate
+    val displayName: String
+
+    object OneMonth : DateThreshold {
+        override val value: LocalDate = getCurrentLocalDate().plus(1, DateTimeUnit.MONTH)
+        override val displayName: String = "1 Месяц"
+    }
+
+    object ThreeMonth : DateThreshold {
+        override val value: LocalDate = getCurrentLocalDate().plus(3, DateTimeUnit.MONTH)
+        override val displayName: String = "3 Месяца"
+
+    }
+
+    object Now : DateThreshold {
+        override val value: LocalDate = getCurrentLocalDate()
+        override val displayName: String = "Сегодня"
+    }
+}
 
 @OptIn(ExperimentalTime::class)
 fun getCurrentLocalDate(): LocalDate {

@@ -13,6 +13,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
+import ru.pavlig43.core.emptyDate
 import ru.pavlig43.database.data.common.Converters
 import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.database.data.declaration.DeclarationFile
@@ -178,7 +179,8 @@ suspend fun initData(db: NocombroDatabase) {
                 vendorName = "Ингре",
                 bestBefore = LocalDate.fromEpochDays(0),
                 id = 1,
-                observeFromNotification = true
+                observeFromNotification = true,
+                bornDate = emptyDate
             ),
             Declaration(
                 displayName = "Декларация стоинг",
@@ -187,7 +189,8 @@ suspend fun initData(db: NocombroDatabase) {
                 vendorName = "Стоинг",
                 bestBefore = LocalDate.fromEpochDays(0),
                 id = 2,
-                observeFromNotification = true
+                observeFromNotification = true,
+                bornDate = emptyDate
             ),
             Declaration(
                 displayName = "Декларация рустарк",
@@ -196,7 +199,8 @@ suspend fun initData(db: NocombroDatabase) {
                 vendorName = "Рустарк",
                 bestBefore = LocalDate.fromEpochDays(0),
                 id = 3,
-                observeFromNotification = true
+                observeFromNotification = true,
+                bornDate = emptyDate
             )
         )
         val productDeclarationDeps = listOf(

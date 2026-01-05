@@ -100,7 +100,7 @@ private fun getUpdateDeclarationRepository(
 ): UpdateCollectionRepository<ProductDeclarationOut, ProductDeclarationIn> {
     val dao = db.productDeclarationDao
     return UpdateCollectionRepository(
-        loadCollection = dao::getProductDeclarationWithDocumentName,
+        loadCollection = dao::getProductDeclarationOut,
         deleteCollection = dao::deleteDeclarations,
         upsertCollection = dao::upsertProductDeclarations
     )

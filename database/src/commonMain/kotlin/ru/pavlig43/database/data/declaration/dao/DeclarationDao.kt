@@ -6,6 +6,8 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import ru.pavlig43.core.DateThreshold
 import ru.pavlig43.database.data.common.NotificationDTO
 import ru.pavlig43.database.data.common.isCanSaveWithName
 import ru.pavlig43.database.data.declaration.DECLARATIONS_TABLE_NAME
@@ -46,7 +48,7 @@ interface DeclarationDao {
     suspend fun isNameAllowed(id: Int, name: String): Boolean
 
     suspend fun isCanSave(declaration: Declaration): Result<Unit> {
-        return isCanSaveWithName(declaration.id,declaration.displayName,::isNameAllowed)
+        return isCanSaveWithName(declaration.id, declaration.displayName, ::isNameAllowed)
     }
 
 
@@ -58,16 +60,20 @@ interface DeclarationDao {
     )
     fun observeOnDeclarationInWithoutFiles(): Flow<List<NotificationDTO>>
 
-    @Query(
-        """
-       SELECT id,display_name AS displayName
-        FROM declaration
-        WHERE best_before < (strftime('%s', 'now') * 1000 + :delta) AND observe_from_notification = true 
-         
-    """
-    )
-    fun observeOnExpiredDeclaration(delta: Long): Flow<List<NotificationDTO>>
+    fun observeOnExpiredDeclaration(dateThreshold: DateThreshold): Flow<List<NotificationDTO>> {
+        return observeOnItems().map { lst: List<Declaration> ->
+            lst.filter { it.bestBefore < dateThreshold.value && it.observeFromNotification }.map {
+                NotificationDTO(
+                    it.id,
+                    """
+                        Декларация ${it.displayName} истекает через ${dateThreshold.displayName} или раньше.
+                        Убедись, что есть обновленная и убери галочку отслеживать
+                                """.trimIndent()
 
+                )
+            }
+        }
+    }
 
 
 }

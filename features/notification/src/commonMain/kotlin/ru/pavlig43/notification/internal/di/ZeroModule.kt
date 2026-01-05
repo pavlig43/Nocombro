@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import org.koin.core.qualifier.Qualifier
 import org.koin.dsl.module
+import ru.pavlig43.core.DateThreshold
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.notification.api.data.NotificationItem
 import ru.pavlig43.notification.api.data.NotificationLevel
@@ -62,11 +63,11 @@ private class DeclarationZeroRepository(
             }
         }
     private val getOnExpiredDeclaration =
-        db.declarationDao.observeOnExpiredDeclaration(0).map { lst ->
+        db.declarationDao.observeOnExpiredDeclaration(DateThreshold.Now).map { lst ->
             lst.map { notificationDTO ->
                 NotificationUi(
                     id = notificationDTO.id,
-                    text = "Декларации ${notificationDTO.displayName} просрочена"
+                    text = notificationDTO.displayName
                 )
             }
         }
@@ -85,26 +86,34 @@ private class DeclarationZeroRepository(
 private class ProductNotificationRepository(
     db: NocombroDatabase
 ) : INotificationRepository {
+    private val productDeclaration =
+        db.productDeclarationDao.observeOnProductDeclarationNotification { db.productDao.observeOnProducts() }
+            .map { lst ->
+                lst.map { notificationDTO ->
+                    NotificationUi(
+                        id = notificationDTO.id,
+                        text = notificationDTO.displayName
+                    )
+                }
 
-    private val getProductWithExpiredDeclaration =
-        db.productDeclarationDao.observeOnProductWithExpiredDeclaration().map { lst ->
-            lst.map { notificationDTO ->
-                NotificationUi(
-                    id = notificationDTO.id,
-                    text = "В продукте ${notificationDTO.displayName} просрочена декларация"
-                )
             }
-        }
+    private val productComposition =
+        db.compositionDao.observeProductWithoutComposition { db.productDao.observeOnProducts() }
+            .map { lst ->
+                lst.map { notificationDTO ->
+                    NotificationUi(
+                        id = notificationDTO.id,
+                        text = notificationDTO.displayName
+                    )
+                }
 
-
-
-
+            }
 
     override val notificationFlow: Flow<List<NotificationUi>> =
         combine(
-            getProductWithExpiredDeclaration
+            productDeclaration,
+            productComposition
         ) { arrays ->
             arrays.flatMap { it }
         }
-
 }

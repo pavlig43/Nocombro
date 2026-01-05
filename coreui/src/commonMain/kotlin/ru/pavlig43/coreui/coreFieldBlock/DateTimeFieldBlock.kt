@@ -49,7 +49,7 @@ fun DateTimeFieldBlock(
         var isDatePickerVisible by remember { mutableStateOf(false) }
         IconButtonToolTip(
             tooltipText = "Дата/Время",
-            onClick = { isDatePickerVisible = true },
+            onClick = { isDatePickerVisible = !isDatePickerVisible },
             icon = Icons.Default.CalendarMonth
 
         )

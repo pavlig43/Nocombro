@@ -3,9 +3,11 @@ package ru.pavlig43.database.data.product
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import kotlinx.datetime.LocalDate
 import ru.pavlig43.core.data.CollectionObject
+import ru.pavlig43.core.getCurrentLocalDate
 import ru.pavlig43.database.data.declaration.Declaration
 
 
@@ -41,11 +43,10 @@ data class ProductDeclarationIn(
 
 data class ProductDeclarationOut(
     override val id: Int,
-    val productId: Int,
     val declarationId: Int,
     val declarationName: String,
     val vendorName: String,
-    val bestBefore: LocalDate,
+    val isActual: Boolean,
 ) : CollectionObject
 
 

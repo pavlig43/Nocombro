@@ -153,7 +153,6 @@ abstract class MutableTableComponent<BDOut: CollectionObject,BDIn:CollectionObje
     override suspend fun onUpdate(): Result<Unit> {
         val old = initDataComponent.firstData.value?.map { it.toBDIn() }
         val new = _itemList.value.map { it.toBDIn() }
-        println("new: $new")
         return repository.update(ChangeSet(old, new))
     }
 }
