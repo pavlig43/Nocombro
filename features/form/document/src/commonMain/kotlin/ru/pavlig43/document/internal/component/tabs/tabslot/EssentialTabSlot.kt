@@ -1,6 +1,9 @@
 package ru.pavlig43.document.internal.component.tabs.tabslot
 
 import com.arkivanov.decompose.ComponentContext
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import ru.pavlig43.core.component.EssentialComponentFactory
 import ru.pavlig43.database.data.document.Document
 import ru.pavlig43.document.internal.data.DocumentEssentialsUi
@@ -20,5 +23,14 @@ internal class EssentialTabSlot(
     updateEssentialsRepository = updateRepository,
     componentFactory = componentFactory,
     mapperToDTO = {toDto()}
-), DocumentTabSlot
+), DocumentTabSlot{
+    override val errorMessages: Flow<List<String>> = itemFields.map { doc->
+        buildList {
+            if (doc.displayName.isBlank()){
+                add("Имя документа не может быть пустым")
+            }
+        }
+    }
+
+}
 

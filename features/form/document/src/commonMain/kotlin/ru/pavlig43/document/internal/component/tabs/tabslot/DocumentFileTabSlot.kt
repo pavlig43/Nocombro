@@ -1,6 +1,8 @@
 package ru.pavlig43.document.internal.component.tabs.tabslot
 
 import com.arkivanov.decompose.ComponentContext
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import ru.pavlig43.addfile.api.component.UpdateFilesComponent
 import ru.pavlig43.addfile.api.data.FileUi
 import ru.pavlig43.database.data.document.DocumentFile
@@ -16,7 +18,9 @@ internal class DocumentFileTabSlot(
     id = documentId,
     updateRepository = updateRepository,
     mapper = { toFileData(it)}
-),DocumentTabSlot
+),DocumentTabSlot {
+    override val errorMessages: Flow<List<String>> = flowOf(emptyList())
+}
 
 private fun FileUi.toFileData(documentId:Int): DocumentFile {
     return DocumentFile(

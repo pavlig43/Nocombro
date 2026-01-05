@@ -1,6 +1,8 @@
 package ru.pavlig43.product.internal.component.tabs.tabslot
 
 import com.arkivanov.decompose.ComponentContext
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import ru.pavlig43.core.component.EssentialComponentFactory
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.product.internal.data.ProductEssentialsUi
@@ -19,4 +21,13 @@ internal class EssentialTabSlot(
     updateEssentialsRepository = updateRepository,
     componentFactory = componentFactory,
     mapperToDTO = {toDto()}
-), ProductTabSlot
+), ProductTabSlot {
+    override val errorMessages: Flow<List<String>> = itemFields.map { prod->
+        buildList {
+            if (prod.displayName.isBlank()){
+                add("Имя продукта не может быть пустым")
+            }
+
+        }
+    }
+}

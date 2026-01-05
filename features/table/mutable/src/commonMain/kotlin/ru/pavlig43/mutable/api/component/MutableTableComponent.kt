@@ -7,7 +7,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.datetime.LocalDate
@@ -108,16 +107,6 @@ abstract class MutableTableComponent<BDOut: CollectionObject,BDIn:CollectionObje
         TableData(isSelectionMode = true)
     )
 
-    protected abstract fun UI.isValidate(): Boolean
-
-    val isValidFields = _itemList.map { items ->
-        items.all { it.isValidate() }
-    }.stateIn(
-        coroutineScope,
-        SharingStarted.Eagerly,
-        false
-    )
-
     fun updateFilters(filters: Map<C, TableFilterState<*>>) {
         filterManager.update(filters)
     }
@@ -164,6 +153,7 @@ abstract class MutableTableComponent<BDOut: CollectionObject,BDIn:CollectionObje
     override suspend fun onUpdate(): Result<Unit> {
         val old = initDataComponent.firstData.value?.map { it.toBDIn() }
         val new = _itemList.value.map { it.toBDIn() }
+        println("new: $new")
         return repository.update(ChangeSet(old, new))
     }
 }

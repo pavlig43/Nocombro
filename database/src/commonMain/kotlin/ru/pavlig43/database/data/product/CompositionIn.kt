@@ -23,6 +23,10 @@ data class CompositionIn(
     @PrimaryKey(autoGenerate = true)
     override val id: Int,
 
+    @ColumnInfo("parent_id")
+    val parentId: Int,
+
+
     @ColumnInfo("product_id")
     val productId: Int,
 

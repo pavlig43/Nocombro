@@ -1,5 +1,6 @@
 package ru.pavlig43.core
 
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
 interface SlotComponent {
@@ -14,7 +15,7 @@ interface FormTabSlot {
     val title: String
     suspend fun onUpdate(): Result<Unit>
 
-//    val errorMessages: StateFlow<List<String>>
+    val errorMessages: Flow<List<String>>
 
 
 }

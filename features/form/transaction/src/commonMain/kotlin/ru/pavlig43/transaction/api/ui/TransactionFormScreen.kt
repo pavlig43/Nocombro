@@ -58,7 +58,6 @@ private fun SlotScreen(
 ) {
     when (slot) {
         is BuyEssentialFormSlot -> UpdateEssentialsBlock(slot)
-//        is BuyBaseProductFormSlot -> BuyBaseTable((slot))
 
         null -> Box(Modifier)
 

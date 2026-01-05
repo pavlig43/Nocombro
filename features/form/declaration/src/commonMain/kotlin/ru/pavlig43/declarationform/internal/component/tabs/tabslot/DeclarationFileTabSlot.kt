@@ -1,6 +1,8 @@
 package ru.pavlig43.declarationform.internal.component.tabs.tabslot
 
 import com.arkivanov.decompose.ComponentContext
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import ru.pavlig43.addfile.api.component.UpdateFilesComponent
 import ru.pavlig43.addfile.api.data.FileUi
 import ru.pavlig43.database.data.declaration.DeclarationFile
@@ -15,7 +17,15 @@ internal class DeclarationFileTabSlot(
     id = declarationId,
     updateRepository = updateRepository,
     mapper = { toFileData(it)}
-), DeclarationTabSlot
+), DeclarationTabSlot {
+    override val errorMessages: Flow<List<String>> = fileComponent.filesUi.map { lst->
+        buildList {
+            if (lst.isEmpty()){
+                add("Необходимо добавить хотя бы один файл в декларацию")
+            }
+        }
+    }
+}
 
 private fun FileUi.toFileData(declarationId:Int): DeclarationFile {
     return DeclarationFile(

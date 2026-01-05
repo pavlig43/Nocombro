@@ -64,6 +64,7 @@ internal class DocumentFormTabInnerTabsComponent(
     override val updateComponent: UpdateComponent = UpdateComponent(
         componentContext = childContext("update"),
         onUpdateComponent = {update()},
+        errorMessages = getErrors(lifecycle),
         closeFormScreen = closeFormScreen
     )
 

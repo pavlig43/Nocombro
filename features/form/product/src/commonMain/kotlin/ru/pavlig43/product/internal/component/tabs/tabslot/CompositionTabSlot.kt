@@ -6,6 +6,8 @@ import com.arkivanov.decompose.router.slot.activate
 import com.arkivanov.decompose.router.slot.childSlot
 import com.arkivanov.decompose.router.slot.dismiss
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import ru.pavlig43.database.data.product.CompositionIn
@@ -32,13 +34,13 @@ internal class CompositionTabSlot(
     componentContext: ComponentContext,
     immutableTableDependencies: ImmutableTableDependencies,
     onOpenProductTab: (Int) -> Unit,
-    productId: Int,
+    private val parentId: Int,
     updateEssentialsRepository: UpdateEssentialsRepository<Product>,
     onCloseThisTab: () -> Unit,
     repository: UpdateCollectionRepository<CompositionOut, CompositionIn>,
 ) : MutableTableComponent<CompositionOut, CompositionIn, CompositionUi, CompositionField>(
     componentContext = componentContext,
-    parentId = productId,
+    parentId = parentId,
     title = "Состав",
     sortMatcher = CompositionSorter,
     filterMatcher = CompositionFilterMatcher,
@@ -47,7 +49,7 @@ internal class CompositionTabSlot(
 
     init {
         coroutineScope.launch {
-            val result: Result<Product> = updateEssentialsRepository.getInit(productId)
+            val result: Result<Product> = updateEssentialsRepository.getInit(parentId)
             result.fold(
                 onSuccess = { product ->
                     if (product.type != ProductType.Food.Pf) {
@@ -128,15 +130,31 @@ internal class CompositionTabSlot(
     override fun CompositionUi.toBDIn(): CompositionIn {
         return CompositionIn(
             id = id,
+            parentId = parentId,
             productId = productId,
             count = count
         )
     }
 
 
-    override fun CompositionUi.isValidate(): Boolean {
-        return productId != 0 && count != 0
+    override val errorMessages: Flow<List<String>> = itemList.map { lst: List<CompositionUi> ->
+        buildList {
+            lst.forEach { item ->
+                if (item.productId == 0) {
+                    add("В строке ${item.composeId} не указан продукт")
+                }
+                if (item.count == 0) {
+                    add("В строке ${item.composeId} не указано количество продукта")
+                }
+            }
+
+            val totalSum = lst.sumOf { it.count/1000.0 }
+            if (totalSum != 1.0) {
+                add("Сумма в составе должна быть равна 1 кг (сейчас: ${totalSum}кг)")
+            }
+        }
     }
+
 
 }
 

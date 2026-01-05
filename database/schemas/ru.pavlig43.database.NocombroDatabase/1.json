@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "7bde0d4892304c1bf1f9b87c725286d1",
+    "identityHash": "72c20090319a71f0a3a4f8d5a254ffdb",
     "entities": [
       {
         "tableName": "document",
@@ -359,11 +359,17 @@
       },
       {
         "tableName": "composition",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `product_id` INTEGER NOT NULL, `count` INTEGER NOT NULL, FOREIGN KEY(`product_id`) REFERENCES `product`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `parent_id` INTEGER NOT NULL, `product_id` INTEGER NOT NULL, `count` INTEGER NOT NULL, FOREIGN KEY(`product_id`) REFERENCES `product`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
             "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "parentId",
+            "columnName": "parent_id",
             "affinity": "INTEGER",
             "notNull": true
           },
@@ -588,7 +594,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '7bde0d4892304c1bf1f9b87c725286d1')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '72c20090319a71f0a3a4f8d5a254ffdb')"
     ]
   }
 }

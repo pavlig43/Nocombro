@@ -1,6 +1,8 @@
 package ru.pavlig43.vendor.internal.component.tabs.tabslot
 
 import com.arkivanov.decompose.ComponentContext
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import ru.pavlig43.addfile.api.component.UpdateFilesComponent
 import ru.pavlig43.addfile.api.data.FileUi
 import ru.pavlig43.database.data.vendor.VendorFile
@@ -15,7 +17,9 @@ internal class VendorFileTabSlot(
     id = vendorId,
     updateRepository = updateRepository,
     mapper = { toFileData(it)}
-), VendorTabSlot
+), VendorTabSlot{
+    override val errorMessages: Flow<List<String>> = flowOf(emptyList())
+}
 
 private fun FileUi.toFileData(vendorId:Int): VendorFile {
     return VendorFile(

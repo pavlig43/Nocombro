@@ -63,11 +63,12 @@ internal class DeclarationFormTabInnerTabsComponent(
         val blocks = tabNavigationComponent.children.map { children->
             children.items.map { child-> suspend {child.instance.onUpdate()} } }
         return dbTransaction.transaction(blocks.value)
-
     }
+
     override val updateComponent: UpdateComponent = UpdateComponent(
         componentContext = childContext("update"),
         onUpdateComponent = {update()},
+        errorMessages = getErrors(lifecycle),
         closeFormScreen = closeFormScreen
     )
 

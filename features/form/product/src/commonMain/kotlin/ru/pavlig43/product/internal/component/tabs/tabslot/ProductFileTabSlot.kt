@@ -1,6 +1,9 @@
 package ru.pavlig43.product.internal.component.tabs.tabslot
 
 import com.arkivanov.decompose.ComponentContext
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import ru.pavlig43.addfile.api.component.UpdateFilesComponent
 import ru.pavlig43.addfile.api.data.FileUi
 import ru.pavlig43.database.data.product.ProductFile
@@ -15,7 +18,9 @@ internal class ProductFileTabSlot(
     id = productId,
     updateRepository = updateRepository,
     mapper = { toFileData(it) }
-), ProductTabSlot
+), ProductTabSlot {
+    override val errorMessages: Flow<List<String>> = flowOf(emptyList())
+}
 
 private fun FileUi.toFileData(productId: Int): ProductFile {
     return ProductFile(

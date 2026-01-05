@@ -23,9 +23,9 @@ import ru.pavlig43.update.component.UpdateComponent
 internal class ProductFormTabInnerTabsComponent(
     componentContext: ComponentContext,
     componentFactory: EssentialComponentFactory<Product, ProductEssentialsUi>,
-    closeFormScreen:()->Unit,
-    onOpenDeclarationTab:(Int)->Unit,
-    onOpenProductTab:(Int)->Unit,
+    closeFormScreen: () -> Unit,
+    onOpenDeclarationTab: (Int) -> Unit,
+    onOpenProductTab: (Int) -> Unit,
     scope: Scope,
     productId: Int,
 ) : ComponentContext by componentContext,
@@ -72,7 +72,7 @@ internal class ProductFormTabInnerTabsComponent(
 
                     ProductTab.Composition -> CompositionTabSlot(
                         componentContext = context,
-                        productId = productId,
+                        parentId = productId,
                         repository = scope.get(UpdateCollectionRepositoryType.Composition.qualifier),
                         immutableTableDependencies = scope.get(),
                         updateEssentialsRepository = scope.get(),
@@ -83,17 +83,20 @@ internal class ProductFormTabInnerTabsComponent(
 
             },
         )
-    fun a(){
 
-    }
     private suspend fun update(): Result<Unit> {
-        val blocks = tabNavigationComponent.children.map { children->
-            children.items.map { child-> suspend {child.instance.onUpdate()} } }
-            return  dbTransaction.transaction(blocks.value)
+        val blocks = tabNavigationComponent.children.map { children ->
+            children.items.map { child -> suspend { child.instance.onUpdate() } }
+        }
+        return dbTransaction.transaction(blocks.value)
     }
+
+
+
     override val updateComponent: UpdateComponent = UpdateComponent(
         componentContext = childContext("update"),
         onUpdateComponent = { update() },
+        errorMessages = getErrors(lifecycle),
         closeFormScreen = closeFormScreen
     )
 

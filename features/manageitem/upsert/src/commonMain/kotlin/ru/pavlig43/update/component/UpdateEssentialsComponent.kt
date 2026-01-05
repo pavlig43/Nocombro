@@ -1,6 +1,8 @@
 package ru.pavlig43.update.component
 
 import com.arkivanov.decompose.ComponentContext
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import ru.pavlig43.core.FormTabSlot
 import ru.pavlig43.core.component.EssentialComponentFactory
 import ru.pavlig43.core.component.EssentialsComponent

@@ -12,11 +12,11 @@ import ru.pavlig43.database.data.product.Product
 @Dao
 abstract class CompositionDao {
 
-    @Query("SELECT * FROM composition WHERE product_id = :productId")
-    internal abstract suspend fun getComposition(productId: Int): List<InternalComposition>
+    @Query("SELECT * FROM composition WHERE parent_id = :parentId")
+    internal abstract suspend fun getComposition(parentId: Int): List<InternalComposition>
 
-    suspend fun getCompositionOut(productId: Int): List<CompositionOut> {
-        return getComposition(productId).map(InternalComposition::toCompositionOut)
+    suspend fun getCompositionOut(parentId: Int): List<CompositionOut> {
+        return getComposition(parentId).map(InternalComposition::toCompositionOut)
     }
 
     @Upsert

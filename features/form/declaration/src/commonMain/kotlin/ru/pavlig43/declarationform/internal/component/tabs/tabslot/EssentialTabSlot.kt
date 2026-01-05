@@ -1,6 +1,8 @@
 package ru.pavlig43.declarationform.internal.component.tabs.tabslot
 
 import com.arkivanov.decompose.ComponentContext
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import ru.pavlig43.core.component.EssentialComponentFactory
 import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.declarationform.internal.component.VendorDialogComponent
@@ -36,4 +38,5 @@ internal class EssentialTabSlot(
         dependencies = dependencies,
         onOpenVendorTab = onOpenVendorTab
     )
+    override val errorMessages: Flow<List<String>> = flowOf(emptyList())
 }

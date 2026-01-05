@@ -61,7 +61,8 @@ internal class BuyFormTabInnerTabsComponent(
     override val updateComponent: UpdateComponent = UpdateComponent(
         componentContext = childContext("update"),
         onUpdateComponent = { update() },
-        closeFormScreen = closeFormScreen
+        closeFormScreen = closeFormScreen,
+        errorMessages = getErrors(lifecycle)
     )
 
 }

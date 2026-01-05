@@ -18,22 +18,25 @@ sealed interface UpdateState {
     data object Success : UpdateState
     data class Error(val message: String) : UpdateState
 }
-
+data class ErrorMessage(
+    val message: String,
+    val onSelectProblemTab: () -> Unit,
+)
 
 
 class UpdateComponent(
     componentContext: ComponentContext,
     private val onUpdateComponent: suspend () -> Result<Unit>,
-    otherValidValue: Flow<Boolean> = flowOf(true),
+    errorMessages: Flow<List<ErrorMessage>>,
     val closeFormScreen: () -> Unit,
 ) : ComponentContext by componentContext {
     private val coroutineScope = componentCoroutineScope()
 
-    val isValidValue: StateFlow<Boolean> = otherValidValue
+    val isValidValue: StateFlow<List<ErrorMessage>> = errorMessages
         .stateIn(
             coroutineScope,
             SharingStarted.Eagerly,
-            false
+            emptyList()
         )
 
      fun onUpdate() {
