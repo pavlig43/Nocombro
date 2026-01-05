@@ -96,31 +96,12 @@ private class ProductNotificationRepository(
             }
         }
 
-    private val ingredientsNotEquals1000Gram =
-        db.compositionDao.observeOnProductWhereIngredientsNotEquals1000gram().map { lst ->
-            lst.map { notificationDTO ->
-                val (product, composition) = notificationDTO.displayName.split(" @ ")
-                NotificationUi(
-                    id = notificationDTO.id,
-                    text = "В продукте $product в составе $composition сумма ингредиентов не равна 1 кг "
-                )
-            }
-        }
-    private val productWithoutComposition =
-        db.compositionDao.observeProductWithoutComposition().map { lst ->
-            lst.map { notificationDTO ->
-                NotificationUi(
-                    id = notificationDTO.id,
-                    text = "В продукте ${notificationDTO.displayName} нет состава"
-                )
-            }
-        }
+
+
 
 
     override val notificationFlow: Flow<List<NotificationUi>> =
         combine(
-            ingredientsNotEquals1000Gram,
-            productWithoutComposition,
             getProductWithExpiredDeclaration
         ) { arrays ->
             arrays.flatMap { it }

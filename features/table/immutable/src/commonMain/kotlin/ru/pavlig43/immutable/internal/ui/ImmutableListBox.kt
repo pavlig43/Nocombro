@@ -14,11 +14,11 @@ import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.ImmutableList
 import ru.pavlig43.coreui.ErrorScreen
 import ru.pavlig43.coreui.LoadingScreen
-import ru.pavlig43.tablecore.model.ITableUi
 import ru.pavlig43.immutable.internal.component.ImmutableTableComponent
 import ru.pavlig43.immutable.internal.component.ImmutableTableUiEvent
 import ru.pavlig43.immutable.internal.component.ItemListState
 import ru.pavlig43.tablecore.manger.SelectionUiEvent
+import ru.pavlig43.tablecore.model.ITableUi
 import ru.pavlig43.tablecore.model.TableData
 import ru.pavlig43.tablecore.ui.TableBox
 import ua.wwind.table.ColumnSpec

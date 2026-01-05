@@ -1,6 +1,13 @@
 package ru.pavlig43.rootnocombro.api.ui
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.Surface
 import androidx.compose.material3.rememberDrawerState
@@ -11,7 +18,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.Child
-import com.arkivanov.decompose.DefaultComponentContext
 import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import kotlinx.coroutines.launch
@@ -39,7 +45,6 @@ import ru.pavlig43.transaction.api.component.TransactionFormComponent
 import ru.pavlig43.transaction.api.ui.TransactionFormScreen
 import ru.pavlig43.vendor.api.ui.VendorFormScreen
 import ru.pavlig43.vendor.component.VendorFormComponent
-import ua.wwind.table.sample.app.SampleApp
 
 
 @Suppress("LongMethod")

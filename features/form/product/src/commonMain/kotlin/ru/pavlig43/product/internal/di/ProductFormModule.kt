@@ -1,12 +1,16 @@
 package ru.pavlig43.product.internal.di
 
-import org.koin.core.qualifier.named
 import org.koin.core.qualifier.qualifier
 import org.koin.dsl.module
 import ru.pavlig43.create.data.CreateEssentialsRepository
 import ru.pavlig43.database.DataBaseTransaction
 import ru.pavlig43.database.NocombroDatabase
-import ru.pavlig43.database.data.product.*
+import ru.pavlig43.database.data.product.CompositionIn
+import ru.pavlig43.database.data.product.CompositionOut
+import ru.pavlig43.database.data.product.Product
+import ru.pavlig43.database.data.product.ProductDeclarationIn
+import ru.pavlig43.database.data.product.ProductDeclarationOut
+import ru.pavlig43.database.data.product.ProductFile
 import ru.pavlig43.immutable.api.ImmutableTableDependencies
 import ru.pavlig43.product.api.ProductFormDependencies
 import ru.pavlig43.update.data.UpdateCollectionRepository
@@ -32,12 +36,10 @@ internal fun createProductFormModule(dependencies: ProductFormDependencies) = li
             UpdateCollectionRepositoryType.Declaration.qualifier
         ) { getUpdateDeclarationRepository(get()) }
 
-        single<UpdateCollectionRepository<ProductCompositionOut, ProductCompositionIn>>(
-            UpdateCollectionRepositoryType.Composition.qualifier
-        ) { getUpdateCompositionRepository(get()) }
+
 
         single<UpdateCollectionRepository<CompositionOut, CompositionIn>>(
-            UpdateCollectionRepositoryType.Composition1.qualifier
+            UpdateCollectionRepositoryType.Composition.qualifier
         ) { createUpdateCompositionRepository(get()) }
 
     }
@@ -70,13 +72,12 @@ internal enum class UpdateCollectionRepositoryType {
     Files,
     Declaration,
     Composition,
-    Composition1,
 
 }
 private fun createUpdateCompositionRepository(
     db: NocombroDatabase
 ): UpdateCollectionRepository<CompositionOut, CompositionIn>{
-    val dao = db.compositionDao1
+    val dao = db.compositionDao
     return UpdateCollectionRepository(
         loadCollection = dao::getCompositionOut,
         deleteCollection = dao::deleteCompositions,
@@ -102,18 +103,6 @@ private fun getUpdateDeclarationRepository(
         loadCollection = dao::getProductDeclarationWithDocumentName,
         deleteCollection = dao::deleteDeclarations,
         upsertCollection = dao::upsertProductDeclarations
-    )
-}
-
-
-private fun getUpdateCompositionRepository(
-    db: NocombroDatabase
-): UpdateCollectionRepository<ProductCompositionOut, ProductCompositionIn> {
-    val dao = db.compositionDao
-    return UpdateCollectionRepository(
-        loadCollection = dao::getCompositions,
-        deleteCollection = dao::deleteCompositions,
-        upsertCollection = dao::upsertCompositions
     )
 }
 

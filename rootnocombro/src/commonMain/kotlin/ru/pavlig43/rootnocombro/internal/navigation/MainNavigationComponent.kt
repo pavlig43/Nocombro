@@ -11,7 +11,6 @@ import ru.pavlig43.database.data.transaction.TransactionType
 import ru.pavlig43.declarationform.api.DeclarationFormComponent
 import ru.pavlig43.document.api.component.DocumentFormComponent
 import ru.pavlig43.immutable.api.component.*
-import ru.pavlig43.tablecore.model.ITableUi
 import ru.pavlig43.notification.api.component.PageNotificationComponent
 import ru.pavlig43.notification.api.data.NotificationItem
 import ru.pavlig43.product.api.component.ProductFormComponent
@@ -22,6 +21,7 @@ import ru.pavlig43.rootnocombro.internal.navigation.tab.TabConfig
 import ru.pavlig43.rootnocombro.internal.navigation.tab.TabConfig.*
 import ru.pavlig43.rootnocombro.internal.navigation.tab.TabConfig.ItemForm.*
 import ru.pavlig43.rootnocombro.internal.navigation.tab.TabConfig.ItemList.*
+import ru.pavlig43.tablecore.model.ITableUi
 import ru.pavlig43.transaction.api.component.TransactionFormComponent
 import ru.pavlig43.vendor.component.VendorFormComponent
 

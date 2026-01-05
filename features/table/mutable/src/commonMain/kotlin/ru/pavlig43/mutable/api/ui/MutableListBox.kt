@@ -10,20 +10,21 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.ImmutableList
-import ru.pavlig43.tablecore.model.ITableUi
-
 import ru.pavlig43.loadinitdata.api.ui.LoadInitDataScreen
 import ru.pavlig43.mutable.api.component.MutableTableComponent
 import ru.pavlig43.mutable.api.component.MutableUiEvent
 import ru.pavlig43.tablecore.manger.SelectionUiEvent
+import ru.pavlig43.tablecore.model.ITableUi
 import ru.pavlig43.tablecore.model.TableData
 import ru.pavlig43.tablecore.ui.TableBox
 import ua.wwind.table.ColumnSpec
 import ua.wwind.table.EditableTable
 import ua.wwind.table.ExperimentalTableApi
 import ua.wwind.table.config.DefaultTableCustomization
+import ua.wwind.table.config.TableDefaults
 import ua.wwind.table.state.TableState
 import ua.wwind.table.strings.StringProvider
 
@@ -91,13 +92,9 @@ private fun <I : ITableUi, C, E : TableData<I>> BoxScope.MutableTable(
         customization = DefaultTableCustomization(),
         tableData = tableData,
         columns = columns,
-        onRowEditStart = { item, _ ->
-            println(item)
-        },
-        onRowEditComplete = {
-            println(it)
-            true
-        },
+        colors = TableDefaults.colors().copy(
+            rowSelectedContainerColor = Color.Unspecified
+        ),
         verticalState = verticalState,
         horizontalState = horizontalState,
         modifier = modifier

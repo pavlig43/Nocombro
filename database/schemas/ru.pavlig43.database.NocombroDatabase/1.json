@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "d97498cf98c27ba010f205de94f0c9f9",
+    "identityHash": "7bde0d4892304c1bf1f9b87c725286d1",
     "entities": [
       {
         "tableName": "document",
@@ -455,109 +455,6 @@
         ]
       },
       {
-        "tableName": "product_composition",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `product_id` INTEGER NOT NULL, `name` TEXT NOT NULL, FOREIGN KEY(`product_id`) REFERENCES `product`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
-        "fields": [
-          {
-            "fieldPath": "id",
-            "columnName": "id",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "productId",
-            "columnName": "product_id",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "name",
-            "columnName": "name",
-            "affinity": "TEXT",
-            "notNull": true
-          }
-        ],
-        "primaryKey": {
-          "autoGenerate": true,
-          "columnNames": [
-            "id"
-          ]
-        },
-        "foreignKeys": [
-          {
-            "table": "product",
-            "onDelete": "CASCADE",
-            "onUpdate": "NO ACTION",
-            "columns": [
-              "product_id"
-            ],
-            "referencedColumns": [
-              "id"
-            ]
-          }
-        ]
-      },
-      {
-        "tableName": "product_ingredient",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`composition_id` INTEGER NOT NULL, `ingredient_id` INTEGER NOT NULL, `count_grams` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, FOREIGN KEY(`ingredient_id`) REFERENCES `product`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`composition_id`) REFERENCES `product_composition`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
-        "fields": [
-          {
-            "fieldPath": "compositionId",
-            "columnName": "composition_id",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "ingredientId",
-            "columnName": "ingredient_id",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "countGrams",
-            "columnName": "count_grams",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "id",
-            "columnName": "id",
-            "affinity": "INTEGER",
-            "notNull": true
-          }
-        ],
-        "primaryKey": {
-          "autoGenerate": true,
-          "columnNames": [
-            "id"
-          ]
-        },
-        "foreignKeys": [
-          {
-            "table": "product",
-            "onDelete": "CASCADE",
-            "onUpdate": "NO ACTION",
-            "columns": [
-              "ingredient_id"
-            ],
-            "referencedColumns": [
-              "id"
-            ]
-          },
-          {
-            "table": "product_composition",
-            "onDelete": "CASCADE",
-            "onUpdate": "NO ACTION",
-            "columns": [
-              "composition_id"
-            ],
-            "referencedColumns": [
-              "id"
-            ]
-          }
-        ]
-      },
-      {
         "tableName": "product_transaction",
         "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`transaction_type` TEXT NOT NULL, `created_at` INTEGER NOT NULL, `comment` TEXT NOT NULL, `is_completed` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL)",
         "fields": [
@@ -691,7 +588,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'd97498cf98c27ba010f205de94f0c9f9')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '7bde0d4892304c1bf1f9b87c725286d1')"
     ]
   }
 }

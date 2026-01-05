@@ -1,94 +1,50 @@
 package ru.pavlig43.database.data.product.dao
 
-import androidx.room.*
-import kotlinx.coroutines.flow.Flow
-import ru.pavlig43.database.data.common.NotificationDTO
-import ru.pavlig43.database.data.product.ProductComposition
-import ru.pavlig43.database.data.product.ProductCompositionIn
-import ru.pavlig43.database.data.product.ProductCompositionOut
-import ru.pavlig43.database.data.product.ProductIngredientIn
+import androidx.room.Dao
+import androidx.room.Embedded
+import androidx.room.Query
+import androidx.room.Relation
+import androidx.room.Upsert
+import ru.pavlig43.database.data.product.CompositionIn
+import ru.pavlig43.database.data.product.CompositionOut
+import ru.pavlig43.database.data.product.Product
 
 @Dao
-interface CompositionDao {
+abstract class CompositionDao {
 
+    @Query("SELECT * FROM composition WHERE product_id = :productId")
+    internal abstract suspend fun getComposition(productId: Int): List<InternalComposition>
 
-    @Query("SELECT * FROM product_composition WHERE product_id = :productId")
-    suspend fun getCompositions(productId: Int): List<ProductCompositionOut>
-
-
-    @Insert
-    suspend fun internalCreateComposition(composition: ProductComposition): Long
-
-    @Update
-    suspend fun internalUpdateComposition(compositions: List<ProductComposition>)
-
-    @Query("DELETE FROM product_composition WHERE id in(:ids)")
-    suspend fun deleteCompositions(ids: List<Int>)
-
-    @Transaction
-    suspend fun upsertCompositions(compositions: List<ProductCompositionIn>) {
-        val newCompositions = compositions.filter { it.id == 0 }
-        val newIndexesMap =
-            newCompositions.associateBy { internalCreateComposition(it.compositionForSave).toInt() }
-        newIndexesMap.forEach { (id, composition) ->
-            val ingredients = composition.ingredients .map {
-                it.copy(compositionId = id)
-            }
-            upsertProductIngredient(ingredients)
-        }
-        val existingCompositions = compositions.filter { it.id != 0 }
-        internalUpdateComposition(existingCompositions.map { it.compositionForSave })
-
-        existingCompositions.forEach { composition ->
-            deleteIngredientsFromComposition(composition.id)
-            val ingredients = composition.ingredients .map {
-                it.copy(compositionId = composition.id)
-            }
-
-            upsertProductIngredient(ingredients)
-
-        }
-
+    suspend fun getCompositionOut(productId: Int): List<CompositionOut> {
+        return getComposition(productId).map(InternalComposition::toCompositionOut)
     }
 
-    ////////////////////////////////
-
     @Upsert
-    suspend fun upsertProductIngredient(ingredients: List<ProductIngredientIn>)
+    abstract suspend fun upsertComposition(composition: List<CompositionIn>)
 
+    @Query("DELETE FROM composition WHERE id in(:ids)")
+    abstract suspend fun deleteCompositions(ids: List<Int>)
 
-    @Query("DELETE FROM product_ingredient WHERE composition_id = :compositionId")
-    suspend fun deleteIngredientsFromComposition(compositionId: Int)
+}
 
-
-    @Query("""
-    SELECT 
-        p.id as id,
-        p.display_name || ' @ ' || pc.name as displayName
-    FROM product p
-    JOIN product_composition pc ON p.id = pc.product_id
-    WHERE p.type != 'BASE'
-    AND EXISTS (
-        SELECT 1 
-        FROM product_ingredient pi 
-        WHERE pi.composition_id = pc.id
-        GROUP BY pi.composition_id
-        HAVING SUM(pi.count_grams) != 1000
+internal data class InternalComposition(
+    @Embedded
+    val composition: CompositionIn,
+    @Relation(
+        entity = Product::class,
+        parentColumn = "product_id",
+        entityColumn = "id"
     )
-""")
-    fun observeOnProductWhereIngredientsNotEquals1000gram(): Flow<List<NotificationDTO>>
+    val product: Product,
 
-    @Query("""
-    SELECT 
-        p.id as id, 
-        p.display_name as displayName 
-    FROM product p
-    WHERE p.type != 'BASE' 
-    AND NOT EXISTS (
-        SELECT 1 
-        FROM product_composition pc 
-        WHERE pc.product_id = p.id
     )
-""")
-    fun observeProductWithoutComposition():Flow<List<NotificationDTO>>
+
+private fun InternalComposition.toCompositionOut(): CompositionOut {
+    return CompositionOut(
+        id = composition.id,
+        productId = product.id,
+        productName = product.displayName,
+        productType = product.type,
+        count = composition.count
+    )
 }

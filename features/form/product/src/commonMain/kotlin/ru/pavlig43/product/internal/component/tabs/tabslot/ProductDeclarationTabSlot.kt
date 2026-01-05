@@ -23,23 +23,9 @@ import ru.pavlig43.loadinitdata.api.component.LoadInitDataComponent
 import ru.pavlig43.update.data.UpdateCollectionRepository
 import kotlin.time.ExperimentalTime
 
-//class ProductDeclarationTabSlot(
-//    componentContext: ComponentContext,
-//    productId: Int,
-//    dependencies: ImmutableTableDependencies,
-//    updateRepository: UpdateCollectionRepository<DeclarationOut, DeclarationIn>,
-//    openDeclarationTab: (Int) -> Unit,
-//
-//    ) : DeclarationTabSlot<DeclarationOut, DeclarationIn>(
-//    componentContext = componentContext,
-//    productId = productId,
-//    updateRepository = updateRepository,
-//    openDeclarationTab = openDeclarationTab,
-//    dependencies = dependencies,
-//    mapper = { mapper(productId) },
-//), ProductTabSlot
 
-class DeclarationTabSlot1(
+
+class DeclarationTabSlot(
     componentContext: ComponentContext,
     private val productId: Int,
     dependencies: ImmutableTableDependencies,
@@ -54,12 +40,12 @@ class DeclarationTabSlot1(
         getInitData = { updateRepository.getInit(productId) },
         openDeclarationTab = openDeclarationTab
     )
-    private val dialogNavigation = SlotNavigation<DialogConfig>()
+    private val dialogNavigation = SlotNavigation<DeclarationDialogConfig>()
 
     internal val dialog = childSlot(
         source = dialogNavigation,
         key = "declaration_dialog",
-        serializer = DialogConfig.serializer(),
+        serializer = DeclarationDialogConfig.serializer(),
         handleBackButton = true,
     ) { _, context ->
         MBSImmutableTableComponent<DeclarationTableUi>(
@@ -78,7 +64,7 @@ class DeclarationTabSlot1(
     }
 
     private fun showDialog() {
-        dialogNavigation.activate(DialogConfig)
+        dialogNavigation.activate(DeclarationDialogConfig)
     }
 
     internal fun openDialog() {
@@ -144,7 +130,7 @@ internal class DeclarationListComponent(
 }
 
 @Serializable
-internal data object DialogConfig
+internal data object DeclarationDialogConfig
 
 private fun List<ProductDeclarationOut>.toListDeclarationUi(): List<DeclarationUi> {
     return this.mapIndexed { ind, declaration -> declaration.toUi(ind) }

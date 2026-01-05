@@ -9,16 +9,15 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import ru.pavlig43.core.componentCoroutineScope
 import ru.pavlig43.immutable.api.component.ImmutableTableBuilderData
-import ru.pavlig43.tablecore.model.ITableUi
 import ru.pavlig43.immutable.internal.component.manager.DeleteManager
 import ru.pavlig43.immutable.internal.data.ImmutableListRepository
 import ru.pavlig43.tablecore.manger.FilterManager
 import ru.pavlig43.tablecore.manger.SelectionManager
 import ru.pavlig43.tablecore.manger.SortManager
+import ru.pavlig43.tablecore.model.ITableUi
 import ru.pavlig43.tablecore.model.TableData
 import ru.pavlig43.tablecore.utils.FilterMatcher
 import ru.pavlig43.tablecore.utils.SortMatcher
-
 import ua.wwind.table.ColumnSpec
 import ua.wwind.table.filter.data.TableFilterState
 import ua.wwind.table.state.SortState

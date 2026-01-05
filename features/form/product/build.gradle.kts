@@ -1,7 +1,8 @@
 import ru.pavlig43.convention.extension.commonMainDependencies
 
 plugins {
-  alias(libs.plugins.pavlig43.feature)  
+  alias(libs.plugins.pavlig43.feature)
+    alias(libs.plugins.pavlig43.table)
   }
 
 
@@ -18,8 +19,5 @@ kotlin{
         implementation(projects.features.table.mutable)
         implementation(projects.features.table.core)
 
-        implementation(libs.wwind.table.core)
-        implementation(libs.wwind.table.format)
-        implementation(libs.collections.immutable)
     }
 }

@@ -17,7 +17,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import ua.wwind.table.filter.data.*
 import ua.wwind.table.sample.model.PersonTableData
-import kotlin.math.ceil
 import kotlin.math.roundToInt
 
 /**

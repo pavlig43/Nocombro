@@ -179,6 +179,7 @@ pavlig43-kmplibrary = {id="pavlig43.kmplibrary"}
 
 pavlig43-room = { id = "pavlig43.room" }
 pavlig43-detekt = { id = "pavlig43.detekt" }
+pavlig43-table ={id="pavlig43.table"}
 
 android-kotlin-multiplatform-library = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
 

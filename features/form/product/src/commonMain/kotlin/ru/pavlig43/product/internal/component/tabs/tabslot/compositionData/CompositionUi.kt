@@ -1,5 +1,6 @@
 package ru.pavlig43.product.internal.component.tabs.tabslot.compositionData
 
+import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.tablecore.model.ITableUi
 
 internal data class CompositionUi(
@@ -7,6 +8,7 @@ internal data class CompositionUi(
     val id: Int,
     val productId: Int,
     val productName: String,
+    val productType: ProductType?,
     val count: Int,
 ) : ITableUi
 

@@ -41,7 +41,6 @@ class SelectionManager(
         _selectedIds.update { emptySet() }
     }
     fun onEvent(event: SelectionUiEvent) {
-        println(event)
         when (event) {
             is SelectionUiEvent.ClearSelection -> clearSelected()
 

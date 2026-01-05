@@ -11,7 +11,6 @@ import io.github.vinceglb.filekit.FileKit
 import org.koin.java.KoinJavaComponent.getKoin
 import ru.pavlig43.rootnocombro.api.RootDependencies
 import ru.pavlig43.rootnocombro.api.component.RootNocombroComponent
-import ua.wwind.table.sample.app.SampleApp
 
 
 fun main() {

@@ -2,7 +2,11 @@ package ru.pavlig43.core.tabs
 
 import com.arkivanov.decompose.Child
 import com.arkivanov.decompose.ComponentContext
-import com.arkivanov.decompose.router.children.*
+import com.arkivanov.decompose.router.children.ChildNavState
+import com.arkivanov.decompose.router.children.NavState
+import com.arkivanov.decompose.router.children.SimpleChildNavState
+import com.arkivanov.decompose.router.children.SimpleNavigation
+import com.arkivanov.decompose.router.children.children
 import com.arkivanov.decompose.value.Value
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable

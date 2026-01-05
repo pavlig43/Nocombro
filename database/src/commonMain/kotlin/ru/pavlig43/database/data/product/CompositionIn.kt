@@ -33,6 +33,7 @@ data class CompositionOut(
     override val id: Int,
     val productId: Int,
     val productName: String,
+    val productType: ProductType,
     val count: Int,
 ): CollectionObject
 

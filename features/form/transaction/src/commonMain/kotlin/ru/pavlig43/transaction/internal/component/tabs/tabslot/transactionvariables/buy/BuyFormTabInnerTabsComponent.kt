@@ -8,7 +8,6 @@ import ru.pavlig43.core.component.EssentialComponentFactory
 import ru.pavlig43.core.tabs.TabNavigationComponent
 import ru.pavlig43.database.DataBaseTransaction
 import ru.pavlig43.database.data.transaction.Transaction
-import ru.pavlig43.transaction.internal.component.tabs.tabslot.transactionvariables.buy.BuyTab
 import ru.pavlig43.transaction.internal.model.TransactionEssentialsUi
 import ru.pavlig43.update.component.IItemFormInnerTabsComponent
 import ru.pavlig43.update.component.UpdateComponent

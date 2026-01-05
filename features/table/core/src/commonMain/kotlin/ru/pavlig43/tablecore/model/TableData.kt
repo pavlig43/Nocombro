@@ -1,7 +1,6 @@
 package ru.pavlig43.tablecore.model
 
 import androidx.compose.runtime.Immutable
-import ru.pavlig43.tablecore.model.ITableUi
 
 @Immutable
 data class TableData<I: ITableUi>(
@@ -13,4 +12,5 @@ data class TableData<I: ITableUi>(
     /** Whether selection mode is enabled */
 
     val isSelectionMode: Boolean,
+
 )

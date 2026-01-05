@@ -5,7 +5,11 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.MinimalExternalModuleDependency
 import org.gradle.api.provider.Provider
-import org.gradle.kotlin.dsl.*
+import org.gradle.kotlin.dsl.DependencyHandlerScope
+import org.gradle.kotlin.dsl.apply
+import org.gradle.kotlin.dsl.configure
+import org.gradle.kotlin.dsl.dependencies
+import org.gradle.kotlin.dsl.withType
 import org.jetbrains.kotlin.gradle.plugin.KotlinBasePlugin
 import ru.pavlig43.convention.extension.libs
 

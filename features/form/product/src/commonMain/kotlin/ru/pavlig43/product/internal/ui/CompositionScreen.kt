@@ -1,13 +1,30 @@
 package ru.pavlig43.product.internal.ui
 
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.AddTask
+import androidx.compose.material.icons.filled.ArrowCircleDown
+import androidx.compose.material.icons.filled.ArrowCircleUp
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextDecoration
@@ -16,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import ru.pavlig43.coreui.tooltip.IconButtonToolTip
 import ru.pavlig43.immutable.api.ui.MBSImmutableTable
+import ru.pavlig43.mutable.api.ui.MutableTableBox
 import ru.pavlig43.product.internal.component.tabs.tabslot.CompositionTabSlot
 import ru.pavlig43.product.internal.data.CompositionUi
 import ru.pavlig43.product.internal.data.ProductIngredientUi
@@ -23,52 +41,17 @@ import ru.pavlig43.product.internal.data.ProductIngredientUi
 
 @Composable
 internal fun CompositionScreen(
-    component: CompositionTabSlot, modifier: Modifier = Modifier
+    component: CompositionTabSlot,
 ) {
 
     val dialog by component.dialog.subscribeAsState()
-    val compositionList by component.compositionList.collectAsState()
 
+    MutableTableBox(component)
 
-    Column(modifier.verticalScroll(rememberScrollState())) {
-
-        Row(
-            Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Text("Создать состав")
-            IconButtonToolTip(
-                "Создать состав",
-                onClick = component::addNewComposition,
-                icon = Icons.Default.AddRoad,
-            )
-
-        }
-
-        compositionList.forEach { composition ->
-            CompositionBlock(
-                compositionUi = composition,
-                onChangeName = component::onChangeName,
-                removeComposition = component::removeComposition,
-                openDialog = { component.openDialog(composition.composeKey) },
-                removeIngredientUi = { component.removeIngredients(composition.composeKey, it) },
-                onChangeGram = { composeKey, gram ->
-                    component.onChangeGram(
-                        composition.composeKey, composeKey, gram
-                    )
-                },
-                openProduct = { component.openProductTab(it) },
-            )
-            Spacer(Modifier.height(8.dp))
-
-
-        }
-        dialog.child?.instance?.also {
-            MBSImmutableTable(it)
-        }
-
+    dialog.child?.instance?.also {
+        MBSImmutableTable(it)
     }
+
 
 
 }

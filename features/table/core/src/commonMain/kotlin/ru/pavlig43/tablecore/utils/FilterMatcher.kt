@@ -1,16 +1,9 @@
 package ru.pavlig43.tablecore.utils
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Immutable
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.persistentListOf
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
-import ru.pavlig43.database.data.product.ProductType
 import ua.wwind.table.filter.data.FilterConstraint
 import ua.wwind.table.filter.data.TableFilterState
-import ua.wwind.table.filter.data.TableFilterType
-import kotlin.collections.iterator
 
 @Suppress("UNCHECKED_CAST")
 

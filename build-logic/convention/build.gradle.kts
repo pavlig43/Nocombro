@@ -90,6 +90,10 @@ gradlePlugin {
             id = libs.plugins.pavlig43.kmplibrary.get().pluginId
             implementationClass = "KmpLibrary"
         }
+        register("table") {
+            id = libs.plugins.pavlig43.table.get().pluginId
+            implementationClass = "TablePlugin"
+        }
 
     }
 }

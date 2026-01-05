@@ -1,6 +1,12 @@
 package ru.pavlig43.database
 
-import androidx.room.*
+import androidx.room.ConstructedBy
+import androidx.room.Database
+import androidx.room.RoomDatabase
+import androidx.room.RoomDatabaseConstructor
+import androidx.room.TypeConverters
+import androidx.room.immediateTransaction
+import androidx.room.useWriterConnection
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -16,9 +22,12 @@ import ru.pavlig43.database.data.document.Document
 import ru.pavlig43.database.data.document.DocumentFile
 import ru.pavlig43.database.data.document.dao.DocumentDao
 import ru.pavlig43.database.data.document.dao.DocumentFilesDao
-import ru.pavlig43.database.data.product.*
+import ru.pavlig43.database.data.product.CompositionIn
+import ru.pavlig43.database.data.product.Product
+import ru.pavlig43.database.data.product.ProductDeclarationIn
+import ru.pavlig43.database.data.product.ProductFile
+import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.database.data.product.dao.CompositionDao
-import ru.pavlig43.database.data.product.dao.CompositionDao1
 import ru.pavlig43.database.data.product.dao.ProductDao
 import ru.pavlig43.database.data.product.dao.ProductDeclarationDao
 import ru.pavlig43.database.data.product.dao.ProductFilesDao
@@ -46,8 +55,6 @@ import kotlin.time.ExperimentalTime
         ProductFile::class,
         CompositionIn::class,
         ProductDeclarationIn::class,
-        ProductComposition::class,
-        ProductIngredientIn::class,
 
 
         Transaction::class,
@@ -73,9 +80,6 @@ abstract class NocombroDatabase : RoomDatabase() {
     abstract val productFilesDao: ProductFilesDao
     abstract val productDeclarationDao: ProductDeclarationDao
     abstract val compositionDao: CompositionDao
-
-    abstract val compositionDao1: CompositionDao1
-
 
     abstract val productTransactionDao: ProductTransactionDao
 }

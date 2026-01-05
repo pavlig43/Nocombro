@@ -8,10 +8,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
+import ru.pavlig43.coreui.NameRowWithSearchIcon
+import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.mutable.api.component.MutableUiEvent
 import ru.pavlig43.tablecore.manger.SelectionUiEvent
 import ru.pavlig43.tablecore.model.TableData
-import ru.pavlig43.tablecore.ui.TableCellTextFieldNumber
+import ru.pavlig43.tablecore.ui.DecimalFormat
+import ru.pavlig43.tablecore.ui.cellForDecimalFormat
 import ru.pavlig43.tablecore.ui.createButtonNew
 import ua.wwind.table.ColumnSpec
 import ua.wwind.table.editableTableColumns
@@ -21,11 +25,13 @@ internal enum class CompositionField {
     COMPOSE_ID,
     SELECTION,
     PRODUCT_NAME,
+    PRODUCT_TYPE,
 
     COUNT
 }
 
 internal fun createCompositionColumn(
+    onOpenProductDialog: (Int) -> Unit,
     onEvent: (MutableUiEvent) -> Unit,
 ): ImmutableList<ColumnSpec<CompositionUi, CompositionField, TableData<CompositionUi>>> {
     val columns =
@@ -64,7 +70,28 @@ internal fun createCompositionColumn(
                 header("Название")
                 align(Alignment.Center)
                 filter(TableFilterType.TextTableFilter())
-                cell { item, _ -> Text(item.productName) }
+                cell { item, _ ->
+                    NameRowWithSearchIcon(
+                        text = item.productName,
+                        onOpenChooseDialog = { onOpenProductDialog(item.composeId) }
+                    )
+
+                }
+
+                sortable()
+            }
+
+            column(CompositionField.PRODUCT_TYPE, { it.productType }) {
+                header("Тип")
+                align(Alignment.Center)
+                filter(
+                    TableFilterType.EnumTableFilter(
+                        options = ProductType.entries.map { it.enumValue }.toImmutableList(),
+                        getTitle = { it.displayName }
+
+                    ),
+                )
+                cell { item, _ -> Text(item.productType?.displayName ?: "") }
 
                 sortable()
             }
@@ -73,18 +100,14 @@ internal fun createCompositionColumn(
                 header("Количество")
                 align(Alignment.Center)
                 filter(TableFilterType.TextTableFilter())
-                cell { item, _ -> Text(item.count.toString()) }
-                editCell { item: CompositionUi, tableData: TableData<CompositionUi>, onComplete: () -> Unit ->
+                cellForDecimalFormat(
+                    format = DecimalFormat.KG(),
+                    getCount = { it.count },
+                    saveInModel = {item,count->
+                        onEvent(MutableUiEvent.UpdateItem(item.copy(count = count)))
+                    }
+                )
 
-                    TableCellTextFieldNumber(
-                        value = item.count,
-                        saveInModel = {
-                            onEvent(MutableUiEvent.UpdateItem(item.copy(count = it)))
-                        },
-                        countDigitsAfterDot = 3,
-                        onComplete = onComplete,
-                    )
-                }
                 sortable()
             }
 

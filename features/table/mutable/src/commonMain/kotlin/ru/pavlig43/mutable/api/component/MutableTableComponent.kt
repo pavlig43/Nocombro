@@ -16,16 +16,15 @@ import ru.pavlig43.core.componentCoroutineScope
 import ru.pavlig43.core.data.ChangeSet
 import ru.pavlig43.core.data.CollectionObject
 import ru.pavlig43.core.emptyDate
-import ru.pavlig43.tablecore.model.ITableUi
 import ru.pavlig43.loadinitdata.api.component.LoadInitDataComponent
 import ru.pavlig43.tablecore.manger.FilterManager
 import ru.pavlig43.tablecore.manger.SelectionManager
 import ru.pavlig43.tablecore.manger.SortManager
+import ru.pavlig43.tablecore.model.ITableUi
 import ru.pavlig43.tablecore.model.TableData
 import ru.pavlig43.tablecore.utils.FilterMatcher
 import ru.pavlig43.tablecore.utils.SortMatcher
 import ru.pavlig43.update.data.UpdateCollectionRepository
-
 import ua.wwind.table.ColumnSpec
 import ua.wwind.table.filter.data.TableFilterState
 import ua.wwind.table.state.SortState
@@ -49,6 +48,7 @@ abstract class MutableTableComponent<BDOut: CollectionObject,BDIn:CollectionObje
     parentId: Int,
     override val title: String,
     sortMatcher: SortMatcher<UI, C>,
+    filterMatcher: FilterMatcher<UI, C>,
     private  val repository: UpdateCollectionRepository<BDOut, BDIn>
 
     ) : ComponentContext by componentContext, FormTabSlot {
@@ -62,10 +62,12 @@ abstract class MutableTableComponent<BDOut: CollectionObject,BDIn:CollectionObje
     protected abstract fun BDOut.toUi(composeId: Int): UI
 
     protected abstract fun UI.toBDIn(): BDIn
-    protected abstract val filterMatcher: FilterMatcher<UI, C>
-//    protected abstract val sortMatcher: SortMatcher<UI, C>
     private val _itemList = MutableStateFlow<List<UI>>(emptyList())
     val itemList = _itemList.asStateFlow()
+
+
+
+
 
     val initDataComponent = LoadInitDataComponent<List<UI>>(
         componentContext = childContext("init"),
@@ -90,7 +92,7 @@ abstract class MutableTableComponent<BDOut: CollectionObject,BDIn:CollectionObje
         selectionManager.selectedIdsFlow,
         filterManager.filters,
         sortManager.sort,
-    ) { fields, selectedIds, filters, sort ->
+    ) { fields, selectedIds, filters, sort, ->
         val filtered = fields.filter { ui ->
             filterMatcher.matchesItem(ui, filters)
         }
@@ -98,7 +100,7 @@ abstract class MutableTableComponent<BDOut: CollectionObject,BDIn:CollectionObje
         TableData(
             displayedItems = displayed,
             selectedIds = selectedIds,
-            isSelectionMode = true
+            isSelectionMode = true,
         )
     }.stateIn(
         coroutineScope,

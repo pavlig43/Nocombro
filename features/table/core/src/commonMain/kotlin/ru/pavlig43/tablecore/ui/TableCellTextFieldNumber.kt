@@ -1,58 +1,104 @@
 package ru.pavlig43.tablecore.ui
 
 import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.text.input.ImeAction
+import ua.wwind.table.EditableColumnBuilder
 import ua.wwind.table.component.TableCellTextFieldWithTooltipError
 import kotlin.math.pow
 
-private fun Int.toDoubleFormat(digitsAfterDot: Int): String {
-    return (this / (10.0.pow(digitsAfterDot))).toString()
 
+sealed interface DecimalFormat {
+    val countDecimal: Int
+
+    class KG : DecimalFormat {
+        override val countDecimal: Int = 3
+    }
+
+    class RUB : DecimalFormat {
+        override val countDecimal: Int = 2
+    }
 }
+fun<T: Any,C,E> EditableColumnBuilder<T,C,E>.cellForDecimalFormat(
+    format: DecimalFormat,
+    getCount:(T)-> Int,
+    saveInModel: (T,Int) -> Unit
+){
+    cell { item, _ -> Text(getCount(item).toStartDoubleFormat(format)) }
+    editCell { item: T, tableData: E, onComplete: () -> Unit ->
 
+        TableCellTextFieldNumber(
+            value = getCount(item),
+            saveInModel = {
+                saveInModel(item,it)
+            },
+            decimalFormat = format,
+            onComplete = onComplete,
+        )
+    }
+}
+private fun Int.toStartDoubleFormat(decimalFormat: DecimalFormat): String {
+    return (this / (10.0.pow(decimalFormat.countDecimal))).toString()
+        .dropLastWhile { it == '0' }
+        .run { if (last() == '.') dropLast(1) else this }
+}
 @Composable
 fun TableCellTextFieldNumber(
     value: Int,
     saveInModel: (Int) -> Unit,
-    countDigitsAfterDot: Int,
+    decimalFormat: DecimalFormat,
     onComplete: () -> Unit,
     errorMessage: String = "",
 ) {
 
-    var displayValue by remember(value) { mutableStateOf(value.toDoubleFormat(countDigitsAfterDot)) }
+    var error by remember { mutableStateOf(errorMessage) }
+    var displayValue by remember {
+        mutableStateOf(
+            value.takeIf { it != 0 }?.toStartDoubleFormat(decimalFormat) ?: ""
+        )
+    }
+
     TableCellTextFieldWithTooltipError(
         value = displayValue,
         onValueChange = { input ->
 
-//            val a = if (input.contains("[0-9]".toRegex()) || input.con)
-            val lastChar = input.lastOrNull()
-            val newText = when {
-                input.substringAfter('.').length > countDigitsAfterDot -> input
-                lastChar?.isDigit() == true -> input
-                input.dropLast(1).contains('.') -> input.dropLast(1)
-                else -> input.dropLast(1) + '.'
+            val result = input.fold("") { acc: String, element: Char ->
+                when {
+                    element.isDigit() -> acc + element
+                    !acc.contains('.') -> acc + '.'
+
+                    else -> acc
+                }
             }
-            displayValue = newText
+            val parts = result.split('.')
+            val finalText = if (parts.size == 2) {
+                parts[0] + "." + parts[1].take(decimalFormat.countDecimal)
+            } else result
+
+            displayValue = finalText
+            if (displayValue.toDoubleOrNull() != null) {
+
+                val intCount =
+                    (displayValue.toDouble() * 10.0.pow(decimalFormat.countDecimal)).toInt()
+                saveInModel(intCount)
+                error = ""
+            }
+            else {
+                error = "Не число"
+            }
+
 
         },
-        errorMessage = errorMessage,
+        errorMessage = error,
         placeholder = { Text("") },
         singleLine = true,
-        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
         keyboardActions =
             KeyboardActions(
                 onDone = {
-                    val doubleValue = displayValue.toDoubleOrNull() ?: 0.0
-
-                    val intCount = (doubleValue * 10.0.pow(countDigitsAfterDot))
-                    saveInModel(intCount.toInt())
 
                     onComplete()
                 },
