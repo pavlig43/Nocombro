@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import jdk.jfr.Enabled
 import ru.pavlig43.coreui.ActionIconButton
 
 @Suppress("LongParameterList")
@@ -14,6 +15,7 @@ fun IconButtonToolTip(
     tooltipText: String,
     onClick: () -> Unit,
     icon: ImageVector,
+    enabled: Boolean = true,
     tint: Color = LocalContentColor.current,
     modifier: Modifier = Modifier,
     badge: @Composable BoxScope.() -> Unit = {}
@@ -25,6 +27,7 @@ fun IconButtonToolTip(
         ActionIconButton(
             icon = icon,
             onClick = onClick,
+            enabled = enabled,
             tint = tint,
             badge = badge
         )

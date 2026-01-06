@@ -1,3 +1,4 @@
+import com.android.build.api.dsl.androidLibrary
 import org.jetbrains.kotlin.compose.compiler.gradle.ComposeFeatureFlag
 import ru.pavlig43.convention.extension.androidMainDependencies
 import ru.pavlig43.convention.extension.libs
@@ -16,7 +17,6 @@ composeCompiler {
     featureFlags.add(ComposeFeatureFlag.OptimizeNonSkippingGroups)
 }
 kotlin {
-
 
     sourceSets {
         androidMainDependencies {

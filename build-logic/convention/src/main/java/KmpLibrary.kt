@@ -24,6 +24,7 @@ class KmpLibrary : Plugin<Project> {
                 @Suppress("UnstableApiUsage")
                 androidLibrary {
                     namespace = "ru.pavlig43${project.path.replace(":", ".")}"
+                    androidResources.enable = true
 
 
                     compileSdk = libs.versions.android.compileSdk.get().toInt()

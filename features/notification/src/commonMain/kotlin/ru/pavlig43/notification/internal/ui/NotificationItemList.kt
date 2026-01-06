@@ -42,7 +42,7 @@ private fun NotificationRow(
     modifier: Modifier = Modifier
 ) {
     Column(
-        modifier = modifier.fillMaxWidth().height(32.dp).clickable { onOpenTab(notification.id) }
+        modifier = modifier.fillMaxWidth().clickable { onOpenTab(notification.id) }
     ) {
         Row(Modifier.fillMaxSize(), horizontalArrangement = Arrangement.Center) {
             Text(notification.text)

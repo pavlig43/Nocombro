@@ -14,12 +14,16 @@ import androidx.compose.ui.graphics.vector.ImageVector
 fun ActionIconButton(
     icon: ImageVector,
     onClick: () -> Unit,
+    enabled: Boolean = true,
     modifier: Modifier = Modifier,
     tint: Color = LocalContentColor.current,
     badge: @Composable BoxScope.() -> Unit = {},
 
     ) {
-    IconButton(onClick, modifier) {
+    IconButton(
+        onClick = onClick,
+        enabled = enabled,
+        modifier = modifier) {
         BadgedBox(
             badge = badge
         ) {

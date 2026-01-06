@@ -9,6 +9,7 @@ import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import ru.pavlig43.addfile.api.data.FileUi
+import ru.pavlig43.addfile.api.data.RemoveState
 import ru.pavlig43.addfile.api.data.UploadState
 import ru.pavlig43.core.componentCoroutineScope
 import ru.pavlig43.core.data.FileData
@@ -18,84 +19,102 @@ import ru.pavlig43.loadinitdata.api.component.LoadInitDataComponent
 class FilesComponent<Files : List<FileData>>(
     componentContext: ComponentContext,
     private val getInitData: suspend () -> Result<Files>,
-) : ComponentContext by componentContext, IFilesComponent {
+) : ComponentContext by componentContext {
 
     private val coroutineScope = componentCoroutineScope()
 
-    override fun addFilePath(path: String,) {
-        val addedIndex = _filesUi.value.maxOfOrNull { it.composeKey }?.plus(1) ?: 0
-        val startAddedFile = FileUi(
+    fun addPlatformPath(platformFile: PlatformFile) {
+        val composeKey = _filesUi.value.maxOfOrNull { it.composeKey }?.plus(1) ?: 0
+        val newFile = FileUi(
             id = 0,
-            platformFile = PlatformFile(path),
-            composeKey = addedIndex,
-            uploadState = UploadState.Loading
+            platformFile = platformFile,
+            composeKey = composeKey,
+            uploadState = UploadState.Loading,
+            removeState = RemoveState.Init
         )
         coroutineScope.launch(Dispatchers.IO) {
-            loadFile(startAddedFile)
+            saveFileInNocombro(newFile)
         }
     }
 
-    //TODO сделать для телефона fileExeption
-    // Failure(
-    // java.io.FileNotFoundException:
-    // content:/com.android.providers.media.documents/document/image%3A1000000034:
-    // open failed: ENOENT (No such file or directory))
-    private suspend fun loadFile(fileUi: FileUi) {
-        val innerFile = PlatformFile(FileKit.filesDir, fileUi.platformFile.name)
+    private suspend fun saveFileInNocombro(platformFile: FileUi) {
+        val nocombroFile = PlatformFile(FileKit.filesDir, platformFile.platformFile.name)
 
-        updateList {
-            it.add(fileUi.copy(uploadState = UploadState.Loading))
-            it
+        _filesUi.update { lst ->
+            lst + platformFile
         }
 
         val result: Result<Unit> = runCatching {
-            innerFile.write(fileUi.platformFile)
+            nocombroFile.write(platformFile.platformFile)
         }
-        val updatedFile = _filesUi.value.find { it.composeKey == fileUi.composeKey }?.copy(
-            platformFile = if (result.isSuccess) innerFile else fileUi.platformFile,
-            uploadState = if (result.isSuccess) UploadState.Success else UploadState.Error(
-                message = result.exceptionOrNull()?.message ?: "unknown error"
-            )
-        )
-        updatedFile?.let { file ->
-            updateList { lst ->
-                lst[fileUi.composeKey] = file
-                lst
+        _filesUi.update { lst ->
+            lst.map { file ->
+                if (file.composeKey == platformFile.composeKey) {
+                    file.copy(
+                        platformFile = if (result.isSuccess) nocombroFile else platformFile.platformFile,
+                        uploadState = if (result.isSuccess) UploadState.Success else UploadState.Error(
+                            message = result.exceptionOrNull()?.message ?: "unknown error"
+                        )
+                    )
+                } else file
             }
         }
 
     }
 
-    override fun retryLoadFile(index: Int) {
-        val file = _filesUi.value[index]
-        updateList { lst ->
-            lst.removeAt(index)
-            lst
-        }
-
-        coroutineScope.launch(Dispatchers.IO) {
-            loadFile(file)
+    fun retryLoadFile(composeKey: Int) {
+        val file = _filesUi.value.first { it.composeKey == composeKey }
+            .copy(uploadState = UploadState.Loading)
+        coroutineScope.launch {
+            saveFileInNocombro(file)
         }
 
     }
 
 
-    private fun updateList(updateAction: (MutableList<FileUi>) -> List<FileUi>) {
-        val updatedFiles = _filesUi.value.toMutableList()
-        _filesUi.update { updateAction(updatedFiles) }
-    }
+    fun removeFile(composeKey: Int) {
+        coroutineScope.launch {
+            val fileForRemove = _filesUi.value.first { it.composeKey == composeKey }.copy(removeState = RemoveState.InProgress)
+            _filesUi.update { lst->
+                lst.map { file->
+                    if (file.composeKey == fileForRemove.composeKey) fileForRemove
+                    else file
+                }
+            }
 
+            _filesUi.update { lst ->
+                lst.mapNotNull { file ->
+                    when {
+                        file.composeKey != fileForRemove.composeKey -> file
+                        file.uploadState is UploadState.Error -> null
+                        file.uploadState is UploadState.Success -> {
+                            runCatching {
+                                fileForRemove.platformFile.delete(false)
+                            }.fold(
+                                onSuccess = { null },
+                                onFailure = {
+                                    file.copy(
+                                        removeState = RemoveState.Error(
+                                            it.message ?: "Unknown"
+                                        )
+                                    )
+                                }
+                            )
+                        }
 
-    override fun removeFile(index: Int) {
-        updateList { lst ->
-            lst.removeIf { it.composeKey == index }
-            lst
+                        else -> file
+                    }
+
+                }
+            }
+
         }
+
     }
 
     private val _filesUi = MutableStateFlow<List<FileUi>>(emptyList())
-    override val filesUi = _filesUi.asStateFlow()
-    override val loadInitDataComponent: LoadInitDataComponent<List<FileUi>> =
+    val filesUi = _filesUi.asStateFlow()
+    val loadInitDataComponent: LoadInitDataComponent<List<FileUi>> =
         LoadInitDataComponent<List<FileUi>>(
             componentContext = childContext("loadInitData"),
             getInitData = { getInitData().map { it.toListFileUi() } },
@@ -103,8 +122,8 @@ class FilesComponent<Files : List<FileData>>(
         )
 
 
-    override val isAllFilesUpload: Flow<Boolean> =
-        _filesUi.map { it.all { file -> file.uploadState is UploadState.Success } && it.isNotEmpty() }
+    val isAllFilesUpload: Flow<Boolean> =
+        _filesUi.map { it.all { file -> file.uploadState is UploadState.Success && file.removeState is RemoveState.Init } }
 
 
 }
@@ -118,7 +137,8 @@ private fun FileData.toFileUI(composeKey: Int): FileUi {
         id = id,
         composeKey = composeKey,
         platformFile = PlatformFile(path),
-        uploadState = UploadState.Success
+        uploadState = UploadState.Success,
+        removeState = RemoveState.Init
     )
 }
 

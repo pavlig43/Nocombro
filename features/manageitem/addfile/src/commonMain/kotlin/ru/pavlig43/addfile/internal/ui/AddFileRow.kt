@@ -12,7 +12,6 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.CloudDownload
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -25,9 +24,11 @@ import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.absolutePath
 import io.github.vinceglb.filekit.extension
 import io.github.vinceglb.filekit.name
+
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 import ru.pavlig43.addfile.api.data.FileUi
+import ru.pavlig43.addfile.api.data.RemoveState
 import ru.pavlig43.addfile.api.data.UploadState
 import ru.pavlig43.coreui.ProgressIndicator
 import ru.pavlig43.coreui.tooltip.IconButtonToolTip
@@ -37,6 +38,7 @@ import ru.pavlig43.theme.excel
 import ru.pavlig43.theme.pdf
 import ru.pavlig43.theme.unknown
 import ru.pavlig43.theme.word
+
 
 @Composable
 internal fun AddFileRow(
@@ -72,36 +74,74 @@ internal fun AddFileRow(
                 )
         }
 
-        if (fileUi.uploadState !is UploadState.Loading) {
-            val platformFile = fileUi.platformFile
-            IconButton(
-                { openFile(platformFile) }) {
-                Icon(Icons.Default.Search, contentDescription = null)
-            }
+        OnOpenIconButton(
+            fileUi = fileUi,
+            onOpenFile = openFile
+        )
 
+        RemoveIconButton(
+            fileUi = fileUi,
+            removeFile = removeFile
+        )
+        UploadIcon(
+            fileUi = fileUi,
+            retryLoadFile = retryLoadFile
+        )
+
+    }
+}
+
+@Composable
+private fun OnOpenIconButton(
+    fileUi: FileUi,
+    onOpenFile: (PlatformFile) -> Unit
+) {
+    IconButtonToolTip(
+        tooltipText = "Открыть",
+        onClick = { onOpenFile(fileUi.platformFile) },
+        icon = Icons.Default.Search,
+        enabled = fileUi.uploadState !is UploadState.Loading && fileUi.removeState !is RemoveState.InProgress,
+
+        )
+}
+
+@Composable
+private fun RemoveIconButton(
+    fileUi: FileUi,
+    removeFile: (Int) -> Unit
+) {
+    when (val state = fileUi.removeState) {
+        is RemoveState.Error -> Text(state.message)
+        is RemoveState.InProgress -> ProgressIndicator(Modifier.size(24.dp))
+        is RemoveState.Init -> IconButtonToolTip(
+            tooltipText = "Удалить",
+            enabled = fileUi.uploadState !is UploadState.Loading,
+            onClick = { removeFile(fileUi.composeKey) },
+            icon = Icons.Default.Close
+        )
+    }
+}
+
+@Composable
+private fun UploadIcon(
+    fileUi: FileUi,
+    retryLoadFile: (Int) -> Unit
+) {
+    when (val state = fileUi.uploadState) {
+        UploadState.Loading -> ProgressIndicator(Modifier.size(24.dp))
+        UploadState.Success -> ProjectToolTip(
+            tooltipText = IS_UPLOAD
+        ) { Icon(Icons.Default.Check, contentDescription = IS_UPLOAD) }
+
+        is UploadState.Error -> Column {
+            Text(state.message)
             IconButtonToolTip(
-                tooltipText = REMOVE,
-                onClick = { removeFile(fileUi.composeKey) },
-                icon = Icons.Default.Close
+                tooltipText = "${state.message} $RETRY_LOAD",
+                enabled = fileUi.removeState !is RemoveState.InProgress,
+                onClick = { retryLoadFile(fileUi.composeKey) },
+                icon = Icons.Default.CloudDownload
             )
         }
-
-        when (val state = fileUi.uploadState) {
-            UploadState.Loading -> ProgressIndicator(Modifier.size(24.dp))
-            UploadState.Success -> ProjectToolTip(
-                tooltipText = IS_UPLOAD
-            ) { Icon(Icons.Default.Check, contentDescription = IS_UPLOAD) }
-
-            is UploadState.Error -> Column {
-                Text(state.message)
-                IconButtonToolTip(
-                    tooltipText = "${state.message} $RETRY_LOAD",
-                    onClick = { retryLoadFile(fileUi.id) },
-                    icon = Icons.Default.CloudDownload
-                )
-            }
-        }
-
     }
 }
 

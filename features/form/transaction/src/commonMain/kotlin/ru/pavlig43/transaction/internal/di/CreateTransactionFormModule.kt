@@ -16,22 +16,7 @@ internal fun createTransactionFormModule(dependencies: TransactionFormDependenci
         single<ImmutableTableDependencies> { dependencies.dependencies }
         single<CreateEssentialsRepository<Transaction>> { getCreateRepository(get()) }
         single<UpdateEssentialsRepository<Transaction>> { getUpdateRepository(get()) }
-//        single<UpdateCollectionRepository<TransactionProductBDOut, TransactionProductBDIn>>(
-//            named(UpdateCollectionRepositoryType.BatchesRow.name)
-//        ) { getUpdateDeclarationRepository(get()) }
 
-
-//        single<UpdateCollectionRepository<ProductFile, ProductFile>>(
-//            named(
-//                UpdateCollectionRepositoryType.Files.name
-//            )
-//        ) { getFilesRepository(get()) }
-//
-
-//
-//        single<UpdateCollectionRepository<ProductCompositionOut, ProductCompositionIn>>(
-//            named(UpdateCollectionRepositoryType.Composition.name)
-//        ) { getUpdateCompositionRepository(get()) }
 
     }
 
