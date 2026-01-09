@@ -1,11 +1,11 @@
 package ru.pavlig43.declarationform.internal.di
 
 import org.koin.dsl.module
+import ru.pavlig43.addfile.api.FilesDependencies
 import ru.pavlig43.create.data.CreateEssentialsRepository
 import ru.pavlig43.database.DataBaseTransaction
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.declaration.Declaration
-import ru.pavlig43.database.data.declaration.DeclarationFile
 import ru.pavlig43.declarationform.api.DeclarationFormDependencies
 import ru.pavlig43.immutable.api.ImmutableTableDependencies
 import ru.pavlig43.update.data.UpdateCollectionRepository
@@ -15,15 +15,11 @@ internal fun createDeclarationFormModule(dependencies: DeclarationFormDependenci
     module {
         single<NocombroDatabase> { dependencies.db }
         single<DataBaseTransaction> { dependencies.transaction }
+        single<ImmutableTableDependencies> {dependencies.immutableTableDependencies  }
+        single<FilesDependencies> {dependencies.filesDependencies  }
         single<CreateEssentialsRepository<Declaration>> {  getCreateRepository(get())}
         single<UpdateEssentialsRepository<Declaration>> {  getUpdateRepository(get())}
-        single<ImmutableTableDependencies> {dependencies.dependencies  }
 
-        single<UpdateCollectionRepository<DeclarationFile, DeclarationFile>> {
-            getFilesRepository(
-                get()
-            )
-        }
     }
 
 )
@@ -47,13 +43,4 @@ private fun getUpdateRepository(
         updateItem = dao::updateDeclaration
     )
 }
-private fun getFilesRepository(
-    db: NocombroDatabase
-): UpdateCollectionRepository<DeclarationFile, DeclarationFile> {
-    val fileDao = db.declarationFilesDao
-    return UpdateCollectionRepository(
-        loadCollection = fileDao::getFiles,
-        deleteCollection = fileDao::deleteFiles,
-        upsertCollection = fileDao::upsertFiles
-    )
-}
+

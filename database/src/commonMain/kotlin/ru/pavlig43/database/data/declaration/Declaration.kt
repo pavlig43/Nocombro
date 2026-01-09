@@ -3,9 +3,11 @@ package ru.pavlig43.database.data.declaration
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import kotlinx.datetime.LocalDate
 import ru.pavlig43.core.data.GenericItem
+import ru.pavlig43.database.data.files.OwnerType
 import ru.pavlig43.database.data.vendor.Vendor
 
 const val DECLARATIONS_TABLE_NAME = "declaration"

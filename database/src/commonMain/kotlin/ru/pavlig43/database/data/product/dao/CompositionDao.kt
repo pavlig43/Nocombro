@@ -10,7 +10,6 @@ import ru.pavlig43.database.data.product.CompositionOut
 import ru.pavlig43.database.data.product.Product
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
 import ru.pavlig43.database.data.common.NotificationDTO
 import ru.pavlig43.database.data.product.ProductType
 

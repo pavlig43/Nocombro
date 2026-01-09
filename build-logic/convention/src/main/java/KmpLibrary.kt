@@ -13,6 +13,8 @@ class KmpLibrary : Plugin<Project> {
         with(target) {
             apply(plugin = libs.plugins.kotlinMultiplatform.get().pluginId)
             apply(plugin = libs.plugins.android.kotlin.multiplatform.library.get().pluginId)
+            apply (plugin = libs.plugins.dokka.get().pluginId)
+
 
             commonMainDependencies {
                 implementation(libs.kotlinx.datetime)

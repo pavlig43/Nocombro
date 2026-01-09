@@ -1,6 +1,7 @@
 package ru.pavlig43.transaction.internal.di
 
 import org.koin.dsl.module
+import ru.pavlig43.addfile.api.FilesDependencies
 import ru.pavlig43.create.data.CreateEssentialsRepository
 import ru.pavlig43.database.DataBaseTransaction
 import ru.pavlig43.database.NocombroDatabase
@@ -13,7 +14,8 @@ internal fun createTransactionFormModule(dependencies: TransactionFormDependenci
     module {
         single<NocombroDatabase> { dependencies.db }
         single<DataBaseTransaction> { dependencies.dbTransaction }
-        single<ImmutableTableDependencies> { dependencies.dependencies }
+        single<FilesDependencies> {dependencies.filesDependencies  }
+        single<ImmutableTableDependencies> { dependencies.immutableTableDependencies }
         single<CreateEssentialsRepository<Transaction>> { getCreateRepository(get()) }
         single<UpdateEssentialsRepository<Transaction>> { getUpdateRepository(get()) }
 
@@ -48,16 +50,6 @@ internal enum class UpdateCollectionRepositoryType {
     BatchesRow,
 }
 
-//private fun getUpdateDeclarationRepository(
-//    db: NocombroDatabase
-//): UpdateCollectionRepository<TransactionProductBDOut, TransactionProductBDIn> {
-//    val dao = db.productBatchDao
-//    return UpdateCollectionRepository(
-//        tag = "Update Product Batch Respository",
-//        loadCollection = dao::getProductBatchesRow,
-//        deleteCollection = dao::deleteBatchesRows,
-//        upsertCollection = dao::upsert
-//    )
-//}
+
 
 

@@ -16,44 +16,36 @@ import kotlinx.datetime.LocalDate
 import ru.pavlig43.core.emptyDate
 import ru.pavlig43.database.data.common.Converters
 import ru.pavlig43.database.data.declaration.Declaration
-import ru.pavlig43.database.data.declaration.DeclarationFile
 import ru.pavlig43.database.data.declaration.dao.DeclarationDao
-import ru.pavlig43.database.data.declaration.dao.DeclarationFileDao
 import ru.pavlig43.database.data.document.Document
-import ru.pavlig43.database.data.document.DocumentFile
 import ru.pavlig43.database.data.document.dao.DocumentDao
-import ru.pavlig43.database.data.document.dao.DocumentFilesDao
+import ru.pavlig43.database.data.files.FileBD
+import ru.pavlig43.database.data.files.FileDao
 import ru.pavlig43.database.data.product.CompositionIn
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductDeclarationIn
-import ru.pavlig43.database.data.product.ProductFile
 import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.database.data.product.dao.CompositionDao
 import ru.pavlig43.database.data.product.dao.ProductDao
 import ru.pavlig43.database.data.product.dao.ProductDeclarationDao
-import ru.pavlig43.database.data.product.dao.ProductFilesDao
 import ru.pavlig43.database.data.transaction.Transaction
 import ru.pavlig43.database.data.transaction.TransactionProductBDIn
 import ru.pavlig43.database.data.transaction.dao.ProductTransactionDao
 import ru.pavlig43.database.data.vendor.Vendor
-import ru.pavlig43.database.data.vendor.VendorFile
 import ru.pavlig43.database.data.vendor.dao.VendorDao
-import ru.pavlig43.database.data.vendor.dao.VendorFilesDao
 import kotlin.time.ExperimentalTime
 
 @Database(
     entities = [
+        FileBD::class,
+
         Document::class,
-        DocumentFile::class,
 
         Vendor::class,
-        VendorFile::class,
 
         Declaration::class,
-        DeclarationFile::class,
 
         Product::class,
-        ProductFile::class,
         CompositionIn::class,
         ProductDeclarationIn::class,
 
@@ -68,17 +60,15 @@ import kotlin.time.ExperimentalTime
 @TypeConverters(Converters::class)
 @ConstructedBy(NocombroDatabaseConstructor::class)
 abstract class NocombroDatabase : RoomDatabase() {
+
+    abstract val fileDao: FileDao
     abstract val documentDao: DocumentDao
-    abstract val documentFilesDao: DocumentFilesDao
 
     abstract val vendorDao: VendorDao
-    abstract val vendorFilesDao: VendorFilesDao
 
     abstract val declarationDao: DeclarationDao
-    abstract val declarationFilesDao: DeclarationFileDao
 
     abstract val productDao: ProductDao
-    abstract val productFilesDao: ProductFilesDao
     abstract val productDeclarationDao: ProductDeclarationDao
     abstract val compositionDao: CompositionDao
 
@@ -102,9 +92,20 @@ fun getNocombroDatabase(builder: RoomDatabase.Builder<NocombroDatabase>): Nocomb
     return database
 }
 
-interface DataBaseTransaction {
+/**
+ * Выполняет транзакцию с несколькими блоками в базе данных
+ */
+public interface DataBaseTransaction {
+    /**
+     * Последовательно выполняет все блоки, возвращает первую ошибку или успех
+     *
+     * @param blocks Список suspend блоков для выполнения
+     * @return Result<Unit> - успех или первая ошибка
+     */
     suspend fun transaction(blocks: List<suspend () -> Result<Unit>>): Result<Unit>
 }
+
+
 
 class NocombroTransaction(
     private val db: NocombroDatabase

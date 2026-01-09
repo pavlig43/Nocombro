@@ -48,6 +48,7 @@ include(
     ":features:table:immutable",
     ":features:table:mutable",
 )
+include("features:files")
 
 
 include(
@@ -60,7 +61,6 @@ include(
 
 include(
     ":features:manageitem:upsert",
-    ":features:manageitem:addfile",
     ":features:manageitem:loadinitdata",
 )
 include(

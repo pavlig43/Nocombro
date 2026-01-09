@@ -24,12 +24,10 @@ import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.absolutePath
 import io.github.vinceglb.filekit.extension
 import io.github.vinceglb.filekit.name
-
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
-import ru.pavlig43.addfile.api.data.FileUi
-import ru.pavlig43.addfile.api.data.RemoveState
-import ru.pavlig43.addfile.api.data.UploadState
+import ru.pavlig43.addfile.api.model.FileUi
+import ru.pavlig43.addfile.api.model.UploadState
 import ru.pavlig43.coreui.ProgressIndicator
 import ru.pavlig43.coreui.tooltip.IconButtonToolTip
 import ru.pavlig43.coreui.tooltip.ProjectToolTip
@@ -39,26 +37,25 @@ import ru.pavlig43.theme.pdf
 import ru.pavlig43.theme.unknown
 import ru.pavlig43.theme.word
 
-
 @Composable
 internal fun AddFileRow(
     fileUi: FileUi,
     openFile: (PlatformFile) -> Unit,
     removeFile: (Int) -> Unit,
     retryLoadFile: (Int) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier.Companion
 ) {
 
     Row(
         modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
+        verticalAlignment = Alignment.Companion.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         Icon(
             painterResource(fileUi.platformFile.extension.toIconDrawableResource()),
             contentDescription = null,
-            Modifier.size(36.dp),
-            tint = Color.Unspecified
+            Modifier.Companion.size(36.dp),
+            tint = Color.Companion.Unspecified
         )
 
         ProjectToolTip(
@@ -66,10 +63,10 @@ internal fun AddFileRow(
         ) {
             Text(
                 text = fileUi.platformFile.name,
-                textDecoration = TextDecoration.Underline,
+                textDecoration = TextDecoration.Companion.Underline,
                 maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.width(250.dp),
+                overflow = TextOverflow.Companion.Ellipsis,
+                modifier = Modifier.Companion.width(250.dp),
 
                 )
         }
@@ -100,7 +97,7 @@ private fun OnOpenIconButton(
         tooltipText = "Открыть",
         onClick = { onOpenFile(fileUi.platformFile) },
         icon = Icons.Default.Search,
-        enabled = fileUi.uploadState !is UploadState.Loading && fileUi.removeState !is RemoveState.InProgress,
+        enabled = fileUi.uploadState !is UploadState.Loading,
 
         )
 }
@@ -110,16 +107,13 @@ private fun RemoveIconButton(
     fileUi: FileUi,
     removeFile: (Int) -> Unit
 ) {
-    when (val state = fileUi.removeState) {
-        is RemoveState.Error -> Text(state.message)
-        is RemoveState.InProgress -> ProgressIndicator(Modifier.size(24.dp))
-        is RemoveState.Init -> IconButtonToolTip(
-            tooltipText = "Удалить",
-            enabled = fileUi.uploadState !is UploadState.Loading,
-            onClick = { removeFile(fileUi.composeKey) },
-            icon = Icons.Default.Close
-        )
-    }
+    IconButtonToolTip(
+        tooltipText = "Удалить",
+        enabled = fileUi.uploadState !is UploadState.Loading,
+        onClick = { removeFile(fileUi.composeKey) },
+        icon = Icons.Default.Close
+    )
+
 }
 
 @Composable
@@ -128,16 +122,15 @@ private fun UploadIcon(
     retryLoadFile: (Int) -> Unit
 ) {
     when (val state = fileUi.uploadState) {
-        UploadState.Loading -> ProgressIndicator(Modifier.size(24.dp))
+        UploadState.Loading -> ProgressIndicator(Modifier.Companion.size(24.dp))
         UploadState.Success -> ProjectToolTip(
-            tooltipText = IS_UPLOAD
-        ) { Icon(Icons.Default.Check, contentDescription = IS_UPLOAD) }
+            tooltipText = "Загружено"
+        ) { Icon(Icons.Default.Check, contentDescription = null) }
 
         is UploadState.Error -> Column {
             Text(state.message)
             IconButtonToolTip(
-                tooltipText = "${state.message} $RETRY_LOAD",
-                enabled = fileUi.removeState !is RemoveState.InProgress,
+                tooltipText = "${state.message} Повторить загрузку",
                 onClick = { retryLoadFile(fileUi.composeKey) },
                 icon = Icons.Default.CloudDownload
             )

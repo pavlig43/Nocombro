@@ -50,7 +50,7 @@ internal class DeclarationFormTabInnerTabsComponent(
 
                     DeclarationTab.Files -> DeclarationFileTabSlot(
                         declarationId = declarationId,
-                        updateRepository = scope.get(),
+                        dependencies = scope.get(),
                         componentContext = context
                     )
 

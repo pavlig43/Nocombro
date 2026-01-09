@@ -60,7 +60,7 @@ private fun DeclarationSlotScreen(
     declarationTabSlot: DeclarationTabSlot?,
 ) {
     when (declarationTabSlot) {
-        is DeclarationFileTabSlot -> FilesScreen(declarationTabSlot.fileComponent)
+        is DeclarationFileTabSlot -> FilesScreen(declarationTabSlot)
         is EssentialTabSlot -> UpdateEssentialsBlock(declarationTabSlot)
         null -> Box(Modifier)
     }

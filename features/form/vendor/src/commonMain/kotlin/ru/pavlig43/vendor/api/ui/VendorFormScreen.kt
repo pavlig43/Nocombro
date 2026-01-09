@@ -59,7 +59,7 @@ private fun VendorSlotScreen(vendorSlot: VendorTabSlot?) {
         when (vendorSlot) {
             is EssentialTabSlot -> UpdateEssentialsBlock(vendorSlot)
 
-            is VendorFileTabSlot -> FilesScreen(vendorSlot.fileComponent)
+            is VendorFileTabSlot -> FilesScreen(vendorSlot)
             null -> Box(Modifier)
 
         }

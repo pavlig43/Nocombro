@@ -6,6 +6,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
+import ru.pavlig43.database.data.transaction.TRANSACTION_TABLE_NAME
 import ru.pavlig43.database.data.transaction.Transaction
 
 @Dao
@@ -18,14 +19,14 @@ suspend fun create(transaction: Transaction): Long
     @Update
     suspend fun updateTransaction(transaction: Transaction)
 
-    @Query("DELETE FROM product_transaction  WHERE id IN (:ids)")
+    @Query("DELETE FROM $TRANSACTION_TABLE_NAME WHERE id IN (:ids)")
     suspend fun deleteTransactionsByIds(ids: Set<Int>)
 
-    @Query("SELECT * from product_transaction WHERE id = :id")
+    @Query("SELECT * FROM  $TRANSACTION_TABLE_NAME WHERE id = :id")
     suspend fun getTransaction(id: Int): Transaction
 
     @Query("""
-    SELECT * FROM product_transaction
+    SELECT * FROM $TRANSACTION_TABLE_NAME
     ORDER BY created_at DESC
 """)
     fun observeOnProductTransactions(): Flow<List<Transaction>>

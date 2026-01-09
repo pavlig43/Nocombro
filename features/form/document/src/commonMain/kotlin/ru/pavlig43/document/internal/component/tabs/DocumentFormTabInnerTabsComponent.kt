@@ -48,7 +48,7 @@ internal class DocumentFormTabInnerTabsComponent(
 
                     DocumentTab.Files -> DocumentFileTabSlot(
                         documentId = documentId,
-                        updateRepository = scope.get(),
+                        dependencies = scope.get(),
                         componentContext = context
                     )
                 }

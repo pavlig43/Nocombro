@@ -9,7 +9,7 @@ plugins {
 kotlin{
     commonMainDependencies {
         implementation(projects.database)
-        implementation(projects.features.manageitem.addfile)
+        implementation(projects.features.files)
         implementation(projects.features.manageitem.upsert)
         implementation(projects.features.manageitem.loadinitdata)
         

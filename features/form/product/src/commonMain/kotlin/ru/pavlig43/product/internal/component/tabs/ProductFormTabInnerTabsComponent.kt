@@ -57,7 +57,7 @@ internal class ProductFormTabInnerTabsComponent(
 
                     ProductTab.Files -> ProductFileTabSlot(
                         productId = productId,
-                        updateRepository = scope.get(UpdateCollectionRepositoryType.Files.qualifier),
+                        dependencies = scope.get(),
                         componentContext = context
                     )
 

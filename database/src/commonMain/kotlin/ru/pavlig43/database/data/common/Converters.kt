@@ -8,6 +8,7 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atTime
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
+import ru.pavlig43.database.data.files.OwnerType
 import ru.pavlig43.database.data.document.DocumentType
 import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.database.data.product.ProductUnit
@@ -19,6 +20,12 @@ import kotlin.time.Instant
 @OptIn(ExperimentalTime::class)
 class Converters {
 
+    @TypeConverter
+    fun fromOwnerType(type: OwnerType): String {
+        return type.name
+    }
+    @TypeConverter
+    fun toOwnerType(value: String) = enumValueOf<OwnerType>(value)
 
     @TypeConverter
     fun fromProductType(productType: ProductType): String {

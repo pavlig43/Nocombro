@@ -2,6 +2,7 @@ package ru.pavlig43.product.internal.di
 
 import org.koin.core.qualifier.qualifier
 import org.koin.dsl.module
+import ru.pavlig43.addfile.api.FilesDependencies
 import ru.pavlig43.create.data.CreateEssentialsRepository
 import ru.pavlig43.database.DataBaseTransaction
 import ru.pavlig43.database.NocombroDatabase
@@ -10,7 +11,6 @@ import ru.pavlig43.database.data.product.CompositionOut
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductDeclarationIn
 import ru.pavlig43.database.data.product.ProductDeclarationOut
-import ru.pavlig43.database.data.product.ProductFile
 import ru.pavlig43.immutable.api.ImmutableTableDependencies
 import ru.pavlig43.product.api.ProductFormDependencies
 import ru.pavlig43.update.data.UpdateCollectionRepository
@@ -20,17 +20,11 @@ internal fun createProductFormModule(dependencies: ProductFormDependencies) = li
     module {
         single<NocombroDatabase> { dependencies.db }
         single<DataBaseTransaction> { dependencies.transaction }
-        single<ImmutableTableDependencies> { dependencies.dependencies }
+        single<FilesDependencies> {dependencies.filesDependencies  }
+        single<ImmutableTableDependencies> { dependencies.immutableTableDependencies }
         single<CreateEssentialsRepository<Product>> { getCreateRepository(get()) }
         single<UpdateEssentialsRepository<Product>> { getUpdateRepository(get()) }
 
-
-
-        single<UpdateCollectionRepository<ProductFile, ProductFile>>(
-
-                UpdateCollectionRepositoryType.Files.qualifier
-
-        ) { getFilesRepository(get()) }
 
         single<UpdateCollectionRepository<ProductDeclarationOut, ProductDeclarationIn>>(
             UpdateCollectionRepositoryType.Declaration.qualifier
@@ -69,7 +63,7 @@ private fun getUpdateRepository(
 }
 
 internal enum class UpdateCollectionRepositoryType {
-    Files,
+
     Declaration,
     Composition,
 
@@ -84,16 +78,7 @@ private fun createUpdateCompositionRepository(
         upsertCollection = dao::upsertComposition
     )
 }
-private fun getFilesRepository(
-    db: NocombroDatabase
-): UpdateCollectionRepository<ProductFile, ProductFile> {
-    val fileDao = db.productFilesDao
-    return UpdateCollectionRepository(
-        loadCollection = fileDao::getFiles,
-        deleteCollection = fileDao::deleteFiles,
-        upsertCollection = fileDao::upsertProductFiles
-    )
-}
+
 
 private fun getUpdateDeclarationRepository(
     db: NocombroDatabase

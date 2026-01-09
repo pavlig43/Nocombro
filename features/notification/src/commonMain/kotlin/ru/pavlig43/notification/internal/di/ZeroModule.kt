@@ -7,6 +7,7 @@ import org.koin.core.qualifier.Qualifier
 import org.koin.dsl.module
 import ru.pavlig43.core.DateThreshold
 import ru.pavlig43.database.NocombroDatabase
+import ru.pavlig43.database.data.files.OwnerType
 import ru.pavlig43.notification.api.data.NotificationItem
 import ru.pavlig43.notification.api.data.NotificationLevel
 import ru.pavlig43.notification.internal.data.INotificationRepository
@@ -39,7 +40,7 @@ private class DocumentNotificationRepository(
     db: NocombroDatabase
 ) : INotificationRepository {
     override val notificationFlow: Flow<List<NotificationUi>> =
-        db.documentDao.observeOnDocumentWithoutFiles().map { lst ->
+        db.documentDao.observeOnItemWithoutFiles().map { lst ->
             lst.map { notificationDTO ->
                 NotificationUi(
                     id = notificationDTO.id,
@@ -54,7 +55,7 @@ private class DeclarationZeroRepository(
 ) : INotificationRepository {
 
     private val declarationWithoutDocument =
-        db.declarationDao.observeOnDeclarationInWithoutFiles().map { lst ->
+        db.declarationDao.observeOnItemWithoutFiles().map { lst ->
             lst.map { notificationDTO ->
                 NotificationUi(
                     id = notificationDTO.id,

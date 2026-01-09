@@ -3,6 +3,7 @@ package ru.pavlig43.rootnocombro.internal.di
 import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
+import ru.pavlig43.addfile.api.FilesDependencies
 import ru.pavlig43.declarationform.api.DeclarationFormDependencies
 import ru.pavlig43.document.api.DocumentFormDependencies
 import ru.pavlig43.immutable.api.ImmutableTableDependencies
@@ -15,6 +16,7 @@ import ru.pavlig43.vendor.api.VendorFormDependencies
 
 internal val featureDependenciesModule = listOf(module {
     singleOf(::ImmutableTableDependencies)
+    singleOf(::FilesDependencies)
     factoryOf(::IRootSignDependencies)
     factoryOf(::NotificationDependencies)
 

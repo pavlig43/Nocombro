@@ -2,35 +2,28 @@ package ru.pavlig43.declarationform.internal.component.tabs.tabslot
 
 import com.arkivanov.decompose.ComponentContext
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
-import ru.pavlig43.addfile.api.component.UpdateFilesComponent
-import ru.pavlig43.addfile.api.data.FileUi
-import ru.pavlig43.database.data.declaration.DeclarationFile
-import ru.pavlig43.update.data.UpdateCollectionRepository
+import kotlinx.coroutines.flow.combine
+import ru.pavlig43.addfile.api.component.FileComponent
+import ru.pavlig43.addfile.api.FilesDependencies
+import ru.pavlig43.database.data.files.OwnerType
 
 internal class DeclarationFileTabSlot(
     componentContext: ComponentContext,
     declarationId: Int,
-    updateRepository: UpdateCollectionRepository<DeclarationFile, DeclarationFile>
-): UpdateFilesComponent<DeclarationFile>(
+    dependencies: FilesDependencies,
+): FileComponent(
     componentContext = componentContext,
-    id = declarationId,
-    updateRepository = updateRepository,
-    mapper = { toFileData(it)}
+    ownerId = declarationId,
+    ownerType = OwnerType.DECLARATION,
+    dependencies = dependencies
 ), DeclarationTabSlot {
-    override val errorMessages: Flow<List<String>> = fileComponent.filesUi.map { lst->
+    override val errorMessages: Flow<List<String>> = combine(
+        isAllFilesUpload,
+        filesUi
+    ){isUpload,files->
         buildList {
-            if (lst.isEmpty()){
-                add("Необходимо добавить хотя бы один файл в декларацию")
-            }
+            if (!isUpload) add( "Идет загрузка")
+            if (files.isEmpty()) add("Добавь хотя бы один файл")
         }
     }
-}
-
-private fun FileUi.toFileData(declarationId:Int): DeclarationFile {
-    return DeclarationFile(
-        declarationId = declarationId,
-        path = path,
-        id = id
-    )
 }

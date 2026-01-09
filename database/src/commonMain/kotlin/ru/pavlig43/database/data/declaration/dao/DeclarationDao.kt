@@ -52,13 +52,8 @@ interface DeclarationDao {
     }
 
 
-    @Query(
-        """
-       SELECT id,display_name AS displayName
-        FROM declaration WHERE id NOT IN (SELECT declaration_id FROM declaration_file) 
-    """
-    )
-    fun observeOnDeclarationInWithoutFiles(): Flow<List<NotificationDTO>>
+    @Query("SELECT id,display_name AS displayName FROM $DECLARATIONS_TABLE_NAME WHERE id NOT IN (SELECT owner_id FROM file WHERE owner_type = 'DECLARATION')")
+    fun observeOnItemWithoutFiles(): Flow<List<NotificationDTO>>
 
     fun observeOnExpiredDeclaration(dateThreshold: DateThreshold): Flow<List<NotificationDTO>> {
         return observeOnItems().map { lst: List<Declaration> ->

@@ -59,10 +59,11 @@ private fun DocumentSlotScreen(
     documentSlot: DocumentTabSlot?,
 ) {
     when (documentSlot) {
-        is DocumentFileTabSlot -> FilesScreen(documentSlot.fileComponent)
         is EssentialTabSlot -> UpdateEssentialsBlock(documentSlot)
+        is DocumentFileTabSlot -> FilesScreen(documentSlot)
 
         null -> Box(Modifier)
+
     }
 }
 @Composable

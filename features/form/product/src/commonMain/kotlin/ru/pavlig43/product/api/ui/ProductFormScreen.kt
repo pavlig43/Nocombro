@@ -64,7 +64,7 @@ private fun ProductSlotScreen(productSlot: ProductTabSlot?) {
         when (productSlot) {
             is EssentialTabSlot -> UpdateEssentialsBlock(productSlot)
 
-            is ProductFileTabSlot -> FilesScreen(productSlot.fileComponent)
+            is ProductFileTabSlot -> FilesScreen(productSlot)
             is DeclarationTabSlot -> DeclarationScreen(productSlot)
 
 

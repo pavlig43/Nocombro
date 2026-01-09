@@ -10,12 +10,13 @@ import ru.pavlig43.database.data.common.NotificationDTO
 import ru.pavlig43.database.data.common.isCanSaveWithName
 import ru.pavlig43.database.data.document.DOCUMENT_TABLE_NAME
 import ru.pavlig43.database.data.document.Document
+import ru.pavlig43.database.data.files.OwnerType
 
 
 @Dao
 interface DocumentDao {
     @Insert(onConflict = OnConflictStrategy.ABORT)
-    suspend fun create(document: Document):Long
+    suspend fun create(document: Document): Long
 
     @Update
     suspend fun updateDocument(document: Document)
@@ -24,30 +25,36 @@ interface DocumentDao {
     suspend fun deleteDocumentsByIds(ids: Set<Int>)
 
     @Query("SELECT * from document WHERE id = :id")
-    suspend fun getDocument(id: Int):Document
+    suspend fun getDocument(id: Int): Document
 
 
-    @Query("""
+    @Query(
+        """
     SELECT * FROM $DOCUMENT_TABLE_NAME
     ORDER BY id DESC
-""")
+"""
+    )
     fun observeOnDocuments(): Flow<List<Document>>
 
-    @Query("""
+    @Query(
+        """
         SELECT CASE
             WHEN (SELECT display_name FROM document WHERE id =:id) =:name THEN TRUE
             ELSE NOT EXISTS (SELECT 1 FROM document WHERE display_name = :name AND id != :id)
         END
-    """)
-    suspend fun isNameAllowed(id: Int, name: String):Boolean
+    """
+    )
+    suspend fun isNameAllowed(id: Int, name: String): Boolean
 
     suspend fun isCanSave(document: Document): Result<Unit> {
-        return isCanSaveWithName(document.id,document.displayName,::isNameAllowed)
+        return isCanSaveWithName(document.id, document.displayName, ::isNameAllowed)
 
     }
 
 
-    @Query("SELECT id,display_name AS displayName FROM document WHERE id NOT IN (SELECT document_id FROM document_file)")
-    fun observeOnDocumentWithoutFiles():Flow<List<NotificationDTO>>
+
+
+    @Query("SELECT id,display_name AS displayName FROM document WHERE id NOT IN (SELECT owner_id FROM file WHERE owner_type = 'DOCUMENT')")
+    fun observeOnItemWithoutFiles(): Flow<List<NotificationDTO>>
 
 }

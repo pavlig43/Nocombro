@@ -1,3 +1,5 @@
+import ru.pavlig43.convention.extension.commonMainDependencies
+
 plugins {
     // this is necessary to avoid the plugins to be loaded multiple times
     // in each subproject's classloader
@@ -6,7 +8,7 @@ plugins {
     alias(libs.plugins.android.kotlin.multiplatform.library) apply false
     alias(libs.plugins.composeMultiplatform) apply false
     alias(libs.plugins.composeCompiler) apply false
-    alias(libs.plugins.kotlinJvm) apply false
+    alias(libs.plugins.kotlinJvm)
     alias(libs.plugins.kotlinMultiplatform) apply false
     alias(libs.plugins.ksp) apply false
     alias(libs.plugins.room) apply false
@@ -15,6 +17,7 @@ plugins {
     alias(libs.plugins.buildkonfig) apply false
     alias(libs.plugins.composeHotReload) apply false
     alias(libs.plugins.detekt) apply false
+    alias(libs.plugins.dokka)
 
 
     //    build-logic
@@ -32,6 +35,37 @@ plugins {
 
 
 }
+
+    dokka {
+        dokkaPublications.html {
+            moduleName.set(project.name)
+            moduleVersion.set(project.version.toString())
+            // Standard output directory for HTML documentation
+            outputDirectory.set(layout.buildDirectory.dir("dokka/html"))
+            failOnWarning.set(false)
+            suppressInheritedMembers.set(false)
+            suppressObviousFunctions.set(true)
+            offlineMode.set(false)
+            includes.from("packages.md", "extra.md")
+
+            // Output directory for additional files
+            // Use this block instead of the standard when you
+            // want to change the output directory and include extra files
+            outputDirectory.set(rootDir.resolve("docs/api/0.x"))
+
+            // Use fileTree to add multiple files
+            includes.from(
+                fileTree("docs") {
+                    include("**/*.md")
+                }
+            )
+        }
+
+
+    }
+
+
+
 
 
 

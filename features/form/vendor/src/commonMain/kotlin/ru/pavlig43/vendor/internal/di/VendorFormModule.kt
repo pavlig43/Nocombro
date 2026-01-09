@@ -2,11 +2,11 @@ package ru.pavlig43.vendor.internal.di
 
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
+import ru.pavlig43.addfile.api.FilesDependencies
 import ru.pavlig43.create.data.CreateEssentialsRepository
 import ru.pavlig43.database.DataBaseTransaction
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.vendor.Vendor
-import ru.pavlig43.database.data.vendor.VendorFile
 import ru.pavlig43.update.data.UpdateCollectionRepository
 import ru.pavlig43.update.data.UpdateEssentialsRepository
 import ru.pavlig43.vendor.api.VendorFormDependencies
@@ -15,18 +15,10 @@ internal fun createVendorFormModule(dependencies: VendorFormDependencies) = list
     module {
         single<NocombroDatabase> { dependencies.db }
         single<DataBaseTransaction> { dependencies.transaction }
+        single<FilesDependencies> {dependencies.filesDependencies  }
         single<CreateEssentialsRepository<Vendor>> { getCreateRepository(get()) }
         single<UpdateEssentialsRepository<Vendor>> { getUpdateRepository(get()) }
 
-        single<UpdateCollectionRepository<VendorFile, VendorFile>>(
-            named(
-                UpdateCollectionRepositoryType.Files.name
-            )
-        ) {
-            getFilesRepository(
-                get()
-            )
-        }
     }
 )
 
@@ -51,19 +43,8 @@ private fun getUpdateRepository(
     )
 }
 
-internal enum class UpdateCollectionRepositoryType {
-    Files,
-}
 
 
-private fun getFilesRepository(
-    db: NocombroDatabase
-): UpdateCollectionRepository<VendorFile, VendorFile> {
-    val fileDao = db.vendorFilesDao
-    return UpdateCollectionRepository(
-        loadCollection = fileDao::getFiles,
-        deleteCollection = fileDao::deleteFiles,
-        upsertCollection = fileDao::upsertVendorFiles
-    )
-}
+
+
 

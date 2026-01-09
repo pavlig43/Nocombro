@@ -4,7 +4,6 @@ import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
 import com.arkivanov.decompose.value.Value
 import com.arkivanov.decompose.value.operator.map
-import org.koin.core.qualifier.named
 import org.koin.core.scope.Scope
 import ru.pavlig43.core.component.EssentialComponentFactory
 import ru.pavlig43.core.tabs.TabNavigationComponent
@@ -16,7 +15,6 @@ import ru.pavlig43.vendor.internal.component.tabs.tabslot.EssentialTabSlot
 import ru.pavlig43.vendor.internal.component.tabs.tabslot.VendorFileTabSlot
 import ru.pavlig43.vendor.internal.component.tabs.tabslot.VendorTabSlot
 import ru.pavlig43.vendor.internal.data.VendorEssentialsUi
-import ru.pavlig43.vendor.internal.di.UpdateCollectionRepositoryType
 
 internal class VendorFormTabInnerTabsComponent(
     componentContext: ComponentContext,
@@ -51,7 +49,7 @@ internal class VendorFormTabInnerTabsComponent(
 
                     VendorTab.Files -> VendorFileTabSlot(
                         vendorId = vendorId,
-                        updateRepository = scope.get(named(UpdateCollectionRepositoryType.Files.name)),
+                        dependencies = scope.get(),
                         componentContext = context
                     )
 
