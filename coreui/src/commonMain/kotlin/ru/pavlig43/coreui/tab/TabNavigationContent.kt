@@ -13,6 +13,7 @@ import com.arkivanov.decompose.Child
 import com.arkivanov.decompose.InternalDecomposeApi
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.arkivanov.decompose.keyHashString
+import com.arkivanov.decompose.router.stack.ChildStack
 import ru.pavlig43.core.tabs.TabNavigationComponent
 
 @OptIn(InternalDecomposeApi::class)
@@ -36,6 +37,7 @@ fun <TabConfiguration : Any, SlotComponent : Any> TabNavigationContent(
     val children by navigationComponent.children.subscribeAsState()
     val holder = rememberSaveableStateHolder()
     holder.retainStates(children.getKeys())
+
 
     containerContent(
         { tabRowModifier ->

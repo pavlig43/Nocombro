@@ -11,6 +11,20 @@ import com.arkivanov.decompose.value.Value
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 
+/**
+ * Компонент навигации по вкладкам с динамическим управлением.
+ *
+ * Поддерживает:
+ * - Выбор вкладки: [onSelectTab]
+ * - Перемещение: [onMove] (drag-n-drop)
+ * - Закрытие: [onTabCloseClicked]
+ * - Добавление: [addTab]
+ *
+ * @param TabConfiguration Тип конфигурации вкладки
+ * @param SlotComponent Тип содержимого вкладки
+ * @property children Текущее состояние вкладок + выбранная
+ * @see SimpleNavigation Базовая навигация MVIkit
+ */
 
 class TabNavigationComponent<TabConfiguration : Any, SlotComponent : Any>(
     componentContext: ComponentContext,
@@ -26,6 +40,7 @@ class TabNavigationComponent<TabConfiguration : Any, SlotComponent : Any>(
         val items: List<Child.Created<C, T>>,
         val selectedIndex: Int?,
     )
+
     private val navigation =
         SimpleNavigation<(NavigationState<TabConfiguration>) -> NavigationState<TabConfiguration>>()
 
