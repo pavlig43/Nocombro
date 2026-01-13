@@ -58,9 +58,9 @@ internal class VendorFormTabInnerTabsComponent(
             },
         )
     private suspend fun update(): Result<Unit> {
-        val blocks: Value<List<suspend () -> Result<Unit>>> = tabNavigationComponent.children.map { children->
+        val blocks: Value<List<suspend () -> Result<Unit>>> = tabNavigationComponent.tabChildren.map { children->
             children.items.map { child-> suspend {child.instance.onUpdate()} } }
-        println(tabNavigationComponent.children.map { it.items.map { it.instance.title } })
+        println(tabNavigationComponent.tabChildren.map { it.items.map { it.instance.title } })
         return dbTransaction.transaction(blocks.value)
 
     }

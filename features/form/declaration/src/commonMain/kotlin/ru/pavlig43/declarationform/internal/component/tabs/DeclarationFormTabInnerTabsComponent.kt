@@ -60,7 +60,7 @@ internal class DeclarationFormTabInnerTabsComponent(
             },
         )
     private suspend fun update(): Result<Unit> {
-        val blocks = tabNavigationComponent.children.map { children->
+        val blocks = tabNavigationComponent.tabChildren.map { children->
             children.items.map { child-> suspend {child.instance.onUpdate()} } }
         return dbTransaction.transaction(blocks.value)
     }

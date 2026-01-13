@@ -72,7 +72,7 @@ private fun TabNavigationContent(
     navigationComponent: TabNavigationComponent<NotificationLevel, ILevelNotificationComponent>,
     containerContent: @Composable (innerTabs: @Composable (modifier: Modifier) -> Unit, slotComponent: ILevelNotificationComponent?) -> Unit
 ) {
-    val children by navigationComponent.children.subscribeAsState()
+    val children by navigationComponent.tabChildren.subscribeAsState()
 
     containerContent(
         { tabRowModifier ->

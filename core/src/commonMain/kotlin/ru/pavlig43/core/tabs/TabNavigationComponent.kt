@@ -22,7 +22,7 @@ import kotlinx.serialization.Serializable
  *
  * @param TabConfiguration Тип конфигурации вкладки
  * @param SlotComponent Тип содержимого вкладки
- * @property children Текущее состояние вкладок + выбранная
+ * @property tabChildren Текущее состояние вкладок + выбранная
  * @see SimpleNavigation Базовая навигация MVIkit
  */
 
@@ -36,36 +36,36 @@ class TabNavigationComponent<TabConfiguration : Any, SlotComponent : Any>(
         closeTab: () -> Unit,
     ) -> SlotComponent
 ) : ComponentContext by componentContext {
-    class Children<out C : Any, out T : Any>(
+    class TabChildren<out C : Any, out T : Any>(
         val items: List<Child.Created<C, T>>,
         val selectedIndex: Int?,
     )
 
     private val navigation =
-        SimpleNavigation<(NavigationState<TabConfiguration>) -> NavigationState<TabConfiguration>>()
+        SimpleNavigation<(TabNavigationState<TabConfiguration>) -> TabNavigationState<TabConfiguration>>()
 
-    val children: Value<Children<TabConfiguration, SlotComponent>> =
+    val tabChildren: Value<TabChildren<TabConfiguration, SlotComponent>> =
         children<
                 ComponentContext,
                 TabConfiguration,
                 SlotComponent,
-                    (NavigationState<TabConfiguration>) -> NavigationState<TabConfiguration>,
-                NavigationState<TabConfiguration>,
-                Children<TabConfiguration, SlotComponent>
+                    (TabNavigationState<TabConfiguration>) -> TabNavigationState<TabConfiguration>,
+                TabNavigationState<TabConfiguration>,
+                TabChildren<TabConfiguration, SlotComponent>
                 >(
             source = navigation,
-            stateSerializer = NavigationState.serializer(serializer),
+            stateSerializer = TabNavigationState.serializer(serializer),
             key = "tabs",
             initialState = {
-                NavigationState(configurations = startConfigurations, currentIndex = 0)
+                TabNavigationState(configurations = startConfigurations, currentIndex = 0)
             },
-            navTransformer = { state, transformer: (NavigationState<TabConfiguration>) ->
-            NavigationState<TabConfiguration> ->
+            navTransformer = { state, transformer: (TabNavigationState<TabConfiguration>) ->
+            TabNavigationState<TabConfiguration> ->
                 transformer(state)
             },
             stateMapper = { state, children ->
-                Children(
-                    items = children.map { it as Child.Created },
+                TabChildren(
+                    items = children.map { child: Child<TabConfiguration, SlotComponent> ->  child as Child.Created },
                     selectedIndex = state.currentIndex,
                 )
             },
@@ -86,16 +86,16 @@ class TabNavigationComponent<TabConfiguration : Any, SlotComponent : Any>(
         )
 
     fun onSelectTab(index: Int) {
-        navigation.navigate { state ->
+        navigation.navigate { state: TabNavigationState<TabConfiguration> ->
             require(index in 0..state.configurations.size)
             state.copy(currentIndex = index)
         }
     }
 
     fun onMove(fromIndex: Int, toIndex: Int) {
-        if (fromIndex !in children.value.items.indices || toIndex !in children.value.items.indices) return
+        if (fromIndex !in tabChildren.value.items.indices || toIndex !in tabChildren.value.items.indices) return
 
-        navigation.navigate { state ->
+        navigation.navigate { state: TabNavigationState<TabConfiguration> ->
             val updatedConfigurations = state.configurations.toMutableList()
             val movedItem = updatedConfigurations.removeAt(fromIndex)
             updatedConfigurations.add(toIndex, movedItem)
@@ -105,7 +105,7 @@ class TabNavigationComponent<TabConfiguration : Any, SlotComponent : Any>(
     }
 
     private fun onCloseTab(tabConfiguration: TabConfiguration) {
-        val index = children.value.items.indexOfFirst { it.configuration === tabConfiguration }
+        val index = tabChildren.value.items.indexOfFirst { it.configuration === tabConfiguration }
         onTabCloseClicked(index)
     }
 
@@ -122,7 +122,6 @@ class TabNavigationComponent<TabConfiguration : Any, SlotComponent : Any>(
                 state.currentIndex == null -> null
                 index == state.currentIndex -> index.coerceIn(0, updatedConfigurations.size - 1)
                 index > state.currentIndex -> state.currentIndex
-//                else -> state.currentIndex - 1
                 else -> state.currentIndex - 1
             }
 
@@ -141,8 +140,15 @@ class TabNavigationComponent<TabConfiguration : Any, SlotComponent : Any>(
         }
     }
 
+    /**
+     * Класс состояние для
+     * [configurations] списка конфигураций(на главной например: список документов, или детали этого документа)
+     * [currentIndex] индекс выбранной вкладки, может быть null, если список конфигураций пуст
+     * Все вкладки независимо выбраны они или нет находятся в активном состоянии.
+     * Реализует интерфейс [NavState], который содержит в себе просто список конфигураций, которые имеют свой статус.
+     */
     @Serializable
-    private data class NavigationState<TabConfiguration : Any>(
+    private data class TabNavigationState<TabConfiguration : Any>(
         val configurations: List<TabConfiguration>,
         val currentIndex: Int?,
     ) : NavState<TabConfiguration> {

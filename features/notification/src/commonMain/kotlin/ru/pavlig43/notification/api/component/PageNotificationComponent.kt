@@ -77,7 +77,7 @@ class PageNotificationComponent(
             },
         )
     @OptIn(ExperimentalCoroutinesApi::class)
-    val notificationsForDrawer: StateFlow<List<NotificationDrawerUi>> = tabNavigationComponent.children.map {
+    val notificationsForDrawer: StateFlow<List<NotificationDrawerUi>> = tabNavigationComponent.tabChildren.map {
          it.items.map { child->
             child.instance.countNotification.map { count->
                 NotificationDrawerUi(

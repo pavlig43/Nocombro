@@ -17,7 +17,7 @@ interface IItemFormInnerTabsComponent<Tab : Any, SlotComponent : FormTabSlot> {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     fun getErrors(lifecycle: Lifecycle): Flow<List<ErrorMessage>> =
-        tabNavigationComponent.children.map { children ->
+        tabNavigationComponent.tabChildren.map { children ->
             children.items.mapIndexed { tabIndex, child ->
                 child.instance.errorMessages.map { errors ->
                     errors.map { messageText ->

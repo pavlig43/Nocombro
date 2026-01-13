@@ -13,7 +13,6 @@ import com.arkivanov.decompose.Child
 import com.arkivanov.decompose.InternalDecomposeApi
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.arkivanov.decompose.keyHashString
-import com.arkivanov.decompose.router.stack.ChildStack
 import ru.pavlig43.core.tabs.TabNavigationComponent
 
 @OptIn(InternalDecomposeApi::class)
@@ -34,7 +33,7 @@ fun <TabConfiguration : Any, SlotComponent : Any> TabNavigationContent(
     ) -> Unit,
     slotFactory: @Composable (SlotComponent?) -> Unit,
 ) {
-    val children by navigationComponent.children.subscribeAsState()
+    val children by navigationComponent.tabChildren.subscribeAsState()
     val holder = rememberSaveableStateHolder()
     holder.retainStates(children.getKeys())
 
@@ -62,16 +61,16 @@ fun <TabConfiguration : Any, SlotComponent : Any> TabNavigationContent(
     val activeSlot = children.selectedIndex?.let { children.items[it] }
     val key = activeSlot?.keyHashString()
     val instance = activeSlot?.instance
-        key?.let { key ->
-            holder.SaveableStateProvider(key) {
-                slotFactory(instance)
-            }
+    key?.let { key ->
+        holder.SaveableStateProvider(key) {
+            slotFactory(instance)
         }
     }
+}
 
 
 @OptIn(InternalDecomposeApi::class)
-private fun <TabConfiguration : Any, SlotComponent : Any> TabNavigationComponent.Children<TabConfiguration, SlotComponent>.getKeys(): HashSet<String> {
+private fun <TabConfiguration : Any, SlotComponent : Any> TabNavigationComponent.TabChildren<TabConfiguration, SlotComponent>.getKeys(): HashSet<String> {
     return items.mapTo(HashSet(), Child<*, *>::keyHashString)
 }
 
