@@ -24,15 +24,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
-import ru.pavlig43.core.FormTabSlot
+import ru.pavlig43.core.FormTabChild
+import ru.pavlig43.core.FormTabComponent
 import ru.pavlig43.coreui.tab.TabNavigationContent
 import ru.pavlig43.update.component.IItemFormInnerTabsComponent
 
 
 @Composable
-fun <Tab : Any, Slot : FormTabSlot> ItemTabsUi(
-    component: IItemFormInnerTabsComponent<Tab, Slot>,
-    slotFactory: @Composable (Slot?) -> Unit,
+fun <Tab : Any, Child : FormTabChild> ItemTabsUi1(
+    component: IItemFormInnerTabsComponent<Tab, Child>,
+    slotFactory: @Composable (Child?) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Scaffold(
@@ -50,9 +51,9 @@ fun <Tab : Any, Slot : FormTabSlot> ItemTabsUi(
         ) {
             TabNavigationContent(
                 navigationComponent = component.tabNavigationComponent,
-                tabContent = { index, tabComponent, modifier, isSelected, _, _ ->
+                tabContent = { index, tabChild, modifier, isSelected, _, _ ->
                     TabContent(
-                        formTabSlot = tabComponent,
+                        formTabComponent = tabChild.component,
                         modifier = modifier,
                         isSelected = isSelected,
                         onSelect = { component.tabNavigationComponent.onSelectTab(index) },
@@ -93,13 +94,13 @@ val tabOnClickModifier =
 
 @Composable
 private fun TabContent(
-    formTabSlot: FormTabSlot,
+    formTabComponent: FormTabComponent,
     isSelected: Boolean,
     onSelect: () -> Unit,
     modifier: Modifier = Modifier
 
 ) {
-    val interactionSource = remember(formTabSlot) { MutableInteractionSource() }
+    val interactionSource = remember(formTabComponent) { MutableInteractionSource() }
     val pressedAsState = interactionSource.collectIsPressedAsState()
     LaunchedEffect(pressedAsState.value) {
         if (pressedAsState.value) {
@@ -118,7 +119,7 @@ private fun TabContent(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                text = formTabSlot.title,
+                text = formTabComponent.title,
                 textDecoration = if (isSelected) TextDecoration.Underline else TextDecoration.None
             )
         }

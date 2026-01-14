@@ -10,7 +10,7 @@ import ru.pavlig43.product.internal.data.toDto
 import ru.pavlig43.update.component.UpdateEssentialsComponent
 import ru.pavlig43.update.data.UpdateEssentialsRepository
 
-internal class EssentialTabSlot(
+internal class ProductEssentialsComponent(
     componentContext: ComponentContext,
     productId: Int,
     updateRepository: UpdateEssentialsRepository<Product>,
@@ -21,7 +21,7 @@ internal class EssentialTabSlot(
     updateEssentialsRepository = updateRepository,
     componentFactory = componentFactory,
     mapperToDTO = {toDto()}
-), ProductTabSlot {
+) {
     override val errorMessages: Flow<List<String>> = itemFields.map { prod->
         buildList {
             if (prod.displayName.isBlank()){

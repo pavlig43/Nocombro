@@ -3,7 +3,7 @@ package ru.pavlig43.rootnocombro.internal.navigation
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
 import org.koin.core.scope.Scope
-import ru.pavlig43.core.SlotComponent
+import ru.pavlig43.core.MainTabComponent
 import ru.pavlig43.core.tabs.TabNavigationComponent
 import ru.pavlig43.database.data.document.DocumentType
 import ru.pavlig43.database.data.product.ProductType
@@ -11,7 +11,7 @@ import ru.pavlig43.database.data.transaction.TransactionType
 import ru.pavlig43.declarationform.api.DeclarationFormComponent
 import ru.pavlig43.document.api.component.DocumentFormComponent
 import ru.pavlig43.immutable.api.component.*
-import ru.pavlig43.notification.api.component.PageNotificationComponent
+import ru.pavlig43.notification.api.component.PageNotificationComponentMain
 import ru.pavlig43.notification.api.data.NotificationItem
 import ru.pavlig43.product.api.component.ProductFormComponent
 import ru.pavlig43.rootnocombro.internal.navigation.drawer.component.DrawerComponent
@@ -33,9 +33,9 @@ interface IMainNavigationComponent<TabConfiguration : Any, SlotConfiguration : A
 internal class MainNavigationComponent(
     componentContext: ComponentContext,
     private val scope: Scope,
-) : ComponentContext by componentContext, IMainNavigationComponent<TabConfig, SlotComponent> {
+) : ComponentContext by componentContext, IMainNavigationComponent<TabConfig, MainTabComponent> {
 
-    private val notificationComponent = PageNotificationComponent(
+    private val notificationComponent = PageNotificationComponentMain(
         componentContext = childContext("notification"),
         onOpenTab = ::openTabFromNotification,
         dependencies = scope.get()
@@ -62,14 +62,14 @@ internal class MainNavigationComponent(
             DrawerDestination.ProductTransactionList -> ProductTransactionList()
         }
 
-    override val tabNavigationComponent: TabNavigationComponent<TabConfig, SlotComponent> =
+    override val tabNavigationComponent: TabNavigationComponent<TabConfig, MainTabComponent> =
         TabNavigationComponent(
             componentContext = childContext("tab"),
             startConfigurations = listOf(
                 DocumentList(),
             ),
             serializer = TabConfig.serializer(),
-            slotFactory = { context, tabConfig: TabConfig, onCloseTab: () -> Unit ->
+            tabChildFactory = { context, tabConfig: TabConfig, onCloseTab: () -> Unit ->
 
                 when (tabConfig) {
                     is Notification -> notificationComponent
@@ -101,7 +101,7 @@ internal class MainNavigationComponent(
     private fun createImmutableTableComponent(
         tabConfig: ItemList,
         context: ComponentContext
-    ): ImmutableTableComponentFactory {
+    ): ImmutableTableComponentFactoryMain {
 
         val immutableTableBuilderData: ImmutableTableBuilderData<out ITableUi> = when(tabConfig){
             is DeclarationList -> DeclarationImmutableTableBuilder(withCheckbox = true)
@@ -128,7 +128,7 @@ internal class MainNavigationComponent(
             is VendorList -> VendorForm(id)
             is ProductTransactionList -> TransactionForm(id)
         }
-        return ImmutableTableComponentFactory(
+        return ImmutableTableComponentFactoryMain(
             componentContext = context,
             dependencies = scope.get(),
             onCreate = { tabNavigationComponent.addTab(itemForm(0)) },
@@ -142,7 +142,7 @@ internal class MainNavigationComponent(
         tabConfig: ItemForm,
         context: ComponentContext,
         onCloseTab: () -> Unit
-    ): SlotComponent {
+    ): MainTabComponent {
         return when(tabConfig){
             is DeclarationForm -> DeclarationFormComponent(
                 declarationId = tabConfig.id,

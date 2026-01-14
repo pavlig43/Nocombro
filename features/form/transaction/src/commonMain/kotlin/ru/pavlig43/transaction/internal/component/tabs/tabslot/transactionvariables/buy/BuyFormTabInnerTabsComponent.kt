@@ -18,12 +18,12 @@ internal class BuyFormTabInnerTabsComponent(
     closeFormScreen: () -> Unit,
     scope: Scope,
     id: Int
-) : ComponentContext by componentContext, IItemFormInnerTabsComponent<BuyTab, BuyFormSlot> {
+) : ComponentContext by componentContext, IItemFormInnerTabsComponent<BuyTab, BuyTabChild> {
 
     private val dbTransaction: DataBaseTransaction = scope.get()
 
 
-    override val tabNavigationComponent: TabNavigationComponent<BuyTab, BuyFormSlot> =
+    override val tabNavigationComponent: TabNavigationComponent<BuyTab, BuyTabChild> =
         TabNavigationComponent(
             componentContext = childContext("tab"),
             startConfigurations = listOf(
@@ -31,14 +31,16 @@ internal class BuyFormTabInnerTabsComponent(
 //                BuyTab.BaseProduct
             ),
             serializer = BuyTab.serializer(),
-            slotFactory = { context, tabConfig: BuyTab, _: () -> Unit ->
+            tabChildFactory = { context, tabConfig: BuyTab, _: () -> Unit ->
                 when (tabConfig) {
 
-                    BuyTab.Essentials -> BuyEssentialFormSlot(
-                        componentContext = context,
-                        componentFactory = essentialFactory,
-                        id = id,
-                        updateRepository = scope.get(),
+                    BuyTab.Essentials -> BuyTabChild.Essentials(
+                        BuyEssentialComponent(
+                            componentContext = context,
+                            componentFactory = essentialFactory,
+                            id = id,
+                            updateRepository = scope.get(),
+                        )
                     )
 
 //                    BuyTab.BaseProduct -> BuyBaseProductFormSlot(
@@ -52,7 +54,7 @@ internal class BuyFormTabInnerTabsComponent(
 
     private suspend fun update(): Result<Unit> {
         val blocks = tabNavigationComponent.tabChildren.map { children ->
-            children.items.map { child -> suspend { child.instance.onUpdate() } }
+            children.items.map { child -> suspend { child.instance.component.onUpdate() } }
         }
         return dbTransaction.transaction(blocks.value)
 

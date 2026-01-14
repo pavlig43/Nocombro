@@ -12,7 +12,7 @@ import ru.pavlig43.immutable.api.ImmutableTableDependencies
 import ru.pavlig43.update.component.UpdateEssentialsComponent
 import ru.pavlig43.update.data.UpdateEssentialsRepository
 
-internal class EssentialTabSlot(
+internal class DeclarationEssentialComponent(
     componentContext: ComponentContext,
     declarationId: Int,
     dependencies: ImmutableTableDependencies,
@@ -25,9 +25,7 @@ internal class EssentialTabSlot(
     updateEssentialsRepository = updateRepository,
     componentFactory = componentFactory,
     mapperToDTO = {toDto()}
-), DeclarationTabSlot{
-
-
+){
     val vendorDialogComponent = VendorDialogComponent(
         parentComponentContext = componentContext,
         onChangeVendor = { id, name ->

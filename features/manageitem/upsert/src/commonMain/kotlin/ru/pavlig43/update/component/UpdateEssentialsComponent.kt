@@ -1,9 +1,7 @@
 package ru.pavlig43.update.component
 
 import com.arkivanov.decompose.ComponentContext
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
-import ru.pavlig43.core.FormTabSlot
+import ru.pavlig43.core.FormTabComponent
 import ru.pavlig43.core.component.EssentialComponentFactory
 import ru.pavlig43.core.component.EssentialsComponent
 import ru.pavlig43.core.data.ChangeSet
@@ -21,7 +19,7 @@ abstract class UpdateEssentialsComponent<I : GenericItem, T : ItemEssentialsUi>(
     componentContext = componentContext,
     componentFactory = componentFactory,
     getInitData = { updateEssentialsRepository.getInit(id) },
-), FormTabSlot {
+), FormTabComponent {
     override val title: String = "Основная информация"
 
     override suspend fun onUpdate(): Result<Unit> {

@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import org.koin.core.qualifier.qualifier
-import ru.pavlig43.core.SlotComponent
+import ru.pavlig43.core.MainTabComponent
 import ru.pavlig43.corekoin.ComponentKoinContext
 import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.database.data.document.Document
@@ -26,21 +26,21 @@ import ru.pavlig43.immutable.internal.di.ImmutableTableRepositoryType
 import ru.pavlig43.immutable.internal.di.moduleFactory
 import ru.pavlig43.tablecore.model.ITableUi
 
-class ImmutableTableComponentFactory(
+class ImmutableTableComponentFactoryMain(
     componentContext: ComponentContext,
     dependencies: ImmutableTableDependencies,
     private val immutableTableBuilderData: ImmutableTableBuilderData<out ITableUi>,
     private val onCreate: () -> Unit,
     private val onItemClick: (ITableUi) -> Unit,
-) : ComponentContext by componentContext, SlotComponent {
+) : ComponentContext by componentContext, MainTabComponent {
     private val koinComponent = instanceKeeper.getOrCreate { ComponentKoinContext() }
     private val scope = koinComponent.getOrCreateKoinScope(
         moduleFactory(
             dependencies
         )
     )
-    private val _model = MutableStateFlow(SlotComponent.TabModel(immutableTableBuilderData.tabTitle))
-    override val model: StateFlow<SlotComponent.TabModel> = _model.asStateFlow()
+    private val _model = MutableStateFlow(MainTabComponent.NavTabState(immutableTableBuilderData.tabTitle))
+    override val model: StateFlow<MainTabComponent.NavTabState> = _model.asStateFlow()
 
     internal val tableComponent = build<ITableUi>(context = childContext("table"))
 

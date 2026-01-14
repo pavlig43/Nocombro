@@ -16,16 +16,13 @@ import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import ru.pavlig43.addfile.api.ui.FilesScreen
 import ru.pavlig43.core.ui.EssentialBlockScreen
 import ru.pavlig43.product.api.component.ProductFormComponent
-import ru.pavlig43.product.internal.component.tabs.tabslot.CompositionTabSlot
-import ru.pavlig43.product.internal.component.tabs.tabslot.DeclarationTabSlot
-import ru.pavlig43.product.internal.component.tabs.tabslot.EssentialTabSlot
-import ru.pavlig43.product.internal.component.tabs.tabslot.ProductFileTabSlot
-import ru.pavlig43.product.internal.component.tabs.tabslot.ProductTabSlot
+import ru.pavlig43.product.internal.component.tabs.tabslot.ProductEssentialsComponent
+import ru.pavlig43.product.internal.component.tabs.tabslot.ProductTabChild
 import ru.pavlig43.product.internal.ui.CompositionScreen
 import ru.pavlig43.product.internal.ui.CreateProductScreen
 import ru.pavlig43.product.internal.ui.DeclarationScreen
 import ru.pavlig43.product.internal.ui.ProductFields
-import ru.pavlig43.update.ui.ItemTabsUi
+import ru.pavlig43.update.ui.ItemTabsUi1
 
 @Composable
 fun ProductFormScreen(
@@ -47,9 +44,9 @@ fun ProductFormScreen(
         ) { child ->
             when (val instance = child.instance) {
                 is ProductFormComponent.Child.Create -> CreateProductScreen(instance.component)
-                is ProductFormComponent.Child.Update -> ItemTabsUi(
+                is ProductFormComponent.Child.Update -> ItemTabsUi1(
                     component = instance.component,
-                    slotFactory = { slotForm: ProductTabSlot? ->
+                    slotFactory = { slotForm: ProductTabChild? ->
                         ProductSlotScreen(slotForm)
                     })
             }
@@ -60,28 +57,23 @@ fun ProductFormScreen(
 }
 
 @Composable
-private fun ProductSlotScreen(productSlot: ProductTabSlot?) {
-        when (productSlot) {
-            is EssentialTabSlot -> UpdateEssentialsBlock(productSlot)
-
-            is ProductFileTabSlot -> FilesScreen(productSlot)
-            is DeclarationTabSlot -> DeclarationScreen(productSlot)
-
-
-            is CompositionTabSlot -> CompositionScreen(productSlot)
-
-
+private fun ProductSlotScreen(productTabChild: ProductTabChild?) {
+        when (productTabChild) {
+            is ProductTabChild.Composition -> CompositionScreen(productTabChild.component)
+            is ProductTabChild.Declaration -> DeclarationScreen(productTabChild.component)
+            is ProductTabChild.Essentials -> UpdateEssentialsBlock(productTabChild.component)
+            is ProductTabChild.Files -> FilesScreen(productTabChild.component)
             null -> Box(Modifier)
         }
     }
 
 @Composable
 private fun UpdateEssentialsBlock(
-    essentialTabSlot:EssentialTabSlot,
+    productEssentialsComponent:ProductEssentialsComponent,
     modifier: Modifier = Modifier
 ){
     Column(modifier.verticalScroll(rememberScrollState())){
-        EssentialBlockScreen(essentialTabSlot) { item, onItemChange ->
+        EssentialBlockScreen(productEssentialsComponent) { item, onItemChange ->
             ProductFields(
                 item,
                 onItemChange

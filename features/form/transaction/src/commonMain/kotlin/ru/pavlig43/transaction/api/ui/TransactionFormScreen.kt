@@ -15,11 +15,11 @@ import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import ru.pavlig43.core.ui.EssentialBlockScreen
 import ru.pavlig43.transaction.api.component.TransactionFormComponent
-import ru.pavlig43.transaction.internal.component.tabs.tabslot.transactionvariables.buy.BuyEssentialFormSlot
-import ru.pavlig43.transaction.internal.component.tabs.tabslot.transactionvariables.buy.BuyFormSlot
+import ru.pavlig43.transaction.internal.component.tabs.tabslot.transactionvariables.buy.BuyEssentialComponent
+import ru.pavlig43.transaction.internal.component.tabs.tabslot.transactionvariables.buy.BuyTabChild
 import ru.pavlig43.transaction.internal.ui.CreateTransactionScreen
 import ru.pavlig43.transaction.internal.ui.TransactionFields
-import ru.pavlig43.update.ui.ItemTabsUi
+import ru.pavlig43.update.ui.ItemTabsUi1
 
 @Composable
 fun TransactionFormScreen(
@@ -40,10 +40,10 @@ fun TransactionFormScreen(
         ) { child ->
             when (val instance = child.instance) {
                 is TransactionFormComponent.Child.Create -> CreateTransactionScreen(instance.component)
-                is TransactionFormComponent.Child.Update -> ItemTabsUi(
+                is TransactionFormComponent.Child.Update -> ItemTabsUi1(
                     component = instance.component,
-                    slotFactory = { slotForm ->
-                        SlotScreen(slotForm)
+                    slotFactory = { tabChild ->
+                        TabsScreen(tabChild)
                     })
             }
         }
@@ -53,11 +53,11 @@ fun TransactionFormScreen(
 }
 
 @Composable
-private fun SlotScreen(
-    slot: BuyFormSlot?,
+private fun TabsScreen(
+    child: BuyTabChild?,
 ) {
-    when (slot) {
-        is BuyEssentialFormSlot -> UpdateEssentialsBlock(slot)
+    when (child) {
+        is BuyTabChild.Essentials -> UpdateEssentialsBlock(child.component)
 
         null -> Box(Modifier)
 
@@ -66,7 +66,7 @@ private fun SlotScreen(
 
 @Composable
 private fun UpdateEssentialsBlock(
-    documentSlot: BuyEssentialFormSlot,
+    documentSlot: BuyEssentialComponent,
     modifier: Modifier = Modifier
 ) {
     Column(modifier.verticalScroll(rememberScrollState())) {

@@ -1,4 +1,4 @@
-package ru.pavlig43.transaction.api.component
+package ru.pavlig43.document.api.component
 
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.router.stack.ChildStack
@@ -12,84 +12,80 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.serialization.Serializable
 import org.koin.core.scope.Scope
-import ru.pavlig43.core.SlotComponent
+import ru.pavlig43.core.MainTabComponent
 import ru.pavlig43.core.component.EssentialComponentFactory
 import ru.pavlig43.corekoin.ComponentKoinContext
-import ru.pavlig43.database.data.transaction.Transaction
-import ru.pavlig43.transaction.api.TransactionFormDependencies
-import ru.pavlig43.transaction.internal.component.CreateTransactionComponent
-import ru.pavlig43.transaction.internal.component.tabs.tabslot.transactionvariables.buy.BuyFormTabInnerTabsComponent
-import ru.pavlig43.transaction.internal.di.createTransactionFormModule
-import ru.pavlig43.transaction.internal.model.TransactionEssentialsUi
-import ru.pavlig43.transaction.internal.model.toUi
+import ru.pavlig43.database.data.document.Document
+import ru.pavlig43.document.api.DocumentFormDependencies
+import ru.pavlig43.document.internal.component.CreateDocumentComponent
+import ru.pavlig43.document.internal.component.tabs.DocumentFormTabInnerTabsComponent
+import ru.pavlig43.document.internal.data.DocumentEssentialsUi
+import ru.pavlig43.document.internal.data.toUi
+import ru.pavlig43.document.internal.di.createDocumentFormModule
 
-class TransactionFormComponent(
-    transactionId: Int,
+
+class DocumentFormComponent(
+    documentId: Int,
     val closeTab: () -> Unit,
     componentContext: ComponentContext,
-    dependencies: TransactionFormDependencies,
-) : ComponentContext by componentContext, SlotComponent {
+    dependencies: DocumentFormDependencies,
+) : ComponentContext by componentContext, MainTabComponent {
 
     private val koinContext = instanceKeeper.getOrCreate {
         ComponentKoinContext()
     }
     private val scope: Scope =
-        koinContext.getOrCreateKoinScope(createTransactionFormModule(dependencies))
+        koinContext.getOrCreateKoinScope(createDocumentFormModule(dependencies))
 
 
-    private val _model = MutableStateFlow(SlotComponent.TabModel(""))
+    private val _model = MutableStateFlow(MainTabComponent.NavTabState(""))
     override val model = _model.asStateFlow()
 
     private val stackNavigation = StackNavigation<Config>()
 
 
-    private val essentialFactory =
-        EssentialComponentFactory<Transaction, TransactionEssentialsUi>(
-            initItem = TransactionEssentialsUi(),
-            isValidValuesFactory = { transactionType != null },
-            mapperToUi = { toUi() },
-            vendorInfoForTabName = { onChangeValueForMainTab(it.transactionType?.displayName ?: "* Транзакция") }
-        )
+    private val essentialFactory = EssentialComponentFactory<Document, DocumentEssentialsUi>(
+        initItem = DocumentEssentialsUi(),
+        isValidValuesFactory = { displayName.isNotBlank() && type != null },
+        mapperToUi = { toUi() },
+        vendorInfoForTabName = { d -> onChangeValueForMainTab("*Документ ${d.displayName}") }
+    )
 
     private fun onChangeValueForMainTab(title: String) {
 
-        val tabModel = SlotComponent.TabModel(title)
-        _model.update { tabModel }
+        val navTabState = MainTabComponent.NavTabState(title)
+        _model.update { navTabState }
     }
-
     private fun createChild(
         config: Config,
         componentContext: ComponentContext
     ): Child {
         return when (config) {
             is Config.Create -> Child.Create(
-                CreateTransactionComponent(
+                CreateDocumentComponent(
                     componentContext = componentContext,
                     onSuccessCreate = { stackNavigation.replaceAll(Config.Update(it)) },
-                    createRepository = scope.get(),
+                    createDocumentRepository = scope.get(),
                     componentFactory = essentialFactory
                 )
 
             )
 
             is Config.Update -> Child.Update(
-                BuyFormTabInnerTabsComponent(
+                DocumentFormTabInnerTabsComponent(
                     componentContext = componentContext,
                     essentialFactory = essentialFactory,
                     scope = scope,
-                    id = config.id,
+                    documentId = config.id,
                     closeFormScreen = closeTab
                 )
             )
         }
     }
-
     internal val stack: Value<ChildStack<Config, Child>> = childStack(
         source = stackNavigation,
         serializer = Config.serializer(),
-        initialConfiguration = if (transactionId == 0) Config.Create else Config.Update(
-            transactionId
-        ),
+        initialConfiguration = if (documentId == 0) Config.Create else Config.Update(documentId),
         handleBackButton = false,
         childFactory = ::createChild
     )
@@ -104,7 +100,12 @@ class TransactionFormComponent(
     }
 
     internal sealed class Child {
-        class Create(val component: CreateTransactionComponent) : Child()
-        class Update(val component: BuyFormTabInnerTabsComponent) : Child()
+        class Create(val component: CreateDocumentComponent) : Child()
+        class Update(val component: DocumentFormTabInnerTabsComponent) : Child()
     }
 }
+
+
+
+
+

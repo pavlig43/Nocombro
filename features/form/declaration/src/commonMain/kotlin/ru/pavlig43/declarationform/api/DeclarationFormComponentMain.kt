@@ -1,5 +1,6 @@
 package ru.pavlig43.declarationform.api
 
+
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.router.stack.ChildStack
 import com.arkivanov.decompose.router.stack.StackNavigation
@@ -12,7 +13,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.serialization.Serializable
 import org.koin.core.scope.Scope
-import ru.pavlig43.core.SlotComponent
+import ru.pavlig43.core.MainTabComponent
 import ru.pavlig43.core.component.EssentialComponentFactory
 import ru.pavlig43.core.emptyDate
 import ru.pavlig43.corekoin.ComponentKoinContext
@@ -29,7 +30,7 @@ class DeclarationFormComponent(
     private val onOpenVendorTab: (Int) -> Unit,
     componentContext: ComponentContext,
     dependencies: DeclarationFormDependencies,
-) : ComponentContext by componentContext, SlotComponent {
+) : ComponentContext by componentContext, MainTabComponent {
 
     private val koinContext = instanceKeeper.getOrCreate {
         ComponentKoinContext()
@@ -38,7 +39,7 @@ class DeclarationFormComponent(
     private val scope: Scope =
         koinContext.getOrCreateKoinScope(createDeclarationFormModule(dependencies))
 
-    private val _model = MutableStateFlow(SlotComponent.TabModel(""))
+    private val _model = MutableStateFlow(MainTabComponent.NavTabState(""))
     override val model = _model.asStateFlow()
 
     private val stackNavigation = StackNavigation<Config>()
@@ -83,8 +84,8 @@ class DeclarationFormComponent(
     }
 
     private fun onChangeValueForMainTab(title: String) {
-        val tabModel = SlotComponent.TabModel(title)
-        _model.update { tabModel }
+        val navTabState = MainTabComponent.NavTabState(title)
+        _model.update { navTabState }
     }
     internal val stack: Value<ChildStack<Config, Child>> = childStack(
         source = stackNavigation,

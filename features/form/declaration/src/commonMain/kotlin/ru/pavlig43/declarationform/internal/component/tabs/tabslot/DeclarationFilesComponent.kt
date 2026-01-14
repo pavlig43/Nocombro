@@ -3,20 +3,20 @@ package ru.pavlig43.declarationform.internal.component.tabs.tabslot
 import com.arkivanov.decompose.ComponentContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
-import ru.pavlig43.addfile.api.component.FileComponent
+import ru.pavlig43.addfile.api.component.FilesComponent
 import ru.pavlig43.addfile.api.FilesDependencies
 import ru.pavlig43.database.data.files.OwnerType
 
-internal class DeclarationFileTabSlot(
+internal class DeclarationFilesComponent(
     componentContext: ComponentContext,
     declarationId: Int,
     dependencies: FilesDependencies,
-): FileComponent(
+): FilesComponent(
     componentContext = componentContext,
     ownerId = declarationId,
     ownerType = OwnerType.DECLARATION,
     dependencies = dependencies
-), DeclarationTabSlot {
+) {
     override val errorMessages: Flow<List<String>> = combine(
         isAllFilesUpload,
         filesUi

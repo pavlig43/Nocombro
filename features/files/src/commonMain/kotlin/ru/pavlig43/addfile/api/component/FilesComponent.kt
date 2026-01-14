@@ -21,7 +21,7 @@ import ru.pavlig43.addfile.api.model.FileUi
 import ru.pavlig43.addfile.api.model.UploadState
 import ru.pavlig43.addfile.internal.data.FilesRepository
 import ru.pavlig43.addfile.internal.di.filesModule
-import ru.pavlig43.core.FormTabSlot
+import ru.pavlig43.core.FormTabComponent
 import ru.pavlig43.core.componentCoroutineScope
 import ru.pavlig43.core.data.ChangeSet
 import ru.pavlig43.database.data.files.OwnerType
@@ -29,12 +29,12 @@ import ru.pavlig43.corekoin.ComponentKoinContext
 import ru.pavlig43.database.data.files.FileBD
 import ru.pavlig43.loadinitdata.api.component.LoadInitDataComponent
 
-abstract class FileComponent(
+abstract class FilesComponent(
     componentContext: ComponentContext,
     private val ownerId: Int,
     private val ownerType: OwnerType,
     dependencies: FilesDependencies,
-) : ComponentContext by componentContext, FormTabSlot {
+) : ComponentContext by componentContext, FormTabComponent {
     override val title: String = "Файлы"
 
     private val koinContext = instanceKeeper.getOrCreate { ComponentKoinContext() }

@@ -21,16 +21,16 @@ import com.arkivanov.decompose.Child
 import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import kotlinx.coroutines.launch
-import ru.pavlig43.core.SlotComponent
+import ru.pavlig43.core.MainTabComponent
 import ru.pavlig43.core.tabs.TabNavigationComponent
 import ru.pavlig43.coreui.tab.TabNavigationContent
 import ru.pavlig43.declarationform.api.DeclarationFormComponent
 import ru.pavlig43.declarationform.api.DeclarationFormScreen
 import ru.pavlig43.document.api.component.DocumentFormComponent
 import ru.pavlig43.document.api.ui.DocumentFormScreen
-import ru.pavlig43.immutable.api.component.ImmutableTableComponentFactory
+import ru.pavlig43.immutable.api.component.ImmutableTableComponentFactoryMain
 import ru.pavlig43.immutable.api.ui.ImmutableTableScreen
-import ru.pavlig43.notification.api.component.PageNotificationComponent
+import ru.pavlig43.notification.api.component.PageNotificationComponentMain
 import ru.pavlig43.notification.api.ui.NotificationTabs
 import ru.pavlig43.product.api.component.ProductFormComponent
 import ru.pavlig43.product.api.ui.ProductFormScreen
@@ -74,9 +74,9 @@ fun RootNocombroScreen(rootNocombroComponent: IRootNocombroComponent) {
                     is IRootNocombroComponent.Child.RootSign -> RootSignScreen(instance.component)
 
                     is IRootNocombroComponent.Child.Tabs -> {
-                        val mainNavigationComponent: IMainNavigationComponent<TabConfig, SlotComponent> =
+                        val mainNavigationComponent: IMainNavigationComponent<TabConfig, MainTabComponent> =
                             instance.component
-                        val tabNavigationComponent: TabNavigationComponent<TabConfig, SlotComponent> =
+                        val tabNavigationComponent: TabNavigationComponent<TabConfig, MainTabComponent> =
                             mainNavigationComponent.tabNavigationComponent
                         val drawerNavigationComponent = mainNavigationComponent.drawerComponent
                         NocombroAppBar(
@@ -104,7 +104,7 @@ fun RootNocombroScreen(rootNocombroComponent: IRootNocombroComponent) {
                                     navigationComponent = tabNavigationComponent,
                                     tabContent = { index, slotComponent, modifier, isSelected, isDragging, onClose ->
                                         TabContent(
-                                            slotComponent = slotComponent,
+                                            mainTabComponent = slotComponent,
                                             modifier = modifier,
                                             isSelected = isSelected,
                                             isDragging = isDragging,
@@ -131,24 +131,24 @@ fun RootNocombroScreen(rootNocombroComponent: IRootNocombroComponent) {
 
 }
 @Composable
-private fun SlotFactory(slotComponent: SlotComponent?){
-    when (slotComponent) {
-        is ImmutableTableComponentFactory -> ImmutableTableScreen(slotComponent)
+private fun SlotFactory(mainTabComponent: MainTabComponent?){
+    when (mainTabComponent) {
+        is ImmutableTableComponentFactoryMain -> ImmutableTableScreen(mainTabComponent)
 
-        is DocumentFormComponent -> DocumentFormScreen(slotComponent)
+        is DocumentFormComponent -> DocumentFormScreen(mainTabComponent)
 
-        is ProductFormComponent -> ProductFormScreen(slotComponent)
+        is ProductFormComponent -> ProductFormScreen(mainTabComponent)
 
-        is PageNotificationComponent -> NotificationTabs(slotComponent)
+        is PageNotificationComponentMain -> NotificationTabs(mainTabComponent)
 
-        is VendorFormComponent -> VendorFormScreen(slotComponent)
+        is VendorFormComponent -> VendorFormScreen(mainTabComponent)
 
-        is DeclarationFormComponent -> DeclarationFormScreen(slotComponent)
+        is DeclarationFormComponent -> DeclarationFormScreen(mainTabComponent)
 
-        is TransactionFormComponent -> TransactionFormScreen(slotComponent)
+        is TransactionFormComponent -> TransactionFormScreen(mainTabComponent)
 
         null -> Box(Modifier.fillMaxSize())
-        else -> error("$slotComponent SlotComponent not added")
+        else -> error("$mainTabComponent SlotComponent not added")
     }
 }
 

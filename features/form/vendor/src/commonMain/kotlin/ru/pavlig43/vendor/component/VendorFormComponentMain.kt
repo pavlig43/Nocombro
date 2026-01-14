@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.serialization.Serializable
 import org.koin.core.scope.Scope
-import ru.pavlig43.core.SlotComponent
+import ru.pavlig43.core.MainTabComponent
 import ru.pavlig43.core.component.EssentialComponentFactory
 import ru.pavlig43.corekoin.ComponentKoinContext
 import ru.pavlig43.database.data.vendor.Vendor
@@ -28,7 +28,7 @@ class VendorFormComponent(
     val closeTab: () -> Unit,
     componentContext: ComponentContext,
     dependencies: VendorFormDependencies,
-) : ComponentContext by componentContext, SlotComponent {
+) : ComponentContext by componentContext, MainTabComponent {
 
     private val koinContext = instanceKeeper.getOrCreate {
         ComponentKoinContext()
@@ -37,7 +37,7 @@ class VendorFormComponent(
         koinContext.getOrCreateKoinScope(createVendorFormModule(dependencies))
 
 
-    private val _model = MutableStateFlow(SlotComponent.TabModel(""))
+    private val _model = MutableStateFlow(MainTabComponent.NavTabState(""))
     override val model = _model.asStateFlow()
 
     private val stackNavigation = StackNavigation<Config>()
@@ -75,8 +75,8 @@ class VendorFormComponent(
 
     private fun onChangeValueForMainTab(title: String) {
 
-        val tabModel = SlotComponent.TabModel(title)
-        _model.update { tabModel }
+        val navTabState = MainTabComponent.NavTabState(title)
+        _model.update { navTabState }
     }
 
     private val componentFactory = EssentialComponentFactory<Vendor, VendorEssentialsUi>(

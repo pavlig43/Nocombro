@@ -9,11 +9,11 @@ import ru.pavlig43.core.component.EssentialComponentFactory
 import ru.pavlig43.core.tabs.TabNavigationComponent
 import ru.pavlig43.database.DataBaseTransaction
 import ru.pavlig43.database.data.product.Product
-import ru.pavlig43.product.internal.component.tabs.tabslot.CompositionTabSlot
-import ru.pavlig43.product.internal.component.tabs.tabslot.DeclarationTabSlot
-import ru.pavlig43.product.internal.component.tabs.tabslot.EssentialTabSlot
-import ru.pavlig43.product.internal.component.tabs.tabslot.ProductFileTabSlot
-import ru.pavlig43.product.internal.component.tabs.tabslot.ProductTabSlot
+import ru.pavlig43.product.internal.component.tabs.tabslot.CompositionComponent
+import ru.pavlig43.product.internal.component.tabs.tabslot.ProductDeclarationComponent
+import ru.pavlig43.product.internal.component.tabs.tabslot.ProductEssentialsComponent
+import ru.pavlig43.product.internal.component.tabs.tabslot.ProductFilesComponent
+import ru.pavlig43.product.internal.component.tabs.tabslot.ProductTabChild
 import ru.pavlig43.product.internal.data.ProductEssentialsUi
 import ru.pavlig43.product.internal.di.UpdateCollectionRepositoryType
 import ru.pavlig43.update.component.IItemFormInnerTabsComponent
@@ -29,12 +29,12 @@ internal class ProductFormTabInnerTabsComponent(
     scope: Scope,
     productId: Int,
 ) : ComponentContext by componentContext,
-    IItemFormInnerTabsComponent<ProductTab, ProductTabSlot> {
+    IItemFormInnerTabsComponent<ProductTab, ProductTabChild> {
 
     private val dbTransaction: DataBaseTransaction = scope.get()
 
 
-    override val tabNavigationComponent: TabNavigationComponent<ProductTab, ProductTabSlot> =
+    override val tabNavigationComponent: TabNavigationComponent<ProductTab, ProductTabChild> =
         TabNavigationComponent(
             componentContext = childContext("tab"),
             startConfigurations = listOf(
@@ -44,40 +44,48 @@ internal class ProductFormTabInnerTabsComponent(
                 ProductTab.Composition
             ),
             serializer = ProductTab.serializer(),
-            slotFactory = { context, tabConfig: ProductTab, closeTab: () -> Unit ->
+            tabChildFactory = { context, tabConfig: ProductTab, closeTab: () -> Unit ->
                 when (tabConfig) {
 
-                    ProductTab.Essentials -> EssentialTabSlot(
-                        componentContext = context,
-                        productId = productId,
-                        updateRepository = scope.get(),
-                        componentFactory = componentFactory
+                    ProductTab.Essentials -> ProductTabChild.Essentials(
+                        ProductEssentialsComponent(
+                            componentContext = context,
+                            productId = productId,
+                            updateRepository = scope.get(),
+                            componentFactory = componentFactory
+                        )
                     )
 
 
-                    ProductTab.Files -> ProductFileTabSlot(
-                        productId = productId,
-                        dependencies = scope.get(),
-                        componentContext = context
+                    ProductTab.Files -> ProductTabChild.Files(
+                        ProductFilesComponent(
+                            productId = productId,
+                            dependencies = scope.get(),
+                            componentContext = context
+                        )
                     )
 
-                    ProductTab.Declaration -> DeclarationTabSlot(
-                        componentContext = context,
-                        productId = productId,
-                        updateRepository = scope.get(UpdateCollectionRepositoryType.Declaration.qualifier),
-                        openDeclarationTab = onOpenDeclarationTab,
-                        dependencies = scope.get()
+                    ProductTab.Declaration -> ProductTabChild.Declaration(
+                        ProductDeclarationComponent(
+                            componentContext = context,
+                            productId = productId,
+                            updateRepository = scope.get(UpdateCollectionRepositoryType.Declaration.qualifier),
+                            openDeclarationTab = onOpenDeclarationTab,
+                            dependencies = scope.get()
+                        )
                     )
 
 
-                    ProductTab.Composition -> CompositionTabSlot(
-                        componentContext = context,
-                        parentId = productId,
-                        repository = scope.get(UpdateCollectionRepositoryType.Composition.qualifier),
-                        immutableTableDependencies = scope.get(),
-                        updateEssentialsRepository = scope.get(),
-                        onCloseThisTab = closeTab,
-                        onOpenProductTab = onOpenProductTab
+                    ProductTab.Composition -> ProductTabChild.Composition(
+                        CompositionComponent(
+                            componentContext = context,
+                            parentId = productId,
+                            repository = scope.get(UpdateCollectionRepositoryType.Composition.qualifier),
+                            immutableTableDependencies = scope.get(),
+                            updateEssentialsRepository = scope.get(),
+                            onCloseThisTab = closeTab,
+                            onOpenProductTab = onOpenProductTab
+                        )
                     )
                 }
 
@@ -86,7 +94,7 @@ internal class ProductFormTabInnerTabsComponent(
 
     private suspend fun update(): Result<Unit> {
         val blocks = tabNavigationComponent.tabChildren.map { children ->
-            children.items.map { child -> suspend { child.instance.onUpdate() } }
+            children.items.map { child -> suspend { child.instance.component.onUpdate() } }
         }
         return dbTransaction.transaction(blocks.value)
     }

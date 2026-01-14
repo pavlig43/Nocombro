@@ -16,12 +16,11 @@ import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import ru.pavlig43.addfile.api.ui.FilesScreen
 import ru.pavlig43.core.ui.EssentialBlockScreen
 import ru.pavlig43.document.api.component.DocumentFormComponent
-import ru.pavlig43.document.internal.component.tabs.tabslot.DocumentFileTabSlot
-import ru.pavlig43.document.internal.component.tabs.tabslot.DocumentTabSlot
-import ru.pavlig43.document.internal.component.tabs.tabslot.EssentialTabSlot
+import ru.pavlig43.document.internal.component.tabs.tabslot.DocumentEssentialComponent
+import ru.pavlig43.document.internal.component.tabs.tabslot.DocumentTabChild
 import ru.pavlig43.document.internal.ui.CreateDocumentScreen
 import ru.pavlig43.document.internal.ui.DocumentFields
-import ru.pavlig43.update.ui.ItemTabsUi
+import ru.pavlig43.update.ui.ItemTabsUi1
 
 @Composable
 fun DocumentFormScreen(
@@ -42,10 +41,10 @@ fun DocumentFormScreen(
         ) { child ->
             when (val instance = child.instance) {
                 is DocumentFormComponent.Child.Create -> CreateDocumentScreen(instance.component)
-                is DocumentFormComponent.Child.Update -> ItemTabsUi(
+                is DocumentFormComponent.Child.Update -> ItemTabsUi1(
                     component = instance.component,
-                    slotFactory = { slotForm: DocumentTabSlot?->
-                        DocumentSlotScreen(slotForm)
+                    slotFactory = { child: DocumentTabChild?->
+                        DocumentSlotScreen(child)
                     })
             }
         }
@@ -56,19 +55,18 @@ fun DocumentFormScreen(
 
 @Composable
 private fun DocumentSlotScreen(
-    documentSlot: DocumentTabSlot?,
+    documentChild: DocumentTabChild?,
 ) {
-    when (documentSlot) {
-        is EssentialTabSlot -> UpdateEssentialsBlock(documentSlot)
-        is DocumentFileTabSlot -> FilesScreen(documentSlot)
+    when (documentChild) {
 
+        is DocumentTabChild.Essentials -> UpdateEssentialsBlock(documentChild.component)
+        is DocumentTabChild.Files -> FilesScreen(documentChild.component)
         null -> Box(Modifier)
-
     }
 }
 @Composable
 private fun UpdateEssentialsBlock(
-    documentSlot: EssentialTabSlot,
+    documentSlot: DocumentEssentialComponent,
     modifier: Modifier = Modifier
 ){
     Column(modifier.verticalScroll(rememberScrollState())){

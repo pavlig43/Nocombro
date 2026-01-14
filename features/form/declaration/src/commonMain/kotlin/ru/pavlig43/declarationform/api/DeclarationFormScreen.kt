@@ -15,13 +15,12 @@ import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import ru.pavlig43.addfile.api.ui.FilesScreen
 import ru.pavlig43.core.ui.EssentialBlockScreen
-import ru.pavlig43.declarationform.internal.component.tabs.tabslot.DeclarationFileTabSlot
-import ru.pavlig43.declarationform.internal.component.tabs.tabslot.DeclarationTabSlot
-import ru.pavlig43.declarationform.internal.component.tabs.tabslot.EssentialTabSlot
+import ru.pavlig43.declarationform.internal.component.tabs.tabslot.DeclarationTabChild
+import ru.pavlig43.declarationform.internal.component.tabs.tabslot.DeclarationEssentialComponent
 import ru.pavlig43.declarationform.internal.ui.CreateDeclarationScreen
 import ru.pavlig43.declarationform.internal.ui.DeclarationFields
 import ru.pavlig43.immutable.api.ui.MBSImmutableTable
-import ru.pavlig43.update.ui.ItemTabsUi
+import ru.pavlig43.update.ui.ItemTabsUi1
 
 @Composable
 fun DeclarationFormScreen(
@@ -42,10 +41,12 @@ fun DeclarationFormScreen(
             stack = stack,
         ) { child ->
             when (val instance = child.instance) {
+
+
                 is DeclarationFormComponent.Child.Create -> CreateDeclarationScreen(instance.component)
-                is DeclarationFormComponent.Child.Update -> ItemTabsUi(
+                is DeclarationFormComponent.Child.Update -> ItemTabsUi1(
                     component = instance.component,
-                    slotFactory = { slotForm: DeclarationTabSlot? ->
+                    slotFactory = { slotForm: DeclarationTabChild? ->
                         DeclarationSlotScreen(slotForm)
                     })
             }
@@ -57,18 +58,18 @@ fun DeclarationFormScreen(
 
 @Composable
 private fun DeclarationSlotScreen(
-    declarationTabSlot: DeclarationTabSlot?,
+    declarationTabChild: DeclarationTabChild?,
 ) {
-    when (declarationTabSlot) {
-        is DeclarationFileTabSlot -> FilesScreen(declarationTabSlot)
-        is EssentialTabSlot -> UpdateEssentialsBlock(declarationTabSlot)
+    when (declarationTabChild) {
+        is DeclarationTabChild.Essential -> UpdateEssentialsBlock(declarationTabChild.component)
+        is DeclarationTabChild.File -> FilesScreen(declarationTabChild.component)
         null -> Box(Modifier)
     }
 }
 
 @Composable
 private fun UpdateEssentialsBlock(
-    declarationTabSlot: EssentialTabSlot,
+    declarationTabSlot: DeclarationEssentialComponent,
     modifier: Modifier = Modifier
 ) {
     val dialog by declarationTabSlot.vendorDialogComponent.dialog.subscribeAsState()
@@ -88,5 +89,3 @@ private fun UpdateEssentialsBlock(
     }
 
 }
-
-

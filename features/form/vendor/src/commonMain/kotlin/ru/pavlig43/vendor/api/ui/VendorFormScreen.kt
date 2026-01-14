@@ -15,11 +15,10 @@ import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import ru.pavlig43.addfile.api.ui.FilesScreen
 import ru.pavlig43.core.ui.EssentialBlockScreen
-import ru.pavlig43.update.ui.ItemTabsUi
+import ru.pavlig43.update.ui.ItemTabsUi1
 import ru.pavlig43.vendor.component.VendorFormComponent
-import ru.pavlig43.vendor.internal.component.tabs.tabslot.EssentialTabSlot
-import ru.pavlig43.vendor.internal.component.tabs.tabslot.VendorFileTabSlot
-import ru.pavlig43.vendor.internal.component.tabs.tabslot.VendorTabSlot
+import ru.pavlig43.vendor.internal.component.tabs.tabslot.VendorEssentialsComponent
+import ru.pavlig43.vendor.internal.component.tabs.tabslot.VendorTabChild
 import ru.pavlig43.vendor.internal.ui.CreateVendorScreen
 import ru.pavlig43.vendor.internal.ui.VendorFields
 
@@ -42,10 +41,10 @@ fun VendorFormScreen(
         ) { child ->
             when (val instance = child.instance) {
                 is VendorFormComponent.Child.Create -> CreateVendorScreen(instance.component)
-                is VendorFormComponent.Child.Update -> ItemTabsUi(
+                is VendorFormComponent.Child.Update -> ItemTabsUi1(
                     component = instance.component,
-                    slotFactory = { slotForm: VendorTabSlot? ->
-                        VendorSlotScreen(slotForm)
+                    slotFactory = { child ->
+                        VendorTabsScreen(child)
                     })
             }
         }
@@ -55,18 +54,16 @@ fun VendorFormScreen(
 }
 
 @Composable
-private fun VendorSlotScreen(vendorSlot: VendorTabSlot?) {
-        when (vendorSlot) {
-            is EssentialTabSlot -> UpdateEssentialsBlock(vendorSlot)
-
-            is VendorFileTabSlot -> FilesScreen(vendorSlot)
+private fun VendorTabsScreen(child: VendorTabChild?) {
+        when (child) {
             null -> Box(Modifier)
-
+            is VendorTabChild.Essentials -> UpdateEssentialsBlock(child.component)
+            is VendorTabChild.Files -> FilesScreen(child.component)
         }
 }
 @Composable
 private fun UpdateEssentialsBlock(
-    essentials: EssentialTabSlot,
+    essentials: VendorEssentialsComponent,
     modifier: Modifier = Modifier
 ){
     Column(modifier.verticalScroll(rememberScrollState())){

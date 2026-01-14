@@ -10,6 +10,15 @@ import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
+/**
+ * Пороговые значения дат для фильтрации и отображения временных интервалов.
+ *
+ * Каждый объект представляет конкретную дату относительно текущего момента
+ * с человеко-читаемым названием для отображения в UI.
+ *
+ * @property value Конкретная дата порога
+ * @property displayName Название для отображения в интерфейсе
+ */
 sealed interface DateThreshold {
     val value: LocalDate
     val displayName: String

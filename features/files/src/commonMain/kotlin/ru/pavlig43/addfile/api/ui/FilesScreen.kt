@@ -30,13 +30,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
 import io.github.vinceglb.filekit.dialogs.openFileWithDefaultApplication
 import io.github.vinceglb.filekit.name
-import ru.pavlig43.addfile.api.component.FileComponent
+import ru.pavlig43.addfile.api.component.FilesComponent
 import ru.pavlig43.addfile.api.model.FileUi
 import ru.pavlig43.addfile.internal.ui.AddFileRow
 import ru.pavlig43.coreui.tooltip.IconButtonToolTip
@@ -45,7 +44,7 @@ import ru.pavlig43.loadinitdata.api.ui.LoadInitDataScreen
 
 @Composable
 fun FilesScreen(
-    component: FileComponent,
+    component: FilesComponent,
     modifier: Modifier = Modifier
 ) {
     val files by component.filesUi.collectAsState()

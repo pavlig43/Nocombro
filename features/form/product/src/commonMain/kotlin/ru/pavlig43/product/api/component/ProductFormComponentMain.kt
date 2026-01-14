@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.serialization.Serializable
 import org.koin.core.scope.Scope
-import ru.pavlig43.core.SlotComponent
+import ru.pavlig43.core.MainTabComponent
 import ru.pavlig43.core.component.EssentialComponentFactory
 import ru.pavlig43.corekoin.ComponentKoinContext
 import ru.pavlig43.database.data.product.Product
@@ -30,7 +30,7 @@ class ProductFormComponent(
     private val onOpenDeclarationTab: (Int) -> Unit,
     componentContext: ComponentContext,
     dependencies: ProductFormDependencies,
-) : ComponentContext by componentContext, SlotComponent {
+) : ComponentContext by componentContext, MainTabComponent {
 
     private val koinContext = instanceKeeper.getOrCreate {
         ComponentKoinContext()
@@ -39,7 +39,7 @@ class ProductFormComponent(
         koinContext.getOrCreateKoinScope(createProductFormModule(dependencies))
 
 
-    private val _model = MutableStateFlow(SlotComponent.TabModel(""))
+    private val _model = MutableStateFlow(MainTabComponent.NavTabState(""))
     override val model = _model.asStateFlow()
 
     private val stackNavigation = StackNavigation<Config>()
@@ -85,8 +85,8 @@ class ProductFormComponent(
 
     private fun onChangeValueForMainTab(title: String) {
 
-        val tabModel = SlotComponent.TabModel(title)
-        _model.update { tabModel }
+        val navTabState = MainTabComponent.NavTabState(title)
+        _model.update { navTabState }
     }
 
     internal val stack: Value<ChildStack<Config, Child>> = childStack(

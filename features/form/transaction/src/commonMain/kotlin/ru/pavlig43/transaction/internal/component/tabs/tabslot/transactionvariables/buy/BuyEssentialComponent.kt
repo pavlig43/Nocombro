@@ -10,7 +10,7 @@ import ru.pavlig43.transaction.internal.model.toDto
 import ru.pavlig43.update.component.UpdateEssentialsComponent
 import ru.pavlig43.update.data.UpdateEssentialsRepository
 
-internal class BuyEssentialFormSlot(
+internal class BuyEssentialComponent(
     componentContext: ComponentContext,
     id: Int,
     updateRepository: UpdateEssentialsRepository<Transaction>,
@@ -21,6 +21,6 @@ internal class BuyEssentialFormSlot(
     updateEssentialsRepository = updateRepository,
     componentFactory = componentFactory,
     mapperToDTO = { toDto() }
-), BuyFormSlot {
+){
     override val errorMessages: Flow<List<String>>  = flowOf(emptyList())
 }

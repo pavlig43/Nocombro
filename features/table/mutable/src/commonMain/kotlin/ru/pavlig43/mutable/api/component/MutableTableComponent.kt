@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.datetime.LocalDate
-import ru.pavlig43.core.FormTabSlot
+import ru.pavlig43.core.FormTabComponent
 import ru.pavlig43.core.componentCoroutineScope
 import ru.pavlig43.core.data.ChangeSet
 import ru.pavlig43.core.data.CollectionObject
@@ -50,7 +50,7 @@ abstract class MutableTableComponent<BDOut: CollectionObject,BDIn:CollectionObje
     filterMatcher: FilterMatcher<UI, C>,
     private  val repository: UpdateCollectionRepository<BDOut, BDIn>
 
-    ) : ComponentContext by componentContext, FormTabSlot {
+    ) : ComponentContext by componentContext, FormTabComponent {
 
     protected val coroutineScope = componentCoroutineScope()
 

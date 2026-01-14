@@ -31,12 +31,12 @@ import ru.pavlig43.coreui.tooltip.IconButtonToolTip
 import ru.pavlig43.coreui.tooltip.ProjectToolTip
 import ru.pavlig43.immutable.api.ui.MBSImmutableTable
 import ru.pavlig43.product.internal.component.tabs.tabslot.DeclarationListComponent
-import ru.pavlig43.product.internal.component.tabs.tabslot.DeclarationTabSlot
+import ru.pavlig43.product.internal.component.tabs.tabslot.ProductDeclarationComponent
 import ru.pavlig43.product.internal.component.tabs.tabslot.DeclarationUi
 
 @Composable
 fun DeclarationScreen(
-    component: DeclarationTabSlot,
+    component: ProductDeclarationComponent,
     modifier: Modifier = Modifier,
 ){
     val dialog by component.dialog.subscribeAsState()

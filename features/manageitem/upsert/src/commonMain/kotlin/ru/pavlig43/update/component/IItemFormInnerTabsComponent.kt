@@ -7,22 +7,24 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
-import ru.pavlig43.core.FormTabSlot
+import ru.pavlig43.core.FormTabChild
 import ru.pavlig43.core.tabs.TabNavigationComponent
 import ru.pavlig43.core.toStateFlow
 
-interface IItemFormInnerTabsComponent<Tab : Any, SlotComponent : FormTabSlot> {
-    val tabNavigationComponent: TabNavigationComponent<Tab, SlotComponent>
+interface IItemFormInnerTabsComponent<TabConfiguration : Any, TabChild : FormTabChild> {
+    val tabNavigationComponent: TabNavigationComponent<TabConfiguration, TabChild>
     val updateComponent: UpdateComponent
+
+
 
     @OptIn(ExperimentalCoroutinesApi::class)
     fun getErrors(lifecycle: Lifecycle): Flow<List<ErrorMessage>> =
         tabNavigationComponent.tabChildren.map { children ->
             children.items.mapIndexed { tabIndex, child ->
-                child.instance.errorMessages.map { errors ->
+                child.instance.component.errorMessages.map { errors ->
                     errors.map { messageText ->
                         ErrorMessage(
-                            message = "На вкладке ${child.instance.title} $messageText",
+                            message = "На вкладке ${child.instance.component.title} $messageText",
                             onSelectProblemTab = { tabNavigationComponent.onSelectTab(tabIndex) }
                         )
                     }

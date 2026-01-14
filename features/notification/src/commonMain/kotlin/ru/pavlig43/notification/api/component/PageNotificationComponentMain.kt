@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import ru.pavlig43.core.SlotComponent
+import ru.pavlig43.core.MainTabComponent
 import ru.pavlig43.core.componentCoroutineScope
 import ru.pavlig43.core.tabs.TabNavigationComponent
 import ru.pavlig43.core.toStateFlow
@@ -27,14 +27,14 @@ import ru.pavlig43.notification.internal.component.LevelNotificationComponent
 import ru.pavlig43.notification.internal.di.createNotificationModule
 
 
-class PageNotificationComponent(
+class PageNotificationComponentMain(
     componentContext: ComponentContext,
     private val onOpenTab: (NotificationItem, Int) -> Unit,
     dependencies: NotificationDependencies,
-) : ComponentContext by componentContext, SlotComponent {
+) : ComponentContext by componentContext, MainTabComponent {
 
-    private val _model = MutableStateFlow(SlotComponent.TabModel("Оповещения"))
-    override val model: StateFlow<SlotComponent.TabModel> = _model.asStateFlow()
+    private val _model = MutableStateFlow(MainTabComponent.NavTabState("Оповещения"))
+    override val model: StateFlow<MainTabComponent.NavTabState> = _model.asStateFlow()
 
     private val koinContext = instanceKeeper.getOrCreate { ComponentKoinContext() }
     private val scope = koinContext.getOrCreateKoinScope(
@@ -52,7 +52,7 @@ class PageNotificationComponent(
                 NotificationLevel.Two,
             ),
             serializer = NotificationLevel.serializer(),
-            slotFactory = { context, tabConfig: NotificationLevel, _: () -> Unit ->
+            tabChildFactory = { context, tabConfig: NotificationLevel, _: () -> Unit ->
                 when (tabConfig) {
                     NotificationLevel.Zero -> createLevelComponent(
                         context = context,

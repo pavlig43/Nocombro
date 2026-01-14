@@ -26,7 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
-import ru.pavlig43.core.SlotComponent
+import ru.pavlig43.core.MainTabComponent
 
 /**
  * Properties
@@ -61,7 +61,7 @@ val tabOnClickModifier = @Composable { onSelect: () -> Unit, interactionSource: 
 @Suppress("LongParameterList")
 @Composable
 internal fun TabContent(
-    slotComponent: SlotComponent,
+    mainTabComponent: MainTabComponent,
     modifier: Modifier = Modifier,
     isSelected: Boolean,
     isDragging: Boolean,
@@ -69,8 +69,8 @@ internal fun TabContent(
     onSelect: () -> Unit
 ) {
 
-    val state by slotComponent.model.collectAsState()
-    val interactionSource = remember(slotComponent) { MutableInteractionSource() }
+    val state by mainTabComponent.model.collectAsState()
+    val interactionSource = remember(mainTabComponent) { MutableInteractionSource() }
     val pressedAsState = interactionSource.collectIsPressedAsState()
     LaunchedEffect(pressedAsState.value) {
         if (pressedAsState.value) {

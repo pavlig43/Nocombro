@@ -13,59 +13,71 @@ import kotlinx.serialization.Serializable
 
 /**
  * Компонент навигации по вкладкам с динамическим управлением.
+ * Смотреть для примера реализованный в библиотеке пример https://github.com/arkivanov/Decompose/blob/f82b212f/decompose/src/commonMain/kotlin/com/arkivanov/decompose/router/stack/ChildStackFactory.kt#L171-L176
  *
- * Поддерживает:
- * - Выбор вкладки: [onSelectTab]
- * - Перемещение: [onMove] (drag-n-drop)
- * - Закрытие: [onTabCloseClicked]
- * - Добавление: [addTab]
  *
  * @param TabConfiguration Тип конфигурации вкладки
- * @param SlotComponent Тип содержимого вкладки
- * @property tabChildren Текущее состояние вкладок + выбранная
- * @see SimpleNavigation Базовая навигация MVIkit
+ * @param TabChild Тип Child, использовать как sealed,
+ * в конструктор которого передавать компонент, отвечающий за содержимое вкладки как верхней так и самого экрана
+ * @param startConfigurations Начальный список конфигураций вкладок
+ * @param serializer Сериализатор для конфигураций (для сохранения состояния при смерти приложения )
+ * @param tabChildFactory Фабрика для создания TabChild по конфигурации
  */
 
-class TabNavigationComponent<TabConfiguration : Any, SlotComponent : Any>(
+class TabNavigationComponent<TabConfiguration : Any, out TabChild : Any>(
     componentContext: ComponentContext,
     private val startConfigurations: List<TabConfiguration>,
     serializer: KSerializer<TabConfiguration>,
-    private val slotFactory: (
+    private val tabChildFactory: (
         componentContext: ComponentContext,
         config: TabConfiguration,
         closeTab: () -> Unit,
-    ) -> SlotComponent
+    ) -> TabChild
 ) : ComponentContext by componentContext {
+
+    /**
+     * [items] список [Child.Created<C, T>] где С это конфигурация, а Т - [TabChild]
+     * [selectedIndex] индекс выбранной вкладки
+     */
     class TabChildren<out C : Any, out T : Any>(
         val items: List<Child.Created<C, T>>,
         val selectedIndex: Int?,
     )
 
+    /**
+     * Класс, поставляющий навигационные эвенты.
+     * В [SimpleNavigation] дженерик тип - это тип эвента.
+     * В нашем случае это лямбда, которая принимает приватный стэйт [TabConfigurationState],
+     * обновляет его и возвращает измененный.
+     */
     private val navigation =
-        SimpleNavigation<(TabNavigationState<TabConfiguration>) -> TabNavigationState<TabConfiguration>>()
+        SimpleNavigation<(TabConfigurationState<TabConfiguration>) -> TabConfigurationState<TabConfiguration>>()
 
-    val tabChildren: Value<TabChildren<TabConfiguration, SlotComponent>> =
+    /**
+     *Аналог StateFlow<[TabChildren]>.
+     */
+    val tabChildren: Value<TabChildren<TabConfiguration, TabChild>> =
         children<
                 ComponentContext,
                 TabConfiguration,
-                SlotComponent,
-                    (TabNavigationState<TabConfiguration>) -> TabNavigationState<TabConfiguration>,
-                TabNavigationState<TabConfiguration>,
-                TabChildren<TabConfiguration, SlotComponent>
+                TabChild,
+                    (TabConfigurationState<TabConfiguration>) -> TabConfigurationState<TabConfiguration>,
+                TabConfigurationState<TabConfiguration>,
+                TabChildren<TabConfiguration, TabChild>
                 >(
             source = navigation,
-            stateSerializer = TabNavigationState.serializer(serializer),
+            stateSerializer = TabConfigurationState.serializer(typeSerial0 = serializer),
             key = "tabs",
             initialState = {
-                TabNavigationState(configurations = startConfigurations, currentIndex = 0)
+                TabConfigurationState(configurations = startConfigurations, currentIndex = 0)
             },
-            navTransformer = { state, transformer: (TabNavigationState<TabConfiguration>) ->
-            TabNavigationState<TabConfiguration> ->
-                transformer(state)
+            navTransformer = { state, event: (TabConfigurationState<TabConfiguration>) ->
+            TabConfigurationState<TabConfiguration> ->
+                event(state)
             },
             stateMapper = { state, children ->
                 TabChildren(
-                    items = children.map { child: Child<TabConfiguration, SlotComponent> ->  child as Child.Created },
+                    items = children.map { child: Child<TabConfiguration, TabChild> -> child as Child.Created },
                     selectedIndex = state.currentIndex,
                 )
             },
@@ -77,7 +89,7 @@ class TabNavigationComponent<TabConfiguration : Any, SlotComponent : Any>(
                     }
             },
             childFactory = { configuration, componentContext ->
-                slotFactory(
+                tabChildFactory(
                     componentContext,
                     configuration,
                     { onCloseTab(configuration) }
@@ -86,7 +98,7 @@ class TabNavigationComponent<TabConfiguration : Any, SlotComponent : Any>(
         )
 
     fun onSelectTab(index: Int) {
-        navigation.navigate { state: TabNavigationState<TabConfiguration> ->
+        navigation.navigate { state: TabConfigurationState<TabConfiguration> ->
             require(index in 0..state.configurations.size)
             state.copy(currentIndex = index)
         }
@@ -95,7 +107,7 @@ class TabNavigationComponent<TabConfiguration : Any, SlotComponent : Any>(
     fun onMove(fromIndex: Int, toIndex: Int) {
         if (fromIndex !in tabChildren.value.items.indices || toIndex !in tabChildren.value.items.indices) return
 
-        navigation.navigate { state: TabNavigationState<TabConfiguration> ->
+        navigation.navigate { state: TabConfigurationState<TabConfiguration> ->
             val updatedConfigurations = state.configurations.toMutableList()
             val movedItem = updatedConfigurations.removeAt(fromIndex)
             updatedConfigurations.add(toIndex, movedItem)
@@ -144,11 +156,11 @@ class TabNavigationComponent<TabConfiguration : Any, SlotComponent : Any>(
      * Класс состояние для
      * [configurations] списка конфигураций(на главной например: список документов, или детали этого документа)
      * [currentIndex] индекс выбранной вкладки, может быть null, если список конфигураций пуст
-     * Все вкладки независимо выбраны они или нет находятся в активном состоянии.
+     * Все вкладки независимо выбраны они или нет находятся в активном состоянии [ChildNavState.Status.RESUMED].
      * Реализует интерфейс [NavState], который содержит в себе просто список конфигураций, которые имеют свой статус.
      */
     @Serializable
-    private data class TabNavigationState<TabConfiguration : Any>(
+    private data class TabConfigurationState<TabConfiguration : Any>(
         val configurations: List<TabConfiguration>,
         val currentIndex: Int?,
     ) : NavState<TabConfiguration> {

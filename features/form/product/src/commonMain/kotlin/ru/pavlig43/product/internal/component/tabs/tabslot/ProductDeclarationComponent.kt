@@ -8,15 +8,12 @@ import com.arkivanov.decompose.router.slot.childSlot
 import com.arkivanov.decompose.router.slot.dismiss
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
-import kotlinx.datetime.LocalDate
 import kotlinx.serialization.Serializable
+import ru.pavlig43.core.FormTabComponent
 import ru.pavlig43.core.data.ChangeSet
-import ru.pavlig43.core.getCurrentLocalDate
 import ru.pavlig43.database.data.product.ProductDeclarationIn
 import ru.pavlig43.database.data.product.ProductDeclarationOut
 import ru.pavlig43.immutable.api.ImmutableTableDependencies
@@ -28,13 +25,13 @@ import ru.pavlig43.update.data.UpdateCollectionRepository
 import kotlin.time.ExperimentalTime
 
 
-class DeclarationTabSlot(
+class ProductDeclarationComponent(
     componentContext: ComponentContext,
     private val productId: Int,
     dependencies: ImmutableTableDependencies,
     private val updateRepository: UpdateCollectionRepository<ProductDeclarationOut, ProductDeclarationIn>,
     openDeclarationTab: (Int) -> Unit,
-) : ComponentContext by componentContext, ProductTabSlot {
+) : ComponentContext by componentContext, FormTabComponent {
     override val title: String = "Декларации"
 
 

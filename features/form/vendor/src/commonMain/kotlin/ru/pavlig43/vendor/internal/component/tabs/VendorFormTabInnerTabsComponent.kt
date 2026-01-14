@@ -11,9 +11,9 @@ import ru.pavlig43.database.DataBaseTransaction
 import ru.pavlig43.database.data.vendor.Vendor
 import ru.pavlig43.update.component.IItemFormInnerTabsComponent
 import ru.pavlig43.update.component.UpdateComponent
-import ru.pavlig43.vendor.internal.component.tabs.tabslot.EssentialTabSlot
-import ru.pavlig43.vendor.internal.component.tabs.tabslot.VendorFileTabSlot
-import ru.pavlig43.vendor.internal.component.tabs.tabslot.VendorTabSlot
+import ru.pavlig43.vendor.internal.component.tabs.tabslot.VendorEssentialsComponent
+import ru.pavlig43.vendor.internal.component.tabs.tabslot.VendorFilesComponent
+import ru.pavlig43.vendor.internal.component.tabs.tabslot.VendorTabChild
 import ru.pavlig43.vendor.internal.data.VendorEssentialsUi
 
 internal class VendorFormTabInnerTabsComponent(
@@ -23,12 +23,12 @@ internal class VendorFormTabInnerTabsComponent(
     scope: Scope,
     vendorId: Int
 ) : ComponentContext by componentContext,
-    IItemFormInnerTabsComponent<VendorTab, VendorTabSlot> {
+    IItemFormInnerTabsComponent<VendorTab, VendorTabChild> {
 
     private val dbTransaction: DataBaseTransaction = scope.get()
 
 
-    override val tabNavigationComponent: TabNavigationComponent<VendorTab, VendorTabSlot> =
+    override val tabNavigationComponent: TabNavigationComponent<VendorTab, VendorTabChild> =
         TabNavigationComponent(
             componentContext = childContext("tab"),
             startConfigurations = listOf(
@@ -36,21 +36,25 @@ internal class VendorFormTabInnerTabsComponent(
                 VendorTab.Files,
             ),
             serializer = VendorTab.serializer(),
-            slotFactory = { context, tabConfig: VendorTab,  _: () -> Unit ->
+            tabChildFactory = { context, tabConfig: VendorTab, _: () -> Unit ->
                 when (tabConfig) {
 
-                    VendorTab.Essentials -> EssentialTabSlot(
-                        componentContext = context,
-                        vendorId = vendorId,
-                        updateRepository = scope.get(),
-                        componentFactory = componentFactory
+                    VendorTab.Essentials -> VendorTabChild.Essentials(
+                        VendorEssentialsComponent(
+                            componentContext = context,
+                            vendorId = vendorId,
+                            updateRepository = scope.get(),
+                            componentFactory = componentFactory
+                        )
                     )
 
 
-                    VendorTab.Files -> VendorFileTabSlot(
-                        vendorId = vendorId,
-                        dependencies = scope.get(),
-                        componentContext = context
+                    VendorTab.Files -> VendorTabChild.Files(
+                        VendorFilesComponent(
+                            vendorId = vendorId,
+                            dependencies = scope.get(),
+                            componentContext = context
+                        )
                     )
 
                 }
@@ -59,8 +63,7 @@ internal class VendorFormTabInnerTabsComponent(
         )
     private suspend fun update(): Result<Unit> {
         val blocks: Value<List<suspend () -> Result<Unit>>> = tabNavigationComponent.tabChildren.map { children->
-            children.items.map { child-> suspend {child.instance.onUpdate()} } }
-        println(tabNavigationComponent.tabChildren.map { it.items.map { it.instance.title } })
+            children.items.map { child-> suspend {child.instance.component.onUpdate()} } }
         return dbTransaction.transaction(blocks.value)
 
     }

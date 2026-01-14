@@ -30,7 +30,7 @@ import ru.pavlig43.update.data.UpdateCollectionRepository
 import ru.pavlig43.update.data.UpdateEssentialsRepository
 import ua.wwind.table.ColumnSpec
 
-internal class CompositionTabSlot(
+internal class CompositionComponent(
     componentContext: ComponentContext,
     immutableTableDependencies: ImmutableTableDependencies,
     onOpenProductTab: (Int) -> Unit,
@@ -45,7 +45,7 @@ internal class CompositionTabSlot(
     sortMatcher = CompositionSorter,
     filterMatcher = CompositionFilterMatcher,
     repository = repository
-), ProductTabSlot {
+) {
 
     init {
         coroutineScope.launch {

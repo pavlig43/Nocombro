@@ -5,12 +5,12 @@ import androidx.compose.runtime.getValue
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import ru.pavlig43.immutable.api.ui.MBSImmutableTable
 import ru.pavlig43.mutable.api.ui.MutableTableBox
-import ru.pavlig43.product.internal.component.tabs.tabslot.CompositionTabSlot
+import ru.pavlig43.product.internal.component.tabs.tabslot.CompositionComponent
 
 
 @Composable
 internal fun CompositionScreen(
-    component: CompositionTabSlot,
+    component: CompositionComponent,
 ) {
 
     val dialog by component.dialog.subscribeAsState()

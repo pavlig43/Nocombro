@@ -16,7 +16,7 @@ class MBSImmutableTableComponent<I: ITableUi>(
     private val onDismissed: () -> Unit,
 ) : ComponentContext by componentContext {
 
-    val immutableTableComponentFactory = ImmutableTableComponentFactory(
+    val immutableTableComponentFactory = ImmutableTableComponentFactoryMain(
         componentContext = childContext("item_list"),
         dependencies = dependencies,
         immutableTableBuilderData = immutableTableBuilderData,

@@ -8,9 +8,9 @@ import ru.pavlig43.core.component.EssentialComponentFactory
 import ru.pavlig43.core.tabs.TabNavigationComponent
 import ru.pavlig43.database.DataBaseTransaction
 import ru.pavlig43.database.data.document.Document
-import ru.pavlig43.document.internal.component.tabs.tabslot.DocumentFileTabSlot
-import ru.pavlig43.document.internal.component.tabs.tabslot.DocumentTabSlot
-import ru.pavlig43.document.internal.component.tabs.tabslot.EssentialTabSlot
+import ru.pavlig43.document.internal.component.tabs.tabslot.DocumentFilesComponent
+import ru.pavlig43.document.internal.component.tabs.tabslot.DocumentEssentialComponent
+import ru.pavlig43.document.internal.component.tabs.tabslot.DocumentTabChild
 import ru.pavlig43.document.internal.data.DocumentEssentialsUi
 import ru.pavlig43.update.component.IItemFormInnerTabsComponent
 import ru.pavlig43.update.component.UpdateComponent
@@ -18,15 +18,16 @@ import ru.pavlig43.update.component.UpdateComponent
 internal class DocumentFormTabInnerTabsComponent(
     componentContext: ComponentContext,
     essentialFactory: EssentialComponentFactory<Document, DocumentEssentialsUi>,
-    closeFormScreen:()->Unit,
+    closeFormScreen: () -> Unit,
     scope: Scope,
     documentId: Int
-) : ComponentContext by componentContext, IItemFormInnerTabsComponent<DocumentTab, DocumentTabSlot> {
+) : ComponentContext by componentContext,
+    IItemFormInnerTabsComponent<DocumentTab, DocumentTabChild> {
 
-    private val dbTransaction:DataBaseTransaction = scope.get()
+    private val dbTransaction: DataBaseTransaction = scope.get()
 
 
-    override val tabNavigationComponent: TabNavigationComponent<DocumentTab, DocumentTabSlot> =
+    override val tabNavigationComponent: TabNavigationComponent<DocumentTab, DocumentTabChild> =
         TabNavigationComponent(
             componentContext = childContext("tab"),
             startConfigurations = listOf(
@@ -34,36 +35,42 @@ internal class DocumentFormTabInnerTabsComponent(
                 DocumentTab.Files
             ),
             serializer = DocumentTab.serializer(),
-            slotFactory = { context, tabConfig: DocumentTab,  _: () -> Unit ->
+            tabChildFactory = { context, tabConfig: DocumentTab, _: () -> Unit ->
                 when (tabConfig) {
 
-                    DocumentTab.Essentials -> EssentialTabSlot(
-                        componentContext = context,
-                        componentFactory = essentialFactory,
-                        documentId = documentId,
-                        updateRepository = scope.get(),
+                    DocumentTab.Essentials -> DocumentTabChild.Essentials(
+                        DocumentEssentialComponent(
+                            componentContext = context,
+                            componentFactory = essentialFactory,
+                            documentId = documentId,
+                            updateRepository = scope.get(),
+                        )
                     )
 
 
-
-                    DocumentTab.Files -> DocumentFileTabSlot(
-                        documentId = documentId,
-                        dependencies = scope.get(),
-                        componentContext = context
+                    DocumentTab.Files -> DocumentTabChild.Files(
+                        DocumentFilesComponent(
+                            documentId = documentId,
+                            dependencies = scope.get(),
+                            componentContext = context
+                        )
                     )
                 }
 
             },
         )
-    private suspend fun update():Result<Unit> {
-        val blocks= tabNavigationComponent.tabChildren.map { children->
-            children.items.map { child-> suspend {child.instance.onUpdate()} } }
+
+    private suspend fun update(): Result<Unit> {
+        val blocks = tabNavigationComponent.tabChildren.map { children ->
+            children.items.map { child -> suspend { child.instance.component.onUpdate() } }
+        }
         return dbTransaction.transaction(blocks.value)
 
     }
+
     override val updateComponent: UpdateComponent = UpdateComponent(
         componentContext = childContext("update"),
-        onUpdateComponent = {update()},
+        onUpdateComponent = { update() },
         errorMessages = getErrors(lifecycle),
         closeFormScreen = closeFormScreen
     )
