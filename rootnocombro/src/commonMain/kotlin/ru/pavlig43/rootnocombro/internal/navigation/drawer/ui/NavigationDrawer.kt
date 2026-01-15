@@ -20,8 +20,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import ru.pavlig43.notification.api.data.NotificationDrawerUi
 import ru.pavlig43.notification.api.ui.NotificationIcon
+import ru.pavlig43.rootnocombro.internal.navigation.drawer.component.DrawerComponent
 import ru.pavlig43.rootnocombro.internal.navigation.drawer.component.DrawerDestination
-import ru.pavlig43.rootnocombro.internal.navigation.drawer.component.IDrawerComponent
 
 private const val DRAWER_WIDTH = 0.4f
 private const val DEFAULT_BODY_PADDING = 4
@@ -29,7 +29,7 @@ private const val DEFAULT_BODY_PADDING = 4
 @Suppress("LongParameterList")
 @Composable
 internal fun NavigationDrawer(
-    drawerComponent: IDrawerComponent,
+    drawerComponent: DrawerComponent,
     drawerState: DrawerState,
     onCloseNavigationDrawer: () -> Unit,
     bodyPadding: PaddingValues = PaddingValues(DEFAULT_BODY_PADDING.dp),

@@ -12,11 +12,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import ru.pavlig43.rootnocombro.internal.settings.component.ISettingsComponent
+import ru.pavlig43.rootnocombro.api.component.SettingsComponent
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-internal fun NocombroAppBar(settingsComponent: ISettingsComponent, onOpenDrawer: () -> Unit) {
+internal fun NocombroAppBar(settingsComponent: SettingsComponent, onOpenDrawer: () -> Unit) {
     val darkMode by settingsComponent.darkMode.collectAsState()
     CenterAlignedTopAppBar(
         title = { Text(text = "Nocombro") },

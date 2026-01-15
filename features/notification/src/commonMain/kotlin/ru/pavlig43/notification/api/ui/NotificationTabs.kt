@@ -26,14 +26,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import ru.pavlig43.core.tabs.TabNavigationComponent
-import ru.pavlig43.notification.api.component.PageNotificationComponentMain
+import ru.pavlig43.notification.api.component.NotificationComponent
 import ru.pavlig43.notification.api.data.NotificationLevel
 import ru.pavlig43.notification.internal.component.ILevelNotificationComponent
 import ru.pavlig43.notification.internal.ui.NotificationsLevelScreen
 
 @Composable
 fun NotificationTabs(
-    pageNotificationComponent: PageNotificationComponentMain,
+    pageNotificationComponent: NotificationComponent,
     modifier: Modifier = Modifier
 ) {
     NotificationTabsUi(
@@ -45,7 +45,7 @@ fun NotificationTabs(
 
 @Composable
 private fun NotificationTabsUi(
-    component: PageNotificationComponentMain,
+    component: NotificationComponent,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {

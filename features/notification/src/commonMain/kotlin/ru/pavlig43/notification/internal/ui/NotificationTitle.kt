@@ -12,7 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
-import ru.pavlig43.coreui.tooltip.IconButtonToolTip
+import ru.pavlig43.coreui.tooltip.ToolTipIconButton
 import ru.pavlig43.notification.api.data.NotificationLevel
 import ru.pavlig43.notification.api.ui.NotificationIcon
 
@@ -35,7 +35,7 @@ internal fun NotificationTitle(
             level = level,
             countNotification = countNotification,
         )
-        IconButtonToolTip(
+        ToolTipIconButton(
             tooltipText = if (isShowFullList) "Свернуть" else " Показать",
             onClick = showFullList,
             icon = if (isShowFullList) Icons.Default.ArrowUpward else Icons.Default.ArrowDownward,

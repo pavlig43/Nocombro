@@ -21,35 +21,29 @@ import com.arkivanov.decompose.Child
 import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import kotlinx.coroutines.launch
-import ru.pavlig43.core.MainTabComponent
 import ru.pavlig43.core.tabs.TabNavigationComponent
 import ru.pavlig43.coreui.tab.TabNavigationContent
-import ru.pavlig43.declarationform.api.DeclarationFormComponent
-import ru.pavlig43.declarationform.api.DeclarationFormScreen
-import ru.pavlig43.document.api.component.DocumentFormComponent
+import ru.pavlig43.declaration.api.DeclarationFormScreen
 import ru.pavlig43.document.api.ui.DocumentFormScreen
-import ru.pavlig43.immutable.api.component.ImmutableTableComponentFactoryMain
 import ru.pavlig43.immutable.api.ui.ImmutableTableScreen
-import ru.pavlig43.notification.api.component.PageNotificationComponentMain
 import ru.pavlig43.notification.api.ui.NotificationTabs
-import ru.pavlig43.product.api.component.ProductFormComponent
 import ru.pavlig43.product.api.ui.ProductFormScreen
-import ru.pavlig43.rootnocombro.api.component.IRootNocombroComponent
-import ru.pavlig43.rootnocombro.internal.navigation.IMainNavigationComponent
+import ru.pavlig43.rootnocombro.api.component.RootChild
+import ru.pavlig43.rootnocombro.api.component.RootNocombroComponent
+import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild
+import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig
+import ru.pavlig43.rootnocombro.internal.navigation.MainTabNavigationComponent
 import ru.pavlig43.rootnocombro.internal.navigation.drawer.ui.NavigationDrawer
-import ru.pavlig43.rootnocombro.internal.navigation.tab.TabConfig
 import ru.pavlig43.rootnocombro.internal.navigation.tab.ui.TabContent
 import ru.pavlig43.rootnocombro.internal.topbar.ui.NocombroAppBar
 import ru.pavlig43.signroot.api.ui.RootSignScreen
-import ru.pavlig43.transaction.api.component.TransactionFormComponent
 import ru.pavlig43.transaction.api.ui.TransactionFormScreen
 import ru.pavlig43.vendor.api.ui.VendorFormScreen
-import ru.pavlig43.vendor.component.VendorFormComponent
 
 
 @Suppress("LongMethod")
 @Composable
-fun RootNocombroScreen(rootNocombroComponent: IRootNocombroComponent) {
+fun RootNocombroScreen(rootNocombroComponent: RootNocombroComponent) {
     val stack by rootNocombroComponent.stack.subscribeAsState()
     val coroutineScope = rememberCoroutineScope()
     val drawerState = rememberDrawerState(DrawerValue.Closed)
@@ -64,21 +58,21 @@ fun RootNocombroScreen(rootNocombroComponent: IRootNocombroComponent) {
                 .fillMaxSize()
                 .padding(24.dp)
                 .windowInsetsPadding(WindowInsets.systemBars)
-        ) { child: Child.Created<Any, IRootNocombroComponent.Child> ->
+        ) { child: Child.Created<RootNocombroComponent.RootConfig, RootChild> ->
             Column(
                 Modifier.fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
 
                 when (val instance = child.instance) {
-                    is IRootNocombroComponent.Child.RootSign -> RootSignScreen(instance.component)
+                    is RootChild.RootSign -> RootSignScreen(instance.component)
 
-                    is IRootNocombroComponent.Child.Tabs -> {
-                        val mainNavigationComponent: IMainNavigationComponent<TabConfig, MainTabComponent> =
+                    is RootChild.Tabs -> {
+                        val mainTabNavigationComponent: MainTabNavigationComponent =
                             instance.component
-                        val tabNavigationComponent: TabNavigationComponent<TabConfig, MainTabComponent> =
-                            mainNavigationComponent.tabNavigationComponent
-                        val drawerNavigationComponent = mainNavigationComponent.drawerComponent
+                        val tabNavigationComponent: TabNavigationComponent<MainTabConfig, MainTabChild> =
+                            mainTabNavigationComponent.tabNavigationComponent
+                        val drawerNavigationComponent = mainTabNavigationComponent.drawerComponent
                         NocombroAppBar(
                             settingsComponent = rootNocombroComponent.settingsComponent,
                             onOpenDrawer = {
@@ -102,9 +96,9 @@ fun RootNocombroScreen(rootNocombroComponent: IRootNocombroComponent) {
                             Column(Modifier.fillMaxSize()) {
                                 TabNavigationContent(
                                     navigationComponent = tabNavigationComponent,
-                                    tabContent = { index, slotComponent, modifier, isSelected, isDragging, onClose ->
+                                    tabContent = { index, mainTabChild, modifier, isSelected, isDragging, onClose ->
                                         TabContent(
-                                            mainTabComponent = slotComponent,
+                                            mainTabComponent = mainTabChild.component,
                                             modifier = modifier,
                                             isSelected = isSelected,
                                             isDragging = isDragging,
@@ -116,7 +110,7 @@ fun RootNocombroScreen(rootNocombroComponent: IRootNocombroComponent) {
                                         innerTabs(Modifier.fillMaxWidth())
 
                                     },
-                                    slotFactory = {slotComponent -> SlotFactory(slotComponent)}
+                                    slotFactory = { mainTabChild -> MainTabChildFactory(mainTabChild) }
                                 )
                             }
                         }
@@ -130,25 +124,32 @@ fun RootNocombroScreen(rootNocombroComponent: IRootNocombroComponent) {
     }
 
 }
+
 @Composable
-private fun SlotFactory(mainTabComponent: MainTabComponent?){
-    when (mainTabComponent) {
-        is ImmutableTableComponentFactoryMain -> ImmutableTableScreen(mainTabComponent)
-
-        is DocumentFormComponent -> DocumentFormScreen(mainTabComponent)
-
-        is ProductFormComponent -> ProductFormScreen(mainTabComponent)
-
-        is PageNotificationComponentMain -> NotificationTabs(mainTabComponent)
-
-        is VendorFormComponent -> VendorFormScreen(mainTabComponent)
-
-        is DeclarationFormComponent -> DeclarationFormScreen(mainTabComponent)
-
-        is TransactionFormComponent -> TransactionFormScreen(mainTabComponent)
+private fun MainTabChildFactory(mainTabChild: MainTabChild?) {
+    when (mainTabChild) {
 
         null -> Box(Modifier.fillMaxSize())
-        else -> error("$mainTabComponent SlotComponent not added")
+        is MainTabChild.ImmutableTableChild ->
+            ImmutableTableScreen(mainTabChild.component)
+
+        is MainTabChild.ItemFormChild.DeclarationFormChild ->
+            DeclarationFormScreen(mainTabChild.component)
+
+        is MainTabChild.ItemFormChild.DocumentFormChild ->
+            DocumentFormScreen(mainTabChild.component)
+
+        is MainTabChild.ItemFormChild.ProductFormChild ->
+            ProductFormScreen(mainTabChild.component)
+
+        is MainTabChild.ItemFormChild.TransactionFormChild ->
+            TransactionFormScreen(mainTabChild.component)
+
+        is MainTabChild.ItemFormChild.VendorFormChild ->
+            VendorFormScreen(mainTabChild.component)
+
+        is MainTabChild.NotificationChild ->
+            NotificationTabs(mainTabChild.component)
     }
 }
 

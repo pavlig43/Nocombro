@@ -10,7 +10,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import ru.pavlig43.coreui.ProgressIndicator
+import ru.pavlig43.coreui.LoadingUi
 import ru.pavlig43.loadinitdata.api.component.LoadInitDataComponent
 import ru.pavlig43.loadinitdata.api.component.LoadInitDataState
 
@@ -26,7 +26,7 @@ fun <I : Any> LoadInitDataScreen(
             retryLoadInitData = component::retryLoadInitData,
             modifier = Modifier.fillMaxSize()
         )
-        is LoadInitDataState.Loading<I> -> ProgressIndicator(Modifier.fillMaxSize())
+        is LoadInitDataState.Loading<I> -> LoadingUi(Modifier.fillMaxSize())
         is LoadInitDataState.Success<I> -> successBody(Modifier)
     }
 

@@ -13,7 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.ImmutableList
 import ru.pavlig43.coreui.ErrorScreen
-import ru.pavlig43.coreui.LoadingScreen
+import ru.pavlig43.coreui.LoadingUi
 import ru.pavlig43.immutable.internal.component.ImmutableTableComponent
 import ru.pavlig43.immutable.internal.component.ImmutableTableUiEvent
 import ru.pavlig43.immutable.internal.component.ItemListState
@@ -43,7 +43,7 @@ internal fun <I : ITableUi, C> ImmutableTableBox(
         when (val state = itemListState) {
 
             is ItemListState.Error -> ErrorScreen(state.message)
-            is ItemListState.Loading -> LoadingScreen()
+            is ItemListState.Loading -> LoadingUi()
             is ItemListState.Success -> {
                 TableBox(
                     columns = component.columns,

@@ -28,9 +28,9 @@ import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 import ru.pavlig43.addfile.api.model.FileUi
 import ru.pavlig43.addfile.api.model.UploadState
-import ru.pavlig43.coreui.ProgressIndicator
-import ru.pavlig43.coreui.tooltip.IconButtonToolTip
-import ru.pavlig43.coreui.tooltip.ProjectToolTip
+import ru.pavlig43.coreui.LoadingUi
+import ru.pavlig43.coreui.tooltip.ToolTipIconButton
+import ru.pavlig43.coreui.tooltip.ToolTipProject
 import ru.pavlig43.theme.Res
 import ru.pavlig43.theme.excel
 import ru.pavlig43.theme.pdf
@@ -58,7 +58,7 @@ internal fun AddFileRow(
             tint = Color.Companion.Unspecified
         )
 
-        ProjectToolTip(
+        ToolTipProject(
             tooltipText = fileUi.platformFile.absolutePath(),
         ) {
             Text(
@@ -93,7 +93,7 @@ private fun OnOpenIconButton(
     fileUi: FileUi,
     onOpenFile: (PlatformFile) -> Unit
 ) {
-    IconButtonToolTip(
+    ToolTipIconButton(
         tooltipText = "Открыть",
         onClick = { onOpenFile(fileUi.platformFile) },
         icon = Icons.Default.Search,
@@ -107,7 +107,7 @@ private fun RemoveIconButton(
     fileUi: FileUi,
     removeFile: (Int) -> Unit
 ) {
-    IconButtonToolTip(
+    ToolTipIconButton(
         tooltipText = "Удалить",
         enabled = fileUi.uploadState !is UploadState.Loading,
         onClick = { removeFile(fileUi.composeKey) },
@@ -122,14 +122,14 @@ private fun UploadIcon(
     retryLoadFile: (Int) -> Unit
 ) {
     when (val state = fileUi.uploadState) {
-        UploadState.Loading -> ProgressIndicator(Modifier.Companion.size(24.dp))
-        UploadState.Success -> ProjectToolTip(
+        UploadState.Loading -> LoadingUi(Modifier.Companion.size(24.dp))
+        UploadState.Success -> ToolTipProject(
             tooltipText = "Загружено"
         ) { Icon(Icons.Default.Check, contentDescription = null) }
 
         is UploadState.Error -> Column {
             Text(state.message)
-            IconButtonToolTip(
+            ToolTipIconButton(
                 tooltipText = "${state.message} Повторить загрузку",
                 onClick = { retryLoadFile(fileUi.composeKey) },
                 icon = Icons.Default.CloudDownload

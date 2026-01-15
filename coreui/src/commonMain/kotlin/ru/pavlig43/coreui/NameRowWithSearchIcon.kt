@@ -11,7 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import ru.pavlig43.coreui.tooltip.IconButtonToolTip
+import ru.pavlig43.coreui.tooltip.ToolTipIconButton
 
 @Composable
 fun NameRowWithSearchIcon(
@@ -23,7 +23,7 @@ fun NameRowWithSearchIcon(
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Text(text, Modifier.weight(1f).padding(start = 4.dp))
-        IconButtonToolTip(
+        ToolTipIconButton(
             tooltipText = "Выбрать",
             onClick = onOpenChooseDialog,
             icon = Icons.Default.Search,

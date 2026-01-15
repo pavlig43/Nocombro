@@ -8,22 +8,32 @@ import ru.pavlig43.notification.api.data.NotificationDrawerUi
 
 internal class DrawerComponent(
     componentContext: ComponentContext,
-    override val notificationsState: StateFlow<List<NotificationDrawerUi>>,
+    val notificationsState: StateFlow<List<NotificationDrawerUi>>,
     private val openScreen: DrawerDestination.() -> Unit,
-    override val onNotificationScreen: () -> Unit,
-) : ComponentContext by componentContext, IDrawerComponent {
+    val onNotificationScreen: () -> Unit,
+) : ComponentContext by componentContext {
 
-    override fun onSelect(configuration: DrawerDestination) {
+    fun onSelect(configuration: DrawerDestination) {
         openScreen(configuration)
     }
 
     private val _drawerConfigurationsState =
         MutableStateFlow(DrawerDestination.entries)
 
-    override val drawerConfigurationsState: StateFlow<List<DrawerDestination>> =
+    val drawerConfigurationsState: StateFlow<List<DrawerDestination>> =
         _drawerConfigurationsState.asStateFlow()
 
 
+}
+
+enum class DrawerDestination(val title: String) {
+    DocumentList("Документы"),
+    ProductList("Продукты"),
+    VendorList("Поставщики"),
+    DeclarationList("Декларации"),
+
+    ProductTransactionList("Транзакции")
 
 }
+
 

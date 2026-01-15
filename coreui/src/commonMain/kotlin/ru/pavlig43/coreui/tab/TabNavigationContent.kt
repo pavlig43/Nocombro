@@ -17,11 +17,11 @@ import ru.pavlig43.core.tabs.TabNavigationComponent
 
 @OptIn(InternalDecomposeApi::class)
 @Composable
-fun <TabConfiguration : Any, SlotComponent : Any> TabNavigationContent(
-    navigationComponent: TabNavigationComponent<TabConfiguration, SlotComponent>,
+fun <TabConfiguration : Any, TabChild : Any> TabNavigationContent(
+    navigationComponent: TabNavigationComponent<TabConfiguration, TabChild>,
     tabContent: @Composable (
         index: Int,
-        slotComponent: SlotComponent,
+        tabChild: TabChild,
         modifier: Modifier,
         isSelected: Boolean,
         isDragging: Boolean,
@@ -31,7 +31,7 @@ fun <TabConfiguration : Any, SlotComponent : Any> TabNavigationContent(
     containerContent: @Composable (
         innerTabs: @Composable (modifier: Modifier) -> Unit,
     ) -> Unit,
-    slotFactory: @Composable (SlotComponent?) -> Unit,
+    slotFactory: @Composable (TabChild?) -> Unit,
 ) {
     val children by navigationComponent.tabChildren.subscribeAsState()
     val holder = rememberSaveableStateHolder()
@@ -40,12 +40,12 @@ fun <TabConfiguration : Any, SlotComponent : Any> TabNavigationContent(
 
     containerContent(
         { tabRowModifier ->
-            TabDraggableRow<SlotComponent>(
+            TabDraggableRow<TabChild>(
                 items = children.items.map { it.instance },
                 onMove = navigationComponent::onMove,
                 modifier = tabRowModifier,
                 tabHorizontalSpacing = tabsArrangement,
-                itemContent = { index, itemComponent: SlotComponent, isDragging, modifier ->
+                itemContent = { index, itemComponent: TabChild, isDragging, modifier ->
                     tabContent(
                         index,
                         itemComponent,
@@ -58,9 +58,9 @@ fun <TabConfiguration : Any, SlotComponent : Any> TabNavigationContent(
         },
 
         )
-    val activeSlot = children.selectedIndex?.let { children.items[it] }
-    val key = activeSlot?.keyHashString()
-    val instance = activeSlot?.instance
+    val activeTab = children.selectedIndex?.let { children.items[it] }
+    val key = activeTab?.keyHashString()
+    val instance = activeTab?.instance
     key?.let { key ->
         holder.SaveableStateProvider(key) {
             slotFactory(instance)
@@ -70,11 +70,12 @@ fun <TabConfiguration : Any, SlotComponent : Any> TabNavigationContent(
 
 
 @OptIn(InternalDecomposeApi::class)
-private fun <TabConfiguration : Any, SlotComponent : Any> TabNavigationComponent.TabChildren<TabConfiguration, SlotComponent>.getKeys(): HashSet<String> {
+private fun <TabConfiguration : Any, TabChild : Any> TabNavigationComponent.TabChildren<TabConfiguration, TabChild>.getKeys(): HashSet<String> {
     return items.mapTo(HashSet(), Child<*, *>::keyHashString)
 }
 
 
+@Suppress("ComposableNaming")
 @Composable
 private fun SaveableStateHolder.retainStates(currentKeys: Set<String>) {
     val keys = remember(this) { Keys(currentKeys) }

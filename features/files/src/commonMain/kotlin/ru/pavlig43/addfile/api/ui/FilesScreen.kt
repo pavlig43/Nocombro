@@ -38,7 +38,7 @@ import io.github.vinceglb.filekit.name
 import ru.pavlig43.addfile.api.component.FilesComponent
 import ru.pavlig43.addfile.api.model.FileUi
 import ru.pavlig43.addfile.internal.ui.AddFileRow
-import ru.pavlig43.coreui.tooltip.IconButtonToolTip
+import ru.pavlig43.coreui.tooltip.ToolTipIconButton
 import ru.pavlig43.loadinitdata.api.ui.LoadInitDataScreen
 
 
@@ -119,7 +119,7 @@ private fun AddFileBody(
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Text("Файлы")
-            IconButtonToolTip(
+            ToolTipIconButton(
                 tooltipText = "Добавить файл",
                 onClick = { launcher.launch() },
                 icon = Icons.Default.AddCircle

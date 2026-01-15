@@ -13,6 +13,17 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 
+
+/**
+ * Compose-компонент текстового поля с заголовком в колонке.
+ *
+ * Предоставляет текстовое поле для ввода строки с заголовком сверху.
+ * Автоматически скрывает клавиатуру при нажатии Done/Готово.
+ *
+ * @param value Текущее значение текстового поля
+ * @param onValueChange Callback при изменении значения
+ * @param headText Текст заголовка, отображаемый над полем ввода
+ */
 @Composable
 fun StringColumnField(
     value: String,

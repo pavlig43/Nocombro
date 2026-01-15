@@ -12,7 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
-import ru.pavlig43.coreui.tooltip.IconButtonToolTip
+import ru.pavlig43.coreui.tooltip.ToolTipIconButton
 
 
 @Composable
@@ -31,7 +31,7 @@ fun VendorFieldBlock(
         if (vendorName != null) {
             Text(vendorName, textDecoration = TextDecoration.Underline)
         }
-        IconButtonToolTip(
+        ToolTipIconButton(
             tooltipText = if (vendorName == null) "Добавить поставщика" else "Изменить поставщика",
             onClick = onOpenVendorDialog,
             icon = if (vendorName == null) Icons.Default.AddCircle else Icons.Default.Refresh,

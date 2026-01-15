@@ -4,7 +4,7 @@ import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 import ru.pavlig43.addfile.api.FilesDependencies
-import ru.pavlig43.declarationform.api.DeclarationFormDependencies
+import ru.pavlig43.declaration.api.DeclarationFormDependencies
 import ru.pavlig43.document.api.DocumentFormDependencies
 import ru.pavlig43.immutable.api.ImmutableTableDependencies
 import ru.pavlig43.notification.api.NotificationDependencies

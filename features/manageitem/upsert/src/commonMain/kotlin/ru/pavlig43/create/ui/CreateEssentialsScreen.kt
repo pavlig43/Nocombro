@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
@@ -21,7 +20,7 @@ import ru.pavlig43.core.component.CreateState
 import ru.pavlig43.core.data.GenericItem
 import ru.pavlig43.core.data.ItemEssentialsUi
 import ru.pavlig43.core.ui.EssentialBlockScreen
-import ru.pavlig43.coreui.LoadingScreen
+import ru.pavlig43.coreui.LoadingUi
 import ru.pavlig43.create.component.CreateEssentialsComponent
 
 @Composable
@@ -65,7 +64,7 @@ private fun CreateButton(
                 }
 
                 CreateState.Init -> Text( "Создать")
-                CreateState.Loading -> LoadingScreen()
+                CreateState.Loading -> LoadingUi()
                 is CreateState.Success -> {
                     LaunchedEffect(Unit) { onSuccess(createState.id) } }
             }

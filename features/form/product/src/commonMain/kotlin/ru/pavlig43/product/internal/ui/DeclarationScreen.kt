@@ -27,8 +27,8 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
-import ru.pavlig43.coreui.tooltip.IconButtonToolTip
-import ru.pavlig43.coreui.tooltip.ProjectToolTip
+import ru.pavlig43.coreui.tooltip.ToolTipIconButton
+import ru.pavlig43.coreui.tooltip.ToolTipProject
 import ru.pavlig43.immutable.api.ui.MBSImmutableTable
 import ru.pavlig43.product.internal.component.tabs.tabslot.DeclarationListComponent
 import ru.pavlig43.product.internal.component.tabs.tabslot.ProductDeclarationComponent
@@ -66,7 +66,7 @@ private fun DeclarationBlock(
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Text("Декларации")
-            IconButtonToolTip(
+            ToolTipIconButton(
                 tooltipText = "Добавить декларацию",
                 onClick = onChooseDeclaration,
                 icon = Icons.Default.AddCircle
@@ -107,7 +107,7 @@ private fun AddDeclarationRow1(
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.width(250.dp),
         )
-        ProjectToolTip(
+        ToolTipProject(
             tooltipText = if (itemDeclarationUi.isActual) "Aктуальна" else "Срок истек",
             content = {
                 Icon(
@@ -119,13 +119,13 @@ private fun AddDeclarationRow1(
 
         )
 
-        IconButtonToolTip(
+        ToolTipIconButton(
             tooltipText = "Открыть в новой вкладке",
             onClick =  { openDeclarationDocument(itemDeclarationUi.declarationId) },
             icon = Icons.Default.Search
         )
 
-        IconButtonToolTip(
+        ToolTipIconButton(
             tooltipText = "Удалить",
             onClick = { removeDeclarationUi(itemDeclarationUi.composeKey) },
             icon = Icons.Default.Close
