@@ -15,6 +15,11 @@ import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.arkivanov.decompose.keyHashString
 import ru.pavlig43.core.tabs.TabNavigationComponent
 
+/**
+ * Отрисовывет полностью экран с вкладками(как в браузере)
+ * @param [tabContent] отрисовывает саму вкладку (которая с крестиком)
+ * @param [tabChildFactory]отрисовывает экран,который под вкладкой
+ */
 @OptIn(InternalDecomposeApi::class)
 @Composable
 fun <TabConfiguration : Any, TabChild : Any> TabNavigationContent(
@@ -28,42 +33,40 @@ fun <TabConfiguration : Any, TabChild : Any> TabNavigationContent(
         onClose: () -> Unit
     ) -> Unit,
     tabsArrangement: Arrangement.Horizontal = Arrangement.spacedBy(4.dp),
-    containerContent: @Composable (
-        innerTabs: @Composable (modifier: Modifier) -> Unit,
-    ) -> Unit,
-    slotFactory: @Composable (TabChild?) -> Unit,
+    tabsRowModifier: Modifier = Modifier,
+    tabChildFactory: @Composable (TabChild?) -> Unit,
 ) {
     val children by navigationComponent.tabChildren.subscribeAsState()
+
+    /**
+     * Для того, чтобы сохранять состояние скролла
+     * @sample https://github.com/arkivanov/Decompose/blob/master/extensions-compose/src/commonMain/kotlin/com/arkivanov/decompose/extensions/compose/stack/Children.kt?ysclid=mkgi5tjc2z853230913
+     */
     val holder = rememberSaveableStateHolder()
     holder.retainStates(children.getKeys())
 
+    TabDraggableRow<TabChild>(
+        items = children.items.map { it.instance },
+        onMove = navigationComponent::onMove,
+        modifier = tabsRowModifier,
+        tabHorizontalSpacing = tabsArrangement,
+        itemContent = { index, itemComponent: TabChild, isDragging, modifier ->
+            tabContent(
+                index,
+                itemComponent,
+                modifier,
+                children.selectedIndex == index,
+                isDragging
+            ) { navigationComponent.onTabCloseClicked(index) }
+        }
+    )
 
-    containerContent(
-        { tabRowModifier ->
-            TabDraggableRow<TabChild>(
-                items = children.items.map { it.instance },
-                onMove = navigationComponent::onMove,
-                modifier = tabRowModifier,
-                tabHorizontalSpacing = tabsArrangement,
-                itemContent = { index, itemComponent: TabChild, isDragging, modifier ->
-                    tabContent(
-                        index,
-                        itemComponent,
-                        modifier,
-                        children.selectedIndex == index,
-                        isDragging
-                    ) { navigationComponent.onTabCloseClicked(index) }
-                }
-            )
-        },
-
-        )
     val activeTab = children.selectedIndex?.let { children.items[it] }
     val key = activeTab?.keyHashString()
     val instance = activeTab?.instance
     key?.let { key ->
         holder.SaveableStateProvider(key) {
-            slotFactory(instance)
+            tabChildFactory(instance)
         }
     }
 }

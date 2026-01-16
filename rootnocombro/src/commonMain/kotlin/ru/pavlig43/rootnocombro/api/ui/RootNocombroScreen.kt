@@ -106,11 +106,7 @@ fun RootNocombroScreen(rootNocombroComponent: RootNocombroComponent) {
                                             onSelect = { tabNavigationComponent.onSelectTab(index) },
                                         )
                                     },
-                                    containerContent = { innerTabs: @Composable (modifier: Modifier) -> Unit ->
-                                        innerTabs(Modifier.fillMaxWidth())
-
-                                    },
-                                    slotFactory = { mainTabChild -> MainTabChildFactory(mainTabChild) }
+                                    tabChildFactory = { mainTabChild -> MainTabChildFactory(mainTabChild) }
                                 )
                             }
                         }
