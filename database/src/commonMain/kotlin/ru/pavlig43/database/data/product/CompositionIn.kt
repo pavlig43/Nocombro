@@ -4,7 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
-import ru.pavlig43.core.data.CollectionObject
+import ru.pavlig43.core.model.CollectionObject
 
 
 @Entity(

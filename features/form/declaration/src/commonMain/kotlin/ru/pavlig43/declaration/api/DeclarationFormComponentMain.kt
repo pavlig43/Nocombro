@@ -48,9 +48,9 @@ class DeclarationFormComponent(
 
     private val componentFactory = EssentialComponentFactory<Declaration, DeclarationEssentialsUi>(
         initItem = DeclarationEssentialsUi(),
-        isValidValuesFactory = { displayName.isNotBlank() && vendorId != null && bestBefore != emptyDate && bornDate != emptyDate },
+        isValidFieldsFactory = { displayName.isNotBlank() && vendorId != null && bestBefore != emptyDate && bornDate != emptyDate },
         mapperToUi = { toUi() },
-        vendorInfoForTabName = {onChangeValueForMainTab("Декларация ${it.displayName}")}
+        produceInfoForTabName = {onChangeValueForMainTab("Декларация ${it.displayName}")}
     )
 
     private fun createChild(

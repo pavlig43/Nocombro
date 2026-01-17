@@ -46,9 +46,9 @@ class DocumentFormComponent(
 
     private val essentialFactory = EssentialComponentFactory<Document, DocumentEssentialsUi>(
         initItem = DocumentEssentialsUi(),
-        isValidValuesFactory = { displayName.isNotBlank() && type != null },
+        isValidFieldsFactory = { displayName.isNotBlank() && type != null },
         mapperToUi = { toUi() },
-        vendorInfoForTabName = { d -> onChangeValueForMainTab("*Документ ${d.displayName}") }
+        produceInfoForTabName = { d -> onChangeValueForMainTab("*Документ ${d.displayName}") }
     )
 
     private fun onChangeValueForMainTab(title: String) {

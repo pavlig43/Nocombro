@@ -6,7 +6,7 @@ import com.arkivanov.decompose.value.operator.map
 import org.koin.core.scope.Scope
 import ru.pavlig43.core.component.EssentialComponentFactory
 import ru.pavlig43.core.tabs.TabNavigationComponent
-import ru.pavlig43.database.DataBaseTransaction
+import ru.pavlig43.core.TransactionExecutor
 import ru.pavlig43.database.data.transaction.Transaction
 import ru.pavlig43.transaction.internal.model.TransactionEssentialsUi
 import ru.pavlig43.update.component.IItemFormInnerTabsComponent
@@ -20,7 +20,7 @@ internal class BuyFormTabInnerTabsComponent(
     id: Int
 ) : ComponentContext by componentContext, IItemFormInnerTabsComponent<BuyTab, BuyTabChild> {
 
-    private val dbTransaction: DataBaseTransaction = scope.get()
+    private val dbTransaction: TransactionExecutor = scope.get()
 
 
     override val tabNavigationComponent: TabNavigationComponent<BuyTab, BuyTabChild> =

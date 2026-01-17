@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.serialization.Serializable
 import ru.pavlig43.core.FormTabComponent
-import ru.pavlig43.core.data.ChangeSet
+import ru.pavlig43.core.model.ChangeSet
 import ru.pavlig43.database.data.product.ProductDeclarationIn
 import ru.pavlig43.database.data.product.ProductDeclarationOut
 import ru.pavlig43.immutable.api.ImmutableTableDependencies

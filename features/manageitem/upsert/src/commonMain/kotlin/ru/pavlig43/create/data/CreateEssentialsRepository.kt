@@ -1,6 +1,6 @@
 package ru.pavlig43.create.data
 
-import ru.pavlig43.core.data.GenericItem
+import ru.pavlig43.core.model.GenericItem
 
 class CreateEssentialsRepository<I : GenericItem>(
     private val isCanSave: suspend (I) -> Result<Unit>,

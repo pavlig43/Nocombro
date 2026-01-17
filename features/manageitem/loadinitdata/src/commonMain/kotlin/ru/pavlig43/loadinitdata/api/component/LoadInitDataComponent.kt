@@ -1,6 +1,8 @@
 package ru.pavlig43.loadinitdata.api.component
 
 import com.arkivanov.decompose.ComponentContext
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -8,6 +10,32 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import ru.pavlig43.core.componentCoroutineScope
 
+/**
+ * Компонент для загрузки и управления начальными данными.
+ *
+ * Этот компонент отвечает за:
+ * 1. Асинхронную загрузку начальных данных при инициализации
+ * 2. Хранение оригинальных (первых) загруженных данных для сравнения с изменениями пользователя
+ * 3. Обработку состояний загрузки (загрузка, успех, ошибка)
+ * 4. Предоставление возможности повторной загрузки при ошибках
+ *
+ * @param getInitData Suspend-функция для загрузки начальных данных. Возвращает [Result] с данными или ошибкой
+ * @param onSuccessGetInitData Callback, вызываемый при успешной загрузке данных для их дальнейшей обработки
+ * передает наверх данные, если они успешно загрузились
+ *
+ * @property firstData [StateFlow] с оригинальными загруженными данными. Используется для сравнения
+ *                     с изменёнными пользователем данными перед сохранением в БД
+ * @property loadState [StateFlow] с текущим состоянием загрузки данных
+ *
+ * ## Жизненный цикл:
+ * 1. **Инициализация**: Автоматически начинает загрузку данных в `init` блоке
+ * 2. **Загрузка**: Вызывает `getInitData()` в IO-диспетчере
+ * 3. **Обработка результата**:
+ *    - При успехе: сохраняет данные в `firstData`, вызывает `onSuccessGetInitData`
+ *    - При ошибке: сохраняет состояние ошибки в `loadState`
+ * 4. **Повторная загрузка**: Через `retryLoadInitData()` можно повторить загрузку
+
+ */
 class LoadInitDataComponent<I : Any>(
     componentContext: ComponentContext,
     private val getInitData: suspend () -> Result<I>,
@@ -41,7 +69,7 @@ class LoadInitDataComponent<I : Any>(
 
     private fun loadData() {
 
-        coroutineScope.launch {
+        coroutineScope.launch(Dispatchers.IO) {
 
             _loadState.update { LoadInitDataState.Loading() }
             val initData =  getInitData().fold(

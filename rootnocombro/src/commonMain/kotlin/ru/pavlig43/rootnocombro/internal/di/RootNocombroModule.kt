@@ -3,7 +3,7 @@ package ru.pavlig43.rootnocombro.internal.di
 import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
-import ru.pavlig43.addfile.api.FilesDependencies
+import ru.pavlig43.files.api.FilesDependencies
 import ru.pavlig43.declaration.api.DeclarationFormDependencies
 import ru.pavlig43.document.api.DocumentFormDependencies
 import ru.pavlig43.immutable.api.ImmutableTableDependencies

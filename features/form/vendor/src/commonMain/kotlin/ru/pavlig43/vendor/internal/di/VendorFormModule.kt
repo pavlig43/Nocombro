@@ -1,20 +1,18 @@
 package ru.pavlig43.vendor.internal.di
 
-import org.koin.core.qualifier.named
 import org.koin.dsl.module
-import ru.pavlig43.addfile.api.FilesDependencies
+import ru.pavlig43.files.api.FilesDependencies
 import ru.pavlig43.create.data.CreateEssentialsRepository
-import ru.pavlig43.database.DataBaseTransaction
+import ru.pavlig43.core.TransactionExecutor
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.vendor.Vendor
-import ru.pavlig43.update.data.UpdateCollectionRepository
 import ru.pavlig43.update.data.UpdateEssentialsRepository
 import ru.pavlig43.vendor.api.VendorFormDependencies
 
 internal fun createVendorFormModule(dependencies: VendorFormDependencies) = listOf(
     module {
         single<NocombroDatabase> { dependencies.db }
-        single<DataBaseTransaction> { dependencies.transaction }
+        single<TransactionExecutor> { dependencies.transaction }
         single<FilesDependencies> {dependencies.filesDependencies  }
         single<CreateEssentialsRepository<Vendor>> { getCreateRepository(get()) }
         single<UpdateEssentialsRepository<Vendor>> { getUpdateRepository(get()) }

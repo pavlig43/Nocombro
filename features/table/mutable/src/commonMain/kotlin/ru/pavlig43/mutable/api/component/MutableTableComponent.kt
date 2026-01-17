@@ -12,8 +12,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.datetime.LocalDate
 import ru.pavlig43.core.FormTabComponent
 import ru.pavlig43.core.componentCoroutineScope
-import ru.pavlig43.core.data.ChangeSet
-import ru.pavlig43.core.data.CollectionObject
+import ru.pavlig43.core.model.ChangeSet
+import ru.pavlig43.core.model.CollectionObject
 import ru.pavlig43.core.emptyDate
 import ru.pavlig43.loadinitdata.api.component.LoadInitDataComponent
 import ru.pavlig43.tablecore.manger.FilterManager

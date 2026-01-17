@@ -13,6 +13,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
+import ru.pavlig43.core.TransactionExecutor
 import ru.pavlig43.core.emptyDate
 import ru.pavlig43.database.data.common.Converters
 import ru.pavlig43.database.data.declaration.Declaration
@@ -92,24 +93,13 @@ fun getNocombroDatabase(builder: RoomDatabase.Builder<NocombroDatabase>): Nocomb
     return database
 }
 
-/**
- * Выполняет транзакцию с несколькими блоками в базе данных
- */
-public interface DataBaseTransaction {
-    /**
-     * Последовательно выполняет все блоки, возвращает первую ошибку или успех
-     *
-     * @param blocks Список suspend блоков для выполнения
-     * @return Result<Unit> - успех или первая ошибка
-     */
-    suspend fun transaction(blocks: List<suspend () -> Result<Unit>>): Result<Unit>
-}
 
 
 
-class NocombroTransaction(
+
+class NocombroTransactionExecutor(
     private val db: NocombroDatabase
-) : DataBaseTransaction {
+) : TransactionExecutor {
 
     override suspend fun transaction(blocks: List<suspend () -> Result<Unit>>): Result<Unit> {
         return runCatching {

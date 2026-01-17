@@ -81,9 +81,9 @@ class VendorFormComponent(
 
     private val componentFactory = EssentialComponentFactory<Vendor, VendorEssentialsUi>(
         initItem = VendorEssentialsUi(),
-        isValidValuesFactory = { displayName.isNotBlank() },
+        isValidFieldsFactory = { displayName.isNotBlank() },
         mapperToUi = { toUi() },
-        vendorInfoForTabName = { onChangeValueForMainTab("Поставщик ${it.displayName}") }
+        produceInfoForTabName = { onChangeValueForMainTab("Поставщик ${it.displayName}") }
     )
     internal val stack: Value<ChildStack<Config, Child>> = childStack(
         source = stackNavigation,

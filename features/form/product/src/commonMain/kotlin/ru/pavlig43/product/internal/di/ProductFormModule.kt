@@ -2,9 +2,9 @@ package ru.pavlig43.product.internal.di
 
 import org.koin.core.qualifier.qualifier
 import org.koin.dsl.module
-import ru.pavlig43.addfile.api.FilesDependencies
+import ru.pavlig43.files.api.FilesDependencies
 import ru.pavlig43.create.data.CreateEssentialsRepository
-import ru.pavlig43.database.DataBaseTransaction
+import ru.pavlig43.core.TransactionExecutor
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.product.CompositionIn
 import ru.pavlig43.database.data.product.CompositionOut
@@ -19,7 +19,7 @@ import ru.pavlig43.update.data.UpdateEssentialsRepository
 internal fun createProductFormModule(dependencies: ProductFormDependencies) = listOf(
     module {
         single<NocombroDatabase> { dependencies.db }
-        single<DataBaseTransaction> { dependencies.transaction }
+        single<TransactionExecutor> { dependencies.transaction }
         single<FilesDependencies> {dependencies.filesDependencies  }
         single<ImmutableTableDependencies> { dependencies.immutableTableDependencies }
         single<CreateEssentialsRepository<Product>> { getCreateRepository(get()) }

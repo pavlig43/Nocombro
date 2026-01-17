@@ -1,6 +1,6 @@
 package ru.pavlig43.database.data.product
 
-import ru.pavlig43.core.data.ItemType
+import ru.pavlig43.core.model.ItemType
 
 
 

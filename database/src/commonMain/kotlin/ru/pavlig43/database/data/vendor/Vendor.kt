@@ -2,10 +2,8 @@ package ru.pavlig43.database.data.vendor
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
-import androidx.room.Ignore
 import androidx.room.PrimaryKey
-import ru.pavlig43.core.data.GenericItem
-import ru.pavlig43.database.data.files.OwnerType
+import ru.pavlig43.core.model.GenericItem
 
 const val VENDOR_TABLE_NAME = "vendor"
 

@@ -1,7 +1,7 @@
 package ru.pavlig43.update.data
 
-import ru.pavlig43.core.data.ChangeSet
-import ru.pavlig43.core.data.CollectionObject
+import ru.pavlig43.core.model.ChangeSet
+import ru.pavlig43.core.model.CollectionObject
 
 class UpdateCollectionRepository<DBOut: CollectionObject,DBIn : CollectionObject>(
     private val loadCollection: suspend (parentId: Int) -> List<DBOut>,

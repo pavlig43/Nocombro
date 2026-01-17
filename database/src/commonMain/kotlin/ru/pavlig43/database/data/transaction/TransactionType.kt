@@ -1,6 +1,6 @@
 package ru.pavlig43.database.data.transaction
 
-import ru.pavlig43.core.data.ItemType
+import ru.pavlig43.core.model.ItemType
 
 enum class TransactionType(override val displayName: String): ItemType {
     BUY("Покупка"),

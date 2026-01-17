@@ -46,9 +46,9 @@ class TransactionFormComponent(
     private val essentialFactory =
         EssentialComponentFactory<Transaction, TransactionEssentialsUi>(
             initItem = TransactionEssentialsUi(),
-            isValidValuesFactory = { transactionType != null },
+            isValidFieldsFactory = { transactionType != null },
             mapperToUi = { toUi() },
-            vendorInfoForTabName = { onChangeValueForMainTab(it.transactionType?.displayName ?: "* Транзакция") }
+            produceInfoForTabName = { onChangeValueForMainTab(it.transactionType?.displayName ?: "* Транзакция") }
         )
 
     private fun onChangeValueForMainTab(title: String) {

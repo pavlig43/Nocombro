@@ -8,7 +8,7 @@ import androidx.room.ForeignKey.Companion.RESTRICT
 
 import androidx.room.PrimaryKey
 import kotlinx.datetime.LocalDate
-import ru.pavlig43.core.data.CollectionObject
+import ru.pavlig43.core.model.CollectionObject
 import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.database.data.product.Product
 

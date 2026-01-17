@@ -1,7 +1,7 @@
 package ru.pavlig43.update.data
 
-import ru.pavlig43.core.data.ChangeSet
-import ru.pavlig43.core.data.GenericItem
+import ru.pavlig43.core.model.ChangeSet
+import ru.pavlig43.core.model.GenericItem
 
 class UpdateEssentialsRepository<I : GenericItem>(
     private val isCanSave: suspend (I) -> Result<Unit>,

@@ -13,7 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
-import ru.pavlig43.addfile.api.ui.FilesScreen
+import ru.pavlig43.files.api.ui.FilesScreen
 import ru.pavlig43.core.ui.EssentialBlockScreen
 import ru.pavlig43.update.ui.ItemTabsUi1
 import ru.pavlig43.vendor.component.VendorFormComponent

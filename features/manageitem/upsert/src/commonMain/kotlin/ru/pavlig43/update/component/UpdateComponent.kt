@@ -6,18 +6,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import ru.pavlig43.core.componentCoroutineScope
 
-sealed interface UpdateState {
-    data object Init: UpdateState
-    data object Loading : UpdateState
-    data object Success : UpdateState
-    data class Error(val message: String) : UpdateState
-}
 data class ErrorMessage(
     val message: String,
     val onSelectProblemTab: () -> Unit,

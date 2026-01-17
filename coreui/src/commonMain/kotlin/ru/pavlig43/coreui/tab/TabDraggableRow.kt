@@ -1,6 +1,8 @@
 package ru.pavlig43.coreui.tab
 
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.Arrangement
@@ -150,7 +152,11 @@ private class DragController(
     /** Анимированное смещение перетаскиваемого элемента по горизонтали */
     var offset = Animatable(0f)
 
-    /** Канал для асинхронной отправки команд автоскролла краев списка */
+    /**
+ * Канал для асинхронной отправки команд автоскролла краев списка
+     * [Channel] работает как очередь, данные с него поступают в [LazyListState]
+     * как  [LazyListState] получает значение, то с из канала оно удаляется
+ */
     val scrollChannel = Channel<Float>()
 
     /** Информация о текущем перетаскиваемом элементе LazyList (кеш для оптимизации) */
@@ -193,7 +199,7 @@ private class DragController(
         val endPosition = startPosition + currentItem.size
         val midpoint = startPosition + (endPosition - startPosition) / 2
 
-        // Проверяет пересечение с целевым элементом по середине перетаскиваемого
+        // Проверяет пересечение с целевым элементом посередине перетаскиваемого
         val targetItem = listState.layoutInfo.visibleItemsInfo
             .firstOrNull {
                 // Центр перетаскиваемого элемента над целевым
@@ -222,10 +228,10 @@ private class DragController(
 
         // Обновляет состояние перетаскиваемого элемента
         draggedItemIndex = targetIndex
-        // Корректирует смещение для визуальной плавности перехода
+        // "Скорректируй смещение так, чтобы элемент остался под пальцем,
+        // но теперь относительно новой позиции в списке"
         offset.snapTo(offset.value + draggedItemInfo!!.offset - targetItem.offset)
         draggedItemInfo = targetItem
-        println(scrollChannel.consumeEach {a-> println(a)  })
     }
 
     /**

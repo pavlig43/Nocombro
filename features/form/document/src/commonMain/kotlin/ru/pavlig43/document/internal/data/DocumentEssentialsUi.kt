@@ -1,7 +1,7 @@
 package ru.pavlig43.document.internal.data
 
 import kotlinx.datetime.LocalDate
-import ru.pavlig43.core.data.ItemEssentialsUi
+import ru.pavlig43.core.model.ItemEssentialsUi
 import ru.pavlig43.core.getCurrentLocalDate
 import ru.pavlig43.database.data.document.Document
 import ru.pavlig43.database.data.document.DocumentType

@@ -7,7 +7,7 @@ import org.koin.core.qualifier.qualifier
 import org.koin.core.scope.Scope
 import ru.pavlig43.core.component.EssentialComponentFactory
 import ru.pavlig43.core.tabs.TabNavigationComponent
-import ru.pavlig43.database.DataBaseTransaction
+import ru.pavlig43.core.TransactionExecutor
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.product.internal.component.tabs.tabslot.CompositionComponent
 import ru.pavlig43.product.internal.component.tabs.tabslot.ProductDeclarationComponent
@@ -31,7 +31,7 @@ internal class ProductFormTabInnerTabsComponent(
 ) : ComponentContext by componentContext,
     IItemFormInnerTabsComponent<ProductTab, ProductTabChild> {
 
-    private val dbTransaction: DataBaseTransaction = scope.get()
+    private val dbTransaction: TransactionExecutor = scope.get()
 
 
     override val tabNavigationComponent: TabNavigationComponent<ProductTab, ProductTabChild> =

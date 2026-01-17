@@ -47,9 +47,9 @@ class ProductFormComponent(
 
     private val essentialsFactory = EssentialComponentFactory<Product, ProductEssentialsUi>(
         initItem = ProductEssentialsUi(),
-        isValidValuesFactory = {displayName.isNotBlank() && productType != null},
+        isValidFieldsFactory = {displayName.isNotBlank() && productType != null},
         mapperToUi = {toUi()},
-        vendorInfoForTabName = {p-> onChangeValueForMainTab("Продукт ${p.displayName}")}
+        produceInfoForTabName = { p-> onChangeValueForMainTab("Продукт ${p.displayName}")}
     )
 
 
