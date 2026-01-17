@@ -19,7 +19,7 @@ import ru.pavlig43.core.emptyDate
 import ru.pavlig43.corekoin.ComponentKoinContext
 import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.declaration.internal.component.CreateDeclarationComponent
-import ru.pavlig43.declaration.internal.component.tabs.DeclarationFormTabInnerTabsComponent
+import ru.pavlig43.declaration.internal.component.tabs.DeclarationFormTabsComponent
 import ru.pavlig43.declaration.internal.data.DeclarationEssentialsUi
 import ru.pavlig43.declaration.internal.data.toUi
 import ru.pavlig43.declaration.internal.di.createDeclarationFormModule
@@ -71,7 +71,7 @@ class DeclarationFormComponent(
             )
 
             is Config.Update -> Child.Update(
-                DeclarationFormTabInnerTabsComponent(
+                DeclarationFormTabsComponent(
                     componentContext = componentContext,
                     scope = scope,
                     declarationId = config.id,
@@ -110,6 +110,6 @@ class DeclarationFormComponent(
 
     internal sealed class Child {
         class Create(val component: CreateDeclarationComponent) : Child()
-        class Update(val component: DeclarationFormTabInnerTabsComponent) : Child()
+        class Update(val component: DeclarationFormTabsComponent) : Child()
     }
 }

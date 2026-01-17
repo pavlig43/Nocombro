@@ -12,10 +12,10 @@ import ru.pavlig43.declaration.internal.component.tabs.tabslot.DeclarationTabChi
 import ru.pavlig43.declaration.internal.component.tabs.tabslot.DeclarationEssentialComponent
 import ru.pavlig43.declaration.internal.component.tabs.tabslot.DeclarationFilesComponent
 import ru.pavlig43.declaration.internal.data.DeclarationEssentialsUi
-import ru.pavlig43.update.component.IItemFormInnerTabsComponent
+import ru.pavlig43.update.component.IItemFormTabsComponent
 import ru.pavlig43.update.component.UpdateComponent
 
-internal class DeclarationFormTabInnerTabsComponent(
+internal class DeclarationFormTabsComponent(
     componentContext: ComponentContext,
     componentFactory: EssentialComponentFactory<Declaration, DeclarationEssentialsUi>,
     closeFormScreen: () -> Unit,
@@ -23,9 +23,9 @@ internal class DeclarationFormTabInnerTabsComponent(
     scope: Scope,
     declarationId: Int
 ) : ComponentContext by componentContext,
-    IItemFormInnerTabsComponent<DeclarationTab, DeclarationTabChild> {
+    IItemFormTabsComponent<DeclarationTab, DeclarationTabChild> {
 
-    private val dbTransaction: TransactionExecutor = scope.get()
+    override val transactionExecutor: TransactionExecutor = scope.get()
 
 
     override val tabNavigationComponent: TabNavigationComponent<DeclarationTab, DeclarationTabChild> =
@@ -57,21 +57,7 @@ internal class DeclarationFormTabInnerTabsComponent(
                             componentContext = context
                         )
                     )
-//                    DeclarationTab.Essentials -> EssentialComponent(
-//                        componentContext = context,
-//                        dependencies = scope.get(),
-//                        declarationId = declarationId,
-//                        updateRepository = scope.get(),
-//                        componentFactory = componentFactory,
-//                        onOpenVendorTab = onOpenVendorTab
-//                    )
 
-
-//                    DeclarationTab.Files -> FileComponent(
-//                        declarationId = declarationId,
-//                        dependencies = scope.get(),
-//                        componentContext = context
-//                    )
 
 
                 }
@@ -79,13 +65,6 @@ internal class DeclarationFormTabInnerTabsComponent(
             },
         )
 
-    private suspend fun update(): Result<Unit> {
-        val blocks =
-            tabNavigationComponent.tabChildren.map { children: TabNavigationComponent.TabChildren<DeclarationTab, DeclarationTabChild> ->
-                children.items.map { child -> suspend { child.instance.component.onUpdate() } }
-            }
-        return dbTransaction.transaction(blocks.value)
-    }
 
     override val updateComponent: UpdateComponent = UpdateComponent(
         componentContext = childContext("update"),

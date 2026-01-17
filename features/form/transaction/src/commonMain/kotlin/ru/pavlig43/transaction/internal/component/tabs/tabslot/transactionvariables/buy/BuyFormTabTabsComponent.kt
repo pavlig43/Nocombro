@@ -9,18 +9,18 @@ import ru.pavlig43.core.tabs.TabNavigationComponent
 import ru.pavlig43.core.TransactionExecutor
 import ru.pavlig43.database.data.transaction.Transaction
 import ru.pavlig43.transaction.internal.model.TransactionEssentialsUi
-import ru.pavlig43.update.component.IItemFormInnerTabsComponent
+import ru.pavlig43.update.component.IItemFormTabsComponent
 import ru.pavlig43.update.component.UpdateComponent
 
-internal class BuyFormTabInnerTabsComponent(
+internal class BuyFormTabsComponent(
     componentContext: ComponentContext,
     essentialFactory: EssentialComponentFactory<Transaction, TransactionEssentialsUi>,
     closeFormScreen: () -> Unit,
     scope: Scope,
     id: Int
-) : ComponentContext by componentContext, IItemFormInnerTabsComponent<BuyTab, BuyTabChild> {
+) : ComponentContext by componentContext, IItemFormTabsComponent<BuyTab, BuyTabChild> {
 
-    private val dbTransaction: TransactionExecutor = scope.get()
+    override val transactionExecutor: TransactionExecutor = scope.get()
 
 
     override val tabNavigationComponent: TabNavigationComponent<BuyTab, BuyTabChild> =
@@ -52,13 +52,7 @@ internal class BuyFormTabInnerTabsComponent(
             },
         )
 
-    private suspend fun update(): Result<Unit> {
-        val blocks = tabNavigationComponent.tabChildren.map { children ->
-            children.items.map { child -> suspend { child.instance.component.onUpdate() } }
-        }
-        return dbTransaction.transaction(blocks.value)
 
-    }
 
     override val updateComponent: UpdateComponent = UpdateComponent(
         componentContext = childContext("update"),

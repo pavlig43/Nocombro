@@ -15,7 +15,7 @@ import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import ru.pavlig43.files.api.ui.FilesScreen
 import ru.pavlig43.core.ui.EssentialBlockScreen
-import ru.pavlig43.update.ui.ItemTabsUi1
+import ru.pavlig43.update.ui.FormTabsUi
 import ru.pavlig43.vendor.component.VendorFormComponent
 import ru.pavlig43.vendor.internal.component.tabs.tabslot.VendorEssentialsComponent
 import ru.pavlig43.vendor.internal.component.tabs.tabslot.VendorTabChild
@@ -41,9 +41,9 @@ fun VendorFormScreen(
         ) { child ->
             when (val instance = child.instance) {
                 is VendorFormComponent.Child.Create -> CreateVendorScreen(instance.component)
-                is VendorFormComponent.Child.Update -> ItemTabsUi1(
+                is VendorFormComponent.Child.Update -> FormTabsUi(
                     component = instance.component,
-                    slotFactory = { child ->
+                    tabChildFactory = { child ->
                         VendorTabsScreen(child)
                     })
             }

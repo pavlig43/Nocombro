@@ -12,19 +12,19 @@ import ru.pavlig43.document.internal.component.tabs.tabslot.DocumentFilesCompone
 import ru.pavlig43.document.internal.component.tabs.tabslot.DocumentEssentialComponent
 import ru.pavlig43.document.internal.component.tabs.tabslot.DocumentTabChild
 import ru.pavlig43.document.internal.data.DocumentEssentialsUi
-import ru.pavlig43.update.component.IItemFormInnerTabsComponent
+import ru.pavlig43.update.component.IItemFormTabsComponent
 import ru.pavlig43.update.component.UpdateComponent
 
-internal class DocumentFormTabInnerTabsComponent(
+internal class DocumentFormTabsComponent(
     componentContext: ComponentContext,
     essentialFactory: EssentialComponentFactory<Document, DocumentEssentialsUi>,
     closeFormScreen: () -> Unit,
     scope: Scope,
     documentId: Int
 ) : ComponentContext by componentContext,
-    IItemFormInnerTabsComponent<DocumentTab, DocumentTabChild> {
+    IItemFormTabsComponent<DocumentTab, DocumentTabChild> {
 
-    private val dbTransaction: TransactionExecutor = scope.get()
+    override val transactionExecutor: TransactionExecutor = scope.get()
 
 
     override val tabNavigationComponent: TabNavigationComponent<DocumentTab, DocumentTabChild> =
@@ -60,13 +60,7 @@ internal class DocumentFormTabInnerTabsComponent(
             },
         )
 
-    private suspend fun update(): Result<Unit> {
-        val blocks = tabNavigationComponent.tabChildren.map { children ->
-            children.items.map { child -> suspend { child.instance.component.onUpdate() } }
-        }
-        return dbTransaction.transaction(blocks.value)
 
-    }
 
     override val updateComponent: UpdateComponent = UpdateComponent(
         componentContext = childContext("update"),
@@ -74,6 +68,6 @@ internal class DocumentFormTabInnerTabsComponent(
         errorMessages = getErrors(lifecycle),
         closeFormScreen = closeFormScreen
     )
-
+    
 }
 

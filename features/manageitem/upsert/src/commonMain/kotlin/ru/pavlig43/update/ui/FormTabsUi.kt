@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CardDefaults
@@ -26,13 +27,13 @@ import androidx.compose.ui.unit.dp
 import ru.pavlig43.core.FormTabChild
 import ru.pavlig43.core.FormTabComponent
 import ru.pavlig43.coreui.tab.TabNavigationContent
-import ru.pavlig43.update.component.IItemFormInnerTabsComponent
+import ru.pavlig43.update.component.IItemFormTabsComponent
 
 
 @Composable
-fun <Tab : Any, Child : FormTabChild> ItemTabsUi1(
-    component: IItemFormInnerTabsComponent<Tab, Child>,
-    slotFactory: @Composable (Child?) -> Unit,
+fun <Tab : Any, Child : FormTabChild> FormTabsUi(
+    component: IItemFormTabsComponent<Tab, Child>,
+    tabChildFactory: @Composable (Child?) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Scaffold(
@@ -58,8 +59,8 @@ fun <Tab : Any, Child : FormTabChild> ItemTabsUi1(
                         onSelect = { component.tabNavigationComponent.onSelectTab(index) },
                     )
                 },
-                tabsRowModifier = Modifier.fillMaxSize(),
-                tabChildFactory = slotFactory,
+                tabsRowModifier = Modifier.fillMaxWidth(),
+                tabChildFactory = tabChildFactory,
             )
         }
     }

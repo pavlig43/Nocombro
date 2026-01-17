@@ -19,7 +19,7 @@ import ru.pavlig43.transaction.internal.component.tabs.tabslot.transactionvariab
 import ru.pavlig43.transaction.internal.component.tabs.tabslot.transactionvariables.buy.BuyTabChild
 import ru.pavlig43.transaction.internal.ui.CreateTransactionScreen
 import ru.pavlig43.transaction.internal.ui.TransactionFields
-import ru.pavlig43.update.ui.ItemTabsUi1
+import ru.pavlig43.update.ui.FormTabsUi
 
 @Composable
 fun TransactionFormScreen(
@@ -40,9 +40,9 @@ fun TransactionFormScreen(
         ) { child ->
             when (val instance = child.instance) {
                 is TransactionFormComponent.Child.Create -> CreateTransactionScreen(instance.component)
-                is TransactionFormComponent.Child.Update -> ItemTabsUi1(
+                is TransactionFormComponent.Child.Update -> FormTabsUi(
                     component = instance.component,
-                    slotFactory = { tabChild ->
+                    tabChildFactory = { tabChild ->
                         TabsScreen(tabChild)
                     })
             }

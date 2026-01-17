@@ -22,7 +22,7 @@ import ru.pavlig43.product.internal.ui.CompositionScreen
 import ru.pavlig43.product.internal.ui.CreateProductScreen
 import ru.pavlig43.product.internal.ui.DeclarationScreen
 import ru.pavlig43.product.internal.ui.ProductFields
-import ru.pavlig43.update.ui.ItemTabsUi1
+import ru.pavlig43.update.ui.FormTabsUi
 
 @Composable
 fun ProductFormScreen(
@@ -44,9 +44,9 @@ fun ProductFormScreen(
         ) { child ->
             when (val instance = child.instance) {
                 is ProductFormComponent.Child.Create -> CreateProductScreen(instance.component)
-                is ProductFormComponent.Child.Update -> ItemTabsUi1(
+                is ProductFormComponent.Child.Update -> FormTabsUi(
                     component = instance.component,
-                    slotFactory = { slotForm: ProductTabChild? ->
+                    tabChildFactory = { slotForm: ProductTabChild? ->
                         ProductSlotScreen(slotForm)
                     })
             }

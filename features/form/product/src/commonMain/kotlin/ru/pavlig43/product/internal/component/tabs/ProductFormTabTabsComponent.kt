@@ -16,11 +16,11 @@ import ru.pavlig43.product.internal.component.tabs.tabslot.ProductFilesComponent
 import ru.pavlig43.product.internal.component.tabs.tabslot.ProductTabChild
 import ru.pavlig43.product.internal.data.ProductEssentialsUi
 import ru.pavlig43.product.internal.di.UpdateCollectionRepositoryType
-import ru.pavlig43.update.component.IItemFormInnerTabsComponent
+import ru.pavlig43.update.component.IItemFormTabsComponent
 import ru.pavlig43.update.component.UpdateComponent
 
 @Suppress("LongParameterList")
-internal class ProductFormTabInnerTabsComponent(
+internal class ProductFormTabsComponent(
     componentContext: ComponentContext,
     componentFactory: EssentialComponentFactory<Product, ProductEssentialsUi>,
     closeFormScreen: () -> Unit,
@@ -29,9 +29,9 @@ internal class ProductFormTabInnerTabsComponent(
     scope: Scope,
     productId: Int,
 ) : ComponentContext by componentContext,
-    IItemFormInnerTabsComponent<ProductTab, ProductTabChild> {
+    IItemFormTabsComponent<ProductTab, ProductTabChild> {
 
-    private val dbTransaction: TransactionExecutor = scope.get()
+    override val transactionExecutor: TransactionExecutor = scope.get()
 
 
     override val tabNavigationComponent: TabNavigationComponent<ProductTab, ProductTabChild> =
@@ -92,12 +92,7 @@ internal class ProductFormTabInnerTabsComponent(
             },
         )
 
-    private suspend fun update(): Result<Unit> {
-        val blocks = tabNavigationComponent.tabChildren.map { children ->
-            children.items.map { child -> suspend { child.instance.component.onUpdate() } }
-        }
-        return dbTransaction.transaction(blocks.value)
-    }
+
 
 
 

@@ -20,7 +20,7 @@ import ru.pavlig43.declaration.internal.component.tabs.tabslot.DeclarationEssent
 import ru.pavlig43.declaration.internal.ui.CreateDeclarationScreen
 import ru.pavlig43.declaration.internal.ui.DeclarationFields
 import ru.pavlig43.immutable.api.ui.MBSImmutableTable
-import ru.pavlig43.update.ui.ItemTabsUi1
+import ru.pavlig43.update.ui.FormTabsUi
 
 @Composable
 fun DeclarationFormScreen(
@@ -44,9 +44,9 @@ fun DeclarationFormScreen(
 
 
                 is DeclarationFormComponent.Child.Create -> CreateDeclarationScreen(instance.component)
-                is DeclarationFormComponent.Child.Update -> ItemTabsUi1(
+                is DeclarationFormComponent.Child.Update -> FormTabsUi(
                     component = instance.component,
-                    slotFactory = { slotForm: DeclarationTabChild? ->
+                    tabChildFactory = { slotForm: DeclarationTabChild? ->
                         DeclarationSlotScreen(slotForm)
                     })
             }

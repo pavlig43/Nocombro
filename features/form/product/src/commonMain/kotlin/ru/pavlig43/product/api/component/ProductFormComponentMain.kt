@@ -18,7 +18,7 @@ import ru.pavlig43.corekoin.ComponentKoinContext
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.product.api.ProductFormDependencies
 import ru.pavlig43.product.internal.component.CreateProductComponent
-import ru.pavlig43.product.internal.component.tabs.ProductFormTabInnerTabsComponent
+import ru.pavlig43.product.internal.component.tabs.ProductFormTabsComponent
 import ru.pavlig43.product.internal.data.ProductEssentialsUi
 import ru.pavlig43.product.internal.data.toUi
 import ru.pavlig43.product.internal.di.createProductFormModule
@@ -69,7 +69,7 @@ class ProductFormComponent(
             )
 
             is Config.Update -> Child.Update(
-                ProductFormTabInnerTabsComponent(
+                ProductFormTabsComponent(
                     componentContext = componentContext,
                     scope = scope,
                     productId = config.id,
@@ -109,7 +109,7 @@ class ProductFormComponent(
 
     internal sealed class Child {
         class Create(val component: CreateProductComponent) : Child()
-        class Update(val component: ProductFormTabInnerTabsComponent) : Child()
+        class Update(val component: ProductFormTabsComponent) : Child()
     }
 }
 

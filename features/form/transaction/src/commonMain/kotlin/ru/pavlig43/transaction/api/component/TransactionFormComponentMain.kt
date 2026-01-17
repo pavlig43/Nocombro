@@ -18,7 +18,7 @@ import ru.pavlig43.corekoin.ComponentKoinContext
 import ru.pavlig43.database.data.transaction.Transaction
 import ru.pavlig43.transaction.api.TransactionFormDependencies
 import ru.pavlig43.transaction.internal.component.CreateTransactionComponent
-import ru.pavlig43.transaction.internal.component.tabs.tabslot.transactionvariables.buy.BuyFormTabInnerTabsComponent
+import ru.pavlig43.transaction.internal.component.tabs.tabslot.transactionvariables.buy.BuyFormTabsComponent
 import ru.pavlig43.transaction.internal.di.createTransactionFormModule
 import ru.pavlig43.transaction.internal.model.TransactionEssentialsUi
 import ru.pavlig43.transaction.internal.model.toUi
@@ -73,7 +73,7 @@ class TransactionFormComponent(
             )
 
             is Config.Update -> Child.Update(
-                BuyFormTabInnerTabsComponent(
+                BuyFormTabsComponent(
                     componentContext = componentContext,
                     essentialFactory = essentialFactory,
                     scope = scope,
@@ -105,6 +105,6 @@ class TransactionFormComponent(
 
     internal sealed class Child {
         class Create(val component: CreateTransactionComponent) : Child()
-        class Update(val component: BuyFormTabInnerTabsComponent) : Child()
+        class Update(val component: BuyFormTabsComponent) : Child()
     }
 }

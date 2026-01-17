@@ -18,7 +18,7 @@ import ru.pavlig43.corekoin.ComponentKoinContext
 import ru.pavlig43.database.data.document.Document
 import ru.pavlig43.document.api.DocumentFormDependencies
 import ru.pavlig43.document.internal.component.CreateDocumentComponent
-import ru.pavlig43.document.internal.component.tabs.DocumentFormTabInnerTabsComponent
+import ru.pavlig43.document.internal.component.tabs.DocumentFormTabsComponent
 import ru.pavlig43.document.internal.data.DocumentEssentialsUi
 import ru.pavlig43.document.internal.data.toUi
 import ru.pavlig43.document.internal.di.createDocumentFormModule
@@ -72,7 +72,7 @@ class DocumentFormComponent(
             )
 
             is Config.Update -> Child.Update(
-                DocumentFormTabInnerTabsComponent(
+                DocumentFormTabsComponent(
                     componentContext = componentContext,
                     essentialFactory = essentialFactory,
                     scope = scope,
@@ -101,7 +101,7 @@ class DocumentFormComponent(
 
     internal sealed class Child {
         class Create(val component: CreateDocumentComponent) : Child()
-        class Update(val component: DocumentFormTabInnerTabsComponent) : Child()
+        class Update(val component: DocumentFormTabsComponent) : Child()
     }
 }
 

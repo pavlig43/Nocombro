@@ -8,4 +8,5 @@ internal sealed interface DocumentTab {
     data object Essentials: DocumentTab
     @Serializable
     data object Files: DocumentTab
+
 }

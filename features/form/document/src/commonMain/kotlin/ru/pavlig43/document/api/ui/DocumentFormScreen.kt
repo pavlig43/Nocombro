@@ -3,9 +3,11 @@ package ru.pavlig43.document.api.ui
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -20,7 +22,7 @@ import ru.pavlig43.document.internal.component.tabs.tabslot.DocumentEssentialCom
 import ru.pavlig43.document.internal.component.tabs.tabslot.DocumentTabChild
 import ru.pavlig43.document.internal.ui.CreateDocumentScreen
 import ru.pavlig43.document.internal.ui.DocumentFields
-import ru.pavlig43.update.ui.ItemTabsUi1
+import ru.pavlig43.update.ui.FormTabsUi
 
 @Composable
 fun DocumentFormScreen(
@@ -41,11 +43,12 @@ fun DocumentFormScreen(
         ) { child ->
             when (val instance = child.instance) {
                 is DocumentFormComponent.Child.Create -> CreateDocumentScreen(instance.component)
-                is DocumentFormComponent.Child.Update -> ItemTabsUi1(
+                is DocumentFormComponent.Child.Update -> FormTabsUi(
                     component = instance.component,
-                    slotFactory = { child: DocumentTabChild?->
-                        DocumentSlotScreen(child)
-                    })
+                    tabChildFactory = { child: DocumentTabChild?->
+                        DocumentFormTabScreen(child)
+                    }
+                )
             }
         }
 
@@ -54,14 +57,15 @@ fun DocumentFormScreen(
 }
 
 @Composable
-private fun DocumentSlotScreen(
+private fun DocumentFormTabScreen(
     documentChild: DocumentTabChild?,
 ) {
     when (documentChild) {
 
-        is DocumentTabChild.Essentials -> UpdateEssentialsBlock(documentChild.component)
+        is DocumentTabChild.Essentials -> {
+            UpdateEssentialsBlock(documentChild.component)}
         is DocumentTabChild.Files -> FilesScreen(documentChild.component)
-        null -> Box(Modifier)
+        null -> Box(Modifier.fillMaxSize()){Text("Пусто")}
     }
 }
 @Composable

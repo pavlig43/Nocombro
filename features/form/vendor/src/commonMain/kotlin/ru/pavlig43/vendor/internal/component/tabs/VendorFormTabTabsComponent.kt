@@ -9,23 +9,23 @@ import ru.pavlig43.core.component.EssentialComponentFactory
 import ru.pavlig43.core.tabs.TabNavigationComponent
 import ru.pavlig43.core.TransactionExecutor
 import ru.pavlig43.database.data.vendor.Vendor
-import ru.pavlig43.update.component.IItemFormInnerTabsComponent
+import ru.pavlig43.update.component.IItemFormTabsComponent
 import ru.pavlig43.update.component.UpdateComponent
 import ru.pavlig43.vendor.internal.component.tabs.tabslot.VendorEssentialsComponent
 import ru.pavlig43.vendor.internal.component.tabs.tabslot.VendorFilesComponent
 import ru.pavlig43.vendor.internal.component.tabs.tabslot.VendorTabChild
 import ru.pavlig43.vendor.internal.data.VendorEssentialsUi
 
-internal class VendorFormTabInnerTabsComponent(
+internal class VendorFormTabsComponent(
     componentContext: ComponentContext,
     closeFormScreen: () -> Unit,
     componentFactory: EssentialComponentFactory<Vendor, VendorEssentialsUi>,
     scope: Scope,
     vendorId: Int
 ) : ComponentContext by componentContext,
-    IItemFormInnerTabsComponent<VendorTab, VendorTabChild> {
+    IItemFormTabsComponent<VendorTab, VendorTabChild> {
 
-    private val dbTransaction: TransactionExecutor = scope.get()
+    override val transactionExecutor: TransactionExecutor = scope.get()
 
 
     override val tabNavigationComponent: TabNavigationComponent<VendorTab, VendorTabChild> =
@@ -61,12 +61,7 @@ internal class VendorFormTabInnerTabsComponent(
 
             },
         )
-    private suspend fun update(): Result<Unit> {
-        val blocks: Value<List<suspend () -> Result<Unit>>> = tabNavigationComponent.tabChildren.map { children->
-            children.items.map { child-> suspend {child.instance.component.onUpdate()} } }
-        return dbTransaction.transaction(blocks.value)
 
-    }
     override val updateComponent: UpdateComponent = UpdateComponent(
         componentContext = childContext("update"),
         onUpdateComponent = { update() },

@@ -39,7 +39,7 @@ fun <TabConfiguration : Any, TabChild : Any> TabNavigationContent(
     val children by navigationComponent.tabChildren.subscribeAsState()
 
     /**
-     * Для того, чтобы сохранять состояние скролла
+     * Для того чтобы сохранять состояние скролла
      * @sample https://github.com/arkivanov/Decompose/blob/master/extensions-compose/src/commonMain/kotlin/com/arkivanov/decompose/extensions/compose/stack/Children.kt?ysclid=mkgi5tjc2z853230913
      */
     val holder = rememberSaveableStateHolder()

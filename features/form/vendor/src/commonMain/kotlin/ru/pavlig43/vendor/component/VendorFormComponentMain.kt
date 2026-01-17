@@ -18,7 +18,7 @@ import ru.pavlig43.corekoin.ComponentKoinContext
 import ru.pavlig43.database.data.vendor.Vendor
 import ru.pavlig43.vendor.api.VendorFormDependencies
 import ru.pavlig43.vendor.internal.component.CreateVendorComponent
-import ru.pavlig43.vendor.internal.component.tabs.VendorFormTabInnerTabsComponent
+import ru.pavlig43.vendor.internal.component.tabs.VendorFormTabsComponent
 import ru.pavlig43.vendor.internal.data.VendorEssentialsUi
 import ru.pavlig43.vendor.internal.data.toUi
 import ru.pavlig43.vendor.internal.di.createVendorFormModule
@@ -59,7 +59,7 @@ class VendorFormComponent(
 
 
             is Config.Update -> Child.Update(
-                VendorFormTabInnerTabsComponent(
+                VendorFormTabsComponent(
                     componentContext = componentContext,
                     closeFormScreen = closeTab,
                     scope = scope,
@@ -104,7 +104,7 @@ class VendorFormComponent(
     }
 
     internal sealed class Child {
-        class Update(val component: VendorFormTabInnerTabsComponent) : Child()
+        class Update(val component: VendorFormTabsComponent) : Child()
         class Create(val component: CreateVendorComponent) : Child()
     }
 }

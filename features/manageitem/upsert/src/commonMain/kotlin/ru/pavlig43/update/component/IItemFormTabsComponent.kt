@@ -8,12 +8,15 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import ru.pavlig43.core.FormTabChild
+import ru.pavlig43.core.TransactionExecutor
 import ru.pavlig43.core.tabs.TabNavigationComponent
 import ru.pavlig43.core.toStateFlow
 
-interface IItemFormInnerTabsComponent<TabConfiguration : Any, TabChild : FormTabChild> {
+interface IItemFormTabsComponent<TabConfiguration : Any, TabChild : FormTabChild> {
     val tabNavigationComponent: TabNavigationComponent<TabConfiguration, TabChild>
     val updateComponent: UpdateComponent
+
+    val transactionExecutor: TransactionExecutor
 
 
 
@@ -35,5 +38,12 @@ interface IItemFormInnerTabsComponent<TabConfiguration : Any, TabChild : FormTab
                 it.toList().flatten()
             }
         }
+    suspend fun update(): Result<Unit> {
+        val blocks =
+            tabNavigationComponent.tabChildren.map { children ->
+                children.items.map { child -> suspend { child.instance.component.onUpdate() } }
+            }
+        return transactionExecutor.transaction(blocks.value)
+    }
 }
 
