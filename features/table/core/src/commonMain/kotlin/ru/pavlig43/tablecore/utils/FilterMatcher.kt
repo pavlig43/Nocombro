@@ -5,20 +5,38 @@ import kotlinx.datetime.LocalDateTime
 import ua.wwind.table.filter.data.FilterConstraint
 import ua.wwind.table.filter.data.TableFilterState
 
-@Suppress("UNCHECKED_CAST")
 
+@Suppress("UNCHECKED_CAST")
+/**
+ * @param I сам объект (какой-нибудь ITableUi)
+ * @param C sealed который содержит названия колонок
+ */
 abstract class FilterMatcher<I, C> {
 
 
     protected abstract fun matchesRules(item:I,column:C,stateAny:  TableFilterState<*>): Boolean
 
+
+    /**
+     * @param item какой-то объект на вход
+     * @param filters
+     * мапа <Колонка, САМ фильтр(в котором ограничение [FilterConstraint] и значения(строка или пара чисел))>
+     * в зависимости от [FilterConstraint] идет сравнение со значениями в мапе
+     * Если объект прошел все фильтр, то возвращается true
+     */
     @Suppress("ComplexCondition")
     fun matchesItem(
         item: I,
         filters: Map<C, TableFilterState<*>>,
     ): Boolean {
         for ((column, stateAny) in filters) {
-            // If state has no constraint or values, skip this field (not restrictive)
+            /**
+             * Если constraint == null(не знаю как такое возможно) или
+             * (список значений null, но при этом ограничения не проверяют на нулабельность
+             * - значений быть не может, ограничение закладывает с constraint),
+             * то эта колонка с фильтрами пропускается.
+             *
+             */
             if (stateAny.constraint == null ||
                 (
                         stateAny.values == null &&
@@ -52,6 +70,7 @@ abstract class FilterMatcher<I, C> {
             else -> true
         }
     }
+
 @Suppress("CyclomaticComplexMethod")
     protected fun matchesIntField(
         value: Int,
@@ -76,30 +95,7 @@ abstract class FilterMatcher<I, C> {
             else -> true
         }
     }
-    @Suppress("CyclomaticComplexMethod")
-    protected fun matchesDoubleField(
-        value: Double,
-        state: TableFilterState<*>,
-    ): Boolean {
-        val st = state as TableFilterState<Double>
-        val constraint = st.constraint ?: return true
 
-        return when (constraint) {
-            FilterConstraint.GT -> value > (st.values?.getOrNull(0) ?: value)
-            FilterConstraint.GTE -> value >= (st.values?.getOrNull(0) ?: value)
-            FilterConstraint.LT -> value < (st.values?.getOrNull(0) ?: value)
-            FilterConstraint.LTE -> value <= (st.values?.getOrNull(0) ?: value)
-            FilterConstraint.EQUALS -> value == (st.values?.getOrNull(0) ?: value)
-            FilterConstraint.NOT_EQUALS -> value != (st.values?.getOrNull(0) ?: value)
-            FilterConstraint.BETWEEN -> {
-                val from = st.values?.getOrNull(0) ?: value
-                val to = st.values?.getOrNull(1) ?: value
-                value in from..to
-            }
-
-            else -> true
-        }
-    }
     fun <I>matchesTypeField(value: I, state: TableFilterState<*>,): Boolean {
         val constraint = state.constraint ?: return true
 

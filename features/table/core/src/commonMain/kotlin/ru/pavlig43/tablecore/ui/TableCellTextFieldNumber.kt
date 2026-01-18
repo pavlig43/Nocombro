@@ -28,7 +28,9 @@ fun<T: Any,C,E> EditableColumnBuilder<T,C,E>.cellForDecimalFormat(
     getCount:(T)-> Int,
     saveInModel: (T,Int) -> Unit
 ){
+    // Для отображения значения, когда оно не редактируется
     cell { item, _ -> Text(getCount(item).toStartDoubleFormat(format)) }
+
     editCell { item: T, tableData: E, onComplete: () -> Unit ->
 
         TableCellTextFieldNumber(
@@ -46,6 +48,11 @@ private fun Int.toStartDoubleFormat(decimalFormat: DecimalFormat): String {
         .dropLastWhile { it == '0' }
         .run { if (last() == '.') dropLast(1) else this }
 }
+
+/**
+ * Пользователь вводит Double(подразумевая стандартные варианты измерения(кг или рубли))
+ * колбэк берет это значение и сохраняет в модель как целочисленное(граммы или копейки)
+ */
 @Composable
 fun TableCellTextFieldNumber(
     value: Int,
@@ -56,6 +63,8 @@ fun TableCellTextFieldNumber(
 ) {
 
     var error by remember { mutableStateOf(errorMessage) }
+    // Отображаемое значение, должно быть всегда, хоть изменение и реактивное, но если введенное
+    // значение нельзя привести к числовому формату то функция обновления не сработает
     var displayValue by remember {
         mutableStateOf(
             value.takeIf { it != 0 }?.toStartDoubleFormat(decimalFormat) ?: ""
@@ -65,7 +74,13 @@ fun TableCellTextFieldNumber(
     TableCellTextFieldWithTooltipError(
         value = displayValue,
         onValueChange = { input ->
-
+            /**
+             * Проверяется ввод посимвольно, берется пустая строка и к ней лепится (
+             * если число - да
+             * если еще не содержит точку - да
+             * иначе пропускается символ
+             )
+             */
             val result = input.fold("") { acc: String, element: Char ->
                 when {
                     element.isDigit() -> acc + element
@@ -74,12 +89,20 @@ fun TableCellTextFieldNumber(
                     else -> acc
                 }
             }
+
+            /**
+             * Если точка есть, то обрезает дробную часть до количества знаков [DecimalFormat.countDecimal]
+             */
             val parts = result.split('.')
             val finalText = if (parts.size == 2) {
                 parts[0] + "." + parts[1].take(decimalFormat.countDecimal)
             } else result
 
             displayValue = finalText
+            /**
+             * Если введеный текст можно привести к Double, то происходит реактивное изменение модели
+             * в компоненте через приведение к целочисленному значению.
+             */
             if (displayValue.toDoubleOrNull() != null) {
 
                 val intCount =

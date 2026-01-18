@@ -36,7 +36,7 @@ fun NotificationIcon(
                 shape = CardDefaults.shape
             )
             .background(
-                color = level.toColor(),
+                color = level.toColor().copy(alpha = 0.7f),
                 shape = CardDefaults.shape
             )
 ,

@@ -30,30 +30,30 @@ internal sealed interface ItemListState<out O> {
 
 
 @Suppress("LongParameterList")
-internal abstract class ImmutableTableComponent<BD, UI : ITableUi, C>(
+internal abstract class ImmutableTableComponent<BD, UI : ITableUi, Column>(
     componentContext: ComponentContext,
     tableBuilder: ImmutableTableBuilderData<UI>,
     val onCreate: () -> Unit,
     val onItemClick: (UI) -> Unit,
     mapper: BD.() -> UI,
-    filterMatcher: FilterMatcher<UI, C>,
-    sortMatcher: SortMatcher<UI, C>,
+    filterMatcher: FilterMatcher<UI, Column>,
+    sortMatcher: SortMatcher<UI, Column>,
     val repository: ImmutableListRepository<BD>,
 ) : ComponentContext by componentContext {
 
 
-    abstract val columns: ImmutableList<ColumnSpec<UI, C, TableData<UI>>>
+    abstract val columns: ImmutableList<ColumnSpec<UI, Column, TableData<UI>>>
 
 
     private val coroutineScope = componentCoroutineScope()
 
-    val filterManager = FilterManager<C>(childContext("filter"))
-    val sortManager = SortManager<C>(childContext("sort"))
-    val selectionManager =
+    private val filterManager = FilterManager<Column>(childContext("filter"))
+    private val sortManager = SortManager<Column>(childContext("sort"))
+    private val selectionManager =
         SelectionManager(
             childContext("selection")
         )
-    val deleteManager = DeleteManager(
+    private val deleteManager = DeleteManager(
         componentContext = childContext("delete"),
         clearSelection = selectionManager::clearSelected,
         deleteFn = repository::deleteByIds
@@ -116,12 +116,12 @@ internal abstract class ImmutableTableComponent<BD, UI : ITableUi, C>(
 
 
 
-    fun updateFilters(filters: Map<C, TableFilterState<*>>) {
+    fun updateFilters(filters: Map<Column, TableFilterState<*>>) {
         filterManager.update(filters)
     }
 
     /** Update sort state - triggers automatic recalculation via StateFlow combination */
-    fun updateSort(sort: SortState<C>?) {
+    fun updateSort(sort: SortState<Column>?) {
         sortManager.update(sort)
     }
 }

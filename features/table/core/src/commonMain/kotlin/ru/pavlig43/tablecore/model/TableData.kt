@@ -2,6 +2,9 @@ package ru.pavlig43.tablecore.model
 
 import androidx.compose.runtime.Immutable
 
+/**
+ * Класс для библиотеки, работающей с таблицами
+ */
 @Immutable
 data class TableData<I: ITableUi>(
 

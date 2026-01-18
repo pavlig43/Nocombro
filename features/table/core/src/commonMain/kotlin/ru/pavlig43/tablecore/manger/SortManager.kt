@@ -6,13 +6,13 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import ua.wwind.table.state.SortState
 
-class SortManager<C>(
+class SortManager<Column>(
     componentContext: ComponentContext
 ): ComponentContext by componentContext {
-    private val _sort = MutableStateFlow<SortState<C>?>(null)
-    val sort: StateFlow<SortState<C>?> = _sort.asStateFlow()
+    private val _sort = MutableStateFlow<SortState<Column>?>(null)
+    val sort: StateFlow<SortState<Column>?> = _sort.asStateFlow()
 
-    fun update(sort: SortState<C>?) {
+    fun update(sort: SortState<Column>?) {
         _sort.value = sort
     }
 }
