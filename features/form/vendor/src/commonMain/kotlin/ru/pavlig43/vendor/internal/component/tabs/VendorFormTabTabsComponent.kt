@@ -11,6 +11,7 @@ import ru.pavlig43.core.TransactionExecutor
 import ru.pavlig43.database.data.vendor.Vendor
 import ru.pavlig43.update.component.IItemFormTabsComponent
 import ru.pavlig43.update.component.UpdateComponent
+import ru.pavlig43.update.component.getDefaultUpdateComponent
 import ru.pavlig43.vendor.internal.component.tabs.tabslot.VendorEssentialsComponent
 import ru.pavlig43.vendor.internal.component.tabs.tabslot.VendorFilesComponent
 import ru.pavlig43.vendor.internal.component.tabs.tabslot.VendorTabChild
@@ -62,12 +63,7 @@ internal class VendorFormTabsComponent(
             },
         )
 
-    override val updateComponent: UpdateComponent = UpdateComponent(
-        componentContext = childContext("update"),
-        onUpdateComponent = { update() },
-        closeFormScreen = closeFormScreen,
-        errorMessages = getErrors(lifecycle)
-    )
+    override val updateComponent = getDefaultUpdateComponent(componentContext,closeFormScreen)
 
 
 

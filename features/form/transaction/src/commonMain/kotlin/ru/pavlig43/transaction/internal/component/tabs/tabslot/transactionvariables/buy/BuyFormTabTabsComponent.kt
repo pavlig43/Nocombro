@@ -11,6 +11,7 @@ import ru.pavlig43.database.data.transaction.Transaction
 import ru.pavlig43.transaction.internal.model.TransactionEssentialsUi
 import ru.pavlig43.update.component.IItemFormTabsComponent
 import ru.pavlig43.update.component.UpdateComponent
+import ru.pavlig43.update.component.getDefaultUpdateComponent
 
 internal class BuyFormTabsComponent(
     componentContext: ComponentContext,
@@ -54,11 +55,6 @@ internal class BuyFormTabsComponent(
 
 
 
-    override val updateComponent: UpdateComponent = UpdateComponent(
-        componentContext = childContext("update"),
-        onUpdateComponent = { update() },
-        closeFormScreen = closeFormScreen,
-        errorMessages = getErrors(lifecycle)
-    )
+    override val updateComponent = getDefaultUpdateComponent(componentContext,closeFormScreen)
 
 }

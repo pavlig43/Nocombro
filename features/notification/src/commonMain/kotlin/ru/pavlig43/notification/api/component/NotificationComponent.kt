@@ -19,20 +19,22 @@ import ru.pavlig43.core.tabs.TabNavigationComponent
 import ru.pavlig43.core.toStateFlow
 import ru.pavlig43.corekoin.ComponentKoinContext
 import ru.pavlig43.notification.api.NotificationDependencies
-import ru.pavlig43.notification.api.data.NotificationDrawerUi
-import ru.pavlig43.notification.api.data.NotificationItem
-import ru.pavlig43.notification.api.data.NotificationLevel
-import ru.pavlig43.notification.internal.component.ILevelNotificationComponent
-import ru.pavlig43.notification.internal.component.LevelNotificationComponent
+import ru.pavlig43.notification.api.model.NotificationDrawerUi
+import ru.pavlig43.notification.api.model.NotificationItem
+import ru.pavlig43.notification.api.model.NotificationLevel
+import ru.pavlig43.notification.internal.component.NotificationLevelComponent
+import ru.pavlig43.notification.internal.data.INotificationRepository
 import ru.pavlig43.notification.internal.di.createNotificationModule
 
-
+/**
+ *
+ */
 class NotificationComponent(
     componentContext: ComponentContext,
     private val onOpenTab: (NotificationItem, Int) -> Unit,
     dependencies: NotificationDependencies,
 ) : ComponentContext by componentContext, MainTabComponent {
-
+    private val coroutineScope = componentCoroutineScope()
     private val _model = MutableStateFlow(MainTabComponent.NavTabState("Оповещения"))
     override val model: StateFlow<MainTabComponent.NavTabState> = _model.asStateFlow()
 
@@ -40,78 +42,67 @@ class NotificationComponent(
     private val scope = koinContext.getOrCreateKoinScope(
         createNotificationModule(dependencies)
     )
-    private val coroutineScope = componentCoroutineScope()
 
+    private val allRepositories = scope.getAll<INotificationRepository>()
 
-    internal val tabNavigationComponent: TabNavigationComponent<NotificationLevel, ILevelNotificationComponent> =
+    internal val tabNavigationComponent: TabNavigationComponent<NotificationTabConfig, NotificationTabChild> =
         TabNavigationComponent(
-            componentContext = childContext("notification_tab"),
+            componentContext = childContext("notification_tabs"),
             startConfigurations = listOf(
-                NotificationLevel.Zero,
-                NotificationLevel.One,
-                NotificationLevel.Two,
+                NotificationTabConfig.Zero,
+                NotificationTabConfig.One,
+                NotificationTabConfig.Two,
             ),
-            serializer = NotificationLevel.serializer(),
-            tabChildFactory = { context, tabConfig: NotificationLevel, _: () -> Unit ->
-                when (tabConfig) {
-                    NotificationLevel.Zero -> createLevelComponent(
-                        context = context,
-                        level = NotificationLevel.Zero,
-                        items = NotificationItem.entries
+            serializer = NotificationTabConfig.serializer(),
+            tabChildFactory = { context: ComponentContext, tabChildConfig: NotificationTabConfig, _: () -> Unit ->
+                NotificationTabChild(
+                    createLevelComponent(
+                        context,
+                        tabChildConfig.notificationLevel
                     )
-
-                    NotificationLevel.One -> createLevelComponent(
-                        context = context,
-                        level = NotificationLevel.One,
-                        items = listOf(NotificationItem.Declaration)
-                    )
-
-                    NotificationLevel.Two -> createLevelComponent(
-                        context = context,
-                        level = NotificationLevel.Two,
-                        items = listOf(NotificationItem.Declaration)
-                    )
-
-                }
-
-            },
-        )
-    @OptIn(ExperimentalCoroutinesApi::class)
-    val notificationsForDrawer: StateFlow<List<NotificationDrawerUi>> = tabNavigationComponent.tabChildren.map {
-         it.items.map { child->
-            child.instance.countNotification.map { count->
-                NotificationDrawerUi(
-                    child.instance.level,
-                    count
                 )
             }
-        }
-    }.toStateFlow(lifecycle).flatMapLatest {flowList->
-        combine(flowList){
-            it.toList()
-        }
+        )
 
-    }.stateIn(
-        coroutineScope,
-        SharingStarted.Eagerly,
-        emptyList()
-    )
-
-
-
-
+    /**
+     * Вкладки 3, но для каждой один компонент, который зависит от уровня важности
+     *
+     */
     private fun createLevelComponent(
         context: ComponentContext,
         level: NotificationLevel,
-        items: List<NotificationItem>,
-    ): LevelNotificationComponent {
-        return LevelNotificationComponent(
+    ): NotificationLevelComponent {
+        return NotificationLevelComponent(
             componentContext = context,
             level = level,
-            items = items,
             onOpenTab = onOpenTab,
-            scope = scope
+            repositoryList = allRepositories.filter { it.notificationLevel == level }
         )
     }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val notificationsForDrawer: StateFlow<List<NotificationDrawerUi>> =
+        tabNavigationComponent.tabChildren.map {
+            it.items.map { child ->
+                child.instance.component.countNotification.map { count ->
+                    NotificationDrawerUi(
+                        child.instance.component.level,
+                        count
+                    )
+                }
+            }
+        }.toStateFlow(lifecycle)
+            .flatMapLatest { flowList ->
+            combine(flowList) {
+                it.toList()
+            }
+
+        }
+            .stateIn(
+            coroutineScope,
+            SharingStarted.Eagerly,
+            emptyList()
+        )
+
 
 }

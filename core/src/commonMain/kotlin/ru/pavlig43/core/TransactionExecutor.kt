@@ -1,7 +1,7 @@
 package ru.pavlig43.core
 
 /**
- * Выполняет транзакцию(все или ничего)
+ * Выполняет транзакцию переданных в него функций в(все или ничего)
  */
 public interface TransactionExecutor {
     /**

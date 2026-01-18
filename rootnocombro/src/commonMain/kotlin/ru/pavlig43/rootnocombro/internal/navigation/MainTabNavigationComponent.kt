@@ -11,7 +11,7 @@ import ru.pavlig43.declaration.api.DeclarationFormComponent
 import ru.pavlig43.document.api.component.DocumentFormComponent
 import ru.pavlig43.immutable.api.component.*
 import ru.pavlig43.notification.api.component.NotificationComponent
-import ru.pavlig43.notification.api.data.NotificationItem
+import ru.pavlig43.notification.api.model.NotificationItem
 import ru.pavlig43.product.api.component.ProductFormComponent
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemFormConfig.DeclarationFormConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.NotificationChild

@@ -3,43 +3,27 @@ package ru.pavlig43.notification.internal.di
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
-import org.koin.core.qualifier.Qualifier
 import org.koin.dsl.module
 import ru.pavlig43.core.DateThreshold
 import ru.pavlig43.database.NocombroDatabase
-import ru.pavlig43.database.data.files.OwnerType
-import ru.pavlig43.notification.api.data.NotificationItem
-import ru.pavlig43.notification.api.data.NotificationLevel
+import ru.pavlig43.notification.api.model.NotificationItem
+import ru.pavlig43.notification.api.model.NotificationLevel
 import ru.pavlig43.notification.internal.data.INotificationRepository
-import ru.pavlig43.notification.internal.data.NotificationUi
+import ru.pavlig43.notification.internal.model.NotificationUi
 
-internal val zeroModule = module {
-    single<INotificationRepository>(zero(NotificationItem.Document)) {
-        DocumentNotificationRepository(
-            get()
-        )
-    }
-    single<INotificationRepository>(zero(NotificationItem.Product)) {
-        ProductNotificationRepository(
-            get()
-        )
-    }
-    single<INotificationRepository>(zero(NotificationItem.Declaration)) {
-        DeclarationZeroRepository(
-            get()
-        )
-    }
+internal val highModule = module {
+    registerRepository { DocumentZeroRepository(get()) }
+    registerRepository { DeclarationZeroRepository(get()) }
+    registerRepository { ProductZeroRepository(get()) }
 
 }
 
-private fun zero(unit: NotificationItem): Qualifier {
-    return NotificationLevel.Zero.with(unit)
-}
-
-private class DocumentNotificationRepository(
+private class DocumentZeroRepository(
     db: NocombroDatabase
 ) : INotificationRepository {
-    override val notificationFlow: Flow<List<NotificationUi>> =
+    override val notificationLevel: NotificationLevel = NotificationLevel.HIGH
+    override val notificationItem: NotificationItem = NotificationItem.Document
+    override val mergedFromDBNotificationFlow: Flow<List<NotificationUi>> =
         db.documentDao.observeOnItemWithoutFiles().map { lst ->
             lst.map { notificationDTO ->
                 NotificationUi(
@@ -74,19 +58,24 @@ private class DeclarationZeroRepository(
         }
 
 
-    override val notificationFlow: Flow<List<NotificationUi>> =
+    override val mergedFromDBNotificationFlow: Flow<List<NotificationUi>> =
         combine(
             declarationWithoutDocument,
             getOnExpiredDeclaration
         ) { arrays ->
             arrays.flatMap { it }
         }
+    override val notificationLevel: NotificationLevel = NotificationLevel.HIGH
+    override val notificationItem: NotificationItem = NotificationItem.Declaration
 
 }
 
-private class ProductNotificationRepository(
+private class ProductZeroRepository(
     db: NocombroDatabase
 ) : INotificationRepository {
+
+    override val notificationLevel: NotificationLevel = NotificationLevel.HIGH
+    override val notificationItem: NotificationItem = NotificationItem.Product
     private val productDeclaration =
         db.productDeclarationDao.observeOnProductDeclarationNotification { db.productDao.observeOnProducts() }
             .map { lst ->
@@ -110,11 +99,13 @@ private class ProductNotificationRepository(
 
             }
 
-    override val notificationFlow: Flow<List<NotificationUi>> =
+    override val mergedFromDBNotificationFlow: Flow<List<NotificationUi>> =
         combine(
             productDeclaration,
             productComposition
         ) { arrays ->
             arrays.flatMap { it }
         }
+
+
 }

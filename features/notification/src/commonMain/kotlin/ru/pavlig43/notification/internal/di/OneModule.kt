@@ -3,32 +3,29 @@ package ru.pavlig43.notification.internal.di
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
-import org.koin.core.qualifier.Qualifier
 import org.koin.dsl.module
 import ru.pavlig43.core.DateThreshold
 import ru.pavlig43.database.NocombroDatabase
-import ru.pavlig43.notification.api.data.NotificationItem
-import ru.pavlig43.notification.api.data.NotificationLevel
+import ru.pavlig43.notification.api.model.NotificationItem
+import ru.pavlig43.notification.api.model.NotificationLevel
+import ru.pavlig43.notification.internal.model.NotificationUi
 import ru.pavlig43.notification.internal.data.INotificationRepository
-import ru.pavlig43.notification.internal.data.NotificationUi
 
-internal val oneModule = module {
+internal val mediumModule = module {
 
-    single<INotificationRepository>(one(NotificationItem.Declaration)) {
-        DeclarationOneRepository(
-            get()
-        )
-    }
+    registerRepository{ DeclarationOneRepository(get()) }
+
+
 
 }
-private fun one(unit: NotificationItem): Qualifier {
-    return NotificationLevel.One.with(unit)
-}
+
 private class DeclarationOneRepository(
     db: NocombroDatabase
 ) : INotificationRepository {
 
-    private val getOnOneMountExpiredDeclaration =
+    override val notificationLevel: NotificationLevel = NotificationLevel.MEDIUM
+    override val notificationItem: NotificationItem = NotificationItem.Declaration
+    private val getOnOneMountExpiredDeclaration: Flow<List<NotificationUi>> =
         db.declarationDao.observeOnExpiredDeclaration(DateThreshold.OneMonth).map { lst ->
             lst.map { notificationDTO ->
                 NotificationUi(
@@ -37,7 +34,8 @@ private class DeclarationOneRepository(
                 )
             }
         }
-    override val notificationFlow: Flow<List<NotificationUi>> =
+
+    override val mergedFromDBNotificationFlow: Flow<List<NotificationUi>> =
         combine(
             getOnOneMountExpiredDeclaration,
         ) { arrays ->

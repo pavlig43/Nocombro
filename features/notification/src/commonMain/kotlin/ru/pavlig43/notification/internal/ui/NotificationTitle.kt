@@ -13,7 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import ru.pavlig43.coreui.tooltip.ToolTipIconButton
-import ru.pavlig43.notification.api.data.NotificationLevel
+import ru.pavlig43.notification.api.model.NotificationLevel
 import ru.pavlig43.notification.api.ui.NotificationIcon
 
 @Suppress("LongParameterList")

@@ -13,7 +13,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import ru.pavlig43.notification.internal.data.NotificationUi
+import ru.pavlig43.notification.internal.model.NotificationUi
 
 @Suppress("MagicNumber")
 @Composable

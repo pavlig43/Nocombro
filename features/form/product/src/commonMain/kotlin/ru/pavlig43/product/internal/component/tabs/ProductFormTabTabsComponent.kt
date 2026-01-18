@@ -18,6 +18,7 @@ import ru.pavlig43.product.internal.data.ProductEssentialsUi
 import ru.pavlig43.product.internal.di.UpdateCollectionRepositoryType
 import ru.pavlig43.update.component.IItemFormTabsComponent
 import ru.pavlig43.update.component.UpdateComponent
+import ru.pavlig43.update.component.getDefaultUpdateComponent
 
 @Suppress("LongParameterList")
 internal class ProductFormTabsComponent(
@@ -91,16 +92,6 @@ internal class ProductFormTabsComponent(
 
             },
         )
-
-
-
-
-
-    override val updateComponent: UpdateComponent = UpdateComponent(
-        componentContext = childContext("update"),
-        onUpdateComponent = { update() },
-        errorMessages = getErrors(lifecycle),
-        closeFormScreen = closeFormScreen
-    )
+    override val updateComponent = getDefaultUpdateComponent(componentContext,closeFormScreen)
 
 }

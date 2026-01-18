@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CardDefaults
@@ -26,7 +25,7 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import ru.pavlig43.core.FormTabChild
 import ru.pavlig43.core.FormTabComponent
-import ru.pavlig43.coreui.tab.TabNavigationContent
+import ru.pavlig43.coreui.tab.TabLazyRowNavigationContent
 import ru.pavlig43.update.component.IItemFormTabsComponent
 
 
@@ -49,7 +48,7 @@ fun <Tab : Any, Child : FormTabChild> FormTabsUi(
                 .padding(paddingValues),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            TabNavigationContent(
+            TabLazyRowNavigationContent(
                 navigationComponent = component.tabNavigationComponent,
                 tabContent = { index, tabChild, modifier, isSelected, _, _ ->
                     TabContent(
@@ -59,7 +58,6 @@ fun <Tab : Any, Child : FormTabChild> FormTabsUi(
                         onSelect = { component.tabNavigationComponent.onSelectTab(index) },
                     )
                 },
-                tabsRowModifier = Modifier.fillMaxWidth(),
                 tabChildFactory = tabChildFactory,
             )
         }

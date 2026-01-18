@@ -14,7 +14,7 @@ import ru.pavlig43.core.model.ItemEssentialsUi
 import ru.pavlig43.create.data.CreateEssentialsRepository
 
 /**
- * Абстрактный компонент для создания новых сущностей.
+ * Абстрактный компонент для создания новых обязательных полей.
  *
  * Расширяет [EssentialsComponent] добавляя функциональность создания новых записей
  * с отправкой данных в репозиторий и обработкой результата операции.

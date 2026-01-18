@@ -14,6 +14,7 @@ import ru.pavlig43.declaration.internal.component.tabs.tabslot.DeclarationFilesC
 import ru.pavlig43.declaration.internal.data.DeclarationEssentialsUi
 import ru.pavlig43.update.component.IItemFormTabsComponent
 import ru.pavlig43.update.component.UpdateComponent
+import ru.pavlig43.update.component.getDefaultUpdateComponent
 
 internal class DeclarationFormTabsComponent(
     componentContext: ComponentContext,
@@ -66,12 +67,7 @@ internal class DeclarationFormTabsComponent(
         )
 
 
-    override val updateComponent: UpdateComponent = UpdateComponent(
-        componentContext = childContext("update"),
-        onUpdateComponent = { update() },
-        errorMessages = getErrors(lifecycle),
-        closeFormScreen = closeFormScreen
-    )
+    override val updateComponent = getDefaultUpdateComponent(componentContext,closeFormScreen)
 
 
 }

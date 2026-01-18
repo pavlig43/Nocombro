@@ -22,7 +22,7 @@ import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import kotlinx.coroutines.launch
 import ru.pavlig43.core.tabs.TabNavigationComponent
-import ru.pavlig43.coreui.tab.TabNavigationContent
+import ru.pavlig43.coreui.tab.TabLazyRowNavigationContent
 import ru.pavlig43.declaration.api.DeclarationFormScreen
 import ru.pavlig43.document.api.ui.DocumentFormScreen
 import ru.pavlig43.immutable.api.ui.ImmutableTableScreen
@@ -94,7 +94,7 @@ fun RootNocombroScreen(rootNocombroComponent: RootNocombroComponent) {
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Column(Modifier.fillMaxSize()) {
-                                TabNavigationContent(
+                                TabLazyRowNavigationContent(
                                     navigationComponent = tabNavigationComponent,
                                     tabContent = { index, mainTabChild, modifier, isSelected, isDragging, onClose ->
                                         TabContent(
