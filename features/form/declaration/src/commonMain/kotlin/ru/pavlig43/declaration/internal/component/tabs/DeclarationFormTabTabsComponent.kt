@@ -2,18 +2,16 @@ package ru.pavlig43.declaration.internal.component.tabs
 
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
-import com.arkivanov.decompose.value.operator.map
 import org.koin.core.scope.Scope
 import ru.pavlig43.core.component.EssentialComponentFactory
 import ru.pavlig43.core.tabs.TabNavigationComponent
 import ru.pavlig43.core.TransactionExecutor
 import ru.pavlig43.database.data.declaration.Declaration
-import ru.pavlig43.declaration.internal.component.tabs.tabslot.DeclarationTabChild
-import ru.pavlig43.declaration.internal.component.tabs.tabslot.DeclarationEssentialComponent
-import ru.pavlig43.declaration.internal.component.tabs.tabslot.DeclarationFilesComponent
+import ru.pavlig43.declaration.internal.component.tabs.DeclarationTabChild
+import ru.pavlig43.declaration.internal.component.tabs.component.DeclarationEssentialComponent
+import ru.pavlig43.declaration.internal.component.tabs.component.DeclarationFilesComponent
 import ru.pavlig43.declaration.internal.data.DeclarationEssentialsUi
 import ru.pavlig43.update.component.IItemFormTabsComponent
-import ru.pavlig43.update.component.UpdateComponent
 import ru.pavlig43.update.component.getDefaultUpdateComponent
 
 internal class DeclarationFormTabsComponent(

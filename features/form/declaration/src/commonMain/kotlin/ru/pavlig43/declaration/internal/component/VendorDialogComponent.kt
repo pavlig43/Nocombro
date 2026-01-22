@@ -5,6 +5,7 @@ import com.arkivanov.decompose.router.slot.SlotNavigation
 import com.arkivanov.decompose.router.slot.activate
 import com.arkivanov.decompose.router.slot.childSlot
 import com.arkivanov.decompose.router.slot.dismiss
+import kotlinx.serialization.Serializable
 import ru.pavlig43.immutable.api.ImmutableTableDependencies
 import ru.pavlig43.immutable.api.component.MBSImmutableTableComponent
 import ru.pavlig43.immutable.api.component.VendorImmutableTableBuilder
@@ -17,15 +18,15 @@ internal class VendorDialogComponent(
     dependencies: ImmutableTableDependencies,
     onOpenVendorTab: (Int) -> Unit,
 ) {
-    private val dialogNavigation = SlotNavigation<MBSVendorDialog>()
+    private val dialogNavigation = SlotNavigation<MBSVendorDialogConfig>()
 
     val dialog =
         parentComponentContext.childSlot(
             source = dialogNavigation,
             key = "vendor_dialog",
-            serializer = MBSVendorDialog.serializer(),
+            serializer = MBSVendorDialogConfig.serializer(),
             handleBackButton = true,
-        ) { _: MBSVendorDialog, context ->
+        ) { _: MBSVendorDialogConfig, context ->
             MBSImmutableTableComponent<VendorTableUi>(
                 componentContext = context,
                 onDismissed = dialogNavigation::dismiss,
@@ -43,6 +44,8 @@ internal class VendorDialogComponent(
 
 
     fun showDialog() {
-        dialogNavigation.activate(MBSVendorDialog)
+        dialogNavigation.activate(MBSVendorDialogConfig)
     }
 }
+@Serializable
+internal data object MBSVendorDialogConfig

@@ -15,8 +15,8 @@ import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import ru.pavlig43.files.api.ui.FilesScreen
 import ru.pavlig43.core.ui.EssentialBlockScreen
-import ru.pavlig43.declaration.internal.component.tabs.tabslot.DeclarationTabChild
-import ru.pavlig43.declaration.internal.component.tabs.tabslot.DeclarationEssentialComponent
+import ru.pavlig43.declaration.internal.component.tabs.DeclarationTabChild
+import ru.pavlig43.declaration.internal.component.tabs.component.DeclarationEssentialComponent
 import ru.pavlig43.declaration.internal.ui.CreateDeclarationScreen
 import ru.pavlig43.declaration.internal.ui.DeclarationFields
 import ru.pavlig43.immutable.api.ui.MBSImmutableTable

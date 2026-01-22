@@ -9,12 +9,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
-import kotlinx.datetime.LocalDate
 import ru.pavlig43.core.FormTabComponent
 import ru.pavlig43.core.componentCoroutineScope
 import ru.pavlig43.core.model.ChangeSet
 import ru.pavlig43.core.model.CollectionObject
-import ru.pavlig43.core.emptyDate
 import ru.pavlig43.loadinitdata.api.component.LoadInitDataComponent
 import ru.pavlig43.tablecore.manger.FilterManager
 import ru.pavlig43.tablecore.manger.SelectionManager
@@ -27,19 +25,6 @@ import ru.pavlig43.update.data.UpdateCollectionRepository
 import ua.wwind.table.ColumnSpec
 import ua.wwind.table.filter.data.TableFilterState
 import ua.wwind.table.state.SortState
-
-
-data class BuyBaseUi(
-    override val composeId: Int,
-    val productName: String = "",
-    val batchId: Int? = null,
-    val count: Int = 0,
-    val declarationName: String = "",
-    val vendorName: String = "",
-    val dateBorn: LocalDate = emptyDate,
-    val price: Int = 0,
-    val comment: String = "",
-) : ITableUi
 
 
 abstract class MutableTableComponent<BDOut: CollectionObject,BDIn:CollectionObject, UI : ITableUi, C>(

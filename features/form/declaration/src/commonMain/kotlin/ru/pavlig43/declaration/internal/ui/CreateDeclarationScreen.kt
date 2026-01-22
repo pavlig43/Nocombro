@@ -11,12 +11,12 @@ import ru.pavlig43.immutable.api.ui.MBSImmutableTable
 internal fun CreateDeclarationScreen(
     component: CreateDeclarationComponent
 ) {
-    val dialog by component.vendorDialogComponent.dialog.subscribeAsState()
+    val dialog by component.vendorDialog.dialog.subscribeAsState()
     CreateEssentialsScreen(component) { item, onItemChange ->
         DeclarationFields(
             declaration = item,
             updateDeclaration = onItemChange,
-            onOpenVendorDialog = { component.vendorDialogComponent.showDialog() }
+            onOpenVendorDialog = { component.vendorDialog.showDialog() }
         )
     }
     dialog.child?.instance?.also {

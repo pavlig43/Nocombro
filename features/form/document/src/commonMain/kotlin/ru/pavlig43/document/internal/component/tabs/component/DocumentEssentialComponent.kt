@@ -1,4 +1,4 @@
-package ru.pavlig43.document.internal.component.tabs.tabslot
+package ru.pavlig43.document.internal.component.tabs.component
 
 import com.arkivanov.decompose.ComponentContext
 import kotlinx.coroutines.flow.Flow

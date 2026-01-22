@@ -1,4 +1,4 @@
-package ru.pavlig43.product.internal.component.tabs.tabslot.compositionData
+package ru.pavlig43.product.internal.component.tabs.component.composition
 
 import ru.pavlig43.tablecore.utils.FilterMatcher
 import ua.wwind.table.filter.data.TableFilterState

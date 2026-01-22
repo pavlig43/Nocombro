@@ -37,7 +37,7 @@ import androidx.compose.ui.unit.dp
  * @param modifier Modifier for the composable
  */
 @Composable
- fun SelectionActionBar(
+ internal fun SelectionActionBar(
     selectedCount: Int,
     onDeleteClick: () -> Unit,
     onClearSelection: () -> Unit,

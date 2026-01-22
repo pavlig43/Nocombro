@@ -1,4 +1,4 @@
-package ru.pavlig43.product.internal.component.tabs.tabslot
+package ru.pavlig43.product.internal.component.tabs.component.composition
 
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.router.slot.SlotNavigation
@@ -20,11 +20,6 @@ import ru.pavlig43.immutable.api.component.ProductImmutableTableBuilder
 import ru.pavlig43.immutable.internal.component.items.product.ProductTableUi
 import ru.pavlig43.mutable.api.component.MutableTableComponent
 import ru.pavlig43.mutable.api.component.MutableUiEvent
-import ru.pavlig43.product.internal.component.tabs.tabslot.compositionData.CompositionField
-import ru.pavlig43.product.internal.component.tabs.tabslot.compositionData.CompositionFilterMatcher
-import ru.pavlig43.product.internal.component.tabs.tabslot.compositionData.CompositionSorter
-import ru.pavlig43.product.internal.component.tabs.tabslot.compositionData.CompositionUi
-import ru.pavlig43.product.internal.component.tabs.tabslot.compositionData.createCompositionColumn
 import ru.pavlig43.tablecore.model.TableData
 import ru.pavlig43.update.data.UpdateCollectionRepository
 import ru.pavlig43.update.data.UpdateEssentialsRepository

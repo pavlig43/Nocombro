@@ -4,6 +4,7 @@ import com.arkivanov.decompose.ComponentContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import ua.wwind.table.state.SortState
 
 class SortManager<Column>(
@@ -13,6 +14,6 @@ class SortManager<Column>(
     val sort: StateFlow<SortState<Column>?> = _sort.asStateFlow()
 
     fun update(sort: SortState<Column>?) {
-        _sort.value = sort
+        _sort.update { sort }
     }
 }

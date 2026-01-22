@@ -30,9 +30,9 @@ import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import ru.pavlig43.coreui.tooltip.ToolTipIconButton
 import ru.pavlig43.coreui.tooltip.ToolTipProject
 import ru.pavlig43.immutable.api.ui.MBSImmutableTable
-import ru.pavlig43.product.internal.component.tabs.tabslot.DeclarationListComponent
-import ru.pavlig43.product.internal.component.tabs.tabslot.ProductDeclarationComponent
-import ru.pavlig43.product.internal.component.tabs.tabslot.DeclarationUi
+import ru.pavlig43.product.internal.component.tabs.component.DeclarationListComponent
+import ru.pavlig43.product.internal.component.tabs.component.ProductDeclarationComponent
+import ru.pavlig43.product.internal.component.tabs.component.DeclarationUi
 
 @Composable
 fun DeclarationScreen(

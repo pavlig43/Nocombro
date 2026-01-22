@@ -2,19 +2,15 @@ package ru.pavlig43.vendor.internal.component.tabs
 
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
-import com.arkivanov.decompose.value.Value
-import com.arkivanov.decompose.value.operator.map
 import org.koin.core.scope.Scope
 import ru.pavlig43.core.component.EssentialComponentFactory
 import ru.pavlig43.core.tabs.TabNavigationComponent
 import ru.pavlig43.core.TransactionExecutor
 import ru.pavlig43.database.data.vendor.Vendor
 import ru.pavlig43.update.component.IItemFormTabsComponent
-import ru.pavlig43.update.component.UpdateComponent
 import ru.pavlig43.update.component.getDefaultUpdateComponent
-import ru.pavlig43.vendor.internal.component.tabs.tabslot.VendorEssentialsComponent
-import ru.pavlig43.vendor.internal.component.tabs.tabslot.VendorFilesComponent
-import ru.pavlig43.vendor.internal.component.tabs.tabslot.VendorTabChild
+import ru.pavlig43.vendor.internal.component.tabs.component.VendorEssentialsComponent
+import ru.pavlig43.vendor.internal.component.tabs.component.VendorFilesComponent
 import ru.pavlig43.vendor.internal.data.VendorEssentialsUi
 
 internal class VendorFormTabsComponent(

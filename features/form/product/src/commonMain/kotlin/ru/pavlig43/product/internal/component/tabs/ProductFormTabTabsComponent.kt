@@ -2,22 +2,19 @@ package ru.pavlig43.product.internal.component.tabs
 
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
-import com.arkivanov.decompose.value.operator.map
 import org.koin.core.qualifier.qualifier
 import org.koin.core.scope.Scope
 import ru.pavlig43.core.component.EssentialComponentFactory
 import ru.pavlig43.core.tabs.TabNavigationComponent
 import ru.pavlig43.core.TransactionExecutor
 import ru.pavlig43.database.data.product.Product
-import ru.pavlig43.product.internal.component.tabs.tabslot.CompositionComponent
-import ru.pavlig43.product.internal.component.tabs.tabslot.ProductDeclarationComponent
-import ru.pavlig43.product.internal.component.tabs.tabslot.ProductEssentialsComponent
-import ru.pavlig43.product.internal.component.tabs.tabslot.ProductFilesComponent
-import ru.pavlig43.product.internal.component.tabs.tabslot.ProductTabChild
+import ru.pavlig43.product.internal.component.tabs.component.composition.CompositionComponent
+import ru.pavlig43.product.internal.component.tabs.component.ProductDeclarationComponent
+import ru.pavlig43.product.internal.component.tabs.component.ProductEssentialsComponent
+import ru.pavlig43.product.internal.component.tabs.component.ProductFilesComponent
 import ru.pavlig43.product.internal.data.ProductEssentialsUi
 import ru.pavlig43.product.internal.di.UpdateCollectionRepositoryType
 import ru.pavlig43.update.component.IItemFormTabsComponent
-import ru.pavlig43.update.component.UpdateComponent
 import ru.pavlig43.update.component.getDefaultUpdateComponent
 
 @Suppress("LongParameterList")

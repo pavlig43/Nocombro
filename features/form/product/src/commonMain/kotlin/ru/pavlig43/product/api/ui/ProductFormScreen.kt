@@ -16,8 +16,8 @@ import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import ru.pavlig43.files.api.ui.FilesScreen
 import ru.pavlig43.core.ui.EssentialBlockScreen
 import ru.pavlig43.product.api.component.ProductFormComponent
-import ru.pavlig43.product.internal.component.tabs.tabslot.ProductEssentialsComponent
-import ru.pavlig43.product.internal.component.tabs.tabslot.ProductTabChild
+import ru.pavlig43.product.internal.component.tabs.component.ProductEssentialsComponent
+import ru.pavlig43.product.internal.component.tabs.ProductTabChild
 import ru.pavlig43.product.internal.ui.CompositionScreen
 import ru.pavlig43.product.internal.ui.CreateProductScreen
 import ru.pavlig43.product.internal.ui.DeclarationScreen

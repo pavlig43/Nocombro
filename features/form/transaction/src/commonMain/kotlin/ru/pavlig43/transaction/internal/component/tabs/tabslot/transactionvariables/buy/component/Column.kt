@@ -37,12 +37,12 @@
 //}
 //
 //
-//@Suppress("LongMethod")
-//internal fun createBuyBaseColumn(
-//    onCreate: () -> Unit,
-//    onCallProductDialog: () -> Unit,
-//    onEvent: (SelectionUiEvent) -> Unit,
-//): ImmutableList<ColumnSpec<BuyBaseUi, BuyBaseField, TableData<BuyBaseUi>>> {
+@Suppress("LongMethod")
+internal fun createBuyBaseColumn(
+    onCreate: () -> Unit,
+    onCallProductDialog: () -> Unit,
+    onEvent: (SelectionUiEvent) -> Unit,
+): ImmutableList<ColumnSpec<BuyBaseUi, BuyBaseField, TableData<BuyBaseUi>>> {
 //    val columns =
 //        tableColumns<BuyBaseUi, BuyBaseField, TableData<BuyBaseUi>> {
 //
