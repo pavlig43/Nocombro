@@ -1,15 +1,11 @@
 package ru.pavlig43.immutable.internal.component.items.transaction
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.ImmutableList
@@ -18,9 +14,8 @@ import kotlinx.datetime.format
 import ru.pavlig43.core.dateTimeFormat
 import ru.pavlig43.database.data.transaction.TransactionType
 import ru.pavlig43.immutable.internal.component.ImmutableTableUiEvent
-import ru.pavlig43.tablecore.manger.SelectionUiEvent
+import ru.pavlig43.immutable.internal.ui.idWithSelection
 import ru.pavlig43.tablecore.model.TableData
-import ru.pavlig43.tablecore.ui.createButtonNew
 import ua.wwind.table.ColumnSpec
 import ua.wwind.table.filter.data.TableFilterType
 import ua.wwind.table.tableColumns
@@ -38,7 +33,6 @@ internal enum class TransactionField {
 }
 @Suppress("LongMethod")
 internal fun createTransactionColumn(
-    onCreate: () -> Unit,
     listTypeForFilter: List<TransactionType>,
     onEvent: (ImmutableTableUiEvent) -> Unit,
 ): ImmutableList<ColumnSpec<TransactionTableUi, TransactionField, TableData<TransactionTableUi>>> {
@@ -46,39 +40,11 @@ internal fun createTransactionColumn(
         tableColumns<TransactionTableUi, TransactionField, TableData<TransactionTableUi>> {
 
 
-            column(TransactionField.SELECTION, valueOf = { it.composeId }) {
-
-                title { createButtonNew(onCreate) }
-                autoWidth(48.dp)
-                cell { doc, tableData ->
-                    if (tableData.isSelectionMode){
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier.fillMaxSize(),
-                        ) {
-                            Checkbox(
-                                checked = doc.composeId in tableData.selectedIds,
-                                onCheckedChange = {
-                                    onEvent(ImmutableTableUiEvent.Selection(SelectionUiEvent.ToggleSelection(doc.composeId)))
-                                },
-                            )
-                        }
-                    }
-
-
-                }
-
-            }
-
-            column(TransactionField.ID, valueOf = { it.composeId }) {
-                header("Ид")
-                align(Alignment.Center)
-                cell { transaction, _ -> Text(transaction.composeId.toString()) }
-                // Enable built‑in Text filter UI in header
-                // Auto‑fit to content with optional max cap
-                autoWidth(max = 500.dp)
-
-            }
+            idWithSelection(
+                selectionKey = TransactionField.SELECTION,
+                idKey = TransactionField.ID,
+                onEvent = onEvent
+            )
             column(TransactionField.IS_COMPLETED, valueOf = { it.isCompleted }) {
                 header("V")
                 align(Alignment.Center)

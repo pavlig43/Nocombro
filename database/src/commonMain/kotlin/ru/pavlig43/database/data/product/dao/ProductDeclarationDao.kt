@@ -8,12 +8,9 @@ import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
-import ru.pavlig43.core.DateThreshold
 import ru.pavlig43.core.getCurrentLocalDate
 import ru.pavlig43.database.data.common.NotificationDTO
-import ru.pavlig43.database.data.declaration.DECLARATIONS_TABLE_NAME
 import ru.pavlig43.database.data.declaration.Declaration
-import ru.pavlig43.database.data.product.PRODUCT_TABLE_NAME
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductDeclarationIn
 import ru.pavlig43.database.data.product.ProductDeclarationOut
@@ -46,19 +43,13 @@ abstract class ProductDeclarationDao {
     )
     internal abstract fun observeOnProductDeclaration(): Flow<List<InternalProductDeclaration>>
 
-    fun observeOnProductWithoutActualDeclaration(observeOnAllProduct:Flow<List<Product>>): Flow<List<NotificationDTO>> {
-        return observeOnProductDeclaration().map { lst ->
-            lst.groupBy { it.product.id }
-                .filterValues { group ->
-                    group.all { it.declaration.bestBefore <= getCurrentLocalDate() }
-                }
-                .keys.mapNotNull { productId ->
-                    lst.find { it.product.id == productId }?.let {
-                        NotificationDTO(it.product.id, it.product.displayName)
-                    }
-                }
-        }
+    fun observeOnProductDeclarationOut(): Flow<List<ProductDeclarationOut>> {
+        return observeOnProductDeclaration().map{lst->
+            lst.map(InternalProductDeclaration::toProductDeclarationOut)}
     }
+
+
+
     fun observeOnProductDeclarationNotification(
         observeOnAllProduct:()->Flow<List<Product>>): Flow<List<NotificationDTO>> {
         return combine(
@@ -73,7 +64,7 @@ abstract class ProductDeclarationDao {
                 .filter { it.id !in productsWithDeclarations }
                 .map { NotificationDTO(it.id, "В продукте ${it.displayName} нет декларации") }
 
-            // 3. Продукты где ВСЕ декларации просрочены
+            // 3. Продукты, где ВСЕ декларации просрочены
             val allExpired = declarations
                 .groupBy { it.product.id }
                 .filterValues { group ->
@@ -114,6 +105,7 @@ internal data class InternalProductDeclaration(
 private fun InternalProductDeclaration.toProductDeclarationOut(): ProductDeclarationOut {
     return ProductDeclarationOut(
         id = productDeclaration.id,
+        productId = productDeclaration.productId,
         declarationId = productDeclaration.declarationId,
         declarationName = declaration.displayName,
         vendorName = declaration.vendorName,

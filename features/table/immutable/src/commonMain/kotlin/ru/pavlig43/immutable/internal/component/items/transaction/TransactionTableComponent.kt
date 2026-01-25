@@ -29,7 +29,6 @@ internal class TransactionTableComponent(
 
     override val columns: ImmutableList<ColumnSpec<TransactionTableUi, TransactionField, TableData<TransactionTableUi>>> =
         createTransactionColumn(
-            onCreate = onCreate,
             listTypeForFilter = tableBuilder.fullListTransactionTypes,
             onEvent = ::onEvent
         )

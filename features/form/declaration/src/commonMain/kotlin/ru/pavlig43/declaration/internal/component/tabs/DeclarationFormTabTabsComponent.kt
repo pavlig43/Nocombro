@@ -6,6 +6,7 @@ import org.koin.core.scope.Scope
 import ru.pavlig43.core.component.EssentialComponentFactory
 import ru.pavlig43.core.tabs.TabNavigationComponent
 import ru.pavlig43.core.TransactionExecutor
+import ru.pavlig43.core.tabs.TabOpener
 import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.declaration.internal.component.tabs.DeclarationTabChild
 import ru.pavlig43.declaration.internal.component.tabs.component.DeclarationEssentialComponent
@@ -18,7 +19,7 @@ internal class DeclarationFormTabsComponent(
     componentContext: ComponentContext,
     componentFactory: EssentialComponentFactory<Declaration, DeclarationEssentialsUi>,
     closeFormScreen: () -> Unit,
-    onOpenVendorTab: (Int) -> Unit,
+    tabOpener: TabOpener,
     scope: Scope,
     declarationId: Int
 ) : ComponentContext by componentContext,
@@ -45,7 +46,7 @@ internal class DeclarationFormTabsComponent(
                             declarationId = declarationId,
                             updateRepository = scope.get(),
                             componentFactory = componentFactory,
-                            onOpenVendorTab = onOpenVendorTab
+                            tabOpener = tabOpener
                         )
                     )
 

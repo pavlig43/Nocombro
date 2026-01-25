@@ -1,20 +1,12 @@
 package ru.pavlig43.immutable.internal.component.items.vendor
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.persistentListOf
 import ru.pavlig43.immutable.internal.component.ImmutableTableUiEvent
-import ru.pavlig43.tablecore.manger.SelectionUiEvent
+import ru.pavlig43.immutable.internal.ui.idWithSelection
 import ru.pavlig43.tablecore.model.TableData
 import ua.wwind.table.ColumnSpec
-import ua.wwind.table.filter.data.FilterConstraint
 import ua.wwind.table.filter.data.TableFilterType
 import ua.wwind.table.tableColumns
 
@@ -27,45 +19,16 @@ internal enum class VendorField {
 }
 
 internal fun createVendorColumn(
-    onEvent: (ImmutableTableUiEvent) -> Unit,
+    onEvent:(ImmutableTableUiEvent)-> Unit
 ): ImmutableList<ColumnSpec<VendorTableUi, VendorField, TableData<VendorTableUi>>> {
     val columns =
         tableColumns<VendorTableUi, VendorField, TableData<VendorTableUi>> {
 
-
-            column(VendorField.SELECTION, valueOf = { it.composeId }) {
-
-                title { "" }
-                autoWidth(48.dp)
-                cell { doc, tableData ->
-                    if (tableData.isSelectionMode){
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier.fillMaxSize(),
-                        ) {
-                            Checkbox(
-                                checked = doc.composeId in tableData.selectedIds,
-                                onCheckedChange = {
-                                    onEvent(ImmutableTableUiEvent.Selection(SelectionUiEvent.ToggleSelection(doc.composeId)))
-                                },
-                            )
-                        }
-                    }
-
-
-                }
-
-            }
-
-            column(VendorField.ID, valueOf = { it.composeId }) {
-                header("Ид")
-                align(Alignment.Center)
-                cell { document, _ -> Text(document.composeId.toString()) }
-                // Enable built‑in Text filter UI in header
-                // Auto‑fit to content with optional max cap
-                autoWidth(max = 500.dp)
-
-            }
+            idWithSelection(
+                selectionKey = VendorField.SELECTION,
+                idKey = VendorField.ID,
+                onEvent = onEvent
+            )
             column(VendorField.NAME, valueOf = { it.displayName }) {
                 header("Название")
                 align(Alignment.Center)

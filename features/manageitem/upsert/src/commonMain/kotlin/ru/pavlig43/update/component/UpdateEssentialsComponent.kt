@@ -19,10 +19,12 @@ abstract class UpdateEssentialsComponent<I : GenericItem, T : ItemEssentialsUi>(
     id: Int,
     private val updateEssentialsRepository: UpdateEssentialsRepository<I>,
     private val mapperToDTO: T.() -> I,
+    onSuccessInitData:(T)-> Unit = {}
 ) : EssentialsComponent<I, T>(
     componentContext = componentContext,
     componentFactory = componentFactory,
     getInitData = { updateEssentialsRepository.getInit(id) },
+    onSuccessInitData = onSuccessInitData
 ), FormTabComponent {
     override val title: String = "Основная информация"
 

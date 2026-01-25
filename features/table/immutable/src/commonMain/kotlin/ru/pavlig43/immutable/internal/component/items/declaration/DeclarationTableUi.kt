@@ -17,7 +17,10 @@ data class DeclarationTableUi(
 
     val bestBefore: LocalDate,
 
+    val isActual: Boolean,
+
     override val composeId: Int = 0,
 ): ITableUi{
-    val isActual: Boolean = bestBefore > getCurrentLocalDate()
+//    val isActual: Boolean
+//        get() = bestBefore > getCurrentLocalDate()
 }

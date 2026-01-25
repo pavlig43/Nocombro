@@ -2,6 +2,8 @@ package ru.pavlig43.update.component
 
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
+import com.arkivanov.decompose.router.stack.StackNavigation
+import com.arkivanov.decompose.router.stack.childStack
 import com.arkivanov.decompose.value.operator.map
 import com.arkivanov.essenty.lifecycle.Lifecycle
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -9,6 +11,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
+import kotlinx.serialization.Serializable
 import ru.pavlig43.core.FormTabChild
 import ru.pavlig43.core.TransactionExecutor
 import ru.pavlig43.core.tabs.TabNavigationComponent
@@ -73,3 +76,16 @@ fun IItemFormTabsComponent<*,*>.getDefaultUpdateComponent(
     )
 }
 
+
+@Serializable
+sealed interface TabFactoryConfig{
+    @Serializable
+    data class Init(val id: Int): TabFactoryConfig
+
+    @Serializable
+    data class TabComponent<I>(val item:I): TabFactoryConfig
+}
+sealed interface Child{
+    data object Init: Child
+    class TabComponent(val component: IItemFormTabsComponent<*,*>): Child
+}

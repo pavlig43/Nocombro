@@ -6,6 +6,7 @@ import com.arkivanov.decompose.router.slot.childSlot
 import com.arkivanov.decompose.router.slot.dismiss
 import kotlinx.serialization.Serializable
 import ru.pavlig43.core.component.EssentialComponentFactory
+import ru.pavlig43.core.tabs.TabOpener
 import ru.pavlig43.create.component.CreateEssentialsComponent
 import ru.pavlig43.create.data.CreateEssentialsRepository
 import ru.pavlig43.database.data.declaration.Declaration
@@ -24,7 +25,7 @@ internal class CreateDeclarationComponent(
     onSuccessCreate: (Int) -> Unit,
     createDeclarationRepository: CreateEssentialsRepository<Declaration>,
     dependencies: ImmutableTableDependencies,
-    onOpenVendorTab: (Int) -> Unit,
+    tabOpener: TabOpener,
     componentFactory: EssentialComponentFactory<Declaration, DeclarationEssentialsUi>
 ) : CreateEssentialsComponent<Declaration, DeclarationEssentialsUi>(
     componentContext = componentContext,
@@ -40,7 +41,7 @@ internal class CreateDeclarationComponent(
             onChangeItem(declaration)
         },
         dependencies = dependencies,
-        onOpenVendorTab = onOpenVendorTab
+        tabOpener = tabOpener
     )
 
 

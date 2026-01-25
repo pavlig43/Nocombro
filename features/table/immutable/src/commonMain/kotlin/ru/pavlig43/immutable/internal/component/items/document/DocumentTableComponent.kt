@@ -29,7 +29,7 @@ internal class DocumentTableComponent(
 ) {
 
     override val columns: ImmutableList<ColumnSpec<DocumentTableUi, DocumentField, TableData<DocumentTableUi>>> =
-        createDocumentColumn(onCreate,tableBuilder.fullListDocumentTypes,::onEvent)
+        createDocumentColumn(tableBuilder.fullListDocumentTypes,::onEvent)
 
 }
 

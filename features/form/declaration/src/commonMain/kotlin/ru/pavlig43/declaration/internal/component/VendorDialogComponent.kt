@@ -6,6 +6,7 @@ import com.arkivanov.decompose.router.slot.activate
 import com.arkivanov.decompose.router.slot.childSlot
 import com.arkivanov.decompose.router.slot.dismiss
 import kotlinx.serialization.Serializable
+import ru.pavlig43.core.tabs.TabOpener
 import ru.pavlig43.immutable.api.ImmutableTableDependencies
 import ru.pavlig43.immutable.api.component.MBSImmutableTableComponent
 import ru.pavlig43.immutable.api.component.VendorImmutableTableBuilder
@@ -16,7 +17,7 @@ internal class VendorDialogComponent(
     parentComponentContext: ComponentContext,
     private val onChangeVendor: (Int, String) -> Unit,
     dependencies: ImmutableTableDependencies,
-    onOpenVendorTab: (Int) -> Unit,
+    tabOpener: TabOpener,
 ) {
     private val dialogNavigation = SlotNavigation<MBSVendorDialogConfig>()
 
@@ -31,7 +32,7 @@ internal class VendorDialogComponent(
                 componentContext = context,
                 onDismissed = dialogNavigation::dismiss,
                 dependencies = dependencies,
-                onCreate = { onOpenVendorTab(0) },
+                onCreate = { tabOpener.openVendorTab(0) },
                 immutableTableBuilderData = VendorImmutableTableBuilder(
                     withCheckbox = false
                 ),

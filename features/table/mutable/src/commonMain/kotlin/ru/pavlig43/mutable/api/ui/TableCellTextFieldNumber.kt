@@ -1,4 +1,4 @@
-package ru.pavlig43.tablecore.ui
+package ru.pavlig43.mutable.api.ui
 
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material3.Text

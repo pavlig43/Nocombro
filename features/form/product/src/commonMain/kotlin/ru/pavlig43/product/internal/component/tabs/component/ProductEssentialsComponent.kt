@@ -15,12 +15,14 @@ internal class ProductEssentialsComponent(
     productId: Int,
     updateRepository: UpdateEssentialsRepository<Product>,
     componentFactory: EssentialComponentFactory<Product, ProductEssentialsUi>,
+    onSuccessInitData:(ProductEssentialsUi)-> Unit
 ) : UpdateEssentialsComponent<Product, ProductEssentialsUi>(
     componentContext = componentContext,
     id = productId,
     updateEssentialsRepository = updateRepository,
     componentFactory = componentFactory,
-    mapperToDTO = {toDto()}
+    mapperToDTO = {toDto()},
+    onSuccessInitData = onSuccessInitData
 ) {
     override val errorMessages: Flow<List<String>> = itemFields.map { prod->
         buildList {

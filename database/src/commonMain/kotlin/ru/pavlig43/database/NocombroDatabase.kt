@@ -73,7 +73,7 @@ abstract class NocombroDatabase : RoomDatabase() {
     abstract val productDeclarationDao: ProductDeclarationDao
     abstract val compositionDao: CompositionDao
 
-    abstract val productTransactionDao: ProductTransactionDao
+    abstract val transactionDao: ProductTransactionDao
 }
 
 

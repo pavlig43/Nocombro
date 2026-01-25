@@ -72,7 +72,6 @@ fun <I : ITableUi, C, E : TableData<I>> TableBox(
             state,
             RussianStringProvider,
             Modifier.fillMaxWidth().padding(end = 16.dp, bottom = 16.dp))
-
         ScrollBar(verticalState, horizontalState)
 
     }

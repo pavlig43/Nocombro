@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.serialization.Serializable
 import ru.pavlig43.core.FormTabComponent
 import ru.pavlig43.core.model.ChangeSet
+import ru.pavlig43.core.tabs.TabOpener
 import ru.pavlig43.database.data.product.ProductDeclarationIn
 import ru.pavlig43.database.data.product.ProductDeclarationOut
 import ru.pavlig43.immutable.api.ImmutableTableDependencies
@@ -30,7 +31,7 @@ class ProductDeclarationComponent(
     private val productId: Int,
     dependencies: ImmutableTableDependencies,
     private val updateRepository: UpdateCollectionRepository<ProductDeclarationOut, ProductDeclarationIn>,
-    openDeclarationTab: (Int) -> Unit,
+    tabOpener: TabOpener,
 ) : ComponentContext by componentContext, FormTabComponent {
     override val title: String = "Декларации"
 
@@ -38,7 +39,7 @@ class ProductDeclarationComponent(
     internal val declarationListComponent = DeclarationListComponent(
         componentContext = childContext("declarationList"),
         getInitData = { updateRepository.getInit(productId) },
-        openDeclarationTab = openDeclarationTab
+        tabOpener = tabOpener
     )
     private val dialogNavigation = SlotNavigation<DeclarationDialogConfig>()
 
@@ -51,7 +52,7 @@ class ProductDeclarationComponent(
         MBSImmutableTableComponent<DeclarationTableUi>(
             componentContext = context,
             onDismissed = dialogNavigation::dismiss,
-            onCreate = { openDeclarationTab(0) },
+            onCreate = { tabOpener.openDeclarationTab(0) },
             dependencies = dependencies,
             immutableTableBuilderData = DeclarationImmutableTableBuilder(
                 withCheckbox = false
@@ -101,7 +102,7 @@ class ProductDeclarationComponent(
 
 internal class DeclarationListComponent(
     componentContext: ComponentContext,
-    val openDeclarationTab: (Int) -> Unit,
+    private val tabOpener: TabOpener,
     private val getInitData: suspend () -> Result<List<ProductDeclarationOut>>,
 ) : ComponentContext by componentContext {
 
@@ -109,6 +110,9 @@ internal class DeclarationListComponent(
         _declarationList.update { lst ->
             lst.toMutableList().apply { removeAll { it.composeKey == index } }
         }
+    }
+    fun openDeclarationTab(id: Int){
+        tabOpener.openDeclarationTab(id)
     }
 
 

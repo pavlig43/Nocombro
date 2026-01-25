@@ -16,6 +16,7 @@ import org.koin.core.scope.Scope
 import ru.pavlig43.core.MainTabComponent
 import ru.pavlig43.core.component.EssentialComponentFactory
 import ru.pavlig43.core.emptyDate
+import ru.pavlig43.core.tabs.TabOpener
 import ru.pavlig43.corekoin.ComponentKoinContext
 import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.declaration.internal.component.CreateDeclarationComponent
@@ -27,7 +28,7 @@ import ru.pavlig43.declaration.internal.di.createDeclarationFormModule
 class DeclarationFormComponent(
     declarationId: Int,
     val closeTab: () -> Unit,
-    private val onOpenVendorTab: (Int) -> Unit,
+    private val tabOpener: TabOpener,
     componentContext: ComponentContext,
     dependencies: DeclarationFormDependencies,
 ) : ComponentContext by componentContext, MainTabComponent {
@@ -64,7 +65,7 @@ class DeclarationFormComponent(
                     onSuccessCreate = { stackNavigation.replaceAll(Config.Update(it)) },
                     createDeclarationRepository = scope.get(),
                     dependencies = scope.get(),
-                    onOpenVendorTab = onOpenVendorTab,
+                    tabOpener = tabOpener,
                     componentFactory = componentFactory
                 )
 
@@ -77,7 +78,7 @@ class DeclarationFormComponent(
                     declarationId = config.id,
                     closeFormScreen = closeTab,
                     componentFactory = componentFactory,
-                    onOpenVendorTab = onOpenVendorTab
+                    tabOpener = tabOpener
                 )
             )
         }

@@ -14,11 +14,12 @@ import kotlinx.serialization.Serializable
 import org.koin.core.scope.Scope
 import ru.pavlig43.core.MainTabComponent
 import ru.pavlig43.core.component.EssentialComponentFactory
+import ru.pavlig43.core.tabs.TabOpener
 import ru.pavlig43.corekoin.ComponentKoinContext
 import ru.pavlig43.database.data.transaction.Transaction
 import ru.pavlig43.transaction.api.TransactionFormDependencies
 import ru.pavlig43.transaction.internal.component.CreateTransactionComponent
-import ru.pavlig43.transaction.internal.component.tabs.tabslot.transactionvariables.buy.BuyFormTabsComponent
+import ru.pavlig43.transaction.internal.component.tabs.TransactionFormTabsComponent
 import ru.pavlig43.transaction.internal.di.createTransactionFormModule
 import ru.pavlig43.transaction.internal.model.TransactionEssentialsUi
 import ru.pavlig43.transaction.internal.model.toUi
@@ -26,6 +27,7 @@ import ru.pavlig43.transaction.internal.model.toUi
 class TransactionFormComponent(
     transactionId: Int,
     val closeTab: () -> Unit,
+    private val tabOpener: TabOpener,
     componentContext: ComponentContext,
     dependencies: TransactionFormDependencies,
 ) : ComponentContext by componentContext, MainTabComponent {
@@ -48,7 +50,11 @@ class TransactionFormComponent(
             initItem = TransactionEssentialsUi(),
             isValidFieldsFactory = { transactionType != null },
             mapperToUi = { toUi() },
-            produceInfoForTabName = { onChangeValueForMainTab(it.transactionType?.displayName ?: "* Транзакция") }
+            produceInfoForTabName = {
+                onChangeValueForMainTab(
+                    it.transactionType?.displayName ?: "* Транзакция"
+                )
+            }
         )
 
     private fun onChangeValueForMainTab(title: String) {
@@ -73,12 +79,13 @@ class TransactionFormComponent(
             )
 
             is Config.Update -> Child.Update(
-                BuyFormTabsComponent(
+                TransactionFormTabsComponent(
                     componentContext = componentContext,
                     essentialFactory = essentialFactory,
                     scope = scope,
-                    id = config.id,
-                    closeFormScreen = closeTab
+                    transactionId = config.id,
+                    closeFormScreen = closeTab,
+                    tabOpener = tabOpener
                 )
             )
         }
@@ -105,6 +112,6 @@ class TransactionFormComponent(
 
     internal sealed class Child {
         class Create(val component: CreateTransactionComponent) : Child()
-        class Update(val component: BuyFormTabsComponent) : Child()
+        class Update(val component: TransactionFormTabsComponent) : Child()
     }
 }

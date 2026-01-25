@@ -1,4 +1,4 @@
-package ru.pavlig43.transaction.internal.component.tabs.tabslot.transactionvariables.buy
+package ru.pavlig43.transaction.internal.component.tabs.component
 
 import com.arkivanov.decompose.ComponentContext
 import kotlinx.coroutines.flow.Flow
@@ -10,17 +10,19 @@ import ru.pavlig43.transaction.internal.model.toDto
 import ru.pavlig43.update.component.UpdateEssentialsComponent
 import ru.pavlig43.update.data.UpdateEssentialsRepository
 
-internal class BuyEssentialComponent(
+internal class TransactionEssentialComponent(
     componentContext: ComponentContext,
     id: Int,
     updateRepository: UpdateEssentialsRepository<Transaction>,
     componentFactory: EssentialComponentFactory<Transaction, TransactionEssentialsUi>,
+    onSuccessInitData:(TransactionEssentialsUi)-> Unit,
 ) : UpdateEssentialsComponent<Transaction, TransactionEssentialsUi>(
     componentContext = componentContext,
     id = id,
     updateEssentialsRepository = updateRepository,
     componentFactory = componentFactory,
-    mapperToDTO = { toDto() }
+    mapperToDTO = { toDto() },
+    onSuccessInitData = onSuccessInitData
 ){
-    override val errorMessages: Flow<List<String>>  = flowOf(emptyList())
+    override val errorMessages: Flow<List<String>> = flowOf(emptyList())
 }

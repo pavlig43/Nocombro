@@ -15,8 +15,9 @@ import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import ru.pavlig43.core.ui.EssentialBlockScreen
 import ru.pavlig43.transaction.api.component.TransactionFormComponent
-import ru.pavlig43.transaction.internal.component.tabs.tabslot.transactionvariables.buy.BuyEssentialComponent
-import ru.pavlig43.transaction.internal.component.tabs.tabslot.transactionvariables.buy.BuyTabChild
+import ru.pavlig43.transaction.internal.component.tabs.TransactionTabChild
+import ru.pavlig43.transaction.internal.component.tabs.component.TransactionEssentialComponent
+import ru.pavlig43.transaction.internal.component.tabs.component.buy.BuyScreen
 import ru.pavlig43.transaction.internal.ui.CreateTransactionScreen
 import ru.pavlig43.transaction.internal.ui.TransactionFields
 import ru.pavlig43.update.ui.FormTabsUi
@@ -54,10 +55,11 @@ fun TransactionFormScreen(
 
 @Composable
 private fun TabsScreen(
-    child: BuyTabChild?,
+    child: TransactionTabChild?,
 ) {
     when (child) {
-        is BuyTabChild.Essentials -> UpdateEssentialsBlock(child.component)
+        is TransactionTabChild.Essentials -> UpdateEssentialsBlock(child.component)
+        is TransactionTabChild.Buy -> BuyScreen(child.component)
 
         null -> Box(Modifier)
 
@@ -66,7 +68,7 @@ private fun TabsScreen(
 
 @Composable
 private fun UpdateEssentialsBlock(
-    documentSlot: BuyEssentialComponent,
+    documentSlot: TransactionEssentialComponent,
     modifier: Modifier = Modifier
 ) {
     Column(modifier.verticalScroll(rememberScrollState())) {

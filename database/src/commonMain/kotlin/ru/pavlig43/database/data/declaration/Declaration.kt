@@ -3,8 +3,10 @@ package ru.pavlig43.database.data.declaration
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import kotlinx.datetime.LocalDate
+import ru.pavlig43.core.getCurrentLocalDate
 import ru.pavlig43.core.model.GenericItem
 import ru.pavlig43.database.data.vendor.Vendor
 
@@ -12,12 +14,13 @@ const val DECLARATIONS_TABLE_NAME = "declaration"
 
 @Entity(
     tableName = DECLARATIONS_TABLE_NAME,
-    foreignKeys = [ForeignKey(
-        entity = Vendor::class,
-        parentColumns = ["id"],
-        childColumns = ["vendor_id"],
-        onDelete = ForeignKey.CASCADE
-    ),
+    foreignKeys = [
+        ForeignKey(
+            entity = Vendor::class,
+            parentColumns = ["id"],
+            childColumns = ["vendor_id"],
+            onDelete = ForeignKey.CASCADE
+        ),
     ]
 
 )
@@ -27,7 +30,7 @@ data class Declaration(
     val displayName: String,
 
     @ColumnInfo("created_at")
-     val createdAt: LocalDate,
+    val createdAt: LocalDate,
 
     @ColumnInfo("vendor_id")
     val vendorId: Int,
@@ -42,12 +45,15 @@ data class Declaration(
     val bestBefore: LocalDate,
 
     @ColumnInfo("observe_from_notification")
-    val observeFromNotification:Boolean,
+    val observeFromNotification: Boolean,
 
     @PrimaryKey(autoGenerate = true)
     override val id: Int = 0,
 
-    ) : GenericItem
+    ) : GenericItem {
+    @Ignore
+    val isActual = bestBefore > getCurrentLocalDate()
+}
 
 
 

@@ -1,11 +1,7 @@
 package ru.pavlig43.immutable.internal.component.items.document
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
@@ -13,9 +9,8 @@ import kotlinx.datetime.format
 import ru.pavlig43.core.dateFormat
 import ru.pavlig43.database.data.document.DocumentType
 import ru.pavlig43.immutable.internal.component.ImmutableTableUiEvent
-import ru.pavlig43.tablecore.manger.SelectionUiEvent
+import ru.pavlig43.immutable.internal.ui.idWithSelection
 import ru.pavlig43.tablecore.model.TableData
-import ru.pavlig43.tablecore.ui.createButtonNew
 import ua.wwind.table.ColumnSpec
 import ua.wwind.table.filter.data.TableFilterType
 import ua.wwind.table.tableColumns
@@ -33,53 +28,17 @@ internal enum class DocumentField {
 
 @Suppress("LongMethod")
 internal fun createDocumentColumn(
-    onCreate: () -> Unit,
     listTypeForFilter: List<DocumentType>,
     onEvent: (ImmutableTableUiEvent) -> Unit,
 ): ImmutableList<ColumnSpec<DocumentTableUi, DocumentField, TableData<DocumentTableUi>>> {
     val columns =
         tableColumns<DocumentTableUi, DocumentField, TableData<DocumentTableUi>> {
 
-
-            column(DocumentField.SELECTION, valueOf = { it.composeId }) {
-
-                title { createButtonNew(onCreate) }
-                autoWidth(48.dp)
-                cell { doc, tableData ->
-                    if (tableData.isSelectionMode) {
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier.fillMaxSize(),
-                        ) {
-                            Checkbox(
-                                checked = doc.composeId in tableData.selectedIds,
-                                onCheckedChange = {
-                                    onEvent(
-                                        ImmutableTableUiEvent.Selection(
-                                            SelectionUiEvent.ToggleSelection(
-                                                doc.composeId
-                                            )
-                                        )
-                                    )
-                                },
-                            )
-                        }
-                    }
-
-
-                }
-
-            }
-
-            column(DocumentField.ID, valueOf = { it.composeId }) {
-                header("Ид")
-                align(Alignment.Center)
-                cell { document, _ -> Text(document.composeId.toString()) }
-                // Enable built‑in Text filter UI in header
-                // Auto‑fit to content with optional max cap
-                autoWidth(max = 500.dp)
-
-            }
+            idWithSelection(
+                selectionKey = DocumentField.SELECTION,
+                idKey = DocumentField.ID,
+                onEvent = onEvent
+            )
 
             column(DocumentField.NAME, valueOf = { it.displayName }) {
                 header("Название")

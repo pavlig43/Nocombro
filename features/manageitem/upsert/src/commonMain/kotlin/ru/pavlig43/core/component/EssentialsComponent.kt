@@ -66,6 +66,7 @@ abstract class EssentialsComponent<I : GenericItem, T : ItemEssentialsUi>(
     componentContext: ComponentContext,
     private val componentFactory: EssentialComponentFactory<I, T>,
     getInitData: (suspend () -> Result<I>)?,
+    onSuccessInitData:(T)-> Unit = {}
 ) : ComponentContext by componentContext {
     protected val coroutineScope = componentCoroutineScope()
 
@@ -82,6 +83,7 @@ abstract class EssentialsComponent<I : GenericItem, T : ItemEssentialsUi>(
 
         },
         onSuccessGetInitData = { item ->
+            onSuccessInitData(item)
             _itemFields.update { item }
         }
     )

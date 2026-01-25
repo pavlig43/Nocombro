@@ -39,6 +39,8 @@ internal abstract class ImmutableTableComponent<BD, UI : ITableUi, Column>(
     filterMatcher: FilterMatcher<UI, Column>,
     sortMatcher: SortMatcher<UI, Column>,
     val repository: ImmutableListRepository<BD>,
+    filterBDData:(BD)-> Boolean = {true}
+
 ) : ComponentContext by componentContext {
 
 
@@ -62,7 +64,7 @@ internal abstract class ImmutableTableComponent<BD, UI : ITableUi, Column>(
 
     val itemListState = repository.observeOnItems().map { result ->
         result.fold(
-            onSuccess = { ItemListState.Success(it.map(mapper)) },
+            onSuccess = { ItemListState.Success(it.filter(filterBDData).map(mapper)) },
             onFailure = { ItemListState.Error(it.message ?: "unknown error") }
         )
     }
@@ -110,6 +112,10 @@ internal abstract class ImmutableTableComponent<BD, UI : ITableUi, Column>(
 
             ImmutableTableUiEvent.DeleteSelected -> {
                 deleteManager.deleteSelected(selectionManager.selectedIds)
+            }
+
+            ImmutableTableUiEvent.CreateNewItem -> {
+                onCreate()
             }
         }
     }

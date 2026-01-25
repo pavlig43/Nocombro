@@ -14,6 +14,7 @@ import kotlinx.serialization.Serializable
 import org.koin.core.scope.Scope
 import ru.pavlig43.core.MainTabComponent
 import ru.pavlig43.core.component.EssentialComponentFactory
+import ru.pavlig43.core.tabs.TabOpener
 import ru.pavlig43.corekoin.ComponentKoinContext
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.product.api.ProductFormDependencies
@@ -26,8 +27,7 @@ import ru.pavlig43.product.internal.di.createProductFormModule
 class ProductFormComponent(
     productId: Int,
     val closeTab: () -> Unit,
-    private val onOpenProductTab: (Int) -> Unit,
-    private val onOpenDeclarationTab: (Int) -> Unit,
+    private val tabOpener: TabOpener,
     componentContext: ComponentContext,
     dependencies: ProductFormDependencies,
 ) : ComponentContext by componentContext, MainTabComponent {
@@ -74,8 +74,7 @@ class ProductFormComponent(
                     scope = scope,
                     productId = config.id,
                     closeFormScreen = closeTab,
-                    onOpenDeclarationTab = onOpenDeclarationTab,
-                    onOpenProductTab = onOpenProductTab,
+                    tabOpener = tabOpener,
                     componentFactory = essentialsFactory,
                 )
             )

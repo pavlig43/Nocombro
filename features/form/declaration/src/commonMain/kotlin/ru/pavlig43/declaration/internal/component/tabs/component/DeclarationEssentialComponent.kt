@@ -4,6 +4,7 @@ import com.arkivanov.decompose.ComponentContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import ru.pavlig43.core.component.EssentialComponentFactory
+import ru.pavlig43.core.tabs.TabOpener
 import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.declaration.internal.component.VendorDialogComponent
 import ru.pavlig43.declaration.internal.data.DeclarationEssentialsUi
@@ -16,7 +17,7 @@ internal class DeclarationEssentialComponent(
     componentContext: ComponentContext,
     declarationId: Int,
     dependencies: ImmutableTableDependencies,
-    onOpenVendorTab:(Int)-> Unit,
+    tabOpener: TabOpener,
     updateRepository: UpdateEssentialsRepository<Declaration>,
     componentFactory: EssentialComponentFactory<Declaration, DeclarationEssentialsUi>,
 ) : UpdateEssentialsComponent<Declaration, DeclarationEssentialsUi>(
@@ -34,7 +35,7 @@ internal class DeclarationEssentialComponent(
 
         },
         dependencies = dependencies,
-        onOpenVendorTab = onOpenVendorTab
+        tabOpener = tabOpener
     )
     override val errorMessages: Flow<List<String>> = flowOf(emptyList())
 }

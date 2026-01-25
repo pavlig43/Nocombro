@@ -4,6 +4,7 @@ import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
 import org.koin.core.scope.Scope
 import ru.pavlig43.core.tabs.TabNavigationComponent
+import ru.pavlig43.core.tabs.TabOpener
 import ru.pavlig43.database.data.document.DocumentType
 import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.database.data.transaction.TransactionType
@@ -96,14 +97,35 @@ internal class MainTabNavigationComponent(
                 }
             },
         )
+    private val tabOpener = object : TabOpener {
+        override fun openDocumentTab(id: Int) {
+            tabNavigationComponent.addTab(DocumentFormConfig(id))
+        }
+
+        override fun openProductTab(id: Int) {
+            tabNavigationComponent.addTab(ProductFormConfig(id))
+        }
+
+        override fun openVendorTab(id: Int) {
+            tabNavigationComponent.addTab(VendorFormConfig(id))
+        }
+
+        override fun openDeclarationTab(id: Int) {
+            tabNavigationComponent.addTab(DeclarationFormConfig(id))
+        }
+
+        override fun openTransactionTab(id: Int) {
+            tabNavigationComponent.addTab(TransactionFormConfig(id))
+        }
+
+    }
 
     private fun openTabFromNotification(item: NotificationItem, id: Int) {
-        val tab = when (item) {
-            NotificationItem.Document -> DocumentFormConfig(id)
-            NotificationItem.Product -> ProductFormConfig(id)
-            NotificationItem.Declaration -> DeclarationFormConfig(id)
+        when (item) {
+            NotificationItem.Document -> tabOpener.openDocumentTab(id)
+            NotificationItem.Product -> tabOpener.openProductTab(id)
+            NotificationItem.Declaration -> tabOpener.openDeclarationTab(id)
         }
-        tabNavigationComponent.addTab(tab)
     }
 
     private fun createImmutableTableChild(
@@ -164,7 +186,7 @@ internal class MainTabNavigationComponent(
                     closeTab = onCloseTab,
                     componentContext = context,
                     dependencies = scope.get(),
-                    onOpenVendorTab = { tabNavigationComponent.addTab(VendorFormConfig(it)) }
+                    tabOpener = tabOpener,
                 )
             )
 
@@ -179,20 +201,21 @@ internal class MainTabNavigationComponent(
 
             is ProductFormConfig -> ProductFormChild(
                 ProductFormComponent(
-                componentContext = context,
-                dependencies = scope.get(),
-                closeTab = onCloseTab,
-                productId = tabConfig.id,
-                onOpenDeclarationTab = { tabNavigationComponent.addTab(DeclarationFormConfig(it)) },
-                onOpenProductTab = { tabNavigationComponent.addTab(ProductFormConfig(it)) }
-            ))
+                    componentContext = context,
+                    dependencies = scope.get(),
+                    closeTab = onCloseTab,
+                    productId = tabConfig.id,
+                    tabOpener = tabOpener
+                )
+            )
 
             is TransactionFormConfig -> TransactionFormChild(
                 TransactionFormComponent(
                     transactionId = tabConfig.id,
                     closeTab = onCloseTab,
                     componentContext = context,
-                    dependencies = scope.get()
+                    dependencies = scope.get(),
+                    tabOpener = tabOpener
                 )
             )
 

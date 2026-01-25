@@ -28,7 +28,7 @@ internal class DeclarationTableComponent(
 ) {
 
     override val columns: ImmutableList<ColumnSpec<DeclarationTableUi, DeclarationField, TableData<DeclarationTableUi>>> =
-        createDeclarationColumn(onCreate, ::onEvent)
+        createDeclarationColumn(::onEvent)
 
 }
 private fun Declaration.toUi(): DeclarationTableUi {
@@ -39,6 +39,7 @@ private fun Declaration.toUi(): DeclarationTableUi {
         bestBefore = bestBefore,
         displayName = displayName,
         createdAt = bestBefore,
+        isActual = isActual
 
         )
 

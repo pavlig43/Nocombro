@@ -6,6 +6,7 @@ import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.database.data.document.Document
 import ru.pavlig43.database.data.product.Product
+import ru.pavlig43.database.data.product.ProductDeclarationOut
 import ru.pavlig43.database.data.transaction.Transaction
 import ru.pavlig43.database.data.vendor.Vendor
 import ru.pavlig43.immutable.api.ImmutableTableDependencies
@@ -23,6 +24,7 @@ internal fun moduleFactory(dependencies: ImmutableTableDependencies) = listOf(
 internal enum class ImmutableTableRepositoryType{
     DOCUMENT,
     DECLARATION,
+    PRODUCT_DECLARATION,
     PRODUCT,
     VENDOR,
     TRANSACTION
@@ -36,6 +38,7 @@ private fun createImmutableRepository(
     ImmutableTableRepositoryType.PRODUCT -> createProductRepository(db)
     ImmutableTableRepositoryType.VENDOR -> createVendorRepository(db)
     ImmutableTableRepositoryType.TRANSACTION -> createTransactionRepository(db)
+    ImmutableTableRepositoryType.PRODUCT_DECLARATION -> createProductDeclarationRepository(db)
 }
 
 private fun createDocumentRepository(db: NocombroDatabase): ImmutableListRepository<Document> {
@@ -70,9 +73,16 @@ private fun createVendorRepository(db: NocombroDatabase): ImmutableListRepositor
 }
 
 private fun createTransactionRepository(db: NocombroDatabase): ImmutableListRepository<Transaction> {
-    val dao = db.productTransactionDao
+    val dao = db.transactionDao
     return ImmutableListRepository(
         delete = dao::deleteTransactionsByIds,
         observe = dao::observeOnProductTransactions,
+    )
+}
+private fun createProductDeclarationRepository(db: NocombroDatabase): ImmutableListRepository<ProductDeclarationOut>{
+    val dao = db.productDeclarationDao
+    return ImmutableListRepository(
+        delete = {},
+        observe = dao::observeOnProductDeclarationOut
     )
 }

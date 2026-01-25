@@ -1,0 +1,20 @@
+package ru.pavlig43.mutable.api.ui
+
+import ru.pavlig43.mutable.api.component.MutableUiEvent
+import ru.pavlig43.tablecore.model.ITableUi
+import ru.pavlig43.tablecore.model.TableData
+import ru.pavlig43.tablecore.ui.coreIdWithSelection
+import ua.wwind.table.EditableTableColumnsBuilder
+
+fun<T: ITableUi,C,E: TableData<T>> EditableTableColumnsBuilder<T, C, E>.idWithSelection(
+    selectionKey:C,
+    idKey:C,
+    onEvent:(MutableUiEvent)-> Unit,
+){
+    coreIdWithSelection(
+        selectionKey = selectionKey,
+        idKey = idKey,
+        onCreate = {onEvent(MutableUiEvent.CreateNewItem)},
+        onSelectionUiEvent = {selectionUiEvent -> onEvent(MutableUiEvent.Selection(selectionUiEvent))}
+    )
+}

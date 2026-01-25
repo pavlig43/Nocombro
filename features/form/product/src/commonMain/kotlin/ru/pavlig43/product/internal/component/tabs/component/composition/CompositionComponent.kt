@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
+import ru.pavlig43.core.tabs.TabOpener
 import ru.pavlig43.database.data.product.CompositionIn
 import ru.pavlig43.database.data.product.CompositionOut
 import ru.pavlig43.database.data.product.Product
@@ -28,10 +29,8 @@ import ua.wwind.table.ColumnSpec
 internal class CompositionComponent(
     componentContext: ComponentContext,
     immutableTableDependencies: ImmutableTableDependencies,
-    onOpenProductTab: (Int) -> Unit,
+    tabOpener: TabOpener,
     private val parentId: Int,
-    updateEssentialsRepository: UpdateEssentialsRepository<Product>,
-    onCloseThisTab: () -> Unit,
     repository: UpdateCollectionRepository<CompositionOut, CompositionIn>,
 ) : MutableTableComponent<CompositionOut, CompositionIn, CompositionUi, CompositionField>(
     componentContext = componentContext,
@@ -41,22 +40,6 @@ internal class CompositionComponent(
     filterMatcher = CompositionFilterMatcher,
     repository = repository
 ) {
-
-    init {
-        coroutineScope.launch {
-            val result: Result<Product> = updateEssentialsRepository.getInit(parentId)
-            result.fold(
-                onSuccess = { product ->
-                    if (product.type != ProductType.Food.Pf) {
-                        onCloseThisTab()
-                    }
-                },
-                onFailure = {
-                    onCloseThisTab()
-                }
-            )
-        }
-    }
 
 
     private val dialogNavigation = SlotNavigation<CompositionProductDialog>()
@@ -70,7 +53,7 @@ internal class CompositionComponent(
         MBSImmutableTableComponent<ProductTableUi>(
             componentContext = context,
             onDismissed = dialogNavigation::dismiss,
-            onCreate = { onOpenProductTab(0) },
+            onCreate = { tabOpener.openProductTab(0) },
             dependencies = immutableTableDependencies,
             immutableTableBuilderData = ProductImmutableTableBuilder(
                 fullListProductTypes = ProductType.entries,

@@ -30,5 +30,4 @@ data class Batch(
     val productId: Int,
     val dateBorn: LocalDate,
     val declarationId: Int,
-
 )

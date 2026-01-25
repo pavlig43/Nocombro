@@ -2,12 +2,16 @@ package ru.pavlig43.product.internal.component.tabs
 
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
+import kotlinx.coroutines.launch
 import org.koin.core.qualifier.qualifier
 import org.koin.core.scope.Scope
 import ru.pavlig43.core.component.EssentialComponentFactory
 import ru.pavlig43.core.tabs.TabNavigationComponent
 import ru.pavlig43.core.TransactionExecutor
+import ru.pavlig43.core.componentCoroutineScope
+import ru.pavlig43.core.tabs.TabOpener
 import ru.pavlig43.database.data.product.Product
+import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.product.internal.component.tabs.component.composition.CompositionComponent
 import ru.pavlig43.product.internal.component.tabs.component.ProductDeclarationComponent
 import ru.pavlig43.product.internal.component.tabs.component.ProductEssentialsComponent
@@ -22,14 +26,14 @@ internal class ProductFormTabsComponent(
     componentContext: ComponentContext,
     componentFactory: EssentialComponentFactory<Product, ProductEssentialsUi>,
     closeFormScreen: () -> Unit,
-    onOpenDeclarationTab: (Int) -> Unit,
-    onOpenProductTab: (Int) -> Unit,
+    tabOpener: TabOpener,
     scope: Scope,
     productId: Int,
 ) : ComponentContext by componentContext,
     IItemFormTabsComponent<ProductTab, ProductTabChild> {
 
     override val transactionExecutor: TransactionExecutor = scope.get()
+    private val coroutineScope = componentCoroutineScope()
 
 
     override val tabNavigationComponent: TabNavigationComponent<ProductTab, ProductTabChild> =
@@ -39,23 +43,30 @@ internal class ProductFormTabsComponent(
                 ProductTab.Essentials,
                 ProductTab.Files,
                 ProductTab.Declaration,
-                ProductTab.Composition
             ),
             serializer = ProductTab.serializer(),
             tabChildFactory = { context, tabConfig: ProductTab, closeTab: () -> Unit ->
                 when (tabConfig) {
 
-                    ProductTab.Essentials -> ProductTabChild.Essentials(
+                    is ProductTab.Essentials -> ProductTabChild.Essentials(
                         ProductEssentialsComponent(
                             componentContext = context,
                             productId = productId,
                             updateRepository = scope.get(),
-                            componentFactory = componentFactory
+                            componentFactory = componentFactory,
+                            onSuccessInitData = {product->
+                                coroutineScope.launch {
+                                    if (product.productType is ProductType.Food.Pf){
+                                        tabNavigationComponent.addTab(ProductTab.Composition)
+                                    }
+                                }
+
+                            }
                         )
                     )
 
 
-                    ProductTab.Files -> ProductTabChild.Files(
+                    is ProductTab.Files -> ProductTabChild.Files(
                         ProductFilesComponent(
                             productId = productId,
                             dependencies = scope.get(),
@@ -63,12 +74,12 @@ internal class ProductFormTabsComponent(
                         )
                     )
 
-                    ProductTab.Declaration -> ProductTabChild.Declaration(
+                    is ProductTab.Declaration -> ProductTabChild.Declaration(
                         ProductDeclarationComponent(
                             componentContext = context,
                             productId = productId,
                             updateRepository = scope.get(UpdateCollectionRepositoryType.Declaration.qualifier),
-                            openDeclarationTab = onOpenDeclarationTab,
+                            tabOpener = tabOpener,
                             dependencies = scope.get()
                         )
                     )
@@ -80,9 +91,7 @@ internal class ProductFormTabsComponent(
                             parentId = productId,
                             repository = scope.get(UpdateCollectionRepositoryType.Composition.qualifier),
                             immutableTableDependencies = scope.get(),
-                            updateEssentialsRepository = scope.get(),
-                            onCloseThisTab = closeTab,
-                            onOpenProductTab = onOpenProductTab
+                            tabOpener = tabOpener
                         )
                     )
                 }
@@ -90,5 +99,6 @@ internal class ProductFormTabsComponent(
             },
         )
     override val updateComponent = getDefaultUpdateComponent(componentContext,closeFormScreen)
+
 
 }
