@@ -27,6 +27,7 @@ import dev.darkokoa.datetimewheelpicker.core.format.dateFormatter
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.format
 import ru.pavlig43.core.dateTimeFormat
+import ru.pavlig43.coreui.DateTimePicker
 import ru.pavlig43.coreui.tooltip.ToolTipIconButton
 import kotlin.time.ExperimentalTime
 
@@ -45,38 +46,9 @@ fun DateTimeFieldBlock(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(dateName)
-        Text(dateTime.format(dateTimeFormat), textDecoration = TextDecoration.Underline)
-        var isDatePickerVisible by remember { mutableStateOf(false) }
-        ToolTipIconButton(
-            tooltipText = "Дата/Время",
-            onClick = { isDatePickerVisible = !isDatePickerVisible },
-            icon = Icons.Default.CalendarMonth
-
+        DateTimePicker(
+            dateTime = dateTime,
+            onSelectDateTime = onSelectDateTime
         )
-
-        if (isDatePickerVisible) {
-            WheelDateTimePicker(
-                startDateTime = dateTime,
-                dateFormatter = dateFormatter(
-                    locale = Locale.current,
-                    monthDisplayStyle = MonthDisplayStyle.SHORT,
-                    cjkSuffixConfig = CjkSuffixConfig.HideAll
-                ),
-
-                rowCount = 5,
-                textStyle = MaterialTheme.typography.titleSmall,
-                textColor = MaterialTheme.colorScheme.primary,
-                selectorProperties = WheelPickerDefaults.selectorProperties(
-                    enabled = true,
-                    shape = RoundedCornerShape(0.dp),
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    border = BorderStroke(2.dp, MaterialTheme.colorScheme.secondary)
-                )
-            ) { snappedDateTime ->
-                onSelectDateTime(snappedDateTime)
-            }
-
-        }
-
     }
 }

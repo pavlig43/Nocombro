@@ -8,7 +8,7 @@ import ru.pavlig43.coreui.NameRowWithSearchIcon
 import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.mutable.api.component.MutableUiEvent
 import ru.pavlig43.mutable.api.ui.DecimalFormat
-import ru.pavlig43.mutable.api.ui.cellForDecimalFormat
+import ru.pavlig43.mutable.api.ui.decimalColumn
 import ru.pavlig43.mutable.api.ui.idWithSelection
 import ru.pavlig43.tablecore.model.TableData
 import ua.wwind.table.ColumnSpec
@@ -67,22 +67,14 @@ internal fun createCompositionColumn(
                 sortable()
             }
 
-            column(CompositionField.COUNT, { it.count }) {
-                header("Количество")
-                align(Alignment.Center)
-                filter(TableFilterType.NumberTableFilter(
-                    delegate = TableFilterType.NumberTableFilter.IntDelegate
-                ))
-                cellForDecimalFormat(
-                    format = DecimalFormat.KG(),
-                    getCount = { it.count },
-                    saveInModel = {item,count->
-                        onEvent(MutableUiEvent.UpdateItem(item.copy(count = count)))
-                    }
-                )
-
-                sortable()
-            }
+            decimalColumn(
+                key = CompositionField.COUNT,
+                getValue = { it.count },
+                headerText = "Количество",
+                decimalFormat = DecimalFormat.KG(),
+                onEvent = { updateEvent -> onEvent(updateEvent) },
+                updateItem = { item, count -> item.copy(count = count) }
+            )
 
 
         }

@@ -7,7 +7,9 @@ import com.arkivanov.decompose.router.slot.childSlot
 import com.arkivanov.decompose.router.slot.dismiss
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.update
 import kotlinx.serialization.Serializable
 import ru.pavlig43.core.tabs.TabOpener
 import ru.pavlig43.database.data.product.ProductType
@@ -97,8 +99,10 @@ internal class BuyComponent(
         }
 
     }
+    val isVisbleDialog = MutableStateFlow(false)
     override val columns: ImmutableList<ColumnSpec<BuyUi, BuyField, TableData<BuyUi>>> =
         createBuyColumn(
+            openDateDialog = {isVisbleDialog.update { true }},
             onOpenProductDialog = { dialogNavigation.activate(BuyDialog.Product(it)) },
             onOpenDeclarationDialog = { composeId, productId ->
                 dialogNavigation.activate(

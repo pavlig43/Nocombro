@@ -7,10 +7,44 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import ru.pavlig43.mutable.api.component.MutableUiEvent
+import ru.pavlig43.mutable.api.ui.cellForDecimalFormat
+import ru.pavlig43.tablecore.model.ITableUi
+import ru.pavlig43.tablecore.model.TableData
 import ua.wwind.table.EditableColumnBuilder
+import ua.wwind.table.EditableTableColumnsBuilder
 import ua.wwind.table.component.TableCellTextFieldWithTooltipError
+import ua.wwind.table.filter.data.TableFilterType
 import kotlin.math.pow
 
+
+
+fun <T: ITableUi,C,E: TableData<T>> EditableTableColumnsBuilder<T,C,E>.decimalColumn(
+    key:C,
+    getValue:(T)-> Int,
+    headerText: String,
+    decimalFormat: DecimalFormat,
+    onEvent:(MutableUiEvent.UpdateItem)-> Unit,
+    updateItem:(T, Int)-> T
+){
+    column(key, valueOf = { getValue(it) }) {
+    header(headerText)
+    align(Alignment.Center)
+    filter(
+        TableFilterType.NumberTableFilter(
+            delegate = TableFilterType.NumberTableFilter.IntDelegate,
+        )
+    )
+    cellForDecimalFormat(
+        format = decimalFormat,
+        getCount = { getValue(it) },
+        saveInModel = { item, count ->
+            onEvent(MutableUiEvent.UpdateItem(updateItem(item,count)))
+        }
+    )
+    sortable()
+}}
 
 sealed interface DecimalFormat {
     val countDecimal: Int
@@ -23,7 +57,7 @@ sealed interface DecimalFormat {
         override val countDecimal: Int = 2
     }
 }
-fun<T: Any,C,E> EditableColumnBuilder<T,C,E>.cellForDecimalFormat(
+private fun<T: Any,C,E> EditableColumnBuilder<T,C,E>.cellForDecimalFormat(
     format: DecimalFormat,
     getCount:(T)-> Int,
     saveInModel: (T,Int) -> Unit
@@ -54,7 +88,7 @@ private fun Int.toStartDoubleFormat(decimalFormat: DecimalFormat): String {
  * колбэк берет это значение и сохраняет в модель как целочисленное(граммы или копейки)
  */
 @Composable
-fun TableCellTextFieldNumber(
+private fun TableCellTextFieldNumber(
     value: Int,
     saveInModel: (Int) -> Unit,
     decimalFormat: DecimalFormat,

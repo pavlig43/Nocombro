@@ -12,6 +12,7 @@ internal fun BuyScreen(
 ) {
     val dialog by component.dialog.subscribeAsState()
     MutableTableBox(component)
+
     dialog.child?.instance?.also {
         MBSImmutableTable(it)
     }
