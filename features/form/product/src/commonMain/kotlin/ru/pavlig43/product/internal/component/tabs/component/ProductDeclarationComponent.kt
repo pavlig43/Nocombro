@@ -90,9 +90,12 @@ class ProductDeclarationComponent(
                 if (lst.isEmpty()) {
                     add("Необходимо добавить хотя бы одну декларацию")
                 }
-                if (lst.all { !it.isActual }) {
-                    add("Все декларации просрочены")
+                else{
+                    if (lst.all { !it.isActual }) {
+                        add("Все декларации просрочены")
+                    }
                 }
+
             }
         }
 

@@ -1,13 +1,10 @@
 package ru.pavlig43.coreui.coreFieldBlock
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -16,18 +13,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
-import dev.darkokoa.datetimewheelpicker.WheelDatePicker
-import dev.darkokoa.datetimewheelpicker.core.WheelPickerDefaults
-import dev.darkokoa.datetimewheelpicker.core.format.CjkSuffixConfig
-import dev.darkokoa.datetimewheelpicker.core.format.MonthDisplayStyle
-import dev.darkokoa.datetimewheelpicker.core.format.dateFormatter
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.format
 import ru.pavlig43.core.dateFormat
-import ru.pavlig43.coreui.DatePicker
+import ru.pavlig43.coreui.DatePickerDialog
+import ru.pavlig43.coreui.DateRow
 import ru.pavlig43.coreui.tooltip.ToolTipIconButton
 import kotlin.time.ExperimentalTime
 
@@ -39,17 +31,32 @@ fun DateFieldBlock(
     dateName: String,
     modifier: Modifier = Modifier
 ) {
-
+    var isDatePickerVisible by remember { mutableStateOf(false) }
     Row(
         modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(dateName)
-        DatePicker(
+        DateRow(
             date = date,
-            onSelectDate = onSelectDate
+            isChangeDialogVisible = {isDatePickerVisible = !isDatePickerVisible}
         )
+
+        ToolTipIconButton(
+            tooltipText = "Дата",
+            onClick = { isDatePickerVisible = !isDatePickerVisible },
+            icon = Icons.Default.AccessTime
+
+        )
+        if (isDatePickerVisible){
+            DatePickerDialog(
+                onDismissRequest = {isDatePickerVisible = false},
+                date = date,
+                onSelectDate = onSelectDate
+            )
+        }
+
 
     }
 }

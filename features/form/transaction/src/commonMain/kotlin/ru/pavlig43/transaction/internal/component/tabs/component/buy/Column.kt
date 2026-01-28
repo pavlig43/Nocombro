@@ -1,24 +1,17 @@
 package ru.pavlig43.transaction.internal.component.tabs.component.buy
 
-import androidx.compose.foundation.clickable
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Sip
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import kotlinx.collections.immutable.ImmutableList
-import kotlinx.datetime.format
-import ru.pavlig43.core.dateFormat
+import ru.pavlig43.coreui.DateRow
 import ru.pavlig43.coreui.NameRowWithSearchIcon
 import ru.pavlig43.mutable.api.component.MutableUiEvent
 import ru.pavlig43.mutable.api.ui.DecimalFormat
-import ru.pavlig43.mutable.api.ui.dateColumn
 import ru.pavlig43.mutable.api.ui.decimalColumn
 import ru.pavlig43.mutable.api.ui.idWithSelection
 import ru.pavlig43.tablecore.model.TableData
 import ua.wwind.table.ColumnSpec
+import ua.wwind.table.component.TableCellTextField
 import ua.wwind.table.editableTableColumns
 import ua.wwind.table.filter.data.TableFilterType
 
@@ -39,7 +32,7 @@ enum class BuyField {
 internal fun createBuyColumn(
     onOpenProductDialog: (Int) -> Unit,
     onOpenDeclarationDialog: (Int, Int) -> Unit,
-    openDateDialog:()-> Unit,
+    isChangeVisibleDialog: (Int) -> Unit,
     onEvent: (MutableUiEvent) -> Unit,
 ): ImmutableList<ColumnSpec<BuyUi, BuyField, TableData<BuyUi>>> {
     val columns =
@@ -109,14 +102,18 @@ internal fun createBuyColumn(
                 cell { row, _ -> Text(row.vendorName) }
                 sortable()
             }
+            column(BuyField.DATE_BORN, { it.dateBorn }) {
+                header("Дата производства")
+                align(Alignment.Center)
+                cell { item, _ ->
+                    DateRow(
+                        date = item.dateBorn,
+                        isChangeDialogVisible = {isChangeVisibleDialog(item.composeId)}
+                    )
+                }
+                sortable()
+            }
 
-            dateColumn(
-                key = BuyField.DATE_BORN,
-                getValue = {it.dateBorn},
-                headerText = "Дата производства",
-                onEvent = {onEvent(it)},
-                updateItem = {item,date -> item.copy(dateBorn = date)}
-            )
 
 
             column(BuyField.COMMENT, valueOf = { it.comment }) {
@@ -124,6 +121,13 @@ internal fun createBuyColumn(
                 align(Alignment.Center)
                 filter(TableFilterType.TextTableFilter())
                 cell { row, _ -> Text(row.comment) }
+                editCell {item,_,_->
+                    TableCellTextField(
+                        value = item.comment,
+                        onValueChange = {onEvent(MutableUiEvent.UpdateItem(item.copy(comment = it)))},
+
+                    )
+                }
             }
         }
     return columns

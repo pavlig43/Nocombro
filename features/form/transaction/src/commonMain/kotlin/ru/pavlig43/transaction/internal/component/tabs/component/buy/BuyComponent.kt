@@ -7,10 +7,10 @@ import com.arkivanov.decompose.router.slot.childSlot
 import com.arkivanov.decompose.router.slot.dismiss
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.update
 import kotlinx.serialization.Serializable
+import ru.pavlig43.core.DateComponent
+import ru.pavlig43.core.emptyDate
 import ru.pavlig43.core.tabs.TabOpener
 import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.database.data.transaction.buy.BuyBD
@@ -21,7 +21,7 @@ import ru.pavlig43.immutable.api.component.ProductImmutableTableBuilder
 import ru.pavlig43.immutable.internal.component.items.product.ProductTableUi
 import ru.pavlig43.immutable.internal.component.items.productDeclaration.ProductDeclarationTableUi
 import ru.pavlig43.mutable.api.component.MutableTableComponent
-import ru.pavlig43.mutable.api.component.MutableUiEvent
+import ru.pavlig43.mutable.api.component.MutableUiEvent.UpdateItem
 import ru.pavlig43.tablecore.model.TableData
 import ru.pavlig43.update.data.UpdateCollectionRepository
 import ua.wwind.table.ColumnSpec
@@ -29,8 +29,8 @@ import ua.wwind.table.ColumnSpec
 internal class BuyComponent(
     componentComponent: ComponentContext,
     transactionId: Int,
-    tabOpener: TabOpener,
-    immutableTableDependencies: ImmutableTableDependencies,
+    private val tabOpener: TabOpener,
+    private val immutableTableDependencies: ImmutableTableDependencies,
     repository: UpdateCollectionRepository<BuyBD, BuyBD>,
 
     ) : MutableTableComponent<BuyBD, BuyBD, BuyUi, BuyField>(
@@ -49,65 +49,82 @@ internal class BuyComponent(
         key = "buy_dialog",
         serializer = BuyDialog.serializer(),
         handleBackButton = true,
-    ) { dialog, context ->
-        when (dialog) {
-            is BuyDialog.Declaration -> MBSImmutableTableComponent<ProductDeclarationTableUi>(
-                componentContext = context,
-                onDismissed = dialogNavigation::dismiss,
-                onCreate = { tabOpener.openDeclarationTab(0) },
-                dependencies = immutableTableDependencies,
-                immutableTableBuilderData = ProductDeclarationImmutableTableBuilder(
-                    productId = dialog.productId,
-                ),
-                onItemClick = { declaration ->
-                    val buyUi = itemList.value.first { it.composeId == dialog.composeId }
-                    onEvent(
-                        MutableUiEvent.UpdateItem(
-                            buyUi.copy(
-                                declarationId = declaration.composeId,
-                                declarationName = declaration.displayName,
-                                vendorName = declaration.vendorName
+        childFactory = ::createDialogChild,
+    )
+
+    private fun createDialogChild(dialogConfig: BuyDialog, context: ComponentContext): DialogChild {
+        return when (dialogConfig) {
+            is BuyDialog.DateBorn -> {
+                val item = itemList.value.first { it.composeId == dialogConfig.composeId }
+                val dateComponent = DateComponent(
+                    componentContext = context,
+                    initDate = item.dateBorn,
+                    onDismissRequest = {dialogNavigation.dismiss()},
+                    onChangeDate = { onEvent(UpdateItem(item.copy(dateBorn = it))) }
+                )
+                DialogChild.Date(dateComponent)
+            }
+
+            is BuyDialog.Declaration -> DialogChild.ImmutableMBS(
+                MBSImmutableTableComponent<ProductDeclarationTableUi>(
+                    componentContext = context,
+                    onDismissed = dialogNavigation::dismiss,
+                    onCreate = { tabOpener.openDeclarationTab(0) },
+                    dependencies = immutableTableDependencies,
+                    immutableTableBuilderData = ProductDeclarationImmutableTableBuilder(
+                        productId = dialogConfig.productId,
+                    ),
+                    onItemClick = { declaration ->
+                        val buyUi = itemList.value.first { it.composeId == dialogConfig.composeId }
+                        onEvent(
+                            UpdateItem(
+                                buyUi.copy(
+                                    declarationId = declaration.composeId,
+                                    declarationName = declaration.displayName,
+                                    vendorName = declaration.vendorName
+                                )
                             )
                         )
-                    )
-                    dialogNavigation.dismiss()
-                },
+                        dialogNavigation.dismiss()
+                    },
+                )
             )
 
-            is BuyDialog.Product -> MBSImmutableTableComponent<ProductTableUi>(
-                componentContext = context,
-                onDismissed = dialogNavigation::dismiss,
-                onCreate = { tabOpener.openProductTab(0) },
-                dependencies = immutableTableDependencies,
-                immutableTableBuilderData = ProductImmutableTableBuilder(
-                    fullListProductTypes = ProductType.entries,
-                    withCheckbox = false
-                ),
-                onItemClick = { product ->
-                    val buyUi = itemList.value.first { it.composeId == dialog.composeId }
-                    onEvent(
-                        MutableUiEvent.UpdateItem(
-                            buyUi.copy(
-                                productId = product.composeId,
-                                productName = product.displayName,
+            is BuyDialog.Product -> DialogChild.ImmutableMBS(
+                MBSImmutableTableComponent<ProductTableUi>(
+                    componentContext = context,
+                    onDismissed = dialogNavigation::dismiss,
+                    onCreate = { tabOpener.openProductTab(0) },
+                    dependencies = immutableTableDependencies,
+                    immutableTableBuilderData = ProductImmutableTableBuilder(
+                        fullListProductTypes = ProductType.entries,
+                        withCheckbox = false
+                    ),
+                    onItemClick = { product ->
+                        val buyUi = itemList.value.first { it.composeId == dialogConfig.composeId }
+                        onEvent(
+                            UpdateItem(
+                                buyUi.copy(
+                                    productId = product.composeId,
+                                    productName = product.displayName,
+                                )
                             )
                         )
-                    )
-                    dialogNavigation.dismiss()
-                },
+                        dialogNavigation.dismiss()
+                    },
+                )
             )
         }
-
     }
-    val isVisbleDialog = MutableStateFlow(false)
+
     override val columns: ImmutableList<ColumnSpec<BuyUi, BuyField, TableData<BuyUi>>> =
         createBuyColumn(
-            openDateDialog = {isVisbleDialog.update { true }},
+            isChangeVisibleDialog = { dialogNavigation.activate(BuyDialog.DateBorn(it)) },
             onOpenProductDialog = { dialogNavigation.activate(BuyDialog.Product(it)) },
             onOpenDeclarationDialog = { composeId, productId ->
                 dialogNavigation.activate(
                     BuyDialog.Declaration(
-                        composeId,productId
+                        composeId, productId
                     )
                 )
             },
@@ -148,7 +165,18 @@ internal class BuyComponent(
         )
     }
 
-    override val errorMessages: Flow<List<String>> = itemList.map { it.map { "" } }
+    override val errorMessages: Flow<List<String>> = itemList.map {lst->
+        buildList {
+            lst.forEach { buyUi ->
+                val place = "В строке ${buyUi.composeId + 1}"
+                if (buyUi.productId == 0)  add("$place не указан продукт")
+                if (buyUi.count == 0) add("$place количество равно 0")
+                if (buyUi.declarationId == 0) add("$place нет декларации")
+                if (buyUi.dateBorn == emptyDate) add(("$place не выбрана дата"))
+                if (buyUi.price == 0) add(("$place не выбрана цена"))
+            }
+        }
+    }
 
 }
 
@@ -160,4 +188,11 @@ internal sealed interface BuyDialog {
 
     @Serializable
     data class Declaration(val composeId: Int, val productId: Int) : BuyDialog
+
+    data class DateBorn(val composeId: Int) : BuyDialog
+}
+
+sealed interface DialogChild {
+    class ImmutableMBS(val component: MBSImmutableTableComponent<*>) : DialogChild
+    class Date(val component: DateComponent) : DialogChild
 }

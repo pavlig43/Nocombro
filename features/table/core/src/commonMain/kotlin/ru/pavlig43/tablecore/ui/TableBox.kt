@@ -38,6 +38,7 @@ import ua.wwind.table.EditableTable
 import ua.wwind.table.ExperimentalTableApi
 import ua.wwind.table.Table
 import ua.wwind.table.config.DefaultTableCustomization
+import ua.wwind.table.config.RowHeightMode
 import ua.wwind.table.config.SelectionMode
 import ua.wwind.table.config.TableSettings
 import ua.wwind.table.filter.data.TableFilterState
@@ -72,6 +73,8 @@ fun <I : ITableUi, C, E : TableData<I>> TableBox(
             showFastFilters = true,
             showActiveFiltersHeader = true,
             editingEnabled = true,
+            rowHeightMode = RowHeightMode.Dynamic,
+
             enableTextSelection = true,
             selectionMode = SelectionMode.Multiple,
             pinnedColumnsCount = 3

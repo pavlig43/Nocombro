@@ -1,5 +1,8 @@
 package ru.pavlig43.core
 
+import com.arkivanov.decompose.ComponentContext
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
@@ -73,6 +76,27 @@ val dateFormat = LocalDate.Format {
 
 }
 val emptyDate = LocalDate(1900, 1, 1)
+
+class DateComponent(
+    componentContext: ComponentContext,
+    initDate: LocalDate,
+    val onChangeDate: (LocalDate) -> Unit,
+    val onDismissRequest:()-> Unit
+) : ComponentContext by componentContext {
+    private val _date = MutableStateFlow(initDate)
+    val date = _date.asStateFlow()
+
+}
+class DateTimeComponent(
+    componentContext: ComponentContext,
+    initDatetime: LocalDateTime,
+    val onChangeDate: (LocalDateTime) -> Unit,
+    val onDismissRequest:()-> Unit
+) : ComponentContext by componentContext {
+    private val _dateTime = MutableStateFlow(initDatetime)
+    val dateTime = _dateTime.asStateFlow()
+
+}
 
 
 

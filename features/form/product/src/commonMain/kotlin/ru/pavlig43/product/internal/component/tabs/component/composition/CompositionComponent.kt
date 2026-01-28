@@ -126,7 +126,7 @@ internal class CompositionComponent(
                 }
             }
 
-            val totalSum = lst.sumOf { it.count/1000.0 }
+            val totalSum = lst.filter { it.productType is ProductType.Food }.sumOf { it.count/1000.0 }
             if (totalSum != 1.0) {
                 add("Сумма в составе должна быть равна 1 кг (сейчас: ${totalSum}кг)")
             }

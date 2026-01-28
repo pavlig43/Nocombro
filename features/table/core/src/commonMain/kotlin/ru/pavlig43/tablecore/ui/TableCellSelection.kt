@@ -59,12 +59,15 @@ private fun <T : ITableUi, C, E : TableData<T>> ReadonlyColumnBuilder<T, C, E>.c
     onCreate: () -> Unit,
     onSelectionUiEvent: (SelectionUiEvent) -> Unit
 ) {
-    title {
+
+    width(48.dp)
+    autoWidth(48.dp)
+    header {
         createButtonNew {
             onCreate()
         }
     }
-    autoWidth(48.dp)
+
     cell { item, tableData ->
         if (tableData.isSelectionMode){
             Box(
