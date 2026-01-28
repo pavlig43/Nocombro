@@ -56,6 +56,7 @@ fun <I : ITableUi, C, E : TableData<I>> TableBox(
     columns: ImmutableList<ColumnSpec<I, C, E>>,
     onFiltersChanged: (Map<C, TableFilterState<*>>) -> Unit,
     onSortChanged: (SortState<C>?) -> Unit,
+    tableSettingsModify:(TableSettings)-> TableSettings = {it},
     table: @Composable BoxScope.(
         verticalState: LazyListState,
         horizontalState: ScrollState,
@@ -63,22 +64,24 @@ fun <I : ITableUi, C, E : TableData<I>> TableBox(
         stringProvider: StringProvider,
         modifier: Modifier
     ) -> Unit,
+
 ) {
+    val defaultTableSettings = TableSettings(
+    stripedRows = true,
+    autoApplyFilters = true,
+    showFastFilters = true,
+    showActiveFiltersHeader = true,
+    editingEnabled = true,
+    rowHeightMode = RowHeightMode.Dynamic,
+    showFooter = false,
+    enableTextSelection = true,
+    selectionMode = SelectionMode.Multiple,
+    pinnedColumnsCount = 3
+    )
 
     val state = rememberTableState(
         columns = columns.map { it.key }.toImmutableList(),
-        settings = TableSettings(
-            stripedRows = true,
-            autoApplyFilters = true,
-            showFastFilters = true,
-            showActiveFiltersHeader = true,
-            editingEnabled = true,
-            rowHeightMode = RowHeightMode.Dynamic,
-
-            enableTextSelection = true,
-            selectionMode = SelectionMode.Multiple,
-            pinnedColumnsCount = 3
-        )
+        settings = tableSettingsModify(defaultTableSettings)
     )
     LaunchedEffect(state) {
         snapshotFlow { state.filters.toMap() }.collect { filters -> onFiltersChanged(filters) }

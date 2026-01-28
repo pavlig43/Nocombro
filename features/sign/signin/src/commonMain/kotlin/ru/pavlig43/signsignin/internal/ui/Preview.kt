@@ -1,9 +1,9 @@
 package ru.pavlig43.signsignin.internal.ui
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.tooling.preview.Preview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import org.jetbrains.compose.ui.tooling.preview.Preview
 import ru.pavlig43.AppForPreview
 import ru.pavlig43.signcommon.logopass.api.components.FakeLogoPassComponent
 import ru.pavlig43.signcommon.logopass.api.components.ILogoPassComponent

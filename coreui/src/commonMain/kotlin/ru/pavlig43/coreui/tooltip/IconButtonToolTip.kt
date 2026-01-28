@@ -9,6 +9,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import org.jetbrains.compose.resources.DrawableResource
+import org.jetbrains.compose.resources.painterResource
 
 
 @Suppress("LongParameterList")
@@ -57,6 +59,58 @@ private fun ActionIconButton(
                 contentDescription = null,
                 tint = tint
             )
+
+        }
+
+    }
+}
+@Suppress("LongParameterList")
+@Composable
+fun ToolTipIconButton(
+    tooltipText: String,
+    onClick: () -> Unit,
+    icon: DrawableResource,
+    enabled: Boolean = true,
+    tint: Color = LocalContentColor.current,
+    modifier: Modifier = Modifier,
+    badge: @Composable BoxScope.() -> Unit = {}
+) {
+    ToolTipProject(
+        tooltipText = tooltipText,
+        modifier = modifier
+    ) {
+        ActionIconButton(
+            icon = icon,
+            onClick = onClick,
+            enabled = enabled,
+            tint = tint,
+            badge = badge
+        )
+    }
+}
+@Composable
+private fun ActionIconButton(
+    icon: DrawableResource,
+    onClick: () -> Unit,
+    enabled: Boolean = true,
+    modifier: Modifier = Modifier,
+    tint: Color = LocalContentColor.current,
+    badge: @Composable BoxScope.() -> Unit = {},
+
+    ) {
+    IconButton(
+        onClick = onClick,
+        enabled = enabled,
+        modifier = modifier) {
+        BadgedBox(
+            badge = badge
+        ) {
+            Icon(
+                painter = painterResource(icon),
+                contentDescription = null,
+                tint = tint
+            )
+
         }
 
     }

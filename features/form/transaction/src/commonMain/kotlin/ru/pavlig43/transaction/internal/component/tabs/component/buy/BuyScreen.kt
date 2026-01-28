@@ -6,13 +6,15 @@ import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import ru.pavlig43.coreui.DatePickerDialog
 import ru.pavlig43.immutable.api.ui.MBSImmutableTable
 import ru.pavlig43.mutable.api.ui.MutableTableBox
+import ua.wwind.table.sample.app.SampleApp
 
 @Composable
 internal fun BuyScreen(
     component: BuyComponent,
 ) {
+//    SampleApp(component)
     val dialog by component.dialog.subscribeAsState()
-    MutableTableBox(component)
+    MutableTableBox(component, tableSettingsModify = {ts->ts.copy(showFooter = true)})
 
     dialog.child?.instance?.also {dialogChild->
         when(dialogChild){

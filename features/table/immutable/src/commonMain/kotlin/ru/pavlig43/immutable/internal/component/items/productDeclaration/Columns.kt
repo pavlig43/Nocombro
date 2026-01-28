@@ -1,8 +1,14 @@
 package ru.pavlig43.immutable.internal.component.items.productDeclaration
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.Color
 import kotlinx.collections.immutable.ImmutableList
+import ru.pavlig43.coreui.tooltip.ToolTipProject
 import ru.pavlig43.immutable.internal.component.ImmutableTableUiEvent
 import ru.pavlig43.immutable.internal.ui.idWithSelection
 import ru.pavlig43.tablecore.model.TableData
@@ -45,11 +51,23 @@ internal fun createProductDeclarationColumn(
                 cell { item, _ -> Text(item.vendorName) }
                 sortable()
             }
-            column(ProductDeclarationField.IS_ACTUAL, valueOf = {it.isActual}){
-                header("")
+            column(ProductDeclarationField.IS_ACTUAL, valueOf = { it.isActual }) {
+                header("Актуальность")
                 align(Alignment.Center)
                 filter(TableFilterType.BooleanTableFilter())
-                cell { item, _ -> Text(item.isActual.toString()) }
+                cell { item, _ ->
+                    ToolTipProject(
+                        tooltipText = if (item.isActual) "Aктуальна" else "Срок истек",
+                        content = {
+                            Icon(
+                                if (item.isActual) Icons.Default.Check else Icons.Default.Close,
+                                contentDescription = null,
+                                tint = if (item.isActual) Color.Green else Color.Red
+                            )
+                        }
+
+                    )
+                }
                 sortable()
             }
         }

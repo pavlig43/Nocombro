@@ -25,6 +25,7 @@ import ua.wwind.table.EditableTable
 import ua.wwind.table.ExperimentalTableApi
 import ua.wwind.table.config.DefaultTableCustomization
 import ua.wwind.table.config.TableDefaults
+import ua.wwind.table.config.TableSettings
 import ua.wwind.table.state.TableState
 import ua.wwind.table.strings.StringProvider
 
@@ -32,6 +33,7 @@ import ua.wwind.table.strings.StringProvider
 @Composable
 fun <I : ITableUi, C> MutableTableBox(
     component: MutableTableComponent<*, *, I, C>,
+    tableSettingsModify:(TableSettings)-> TableSettings = {it},
     modifier: Modifier = Modifier
 ) {
 
@@ -46,6 +48,7 @@ fun <I : ITableUi, C> MutableTableBox(
             TableBox(
                 columns = component.columns,
                 onFiltersChanged = component::updateFilters,
+                tableSettingsModify = tableSettingsModify,
                 onSortChanged = component::updateSort,
             ) { verticalState, horizontalState, tableState, stringProvider, modifier ->
                 MutableTable(

@@ -66,7 +66,8 @@ internal fun createBuyColumn(
                 headerText = "Количество",
                 decimalFormat = DecimalFormat.KG(),
                 onEvent = { updateEvent -> onEvent(updateEvent) },
-                updateItem = { item, count -> item.copy(count = count) }
+                updateItem = { item, count -> item.copy(count = count) },
+                footerValue = {tableData -> tableData.displayedItems.sumOf { it.count }}
             )
             decimalColumn(
                 key = BuyField.PRICE,
@@ -74,8 +75,10 @@ internal fun createBuyColumn(
                 headerText = "Цена",
                 decimalFormat = DecimalFormat.RUB(),
                 onEvent = { updateEvent -> onEvent(updateEvent) },
-                updateItem = { item, newPrice -> item.copy(price = newPrice) }
+                updateItem = { item, newPrice -> item.copy(price = newPrice) },
+                footerValue = {tableData -> tableData.displayedItems.sumOf { it.price }}
             )
+
 
 
             column(BuyField.DECLARATION_NAME, valueOf = { it.declarationName }) {

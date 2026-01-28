@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
@@ -39,6 +38,8 @@ import ru.pavlig43.files.api.model.FileUi
 import ru.pavlig43.files.internal.ui.AddFileRow
 import ru.pavlig43.coreui.tooltip.ToolTipIconButton
 import ru.pavlig43.loadinitdata.api.ui.LoadInitDataScreen
+import ru.pavlig43.theme.Res
+import ru.pavlig43.theme.menu
 
 
 @Composable
@@ -154,7 +155,7 @@ private fun AddFileBody(
             ToolTipIconButton(
                 tooltipText = "Добавить файл",
                 onClick = { launcher.launch() },
-                icon = Icons.Default.AddCircle
+                icon = Res.drawable.menu
             )
         }
         files.forEach { file ->
