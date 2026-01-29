@@ -15,6 +15,8 @@ import androidx.compose.runtime.getValue
 import org.jetbrains.compose.resources.painterResource
 import ru.pavlig43.rootnocombro.api.component.SettingsComponent
 import ru.pavlig43.theme.Res
+import ru.pavlig43.theme.dark_mode
+import ru.pavlig43.theme.light_mode
 import ru.pavlig43.theme.menu
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -31,7 +33,7 @@ internal fun NocombroAppBar(settingsComponent: SettingsComponent, onOpenDrawer: 
         actions = {
             IconButton(onClick = settingsComponent::toggleDarkMode) {
                 Icon(
-                    imageVector = if (darkMode) Icons.Default.LightMode else Icons.Default.DarkMode,
+                    painter = painterResource(if (darkMode) Res.drawable.light_mode else Res.drawable.dark_mode),
                     contentDescription = "Toggle theme"
                 )
             }

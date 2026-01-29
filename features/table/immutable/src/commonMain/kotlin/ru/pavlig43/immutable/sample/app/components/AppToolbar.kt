@@ -15,6 +15,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.resources.painterResource
+import ru.pavlig43.theme.Res
+import ru.pavlig43.theme.settings
 
 @Composable
 fun AppToolbar(
@@ -33,7 +36,7 @@ fun AppToolbar(
         )
         IconButton(onClick = onSettingsClick) {
             Icon(
-                imageVector = Icons.Default.Settings,
+                painter = painterResource(Res.drawable.settings) ,
                 contentDescription = "Open settings",
             )
         }

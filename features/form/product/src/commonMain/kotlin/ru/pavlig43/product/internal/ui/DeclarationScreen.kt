@@ -27,12 +27,19 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
+import org.jetbrains.compose.resources.painterResource
 import ru.pavlig43.coreui.tooltip.ToolTipIconButton
 import ru.pavlig43.coreui.tooltip.ToolTipProject
 import ru.pavlig43.immutable.api.ui.MBSImmutableTable
 import ru.pavlig43.product.internal.component.tabs.component.DeclarationListComponent
 import ru.pavlig43.product.internal.component.tabs.component.ProductDeclarationComponent
 import ru.pavlig43.product.internal.component.tabs.component.DeclarationUi
+import ru.pavlig43.theme.Res
+import ru.pavlig43.theme.add_circle
+import ru.pavlig43.theme.check
+import ru.pavlig43.theme.close
+import ru.pavlig43.theme.delete
+import ru.pavlig43.theme.search
 
 @Composable
 fun DeclarationScreen(
@@ -69,7 +76,7 @@ private fun DeclarationBlock(
             ToolTipIconButton(
                 tooltipText = "Добавить декларацию",
                 onClick = onChooseDeclaration,
-                icon = Icons.Default.AddCircle
+                icon = Res.drawable.add_circle
             )
         }
         if (declarations.isEmpty()) {
@@ -111,7 +118,7 @@ private fun AddDeclarationRow1(
             tooltipText = if (itemDeclarationUi.isActual) "Aктуальна" else "Срок истек",
             content = {
                 Icon(
-                    if (itemDeclarationUi.isActual) Icons.Default.Check else Icons.Default.Close,
+                    painterResource(if (itemDeclarationUi.isActual) Res.drawable.check else Res.drawable.close),
                     contentDescription = null,
                     tint = if (itemDeclarationUi.isActual) Color.Green else Color.Red
                 )
@@ -122,13 +129,13 @@ private fun AddDeclarationRow1(
         ToolTipIconButton(
             tooltipText = "Открыть в новой вкладке",
             onClick =  { openDeclarationDocument(itemDeclarationUi.declarationId) },
-            icon = Icons.Default.Search
+            icon =Res.drawable.search
         )
 
         ToolTipIconButton(
             tooltipText = "Удалить",
             onClick = { removeDeclarationUi(itemDeclarationUi.composeKey) },
-            icon = Icons.Default.Close
+            icon = Res.drawable.delete
         )
 
 

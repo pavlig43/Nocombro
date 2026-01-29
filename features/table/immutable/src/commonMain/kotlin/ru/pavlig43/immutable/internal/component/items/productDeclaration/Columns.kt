@@ -8,10 +8,14 @@ import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import kotlinx.collections.immutable.ImmutableList
+import org.jetbrains.compose.resources.painterResource
 import ru.pavlig43.coreui.tooltip.ToolTipProject
 import ru.pavlig43.immutable.internal.component.ImmutableTableUiEvent
 import ru.pavlig43.immutable.internal.ui.idWithSelection
 import ru.pavlig43.tablecore.model.TableData
+import ru.pavlig43.theme.Res
+import ru.pavlig43.theme.check
+import ru.pavlig43.theme.close
 import ua.wwind.table.ColumnSpec
 import ua.wwind.table.filter.data.TableFilterType
 import ua.wwind.table.tableColumns
@@ -60,7 +64,7 @@ internal fun createProductDeclarationColumn(
                         tooltipText = if (item.isActual) "Aктуальна" else "Срок истек",
                         content = {
                             Icon(
-                                if (item.isActual) Icons.Default.Check else Icons.Default.Close,
+                                painterResource(if (item.isActual) Res.drawable.check else Res.drawable.close),
                                 contentDescription = null,
                                 tint = if (item.isActual) Color.Green else Color.Red
                             )

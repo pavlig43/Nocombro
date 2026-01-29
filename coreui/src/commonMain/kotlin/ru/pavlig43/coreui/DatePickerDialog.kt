@@ -27,6 +27,8 @@ import kotlinx.datetime.format
 import ru.pavlig43.core.DateComponent
 import ru.pavlig43.core.dateFormat
 import ru.pavlig43.coreui.tooltip.ToolTipIconButton
+import ru.pavlig43.theme.Res
+import ru.pavlig43.theme.clock
 
 @Composable
 fun DatePickerDialog(
@@ -98,7 +100,7 @@ fun DateRow(
         ToolTipIconButton(
             tooltipText = "Дата",
             onClick = isChangeDialogVisible,
-            icon = Icons.Default.AccessTime
+            icon = Res.drawable.clock
 
         )
 }

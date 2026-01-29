@@ -21,6 +21,8 @@ import ru.pavlig43.core.dateFormat
 import ru.pavlig43.coreui.DatePickerDialog
 import ru.pavlig43.coreui.DateRow
 import ru.pavlig43.coreui.tooltip.ToolTipIconButton
+import ru.pavlig43.theme.Res
+import ru.pavlig43.theme.calendar
 import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalTime::class)
@@ -46,7 +48,7 @@ fun DateFieldBlock(
         ToolTipIconButton(
             tooltipText = "Дата",
             onClick = { isDatePickerVisible = !isDatePickerVisible },
-            icon = Icons.Default.AccessTime
+            icon = Res.drawable.calendar
 
         )
         if (isDatePickerVisible){

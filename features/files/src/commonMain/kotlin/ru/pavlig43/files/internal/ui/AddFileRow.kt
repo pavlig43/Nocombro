@@ -31,8 +31,12 @@ import ru.pavlig43.coreui.LoadingUi
 import ru.pavlig43.coreui.tooltip.ToolTipIconButton
 import ru.pavlig43.coreui.tooltip.ToolTipProject
 import ru.pavlig43.theme.Res
+import ru.pavlig43.theme.check
+import ru.pavlig43.theme.cloud_download
+import ru.pavlig43.theme.delete
 import ru.pavlig43.theme.excel
 import ru.pavlig43.theme.pdf
+import ru.pavlig43.theme.search
 import ru.pavlig43.theme.unknown
 import ru.pavlig43.theme.word
 
@@ -95,7 +99,7 @@ private fun OnOpenIconButton(
     ToolTipIconButton(
         tooltipText = "Открыть",
         onClick = { onOpenFile(fileUi.platformFile) },
-        icon = Icons.Default.Search,
+        icon = Res.drawable.search,
         enabled = fileUi.uploadState !is UploadState.Loading,
 
         )
@@ -110,7 +114,7 @@ private fun RemoveIconButton(
         tooltipText = "Удалить",
         enabled = fileUi.uploadState !is UploadState.Loading,
         onClick = { removeFile(fileUi.composeKey) },
-        icon = Icons.Default.Close
+        icon = Res.drawable.delete
     )
 
 }
@@ -124,14 +128,14 @@ private fun UploadIcon(
         UploadState.Loading -> LoadingUi(Modifier.Companion.size(24.dp))
         UploadState.Success -> ToolTipProject(
             tooltipText = "Загружено"
-        ) { Icon(Icons.Default.Check, contentDescription = null) }
+        ) { Icon(painterResource(Res.drawable.check), contentDescription = null) }
 
         is UploadState.Error -> Column {
             Text(state.message)
             ToolTipIconButton(
                 tooltipText = "${state.message} Повторить загрузку",
                 onClick = { retryLoadFile(fileUi.composeKey) },
-                icon = Icons.Default.CloudDownload
+                icon = Res.drawable.cloud_download
             )
         }
     }

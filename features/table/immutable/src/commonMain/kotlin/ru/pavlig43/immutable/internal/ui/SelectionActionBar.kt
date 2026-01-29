@@ -24,6 +24,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.resources.painterResource
+import ru.pavlig43.theme.Res
+import ru.pavlig43.theme.close
+import ru.pavlig43.theme.delete
 
 /**
  * Floating action bar shown at the bottom when items are selected.
@@ -69,7 +73,7 @@ internal fun SelectionActionBar(
             ) {
                 IconButton(onClick = onClearSelection) {
                     Icon(
-                        imageVector = Icons.Default.Close,
+                        painter = painterResource(Res.drawable.close) ,
                         contentDescription = "Clear selection",
                         tint = MaterialTheme.colorScheme.onSurface,
                     )
@@ -90,7 +94,7 @@ internal fun SelectionActionBar(
                     shape = RoundedCornerShape(16.dp),
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Delete,
+                        painter = painterResource(Res.drawable.delete),
                         contentDescription = null,
                         modifier = Modifier.padding(end = 8.dp),
                     )

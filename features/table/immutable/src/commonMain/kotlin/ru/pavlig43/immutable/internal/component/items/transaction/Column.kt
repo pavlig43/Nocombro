@@ -11,11 +11,15 @@ import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.datetime.format
+import org.jetbrains.compose.resources.painterResource
 import ru.pavlig43.core.dateTimeFormat
 import ru.pavlig43.database.data.transaction.TransactionType
 import ru.pavlig43.immutable.internal.component.ImmutableTableUiEvent
 import ru.pavlig43.immutable.internal.ui.idWithSelection
 import ru.pavlig43.tablecore.model.TableData
+import ru.pavlig43.theme.Res
+import ru.pavlig43.theme.check
+import ru.pavlig43.theme.close
 import ua.wwind.table.ColumnSpec
 import ua.wwind.table.filter.data.TableFilterType
 import ua.wwind.table.tableColumns
@@ -49,7 +53,7 @@ internal fun createTransactionColumn(
                 header("V")
                 align(Alignment.Center)
                 cell { transaction, _ -> Icon(
-                    imageVector = if (transaction.isCompleted) Icons.Default.Check else Icons.Default.Close,
+                    painter = painterResource(if (transaction.isCompleted) Res.drawable.check else Res.drawable.close),
                     contentDescription = null,
                     tint = if (transaction.isCompleted) Color.Green else Color.Red
 

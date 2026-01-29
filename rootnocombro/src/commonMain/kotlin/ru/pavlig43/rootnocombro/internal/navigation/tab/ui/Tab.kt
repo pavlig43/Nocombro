@@ -9,24 +9,16 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.FilledTonalIconButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.resources.painterResource
 import ru.pavlig43.core.MainTabComponent
+import ru.pavlig43.theme.Res
+import ru.pavlig43.theme.close
 
 /**
  * Properties
@@ -92,7 +84,7 @@ internal fun TabContent(
             FilledTonalIconButton(modifier = closeButtonModifier, onClick = onClose) {
                 Icon(
                     modifier = closeButtonIconModifier,
-                    imageVector = Icons.Default.Close,
+                    painter = painterResource( Res.drawable.close),
                     contentDescription = null
                 )
             }

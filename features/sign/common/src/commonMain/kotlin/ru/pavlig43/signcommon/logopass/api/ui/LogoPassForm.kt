@@ -29,7 +29,11 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.resources.painterResource
 import ru.pavlig43.signcommon.logopass.api.components.ILogoPassComponent
+import ru.pavlig43.theme.Res
+import ru.pavlig43.theme.visibility
+import ru.pavlig43.theme.visibility_off
 
 
 @Composable
@@ -76,7 +80,7 @@ fun LogoPassForm(
             trailingIcon = {
                 IconButton({ isVisiblePassword = !isVisiblePassword }) {
                     Icon(
-                        imageVector = if (isVisiblePassword) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                        painter = painterResource(if (isVisiblePassword) Res.drawable.visibility else Res.drawable.visibility_off),
                         contentDescription = if (isVisiblePassword) "Hide password" else "Show password"
                     )
                 }

@@ -33,13 +33,16 @@ import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
 import io.github.vinceglb.filekit.dialogs.openFileWithDefaultApplication
+import org.jetbrains.compose.resources.painterResource
 import ru.pavlig43.files.api.component.FilesComponent
 import ru.pavlig43.files.api.model.FileUi
 import ru.pavlig43.files.internal.ui.AddFileRow
 import ru.pavlig43.coreui.tooltip.ToolTipIconButton
 import ru.pavlig43.loadinitdata.api.ui.LoadInitDataScreen
 import ru.pavlig43.theme.Res
+import ru.pavlig43.theme.add_circle
 import ru.pavlig43.theme.menu
+import ru.pavlig43.theme.warning
 
 
 @Composable
@@ -155,7 +158,7 @@ private fun AddFileBody(
             ToolTipIconButton(
                 tooltipText = "Добавить файл",
                 onClick = { launcher.launch() },
-                icon = Res.drawable.menu
+                icon = Res.drawable.add_circle
             )
         }
         files.forEach { file ->
@@ -193,7 +196,7 @@ fun DuplicateFileDialog(
             ) {
                 // Иконка
                 Icon(
-                    imageVector = Icons.Default.Warning,
+                    painter = painterResource(Res.drawable.warning) ,
                     contentDescription = null,
                     modifier = Modifier
                         .size(48.dp)

@@ -15,6 +15,9 @@ import androidx.compose.ui.unit.dp
 import ru.pavlig43.coreui.tooltip.ToolTipIconButton
 import ru.pavlig43.notification.api.model.NotificationLevel
 import ru.pavlig43.notification.api.ui.NotificationIcon
+import ru.pavlig43.theme.Res
+import ru.pavlig43.theme.arrow_downward
+import ru.pavlig43.theme.arrow_upward
 
 @Suppress("LongParameterList")
 @Composable
@@ -38,7 +41,7 @@ internal fun NotificationTitle(
         ToolTipIconButton(
             tooltipText = if (isShowFullList) "Свернуть" else " Показать",
             onClick = showFullList,
-            icon = if (isShowFullList) Icons.Default.ArrowUpward else Icons.Default.ArrowDownward,
+            icon = if (isShowFullList) Res.drawable.arrow_upward else Res.drawable.arrow_downward,
         )
         Text(title, textDecoration = TextDecoration.Underline)
 
