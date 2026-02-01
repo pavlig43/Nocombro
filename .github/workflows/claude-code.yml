@@ -31,8 +31,8 @@ jobs:
       - name: Run Claude Code
         uses: anthropics/claude-code-action@v1
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           # For PRs: review mode, for issues: interactive mode
           prompt: |
             ${{ github.event_name == 'pull_request' && 'Review this pull request comprehensively. Check for code quality, potential bugs, performance issues, and security concerns. Provide specific feedback.' || 'Help with this issue by analyzing the codebase and implementing necessary changes.' }}
