@@ -3,6 +3,8 @@ name: Claude Code
 on:
   pull_request:
     types: [opened, synchronize, reopened]
+  push:
+    branches: [master]
   issue_comment:
     types: [created]
 
