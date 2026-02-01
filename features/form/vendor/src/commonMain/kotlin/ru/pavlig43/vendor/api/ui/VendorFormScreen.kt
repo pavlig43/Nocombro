@@ -13,12 +13,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
-import ru.pavlig43.files.api.ui.FilesScreen
 import ru.pavlig43.core.ui.EssentialBlockScreen
+import ru.pavlig43.files.api.ui.FilesScreen
 import ru.pavlig43.update.ui.FormTabsUi
 import ru.pavlig43.vendor.component.VendorFormComponent
-import ru.pavlig43.vendor.internal.component.tabs.component.VendorEssentialsComponent
 import ru.pavlig43.vendor.internal.component.tabs.VendorTabChild
+import ru.pavlig43.vendor.internal.component.tabs.component.VendorEssentialsComponent
 import ru.pavlig43.vendor.internal.ui.CreateVendorScreen
 import ru.pavlig43.vendor.internal.ui.VendorFields
 

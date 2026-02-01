@@ -10,9 +10,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -37,7 +34,6 @@ import ru.pavlig43.theme.delete
  * @param selectedCount Number of selected items to display
  * @param onDeleteClick Callback when delete button is clicked
  * @param onClearSelection Callback when clear selection button is clicked
- * @param liquidState State for the Liquid Glass effect (must be shared with liquefiable content)
  * @param modifier Modifier for the composable
  */
 @Composable

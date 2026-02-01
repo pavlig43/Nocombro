@@ -1,8 +1,8 @@
+@file:Suppress("MatchingDeclarationName")
 package ru.pavlig43.immutable.internal.component.items.product
 
 import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.datetime.format

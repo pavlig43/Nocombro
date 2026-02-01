@@ -15,13 +15,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
-import ru.pavlig43.files.api.ui.FilesScreen
 import ru.pavlig43.core.ui.EssentialBlockScreen
 import ru.pavlig43.document.api.component.DocumentFormComponent
-import ru.pavlig43.document.internal.component.tabs.component.DocumentEssentialComponent
 import ru.pavlig43.document.internal.component.tabs.DocumentTabChild
+import ru.pavlig43.document.internal.component.tabs.component.DocumentEssentialComponent
 import ru.pavlig43.document.internal.ui.CreateDocumentScreen
 import ru.pavlig43.document.internal.ui.DocumentFields
+import ru.pavlig43.files.api.ui.FilesScreen
 import ru.pavlig43.update.ui.FormTabsUi
 
 @Composable

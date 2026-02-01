@@ -3,9 +3,9 @@ package ru.pavlig43.document.internal.component.tabs.component
 import com.arkivanov.decompose.ComponentContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
-import ru.pavlig43.files.api.component.FilesComponent
-import ru.pavlig43.files.api.FilesDependencies
 import ru.pavlig43.database.data.files.OwnerType
+import ru.pavlig43.files.api.FilesDependencies
+import ru.pavlig43.files.api.component.FilesComponent
 
 
 internal class DocumentFilesComponent(

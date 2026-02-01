@@ -8,8 +8,8 @@ import ru.pavlig43.core.DateThreshold
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.notification.api.model.NotificationItem
 import ru.pavlig43.notification.api.model.NotificationLevel
-import ru.pavlig43.notification.internal.model.NotificationUi
 import ru.pavlig43.notification.internal.data.INotificationRepository
+import ru.pavlig43.notification.internal.model.NotificationUi
 
 internal val mediumModule = module {
 

@@ -16,12 +16,12 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import ru.pavlig43.create.component.CreateState
 import ru.pavlig43.core.model.GenericItem
 import ru.pavlig43.core.model.ItemEssentialsUi
 import ru.pavlig43.core.ui.EssentialBlockScreen
 import ru.pavlig43.coreui.LoadingUi
 import ru.pavlig43.create.component.CreateEssentialsComponent
+import ru.pavlig43.create.component.CreateState
 
 @Composable
 fun<I: ItemEssentialsUi> CreateEssentialsScreen(

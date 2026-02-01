@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import ua.wwind.table.strings.StringProvider
 import ua.wwind.table.strings.UiString
 
+@Suppress("CyclomaticComplexMethod")
 internal object RussianStringProvider : StringProvider {
     @Composable
     override fun get(key: UiString): String {

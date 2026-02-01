@@ -5,12 +5,12 @@ import androidx.room.Embedded
 import androidx.room.Query
 import androidx.room.Relation
 import androidx.room.Upsert
-import ru.pavlig43.database.data.product.CompositionIn
-import ru.pavlig43.database.data.product.CompositionOut
-import ru.pavlig43.database.data.product.Product
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import ru.pavlig43.database.data.common.NotificationDTO
+import ru.pavlig43.database.data.product.CompositionIn
+import ru.pavlig43.database.data.product.CompositionOut
+import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductType
 
 @Dao

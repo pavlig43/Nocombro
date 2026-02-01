@@ -7,6 +7,10 @@ sealed interface MainTabConfig{
 
     @Serializable
     class NotificationConfig:MainTabConfig
+
+    @Serializable
+    class SampleTableConfig: MainTabConfig
+
     @Serializable
     sealed interface ItemListConfig: MainTabConfig{
         @Serializable

@@ -1,10 +1,6 @@
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.artifacts.MinimalExternalModuleDependency
-import org.gradle.api.provider.Provider
-import org.gradle.kotlin.dsl.DependencyHandlerScope
 import org.gradle.kotlin.dsl.apply
-import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.withType
 import org.jetbrains.compose.ComposeExtension
@@ -48,7 +44,6 @@ internal fun Project.configureComposeKmp() {
         implementation(libs.compose.ui)
         implementation(libs.compose.components.resources)
 
-        implementation(libs.compose.material.icons.extended)
         implementation(libs.androidx.lifecycle.runtime.compose)
 
 

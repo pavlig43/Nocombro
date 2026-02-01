@@ -36,6 +36,7 @@ import ru.pavlig43.rootnocombro.internal.navigation.MainTabNavigationComponent
 import ru.pavlig43.rootnocombro.internal.navigation.drawer.ui.NavigationDrawer
 import ru.pavlig43.rootnocombro.internal.navigation.tab.ui.TabContent
 import ru.pavlig43.rootnocombro.internal.topbar.ui.NocombroAppBar
+import ru.pavlig43.sampletable.api.ui.SampleTableScreen
 import ru.pavlig43.signroot.api.ui.RootSignScreen
 import ru.pavlig43.transaction.api.ui.TransactionFormScreen
 import ru.pavlig43.vendor.api.ui.VendorFormScreen
@@ -146,6 +147,8 @@ private fun MainTabChildFactory(mainTabChild: MainTabChild?) {
 
         is MainTabChild.NotificationChild ->
             NotificationTabs(mainTabChild.component)
+
+        is MainTabChild.SampleTableChild -> SampleTableScreen(mainTabChild.component)
     }
 }
 

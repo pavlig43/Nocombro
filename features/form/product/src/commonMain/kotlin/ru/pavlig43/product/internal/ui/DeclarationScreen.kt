@@ -9,11 +9,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AddCircle
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -32,8 +27,8 @@ import ru.pavlig43.coreui.tooltip.ToolTipIconButton
 import ru.pavlig43.coreui.tooltip.ToolTipProject
 import ru.pavlig43.immutable.api.ui.MBSImmutableTable
 import ru.pavlig43.product.internal.component.tabs.component.DeclarationListComponent
-import ru.pavlig43.product.internal.component.tabs.component.ProductDeclarationComponent
 import ru.pavlig43.product.internal.component.tabs.component.DeclarationUi
+import ru.pavlig43.product.internal.component.tabs.component.ProductDeclarationComponent
 import ru.pavlig43.theme.Res
 import ru.pavlig43.theme.add_circle
 import ru.pavlig43.theme.check

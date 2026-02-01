@@ -1,7 +1,6 @@
 package ru.pavlig43.transaction.internal.component.tabs
 
 import ru.pavlig43.core.FormTabChild
-import ru.pavlig43.core.component.EssentialsComponent
 import ru.pavlig43.transaction.internal.component.tabs.component.TransactionEssentialComponent
 import ru.pavlig43.transaction.internal.component.tabs.component.buy.BuyComponent
 

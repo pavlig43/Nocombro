@@ -27,6 +27,7 @@ internal class ProductDeclarationTableComponent(
     repository = repository,
     filterBDData = {it.productId == tableBuilder.productId}
 ) {
+    @Suppress("MaxLineLength")
     override val columns: ImmutableList<ColumnSpec<ProductDeclarationTableUi, ProductDeclarationField, TableData<ProductDeclarationTableUi>>> =
         createProductDeclarationColumn(
             onEvent = ::onEvent

@@ -6,7 +6,6 @@ import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import ru.pavlig43.coreui.DatePickerDialog
 import ru.pavlig43.immutable.api.ui.MBSImmutableTable
 import ru.pavlig43.mutable.api.ui.MutableTableBox
-import ua.wwind.table.sample.app.SampleApp
 
 @Composable
 internal fun BuyScreen(

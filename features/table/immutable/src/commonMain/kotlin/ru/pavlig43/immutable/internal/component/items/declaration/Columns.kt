@@ -1,3 +1,4 @@
+@file:Suppress("MatchingDeclarationName")
 package ru.pavlig43.immutable.internal.component.items.declaration
 
 import androidx.compose.material3.Text

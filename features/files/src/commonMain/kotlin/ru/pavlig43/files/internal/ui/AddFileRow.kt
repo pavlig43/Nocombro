@@ -6,11 +6,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.CloudDownload
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -25,11 +20,11 @@ import io.github.vinceglb.filekit.absolutePath
 import io.github.vinceglb.filekit.extension
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
-import ru.pavlig43.files.api.model.FileUi
-import ru.pavlig43.files.api.uploadState.UploadState
 import ru.pavlig43.coreui.LoadingUi
 import ru.pavlig43.coreui.tooltip.ToolTipIconButton
 import ru.pavlig43.coreui.tooltip.ToolTipProject
+import ru.pavlig43.files.api.model.FileUi
+import ru.pavlig43.files.api.uploadState.UploadState
 import ru.pavlig43.theme.Res
 import ru.pavlig43.theme.check
 import ru.pavlig43.theme.cloud_download
@@ -51,7 +46,7 @@ internal fun AddFileRow(
 
     Row(
         modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.Companion.CenterVertically,
+        verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         Icon(
@@ -125,7 +120,7 @@ private fun UploadIcon(
     retryLoadFile: (Int) -> Unit
 ) {
     when (val state = fileUi.uploadState) {
-        UploadState.Loading -> LoadingUi(Modifier.Companion.size(24.dp))
+        UploadState.Loading -> LoadingUi(Modifier.size(24.dp))
         UploadState.Success -> ToolTipProject(
             tooltipText = "Загружено"
         ) { Icon(painterResource(Res.drawable.check), contentDescription = null) }
