@@ -5,6 +5,8 @@ on:
     types: [created, edited]
   issue_comment:
     types: [created]
+  pull_request:
+    types: [opened, synchronize, reopened]
 
 permissions:
   contents: write
@@ -14,13 +16,22 @@ permissions:
 jobs:
   claude:
     runs-on: ubuntu-latest
-    if: contains(github.event.comment.body.* || github.event.issue.body, '@claude')
+    # Only run when @claude is mentioned in issues/comments, or for all PRs
+    if: |
+      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
+      (github.event_name == 'issues' && contains(github.event.issue.body, '@claude')) ||
+      github.event_name == 'pull_request'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Run Claude Code
-        uses: anthropics/claude-code-action@v0
+        uses: anthropics/claude-code-action@v1
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+          # For PRs: review mode, for issues: interactive mode
+          prompt: |
+            ${{ github.event_name == 'pull_request' && 'Review this pull request comprehensively. Check for code quality, potential bugs, performance issues, and security concerns. Provide specific feedback.' || 'Help with this issue by analyzing the codebase and implementing necessary changes.' }}
