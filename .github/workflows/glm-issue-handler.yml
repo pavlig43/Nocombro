@@ -16,20 +16,21 @@ jobs:
       - name: Debug event
         run: |
           echo "Event: ${{ github.event_name }}"
-          echo "Comment body: ${{ github.event.comment.body }}"
-          echo "Issue URL: ${{ github.event.issue.html_url }}"
+          echo "Comment: ${{ github.event.comment.body }}"
 
-      - name: Check conditions
+      - name: Check if should run
         id: check
         run: |
+          # Skip if this is a PR comment
           if [ "${{ github.event.issue.pull_request }}" != "" ]; then
-            echo "This is a PR, skipping"
             echo "should_run=false" >> $GITHUB_OUTPUT
-          elif echo "${{ github.event.comment.body }}" | grep -q "@GLM"; then
-            echo "GLM mentioned, proceeding"
+            exit 0
+          fi
+
+          # Check for @GLM mention
+          if echo "${{ github.event.comment.body }}" | grep -q "@GLM"; then
             echo "should_run=true" >> $GITHUB_OUTPUT
           else
-            echo "No GLM mention"
             echo "should_run=false" >> $GITHUB_OUTPUT
           fi
 
@@ -37,15 +38,64 @@ jobs:
         if: steps.check.outputs.should_run == 'true'
         uses: actions/checkout@v4
 
+      - name: Get issue context
+        id: issue
+        if: steps.check.outputs.should_run == 'true'
+        run: |
+          echo "title=${{ github.event.issue.title }}" >> $GITHUB_OUTPUT
+          echo "number=${{ github.event.issue.number }}" >> $GITHUB_OUTPUT
+
+      - name: Generate solution with GLM
+        id: solution
+        if: steps.check.outputs.should_run == 'true'
+        run: |
+          ISSUE_TITLE="${{ github.event.issue.title }}"
+          ISSUE_BODY="${{ github.event.issue.body }}"
+          COMMENT="${{ github.event.comment.body }}"
+
+          PROMPT="GitHub Issue needs your help:
+
+Title: $ISSUE_TITLE
+Description: $ISSUE_BODY
+User Request: $COMMENT
+
+Analyze this issue and:
+1. Explain what needs to be done
+2. Suggest the approach
+3. List files that likely need changes
+
+Keep it concise and actionable."
+
+          RESPONSE=$(curl -s -X POST "https://open.bigmodel.cn/api/paas/v4/chat/completions" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.GLM_API_KEY }}" \
+            -d "{
+              \"model\": \"glm-4-flash\",
+              \"messages\": [
+                {
+                  \"role\": \"user\",
+                  \"content\": $(echo "$PROMPT" | jq -Rs .)
+                }
+              ],
+              \"temperature\": 0.3,
+              \"max_tokens\": 2048
+            }")
+
+          ANALYSIS=$(echo "$RESPONSE" | jq -r '.choices[0].message.content // "Error"')
+          echo "$ANALYSIS" > analysis.md
+
       - name: Post response
         if: steps.check.outputs.should_run == 'true'
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            github.rest.issues.createComment({
+            const fs = require('fs');
+            const analysis = fs.readFileSync('analysis.md', 'utf8');
+
+            await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
-              body: '## 🤖 GLM Bot\n\nI received your request! This is a test response.'
-            })
+              body: `## 🤖 GLM Analysis\n\n${analysis}\n\n---\n\n*Note: This is an initial analysis. Full automated implementation coming soon.*`
+            });
