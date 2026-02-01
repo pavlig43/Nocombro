@@ -1,0 +1,38 @@
+name: Claude Code
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  claude:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Claude Code with GLM
+        id: claude
+        uses: anthropics/claude-code-action@v1
+        env:
+          NODE_VERSION: '22.x'
+          ANTHROPIC_BASE_URL: 'https://api.z.ai/api/anthropic'
+        with:
+          anthropic_api_key: ${{ secrets.ZHIPU_API_KEY }}
+
+      - name: Upload Claude's response
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: claude-response
+          path: ${{ steps.claude.outputs.response-path }}
+          retention-days: 7
