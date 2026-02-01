@@ -13,323 +13,39 @@ jobs:
   handle-issue:
     runs-on: ubuntu-latest
     steps:
-      - name: Check if mentioned and is issue (not PR)
+      - name: Debug event
+        run: |
+          echo "Event: ${{ github.event_name }}"
+          echo "Comment body: ${{ github.event.comment.body }}"
+          echo "Issue URL: ${{ github.event.issue.html_url }}"
+
+      - name: Check conditions
         id: check
         run: |
-          echo "=== Debug Info ==="
-          echo "Event: ${{ github.event_name }}"
-          echo "Issue URL: ${{ github.event.issue.html_url }}"
-          echo "Has pull_request: ${{ github.event.issue.pull_request != '' }}"
-
-          COMMENT_BODY="${{ github.event.comment.body }}"
-
-          # Check if this is an issue (not PR) and contains @GLM
-          if [ -n "${{ github.event.issue.pull_request }}" ]; then
-            echo "This is a PR comment, skipping"
-            echo "triggered=false" >> $GITHUB_OUTPUT
-            exit 0
-          fi
-
-          if [[ "$COMMENT_BODY" == *"@GLM"* ]]; then
-            echo "triggered=true" >> $GITHUB_OUTPUT
+          if [ "${{ github.event.issue.pull_request }}" != "" ]; then
+            echo "This is a PR, skipping"
+            echo "should_run=false" >> $GITHUB_OUTPUT
+          elif echo "${{ github.event.comment.body }}" | grep -q "@GLM"; then
+            echo "GLM mentioned, proceeding"
+            echo "should_run=true" >> $GITHUB_OUTPUT
           else
-            echo "No @GLM mention found"
-            echo "triggered=false" >> $GITHUB_OUTPUT
+            echo "No GLM mention"
+            echo "should_run=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Checkout code
-        if: steps.check.outputs.triggered == 'true'
+      - name: Checkout
+        if: steps.check.outputs.should_run == 'true'
         uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Skip if not triggered
-        if: steps.check.outputs.triggered != 'true'
-        run: |
-          echo "Workflow not triggered (no @GLM mention or this is a PR)"
-          echo "Exiting successfully"
-
-      - name: Extract issue details
-        id: issue
-        if: steps.check.outputs.triggered == 'true'
-        run: |
-          ISSUE_TITLE="${{ github.event.issue.title }}"
-          ISSUE_BODY="${{ github.event.issue.body }}"
-          COMMENT_BODY="${{ github.event.comment.body }}"
-          ISSUE_NUMBER="${{ github.event.issue.number }}"
-
-          # Create JSON output
-          jq -n \
-            --arg title "$ISSUE_TITLE" \
-            --arg body "$ISSUE_BODY" \
-            --arg comment "$COMMENT_BODY" \
-            --arg num "$ISSUE_NUMBER" \
-            '{title: $title, body: $body, comment: $comment, number: $num}' > issue_details.json
-
-          echo "issue_number=$ISSUE_NUMBER" >> $GITHUB_OUTPUT
-
-      - name: Setup Git
-        if: steps.check.outputs.triggered == 'true'
-        run: |
-          git config --global user.name "GLM Bot"
-          git config --global user.email "glm-bot@z.ai"
-
-      - name: Create feature branch
-        id: branch
-        if: steps.check.outputs.triggered == 'true'
-        run: |
-          ISSUE_NUM="${{ steps.issue.outputs.issue_number }}"
-          BRANCH_NAME="glm/fix-issue-${ISSUE_NUM}-$(date +%s)"
-          git checkout -b "$BRANCH_NAME"
-          echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
-
-      - name: Explore codebase
-        id: explore
-        if: steps.check.outputs.triggered == 'true'
-        run: |
-          # Get directory structure
-          find . -type f -name "*.kt" -o -name "*.xml" -o -name "*.gradle*" | head -50 > file_list.txt
-
-          # Read key project files to understand structure
-          echo "=== Project Structure ===" > project_context.txt
-          ls -la >> project_context.txt
-          echo "" >> project_context.txt
-          echo "=== Kotlin Files ===" >> project_context.txt
-          find . -name "*.kt" | head -20 >> project_context.txt
-
-      - name: Call GLM API to generate solution
-        id: solution
-        if: steps.check.outputs.triggered == 'true'
-        run: |
-          ISSUE_TITLE="${{ github.event.issue.title }}"
-          ISSUE_BODY="${{ github.event.issue.body }}"
-          COMMENT="${{ github.event.comment.body }}"
-
-          # Read project context
-          PROJECT_CONTEXT=$(cat project_context.txt)
-
-          PROMPT="You are a Kotlin/Compose/Multiplatform developer. Analyze this GitHub issue and provide code changes to fix it.
-
-ISSUE TITLE: $ISSUE_TITLE
-
-ISSUE DESCRIPTION:
-$ISSUE_BODY
-
-USER COMMENT:
-$COMMENT
-
-PROJECT CONTEXT:
-$PROJECT_CONTEXT
-
-Provide your response in the following JSON format (no markdown, no extra text):
-{
-  \"analysis\": \"Brief analysis of the issue\",
-  \"files\": [
-    {
-      \"path\": \"relative/path/to/file\",
-      \"action\": \"create\" | \"modify\" | \"delete\",
-      \"content\": \"full file content (for create/modify) or null (for delete)\",
-      \"explanation\": \"why this change is needed\"
-    }
-  ],
-  \"commit_message\": \"concise commit message\",
-  \"pr_title\": \"PR title\",
-  \"pr_description\": \"PR description\"
-}
-
-IMPORTANT:
-- Provide the COMPLETE file content for modified/created files
-- Use valid Kotlin/Compose syntax
-- Follow existing code style
-- Be specific and actionable"
-
-          # Call Z.ai GLM API
-          RESPONSE=$(curl -s -X POST "https://open.bigmodel.cn/api/paas/v4/chat/completions" \
-            -H "Content-Type: application/json" \
-            -H "Authorization: Bearer ${{ secrets.GLM_API_KEY }}" \
-            -d "{
-              \"model\": \"glm-4-flash\",
-              \"messages\": [
-                {
-                  \"role\": \"user\",
-                  \"content\": $(echo "$PROMPT" | jq -Rs .)
-                }
-              ],
-              \"temperature\": 0.3,
-              \"max_tokens\": 8192
-            }")
-
-          # Save response
-          echo "$RESPONSE" > glm_response.json
-
-          # Extract content
-          CONTENT=$(echo "$RESPONSE" | jq -r '.choices[0].message.content // "Error: Unable to get response"')
-
-          # Try to extract JSON from markdown code blocks if present
-          if echo "$CONTENT" | grep -q '```json'; then
-            CONTENT=$(echo "$CONTENT" | sed -n '/```json/,/```/p' | sed '1d;$d')
-          elif echo "$CONTENT" | grep -q '```'; then
-            CONTENT=$(echo "$CONTENT" | sed -n '/```/,/```/p' | sed '1d;$d')
-          fi
-
-          echo "$CONTENT" > solution.json
-
-          # Validate JSON
-          if ! jq empty solution.json 2>/dev/null; then
-            echo "Invalid JSON response from GLM"
-            echo "$CONTENT" > solution_error.txt
-            exit 1
-          fi
-
-          echo "solution_created=true" >> $GITHUB_OUTPUT
-
-      - name: Apply changes
-        id: apply
-        if: steps.solution.outputs.solution_created == 'true'
-        run: |
-          # Read solution
-          SOLUTION=$(cat solution.json)
-
-          # Process each file
-          echo "$SOLUTION" | jq -r '.files[] | @json' | while read -r fileinfo; do
-            PATH=$(echo "$fileinfo" | jq -r '.path')
-            ACTION=$(echo "$fileinfo" | jq -r '.action')
-            CONTENT=$(echo "$fileinfo" | jq -r '.content')
-            EXPLANATION=$(echo "$fileinfo" | jq -r '.explanation')
-
-            echo "Processing: $ACTION $PATH"
-
-            case "$ACTION" in
-              create)
-                mkdir -p "$(dirname "$PATH")"
-                echo "$CONTENT" > "$PATH"
-                git add "$PATH"
-                ;;
-              modify)
-                if [ -f "$PATH" ]; then
-                  echo "$CONTENT" > "$PATH"
-                  git add "$PATH"
-                else
-                  echo "Warning: File $PATH does not exist"
-                fi
-                ;;
-              delete)
-                if [ -f "$PATH" ]; then
-                  git rm "$PATH"
-                else
-                  echo "Warning: File $PATH does not exist"
-                fi
-                ;;
-            esac
-          done
-
-          # Get commit message and PR details
-          COMMIT_MSG=$(echo "$SOLUTION" | jq -r '.commit_message')
-          PR_TITLE=$(echo "$SOLUTION" | jq -r '.pr_title')
-          PR_DESC=$(echo "$SOLUTION" | jq -r '.pr_description')
-
-          echo "commit_message=$COMMIT_MSG" >> $GITHUB_OUTPUT
-          echo "pr_title=$PR_TITLE" >> $GITHUB_OUTPUT
-          echo "pr_description=$PR_DESC" >> $GITHUB_OUTPUT
-
-      - name: Commit and push changes
-        if: steps.solution.outputs.solution_created == 'true'
-        run: |
-          BRANCH="${{ steps.branch.outputs.branch_name }}"
-          COMMIT_MSG="${{ steps.apply.outputs.commit_message }}"
-
-          git commit -m "$COMMIT_MSG" || echo "No changes to commit"
-
-          # Push to remote
-          git push -u origin "$BRANCH" || git push --set-upstream origin "$BRANCH"
-
-      - name: Create Pull Request
-        id: pr
-        if: steps.solution.outputs.solution_created == 'true'
-        run: |
-          BRANCH="${{ steps.branch.outputs.branch_name }}"
-          PR_TITLE="${{ steps.apply.outputs.pr_title }}"
-          PR_DESC="${{ steps.apply.outputs.pr_description }}"
-          ISSUE_NUM="${{ steps.issue.outputs.issue_number }}"
-
-          # Create PR using gh CLI
-          PR_URL=$(gh pr create \
-            --title "$PR_TITLE" \
-            --body "$PR_DESC
-
-          Closes #$ISSUE_NUM
-
-          ---
-          🤖 *Automatically generated by GLM from Z.ai*" \
-            --base master \
-            --head "$BRANCH")
-
-          echo "pr_url=$PR_URL" >> $GITHUB_OUTPUT
-
-          # Also save PR number
-          PR_NUM=$(echo "$PR_URL" | grep -oP '\d+(?=/)' | tail -1)
-          echo "pr_number=$PR_NUM" >> $GITHUB_OUTPUT
-
-      - name: Post response to issue
-        if: steps.solution.outputs.solution_created == 'true'
+      - name: Post response
+        if: steps.check.outputs.should_run == 'true'
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const prUrl = '${{ steps.pr.outputs.pr_url }}';
-            const branchName = '${{ steps.branch.outputs.branch_name }}';
-
-            await github.rest.issues.createComment({
+            github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
-              body: `## 🤖 GLM is working on this!
-
-              I've created a pull request to address this issue:
-
-              🔗 **[View Pull Request](${prUrl})**
-
-              **Branch:** \`${branchName}\`
-
-              The code review will run automatically once the PR is created.
-
-              ---
-              *This response was automatically generated by GLM from Z.ai*`
-            });
-
-      - name: Handle errors
-        if: failure()
-        uses: actions/github-script@v7
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-              body: `## ❌ GLM encountered an error
-
-              Sorry, I couldn't process this issue automatically. This might be because:
-              - The task is too complex
-              - I need more context
-              - There was an API error
-
-              Please provide more details or try rephrasing the request.
-
-              ---
-              *Error occurred at: ${new Date().toISOString()}*`
-            });
-
-      - name: Upload debug artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: glm-debug-${{ github.event.issue.number }}
-          path: |
-            glm_response.json
-            solution.json
-            project_context.txt
-            issue_details.json
-            solution_error.txt
-          retention-days: 7
-          if-no-files-found: ignore
+              body: '## 🤖 GLM Bot\n\nI received your request! This is a test response.'
+            })
