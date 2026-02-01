@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -38,10 +39,19 @@ import ru.pavlig43.rootnocombro.internal.navigation.tab.ui.TabContent
 import ru.pavlig43.rootnocombro.internal.topbar.ui.NocombroAppBar
 import ru.pavlig43.sampletable.api.ui.SampleTableScreen
 import ru.pavlig43.signroot.api.ui.RootSignScreen
+import ru.pavlig43.theme.NocombroTheme
 import ru.pavlig43.transaction.api.ui.TransactionFormScreen
 import ru.pavlig43.vendor.api.ui.VendorFormScreen
 
+@Composable
+fun TestApp(){
+    NocombroTheme {
+        Box(){
+            Text("fafafaf")
+        }
+    }
 
+}
 @Suppress("LongMethod")
 @Composable
 fun RootNocombroScreen(rootNocombroComponent: RootNocombroComponent) {
