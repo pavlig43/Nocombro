@@ -34,6 +34,7 @@ plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }
 
+include(":application")
 include(":composeApp")
 include(":rootnocombro")
 include(":core")
@@ -71,4 +72,4 @@ include(
 )
 
 include(":features:notification")
-
+include(":features:sampletable")

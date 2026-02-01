@@ -32,6 +32,8 @@ class DetektPlugin : Plugin<Project> {
                 }
                 with(tasks) {
                     withType<Detekt> {
+                        // Отключаем кэширование вывода чтобы всегда видеть результаты в консоли
+                        outputs.upToDateWhen { false }
 
                         exclude {
                             it.file.invariantSeparatorsPath.contains("/build/generated/")
@@ -40,7 +42,8 @@ class DetektPlugin : Plugin<Project> {
                         reports {
                             html.required.set(true)
                             md.required.set(true)
-
+                            txt.required.set(true)
+                            xml.required.set(true)
                         }
                     }
                     withType<Detekt>().configureEach {

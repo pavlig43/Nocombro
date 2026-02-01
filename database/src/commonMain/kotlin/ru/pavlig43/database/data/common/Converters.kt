@@ -8,8 +8,8 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atTime
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
-import ru.pavlig43.database.data.files.OwnerType
 import ru.pavlig43.database.data.document.DocumentType
+import ru.pavlig43.database.data.files.OwnerType
 import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.database.data.product.ProductUnit
 import ru.pavlig43.database.data.transaction.MovementType
@@ -17,6 +17,7 @@ import ru.pavlig43.database.data.transaction.TransactionType
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
+@Suppress("TooManyFunctions")
 @OptIn(ExperimentalTime::class)
 class Converters {
 

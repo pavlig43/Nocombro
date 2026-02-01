@@ -1,5 +1,3 @@
-import ru.pavlig43.convention.extension.commonMainDependencies
-
 plugins {
     // this is necessary to avoid the plugins to be loaded multiple times
     // in each subproject's classloader
@@ -70,17 +68,23 @@ plugins {
 
 
 subprojects {
-    apply(plugin = "pavlig43.detekt")
-    tasks.register("detektAll") {
-        group = "custom"
-        val detektTasks = listOf(
-            "detektAndroidDebug",
-            "detektDesktopMain",
-            "detektMetadataCommonMain"
-        ).mapNotNull { tasks.findByName(it) }
-        dependsOn(detektTasks)
+    // Exclude sampletable module from detekt
+    if (!project.name.equals("sampletable")) {
+        apply(plugin = "pavlig43.detekt")
+        tasks.register("detektAll") {
+            group = "custom"
+            val detektTasks = listOf(
+                "detektAndroidDebug",
+                "detektDesktopMain",
+                "detektMetadataCommonMain",
+                "detektMetadataMain"
+            ).mapNotNull { tasks.findByName(it) }
+            dependsOn(detektTasks)
+        }
     }
 }
+
+
 
 
 tasks.register("createKmpLib") {

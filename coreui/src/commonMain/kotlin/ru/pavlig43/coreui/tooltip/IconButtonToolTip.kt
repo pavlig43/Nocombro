@@ -37,6 +37,7 @@ fun ToolTipIconButton(
         )
     }
 }
+@Suppress("LongParameterList")
 @Composable
 private fun ActionIconButton(
     icon: ImageVector,
@@ -88,6 +89,7 @@ fun ToolTipIconButton(
         )
     }
 }
+@Suppress("LongParameterList")
 @Composable
 private fun ActionIconButton(
     icon: DrawableResource,

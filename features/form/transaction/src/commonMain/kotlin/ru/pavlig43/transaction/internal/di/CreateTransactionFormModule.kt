@@ -1,14 +1,13 @@
 package ru.pavlig43.transaction.internal.di
 
-import org.koin.core.qualifier.named
 import org.koin.core.qualifier.qualifier
 import org.koin.dsl.module
-import ru.pavlig43.files.api.FilesDependencies
-import ru.pavlig43.create.data.CreateEssentialsRepository
 import ru.pavlig43.core.TransactionExecutor
+import ru.pavlig43.create.data.CreateEssentialsRepository
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.transaction.Transaction
 import ru.pavlig43.database.data.transaction.buy.BuyBD
+import ru.pavlig43.files.api.FilesDependencies
 import ru.pavlig43.immutable.api.ImmutableTableDependencies
 import ru.pavlig43.transaction.api.TransactionFormDependencies
 import ru.pavlig43.update.data.UpdateCollectionRepository
@@ -23,7 +22,7 @@ internal fun createTransactionFormModule(dependencies: TransactionFormDependenci
         single<CreateEssentialsRepository<Transaction>> { getCreateRepository(get()) }
         single<UpdateEssentialsRepository<Transaction>> { getUpdateRepository(get()) }
         single<UpdateCollectionRepository<BuyBD, BuyBD>>(UpdateCollectionRepositoryType.BUY.qualifier) {
-            createUpdateBuyRepository(get())
+            createUpdateBuyRepository()
         }
 
 
@@ -60,7 +59,7 @@ internal enum class UpdateCollectionRepositoryType {
 }
 
 private fun createUpdateBuyRepository(
-    db: NocombroDatabase
+//    db: NocombroDatabase
 ): UpdateCollectionRepository<BuyBD, BuyBD> {
     return UpdateCollectionRepository(
         loadCollection = { emptyList() },

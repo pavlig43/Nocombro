@@ -1,56 +1,32 @@
-import com.android.build.api.dsl.ApplicationExtension
-import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.apply
-import org.gradle.kotlin.dsl.configure
-import org.gradle.kotlin.dsl.getByType
-import org.jetbrains.compose.ComposeExtension
-import org.jetbrains.compose.desktop.DesktopExtension
-import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import ru.pavlig43.convention.extension.configTargetWithoutAndroid
 import ru.pavlig43.convention.extension.kotlinMultiplatformConfig
 import ru.pavlig43.convention.extension.libs
-import java.time.ZoneId
-import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
 
+/**
+ * Plugin for Desktop application (Kotlin Multiplatform).
+ * For Android, use the new 'application' module with standard Android Application plugin.
+ *
+ * Note: Desktop-specific configuration (nativeDistributions, etc.) should be done
+ * directly in the module's build.gradle.kts file.
+ */
 class ApplicationPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         with(target) {
-//Порядок добавления и конфигурации не менять, сначала kotlinMultiplatform из него вызываем configTargetWithoutAndroid()
-            // а из jvm("desktop ) либо extensions.configure<DesktopExtension> либо компоуз он нужен,я не знаю
-            apply(plugin = libs.plugins.androidApplication.get().pluginId)
-
+            // Apply Kotlin Multiplatform plugin
             apply(plugin = libs.plugins.kotlinMultiplatform.get().pluginId)
 
+            // Configure targets without Android
             configTargetWithoutAndroid()
 
+            // Apply Compose plugin
             apply(plugin = libs.plugins.pavlig43.compose.get().pluginId)
 
+            // Configure Native targets (iOS, etc.)
             kotlinMultiplatformConfig {
-                androidTarget()
-            }
-
-
-            configAndroidApplication()
-
-
-            extensions.getByType<ComposeExtension>().extensions.configure<DesktopExtension> {
-                application {
-                    this.mainClass = "ru.pavlig43.nocombro.MainKt"
-
-                    nativeDistributions {
-                        targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-                        this.packageName = "ru.pavlig43.nocombro"
-                        this.packageVersion = libs.versions.versionName.get()
-                    }
-                }
-            }
-
-            kotlinMultiplatformConfig {
-
                 targets
                     .filterIsInstance<KotlinNativeTarget>()
                     .forEach { nativeTarget ->
@@ -62,110 +38,6 @@ class ApplicationPlugin : Plugin<Project> {
             }
 
         }
-
     }
-}
-
-private fun Project.configAndroidApplication() {
-    extensions.configure<ApplicationExtension> {
-//        configureAndroid(this)
-
-        compileSdk = libs.versions.android.compileSdk.get().toInt()
-        lint {
-            checkDependencies = true
-        }
-        compileOptions {
-            sourceCompatibility = JavaVersion.toVersion(libs.versions.java.get().toInt())
-            targetCompatibility = JavaVersion.toVersion(libs.versions.java.get().toInt())
-        }
-
-
-        defaultConfig {
-            minSdk = libs.versions.android.minSdk.get().toInt()
-        }
-
-        defaultConfig {
-
-            targetSdk = libs.versions.android.targetSdk.get().toInt()
-            versionCode = libs.versions.versionCode.get().toInt()
-            versionName = libs.versions.versionName.get().toString()
-            //            applicationVariants.all {
-            //                val variant = this
-            //                outputs.all {
-            //                    if (this is ApkVariantOutputImpl) {
-            //                        this.outputFileName =
-            //                            "retromeet_${variant.name}_${variant.versionCode}_${variant.versionName}_${getApkBuildTime()}.apk"
-            //                    }
-            //                }
-            //            }
-            //            testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-
-            buildConfigField("String", "VERSION_NAME", "\"$versionName\"")
-            buildConfigField("String", "BUILD_TIME", "\"${getBuildConfigTime()}\"")
-
-            //            buildConfigField(
-            //                "String",
-            //                "RETROMEET_API_BASE_URL",
-            //                "\" https://fbbd-149-40-52-113.ngrok-free.app\""
-            //            )
-            //            buildConfigField(
-            //                "String",
-            //                "RETROMEET_WS",
-            //                "\"wss://fbbd-149-40-52-113.ngrok-free.app\""
-            //            )
-        }
-        buildTypes {
-            debug {
-                isDebuggable = true
-                proguardFiles(
-                    getDefaultProguardFile("proguard-android-optimize.txt"),
-                    "proguard-rules.pro"
-                )
-            }
-            release {
-                isMinifyEnabled = true
-                isShrinkResources = true
-                isDebuggable = false
-                proguardFiles(
-                    getDefaultProguardFile("proguard-android-optimize.txt"),
-                    "proguard-rules.pro"
-                )
-
-            }
-        }
-        buildFeatures {
-            buildConfig = true
-            compose = true
-        }
-        packaging {
-            resources {
-                excludes += setOf(
-                    "**/*.md",
-                    "**/*.version",
-                    "**/*.properties",
-                    "**/**/*.properties",
-                    "META-INF/{AL2.0,LGPL2.1}",
-                    "META-INF/CHANGES",
-                    "DebugProbesKt.bin",
-                    "kotlin-tooling-metadata.json"
-                )
-            }
-        }
-
-    }
-}
-
-private fun getTime(pattern: String): String {
-    val now = ZonedDateTime.now(ZoneId.of("Europe/Moscow"))
-    val formatter = DateTimeFormatter.ofPattern(pattern)
-    return now.format(formatter)
-}
-
-private fun getApkBuildTime(): String {
-    return getTime(pattern = "yyyy_MM_dd_HH_mm_ss")
-}
-
-private fun getBuildConfigTime(): String {
-    return getTime(pattern = "yyyy-MM-dd HH:mm:ss")
 }
 

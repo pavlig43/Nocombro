@@ -44,4 +44,7 @@ sealed interface MainTabConfig{
         class TransactionFormConfig(val id:Int):ItemFormConfig
     }
 
+    @Serializable
+    class SampleTableListConfig:MainTabConfig
+
 }

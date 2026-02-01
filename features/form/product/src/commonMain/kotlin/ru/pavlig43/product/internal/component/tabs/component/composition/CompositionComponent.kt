@@ -8,12 +8,10 @@ import com.arkivanov.decompose.router.slot.dismiss
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import ru.pavlig43.core.tabs.TabOpener
 import ru.pavlig43.database.data.product.CompositionIn
 import ru.pavlig43.database.data.product.CompositionOut
-import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.immutable.api.ImmutableTableDependencies
 import ru.pavlig43.immutable.api.component.MBSImmutableTableComponent
@@ -23,7 +21,6 @@ import ru.pavlig43.mutable.api.component.MutableTableComponent
 import ru.pavlig43.mutable.api.component.MutableUiEvent
 import ru.pavlig43.tablecore.model.TableData
 import ru.pavlig43.update.data.UpdateCollectionRepository
-import ru.pavlig43.update.data.UpdateEssentialsRepository
 import ua.wwind.table.ColumnSpec
 
 internal class CompositionComponent(
@@ -125,7 +122,7 @@ internal class CompositionComponent(
                     add("В строке ${item.composeId} не указано количество продукта")
                 }
             }
-
+            @Suppress("MagicNumber")
             val totalSum = lst.filter { it.productType is ProductType.Food }.sumOf { it.count/1000.0 }
             if (totalSum != 1.0) {
                 add("Сумма в составе должна быть равна 1 кг (сейчас: ${totalSum}кг)")

@@ -1,6 +1,5 @@
 package ru.pavlig43.mutable.api.ui
 
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -9,8 +8,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import ru.pavlig43.mutable.api.component.MutableUiEvent
 import ru.pavlig43.tablecore.model.ITableUi
 import ru.pavlig43.tablecore.model.TableData
@@ -21,6 +18,7 @@ import ua.wwind.table.filter.data.TableFilterType
 import kotlin.math.pow
 
 
+@Suppress("LongParameterList")
 fun <T : ITableUi, C, E : TableData<T>> EditableTableColumnsBuilder<T, C, E>.decimalColumn(
     key: C,
     getValue: (T) -> Int,
@@ -58,6 +56,7 @@ fun <T : ITableUi, C, E : TableData<T>> EditableTableColumnsBuilder<T, C, E>.dec
 sealed interface DecimalFormat {
     val countDecimal: Int
 
+    @Suppress("MagicNumber")
     class KG : DecimalFormat {
         override val countDecimal: Int = 3
     }

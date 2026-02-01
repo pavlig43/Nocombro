@@ -2,15 +2,15 @@ package ru.pavlig43.product.internal.di
 
 import org.koin.core.qualifier.qualifier
 import org.koin.dsl.module
-import ru.pavlig43.files.api.FilesDependencies
-import ru.pavlig43.create.data.CreateEssentialsRepository
 import ru.pavlig43.core.TransactionExecutor
+import ru.pavlig43.create.data.CreateEssentialsRepository
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.product.CompositionIn
 import ru.pavlig43.database.data.product.CompositionOut
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductDeclarationIn
 import ru.pavlig43.database.data.product.ProductDeclarationOut
+import ru.pavlig43.files.api.FilesDependencies
 import ru.pavlig43.immutable.api.ImmutableTableDependencies
 import ru.pavlig43.product.api.ProductFormDependencies
 import ru.pavlig43.update.data.UpdateCollectionRepository
