@@ -1,0 +1,276 @@
+package ru.pavlig43.sampletable.app
+
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.shape.CornerSize
+import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.Surface
+import androidx.compose.material3.rememberDrawerState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.dp
+import com.arkivanov.decompose.ComponentContext
+import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.launch
+import ru.pavlig43.sampletable.app.components.SelectionActionBar
+import ru.pavlig43.sampletable.viewmodel.SampleUiEvent
+import ua.wwind.table.ExperimentalTableApi
+import ua.wwind.table.config.PinnedSide
+import ua.wwind.table.config.RowHeightMode
+import ua.wwind.table.config.SelectionMode
+import ua.wwind.table.config.TableDefaults
+import ua.wwind.table.config.TableSettings
+import ua.wwind.table.filter.data.TableFilterState
+import ua.wwind.table.format.rememberCustomization
+import ua.wwind.table.state.rememberTableState
+
+@Suppress("ViewModelConstructorInComposable")
+@OptIn(ExperimentalTableApi::class)
+@Composable
+fun SampleApp(context: ComponentContext,modifier: Modifier = Modifier,) {
+    var isDarkTheme by remember { mutableStateOf(false) }
+
+    val viewModel: ru.pavlig43.sampletable.viewmodel.SampleViewModel =
+        ru.pavlig43.sampletable.viewmodel.SampleViewModel(context)
+
+    var useStripedRows by remember { mutableStateOf(true) }
+    var showFastFilters by remember { mutableStateOf(true) }
+    var enableDragToScroll by remember { mutableStateOf(true) }
+    var pinnedColumnsCount by remember { mutableStateOf(0) }
+    var pinnedColumnsSide by remember { mutableStateOf(PinnedSide.Left) }
+    var enableEditing by remember { mutableStateOf(false) }
+    var useCompactMode by remember { mutableStateOf(true) }
+    var showFooter by remember { mutableStateOf(true) }
+    var footerPinned by remember { mutableStateOf(true) }
+
+    val settings =
+        remember(
+            useStripedRows,
+            showFastFilters,
+            enableDragToScroll,
+            pinnedColumnsCount,
+            pinnedColumnsSide,
+            enableEditing,
+            showFooter,
+            footerPinned,
+        ) {
+            TableSettings(
+                isDragEnabled = false,
+                autoApplyFilters = true,
+                showFastFilters = showFastFilters,
+                autoFilterDebounce = 200,
+                stripedRows = useStripedRows,
+                showActiveFiltersHeader = true,
+                selectionMode = SelectionMode.None,
+                rowHeightMode = RowHeightMode.Dynamic,
+                enableDragToScroll = enableDragToScroll,
+                pinnedColumnsCount = pinnedColumnsCount,
+                pinnedColumnsSide = pinnedColumnsSide,
+                editingEnabled = enableEditing,
+                showFooter = showFooter,
+                footerPinned = footerPinned,
+            )
+        }
+
+    // Collect state from ViewModel
+    val tableData by viewModel.tableData.collectAsState()
+
+    // Create columns with callbacks
+    val columns =
+        remember(useCompactMode) {
+            ru.pavlig43.sampletable.column.createTableColumns(
+                onToggleMovementExpanded = viewModel::toggleMovementExpanded,
+                onEvent = viewModel::onEvent,
+                useCompactMode = useCompactMode,
+            )
+        }
+
+    // Build customization based on rules + matching logic
+    val customization =
+        rememberCustomization<ru.pavlig43.sampletable.model.Person, ru.pavlig43.sampletable.column.PersonColumn, Map<ru.pavlig43.sampletable.column.PersonColumn, TableFilterState<*>>>(
+            rules = viewModel.rules,
+            key = viewModel.rules,
+            matches = { person, ruleFilters ->
+                viewModel.matchesPerson(person, ruleFilters)
+            },
+        )
+
+    val state =
+        rememberTableState(
+            columns = ru.pavlig43.sampletable.column.PersonColumn.entries.toImmutableList(),
+            settings = settings,
+            dimensions =
+                remember(useCompactMode) {
+                    if (useCompactMode) {
+                        TableDefaults.compactDimensions().copy(defaultColumnWidth = 100.dp)
+                    } else {
+                        TableDefaults.standardDimensions().copy(defaultColumnWidth = 200.dp)
+                    }
+                },
+        )
+
+    // Drawer state for settings sidebar
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
+
+    // Toggle visibility of SELECTION column by adjusting width based on selection mode
+    val selectionColumnWidth =
+        if (tableData.selectionModeEnabled) {
+            if (useCompactMode) 36.dp else 48.dp
+        } else {
+            0.dp
+        }
+    LaunchedEffect(selectionColumnWidth) {
+        state.setColumnWidths(mapOf(ru.pavlig43.sampletable.column.PersonColumn.SELECTION to selectionColumnWidth))
+    }
+
+    ru.pavlig43.sampletable.app.SampleTheme(darkTheme = isDarkTheme) {
+        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+            ModalNavigationDrawer(
+                drawerState = drawerState,
+                drawerContent = {
+                    CompositionLocalProvider(
+                        LocalLayoutDirection provides LayoutDirection.Ltr,
+                    ) {
+                        ModalDrawerSheet(
+                            drawerShape =
+                                MaterialTheme.shapes.large.copy(
+                                    topStart = CornerSize(16.dp),
+                                    bottomStart = CornerSize(16.dp),
+                                    topEnd = CornerSize(0.dp),
+                                    bottomEnd = CornerSize(0.dp),
+                                ),
+                        ) {
+                            ru.pavlig43.sampletable.app.components.SettingsSidebar(
+                                isDarkTheme = isDarkTheme,
+                                onDarkThemeChange = { isDarkTheme = it },
+                                useStripedRows = useStripedRows,
+                                onStripedRowsChange = { useStripedRows = it },
+                                showFastFilters = showFastFilters,
+                                onShowFastFiltersChange = { showFastFilters = it },
+                                enableDragToScroll = enableDragToScroll,
+                                onEnableDragToScrollChange = { enableDragToScroll = it },
+                                pinnedColumnsCount = pinnedColumnsCount,
+                                onPinnedColumnsCountChange = { pinnedColumnsCount = it },
+                                pinnedColumnsSide = pinnedColumnsSide,
+                                onPinnedColumnsSideChange = { pinnedColumnsSide = it },
+                                enableEditing = enableEditing,
+                                onEnableEditingChange = { enableEditing = it },
+                                enableSelectionMode = tableData.selectionModeEnabled,
+                                onEnableSelectionModeChange = { viewModel.setSelectionMode(it) },
+                                useCompactMode = useCompactMode,
+                                onCompactModeChange = { useCompactMode = it },
+                                showFooter = showFooter,
+                                onShowFooterChange = { showFooter = it },
+                                footerPinned = footerPinned,
+                                onFooterPinnedChange = { footerPinned = it },
+                                onConditionalFormattingClick = {
+                                    viewModel.toggleFormatDialog(true)
+                                    scope.launch { drawerState.close() }
+                                },
+                                onRecalculateAutoWidthsClick = {
+                                    state.recalculateAutoWidths()
+                                    scope.launch { drawerState.close() }
+                                },
+                                onClose = { scope.launch { drawerState.close() } },
+                            )
+                        }
+                    }
+                },
+                gesturesEnabled = true,
+            ) {
+                CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+                    Surface(modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+                        Box(
+                            modifier =
+                                Modifier
+                                    .fillMaxSize()
+                                    .windowInsetsPadding(WindowInsets.safeDrawing),
+                        ) {
+                            Column(modifier = Modifier.fillMaxSize()) {
+                                ru.pavlig43.sampletable.app.components.AppToolbar(
+                                    onSettingsClick = { scope.launch { drawerState.open() } },
+                                )
+
+                                HorizontalDivider()
+
+                                ru.pavlig43.sampletable.app.components.MainTable(
+                                    state = state,
+                                    tableData = tableData,
+                                    columns = columns,
+                                    customization = customization,
+                                    onFiltersChanged = viewModel::updateFilters,
+                                    onSortChanged = viewModel::updateSort,
+                                    onRowEditStart = { person, rowIndex ->
+                                        viewModel.onEvent(
+                                            ru.pavlig43.sampletable.viewmodel.SampleUiEvent.StartEditing(
+                                                rowIndex,
+                                                person
+                                            ),
+                                        )
+                                    },
+                                    onRowEditComplete = { rowIndex ->
+                                        if (viewModel.validateEditedPerson()) {
+                                            viewModel.onEvent(ru.pavlig43.sampletable.viewmodel.SampleUiEvent.CompleteEditing)
+                                            true
+                                        } else {
+                                            false
+                                        }
+                                    },
+                                    onEditCancelled = { rowIndex ->
+                                        viewModel.onEvent(ru.pavlig43.sampletable.viewmodel.SampleUiEvent.CancelEditing)
+                                    },
+                                    useCompactMode = useCompactMode,
+                                    modifier = Modifier.padding(16.dp)
+                                )
+                            }
+
+                            // Floating selection action bar at the bottom
+                            SelectionActionBar(
+                                selectedCount = tableData.selectedIds.size,
+                                onDeleteClick = {
+                                    viewModel.onEvent(SampleUiEvent.DeleteSelected)
+                                },
+                                onClearSelection = {
+                                    viewModel.onEvent(SampleUiEvent.ClearSelection)
+                                },
+                                modifier =
+                                    Modifier
+                                        .align(Alignment.BottomCenter)
+                                        .padding(16.dp),
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        ru.pavlig43.sampletable.app.components.ConditionalFormattingDialog(
+            showDialog = viewModel.showFormatDialog,
+            rules = viewModel.rules,
+            onRulesChanged = viewModel::updateRules,
+            buildFormatFilterData = viewModel::buildFormatFilterData,
+            onDismissRequest = { viewModel.toggleFormatDialog(false) },
+        )
+    }
+}

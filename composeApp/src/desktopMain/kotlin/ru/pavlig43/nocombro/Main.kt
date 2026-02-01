@@ -11,6 +11,8 @@ import io.github.vinceglb.filekit.FileKit
 import org.koin.java.KoinJavaComponent.getKoin
 import ru.pavlig43.rootnocombro.api.RootDependencies
 import ru.pavlig43.rootnocombro.api.component.RootNocombroComponent
+import ru.pavlig43.rootnocombro.api.ui.RootNocombroScreen
+import ru.pavlig43.theme.AppTheme
 
 
 fun main() {
@@ -34,7 +36,6 @@ fun main() {
 
         Window(
             onCloseRequest = ::exitApplication,
-//            alwaysOnTop = true,
             title = "Nocombro",
             state = windowState
         ) {
@@ -43,10 +44,9 @@ fun main() {
                 windowState = windowState,
                 windowInfo = LocalWindowInfo.current,
             )
-//            SampleApp(rootNocombroComponent)
-            App(rootNocombroComponent)
-
-
+            AppTheme {
+                RootNocombroScreen(rootNocombroComponent)
+            }
         }
     }
 }

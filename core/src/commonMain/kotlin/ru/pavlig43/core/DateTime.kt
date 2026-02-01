@@ -31,6 +31,7 @@ sealed interface DateThreshold {
         override val displayName: String = "1 Месяц"
     }
 
+    @Suppress("MagicNumber")
     object ThreeMonth : DateThreshold {
         override val value: LocalDate = getCurrentLocalDate().plus(3, DateTimeUnit.MONTH)
         override val displayName: String = "3 Месяца"
@@ -75,6 +76,7 @@ val dateFormat = LocalDate.Format {
     year()
 
 }
+@Suppress("MagicNumber")
 val emptyDate = LocalDate(1900, 1, 1)
 
 class DateComponent(

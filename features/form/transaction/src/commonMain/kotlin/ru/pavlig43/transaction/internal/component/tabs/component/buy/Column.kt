@@ -1,3 +1,4 @@
+@file:Suppress("MatchingDeclarationName")
 package ru.pavlig43.transaction.internal.component.tabs.component.buy
 
 import androidx.compose.material3.Text

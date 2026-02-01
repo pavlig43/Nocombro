@@ -1,10 +1,6 @@
 package ru.pavlig43.declaration.internal.component
 
 import com.arkivanov.decompose.ComponentContext
-import com.arkivanov.decompose.router.slot.SlotNavigation
-import com.arkivanov.decompose.router.slot.childSlot
-import com.arkivanov.decompose.router.slot.dismiss
-import kotlinx.serialization.Serializable
 import ru.pavlig43.core.component.EssentialComponentFactory
 import ru.pavlig43.core.tabs.TabOpener
 import ru.pavlig43.create.component.CreateEssentialsComponent
@@ -13,11 +9,6 @@ import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.declaration.internal.data.DeclarationEssentialsUi
 import ru.pavlig43.declaration.internal.data.toDto
 import ru.pavlig43.immutable.api.ImmutableTableDependencies
-import ru.pavlig43.immutable.api.component.DeclarationImmutableTableBuilder
-import ru.pavlig43.immutable.api.component.MBSImmutableTableComponent
-import ru.pavlig43.immutable.api.component.VendorImmutableTableBuilder
-import ru.pavlig43.immutable.internal.component.items.declaration.DeclarationTableUi
-import ru.pavlig43.immutable.internal.component.items.vendor.VendorTableUi
 
 
 internal class CreateDeclarationComponent(

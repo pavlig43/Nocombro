@@ -2,8 +2,6 @@ package ru.pavlig43.update.component
 
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
-import com.arkivanov.decompose.router.stack.StackNavigation
-import com.arkivanov.decompose.router.stack.childStack
 import com.arkivanov.decompose.value.operator.map
 import com.arkivanov.essenty.lifecycle.Lifecycle
 import kotlinx.coroutines.ExperimentalCoroutinesApi

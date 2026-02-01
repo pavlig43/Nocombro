@@ -123,6 +123,7 @@ fun <TabConfiguration : Any, TabChild : Any> TabStaticNavigationContent(
 }
 
 
+@Suppress("MaxLineLength")
 @OptIn(InternalDecomposeApi::class)
 private fun <TabConfiguration : Any, TabChild : Any> TabNavigationComponent.TabChildren<TabConfiguration, TabChild>.getKeys(): HashSet<String> {
     return items.mapTo(HashSet(), Child<*, *>::keyHashString)

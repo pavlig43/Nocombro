@@ -14,8 +14,15 @@ import ru.pavlig43.immutable.api.component.*
 import ru.pavlig43.notification.api.component.NotificationComponent
 import ru.pavlig43.notification.api.model.NotificationItem
 import ru.pavlig43.product.api.component.ProductFormComponent
-import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemFormConfig.DeclarationFormConfig
+import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ImmutableTableChild
+import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ItemFormChild.DeclarationFormChild
+import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ItemFormChild.DocumentFormChild
+import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ItemFormChild.ProductFormChild
+import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ItemFormChild.TransactionFormChild
+import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ItemFormChild.VendorFormChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.NotificationChild
+import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.SampleTableListChild
+import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemFormConfig.DeclarationFormConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemFormConfig.DocumentFormConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemFormConfig.ProductFormConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemFormConfig.TransactionFormConfig
@@ -26,17 +33,13 @@ import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig.TransactionListConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig.VendorListConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.NotificationConfig
+import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.SampleTableListConfig
 import ru.pavlig43.rootnocombro.internal.navigation.drawer.component.DrawerComponent
 import ru.pavlig43.rootnocombro.internal.navigation.drawer.component.DrawerDestination
+import ru.pavlig43.sampletable.api.component.SampleTableComponentMain
 import ru.pavlig43.tablecore.model.ITableUi
 import ru.pavlig43.transaction.api.component.TransactionFormComponent
 import ru.pavlig43.vendor.component.VendorFormComponent
-import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ItemFormChild.DeclarationFormChild
-import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ItemFormChild.DocumentFormChild
-import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ItemFormChild.ProductFormChild
-import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ItemFormChild.VendorFormChild
-import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ItemFormChild.TransactionFormChild
-import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ImmutableTableChild
 
 internal class MainTabNavigationComponent(
     componentContext: ComponentContext,
@@ -67,6 +70,7 @@ internal class MainTabNavigationComponent(
             DrawerDestination.ProductList -> ProductListConfig()
             DrawerDestination.VendorList -> VendorListConfig()
             DrawerDestination.DeclarationList -> DeclarationListConfig()
+            DrawerDestination.SampleTableList -> SampleTableListConfig()
             DrawerDestination.ProductTransactionList -> TransactionListConfig()
         }
 
@@ -81,6 +85,12 @@ internal class MainTabNavigationComponent(
 
                 when (mainTabConfig) {
                     is NotificationConfig -> NotificationChild(notificationComponent)
+
+                    is SampleTableListConfig -> SampleTableListChild(
+                        SampleTableComponentMain(
+                            componentContext = context
+                        )
+                    )
 
                     is MainTabConfig.ItemListConfig -> createImmutableTableChild(
                         tabConfig = mainTabConfig,

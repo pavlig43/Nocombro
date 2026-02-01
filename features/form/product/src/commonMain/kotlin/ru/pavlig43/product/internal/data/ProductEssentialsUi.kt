@@ -1,8 +1,8 @@
 package ru.pavlig43.product.internal.data
 
 import kotlinx.datetime.LocalDate
-import ru.pavlig43.core.model.ItemEssentialsUi
 import ru.pavlig43.core.getCurrentLocalDate
+import ru.pavlig43.core.model.ItemEssentialsUi
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductType
 import kotlin.time.ExperimentalTime

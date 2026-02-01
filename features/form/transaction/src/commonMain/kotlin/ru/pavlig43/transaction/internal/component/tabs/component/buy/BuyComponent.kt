@@ -51,7 +51,7 @@ internal class BuyComponent(
         handleBackButton = true,
         childFactory = ::createDialogChild,
     )
-
+    @Suppress("LongMethod")
     private fun createDialogChild(dialogConfig: BuyDialog, context: ComponentContext): DialogChild {
         return when (dialogConfig) {
             is BuyDialog.DateBorn -> {

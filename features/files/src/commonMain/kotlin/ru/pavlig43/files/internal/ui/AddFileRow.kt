@@ -6,11 +6,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.CloudDownload
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -25,11 +20,11 @@ import io.github.vinceglb.filekit.absolutePath
 import io.github.vinceglb.filekit.extension
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
-import ru.pavlig43.files.api.model.FileUi
-import ru.pavlig43.files.api.uploadState.UploadState
 import ru.pavlig43.coreui.LoadingUi
 import ru.pavlig43.coreui.tooltip.ToolTipIconButton
 import ru.pavlig43.coreui.tooltip.ToolTipProject
+import ru.pavlig43.files.api.model.FileUi
+import ru.pavlig43.files.api.uploadState.UploadState
 import ru.pavlig43.theme.Res
 import ru.pavlig43.theme.check
 import ru.pavlig43.theme.cloud_download

@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(glm-plan-usage:usage-query-skill)",
+      "Bash(./gradlew:*)",
+      "Bash(findstr:*)",
+      "Skill(glm-plan-usage:usage-query)",
+      "WebSearch",
+      "Bash(\"C:\\\\Program Files\\\\GitHub CLI\\\\gh.exe\" --version)",
+      "Bash(\"C:\\\\Program Files\\\\GitHub CLI\\\\gh.exe\" auth login:*)",
+      "Bash(\"C:\\\\Program Files\\\\GitHub CLI\\\\gh.exe\":*)"
+    ]
+  }
+}

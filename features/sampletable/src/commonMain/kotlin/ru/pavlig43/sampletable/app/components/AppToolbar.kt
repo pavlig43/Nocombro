@@ -1,0 +1,42 @@
+package ru.pavlig43.sampletable.app.components
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.resources.painterResource
+import ru.pavlig43.theme.Res
+import ru.pavlig43.theme.settings
+
+@Composable
+fun AppToolbar(
+    onSettingsClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier.fillMaxWidth().padding(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Text(
+            text = "Table Sample",
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+        )
+        IconButton(onClick = onSettingsClick) {
+            Icon(
+                painter = painterResource(Res.drawable.settings) ,
+                contentDescription = "Open settings",
+            )
+        }
+    }
+}

@@ -13,6 +13,4 @@ fun ErrorScreen(message: String, modifier: Modifier = Modifier) {
         Text(message)
 
     }
-
-
 }

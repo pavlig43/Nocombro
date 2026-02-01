@@ -31,7 +31,7 @@ enum class DrawerDestination(val title: String) {
     ProductList("Продукты"),
     VendorList("Поставщики"),
     DeclarationList("Декларации"),
-
+    SampleTableList("Пример таблицы"),
     ProductTransactionList("Транзакции")
 
 }

@@ -8,14 +8,20 @@ plugins {
 
 kotlin {
     commonMainDependencies {
+        implementation(projects.theme)
+        implementation(projects.corekoin)
         implementation(projects.features.sign.root)
         implementation(projects.features.notification)
         implementation(projects.features.table.immutable)
+        implementation(projects.features.sampletable)
 
         implementation(projects.database)
         implementation(projects.datastore)
+        implementation(libs.datastore)
+        implementation(libs.datastore.preferences)
         implementation(projects.features.manageitem.upsert)
         implementation(projects.features.files)
+        implementation(libs.filekit.dialogs)
 
         implementation(projects.features.form.document)
         implementation(projects.features.form.product)

@@ -10,8 +10,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -34,14 +32,13 @@ import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
 import io.github.vinceglb.filekit.dialogs.openFileWithDefaultApplication
 import org.jetbrains.compose.resources.painterResource
+import ru.pavlig43.coreui.tooltip.ToolTipIconButton
 import ru.pavlig43.files.api.component.FilesComponent
 import ru.pavlig43.files.api.model.FileUi
 import ru.pavlig43.files.internal.ui.AddFileRow
-import ru.pavlig43.coreui.tooltip.ToolTipIconButton
 import ru.pavlig43.loadinitdata.api.ui.LoadInitDataScreen
 import ru.pavlig43.theme.Res
 import ru.pavlig43.theme.add_circle
-import ru.pavlig43.theme.menu
 import ru.pavlig43.theme.warning
 
 
@@ -92,6 +89,7 @@ fun FilesScreen(
  * @see DuplicateFileDialog Диалоговое окно для подтверждения перезаписи дубликата
  * @see rememberFilePickerLauncher Launcher для выбора файлов
  */
+@Suppress("LongParameterList")
 @Composable
 private fun AddFileBody(
     files: List<FileUi>,
