@@ -42,10 +42,10 @@ turbine = "1.2.1"
 
 leakcanaryAndroid = "2.14"
 
-
-
 versionCode = "1"
 versionName = "1.0.0"
+
+
 
 
 
@@ -158,6 +158,7 @@ room-gradlePlugin = { group = "androidx.room", name = "room-gradle-plugin", vers
 
 
 
+
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 androidLibrary = { id = "com.android.library", version.ref = "agp" }
@@ -197,4 +198,5 @@ pavlig43-detekt = { id = "pavlig43.detekt" }
 pavlig43-table ={id="pavlig43.table"}
 
 android-kotlin-multiplatform-library = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 

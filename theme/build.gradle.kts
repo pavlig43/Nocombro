@@ -5,11 +5,7 @@ plugins {
     alias(libs.plugins.pavlig43.compose)
 
 }
-kotlin {
-    commonMainDependencies {
-        api(compose.components.resources)
-    }
-}
+
 
 compose.resources {
     publicResClass = true
