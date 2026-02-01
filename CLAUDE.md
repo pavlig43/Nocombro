@@ -173,3 +173,16 @@ libraries.compose.runtime
 - Detekt runs automatically with custom rules for Compose and Decompose
 - Run `./gradlew detektAll` before committing
 - Use `turbine` for testing Flow/StateFlow in tests
+
+## ✅ Claude Code Integration Test
+
+This PR tests that Claude Code automated review is working correctly after workflow configuration updates.
+
+### Changes:
+- Added this test section to verify Claude Code review functionality
+
+### Expected:
+- Claude Code should review this PR automatically
+- Review should appear as a comment from claude[bot]
+
+
