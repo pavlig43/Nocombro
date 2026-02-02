@@ -178,7 +178,6 @@ dokka ={id = "org.jetbrains.dokka",version.ref = "dokka"}
 
 
 #build-logic
-pavlig43-application = { id = "pavlig43.application" }
 pavlig43-library = { id = "pavlig43.library" }
 pavlig43-compose = { id = "pavlig43.compose" }
 pavlig43-serialization = {id = "pavlig43.serialization"}

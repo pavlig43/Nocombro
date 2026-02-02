@@ -13,6 +13,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -43,15 +44,7 @@ import ru.pavlig43.theme.NocombroTheme
 import ru.pavlig43.transaction.api.ui.TransactionFormScreen
 import ru.pavlig43.vendor.api.ui.VendorFormScreen
 
-@Composable
-fun TestApp(){
-    NocombroTheme {
-        Box(){
-            Text("fafafaf")
-        }
-    }
 
-}
 @Suppress("LongMethod")
 @Composable
 fun RootNocombroScreen(rootNocombroComponent: RootNocombroComponent) {

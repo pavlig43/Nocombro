@@ -19,7 +19,6 @@ plugins {
 
 
     //    build-logic
-    alias(libs.plugins.pavlig43.application) apply false
     alias(libs.plugins.pavlig43.library) apply false
     alias(libs.plugins.pavlig43.kmplibrary) apply false
     alias(libs.plugins.pavlig43.serialization) apply false
