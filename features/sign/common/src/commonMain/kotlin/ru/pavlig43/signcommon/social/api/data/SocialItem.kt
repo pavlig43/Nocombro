@@ -1,11 +1,12 @@
 package ru.pavlig43.signcommon.social.api.data
 
 
-import nocombro.features.sign.common.generated.resources.Res
-import nocombro.features.sign.common.generated.resources.apple
-import nocombro.features.sign.common.generated.resources.google
-import nocombro.features.sign.common.generated.resources.vk
+
 import org.jetbrains.compose.resources.DrawableResource
+import ru.pavlig43.theme.Res
+import ru.pavlig43.theme.apple
+import ru.pavlig43.theme.google
+import ru.pavlig43.theme.vk
 
 enum class SocialItem(val icon: DrawableResource, val contentDescription: String) {
     VK(Res.drawable.vk, SIGN_WITH_VK),

@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<resources>
-    <string name="sign_with">Присоединиться c</string>
-    <string name="sign_with_vk">Присоединиться с Вконтакте</string>
-    <string name="sign_with_apple">Присоединиться с Эпл</string>
-    <string name="sign_with_google">Присоединиться с Гугл</string>
-</resources>

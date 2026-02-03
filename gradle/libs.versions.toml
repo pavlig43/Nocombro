@@ -1,8 +1,8 @@
 [versions]
-agp = "8.13.2"
+agp = "9.0.0"
 android-compileSdk = "36"
 android-minSdk = "26"
-android-targetSdk = "35"
+android-targetSdk = "36"
 androidx-activityCompose = "1.12.2"
 androidx-core-ktx = "1.17.0"
 androidx-espresso-core = "3.7.0"
@@ -42,10 +42,10 @@ turbine = "1.2.1"
 
 leakcanaryAndroid = "2.14"
 
-
-
 versionCode = "1"
 versionName = "1.0.0"
+
+
 
 
 
@@ -158,9 +158,9 @@ room-gradlePlugin = { group = "androidx.room", name = "room-gradle-plugin", vers
 
 
 
+
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
-androidLibrary = { id = "com.android.library", version.ref = "agp" }
 composeHotReload = { id = "org.jetbrains.compose.hot-reload", version.ref = "composeHotReload"}
 composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "compose-multiplatform" }
 composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
@@ -177,8 +177,6 @@ dokka ={id = "org.jetbrains.dokka",version.ref = "dokka"}
 
 
 #build-logic
-pavlig43-application = { id = "pavlig43.application" }
-pavlig43-library = { id = "pavlig43.library" }
 pavlig43-compose = { id = "pavlig43.compose" }
 pavlig43-serialization = {id = "pavlig43.serialization"}
 pavlig43-coroutines = {id="pavlig43-coroutines"}
@@ -197,4 +195,5 @@ pavlig43-detekt = { id = "pavlig43.detekt" }
 pavlig43-table ={id="pavlig43.table"}
 
 android-kotlin-multiplatform-library = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 

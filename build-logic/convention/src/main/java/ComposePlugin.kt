@@ -29,7 +29,7 @@ class ComposePlugin : Plugin<Project> {
 
 }
 
-private val Project.compose
+val Project.compose
     get() = extensions.getByType<ComposeExtension>().dependencies
 
 internal fun Project.configureComposeKmp() {
@@ -42,7 +42,7 @@ internal fun Project.configureComposeKmp() {
         implementation(libs.compose.foundation)
         implementation(libs.compose.material3)
         implementation(libs.compose.ui)
-        implementation(libs.compose.components.resources)
+//        api(libs.compose.components.resources)
 
         implementation(libs.androidx.lifecycle.runtime.compose)
 

@@ -33,8 +33,11 @@ dependencyResolutionManagement {
 plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }
+include(
+    "app:nocombroapp",
+    "app:desktopApp"
+)
 
-include(":composeApp")
 include(":rootnocombro")
 include(":core")
 include(":coreui")
@@ -72,4 +75,6 @@ include(
 
 include(":features:notification")
 include(":features:sampletable")
+
+
 
