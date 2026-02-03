@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import org.koin.dsl.module
 import ru.pavlig43.core.DateThreshold
+import ru.pavlig43.core.mapValues
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.notification.api.model.NotificationItem
 import ru.pavlig43.notification.api.model.NotificationLevel
@@ -24,13 +25,11 @@ private class DocumentZeroRepository(
     override val notificationLevel: NotificationLevel = NotificationLevel.HIGH
     override val notificationItem: NotificationItem = NotificationItem.Document
     override val mergedFromDBNotificationFlow: Flow<List<NotificationUi>> =
-        db.documentDao.observeOnItemWithoutFiles().map { lst ->
-            lst.map { notificationDTO ->
-                NotificationUi(
-                    id = notificationDTO.id,
-                    text = "В документе ${notificationDTO.displayName} нет файлов"
-                )
-            }
+        db.documentDao.observeOnItemWithoutFiles().mapValues { notificationDTO ->
+            NotificationUi(
+                id = notificationDTO.id,
+                text = "В документе ${notificationDTO.displayName} нет файлов"
+            )
         }
 }
 
@@ -39,22 +38,18 @@ private class DeclarationZeroRepository(
 ) : INotificationRepository {
 
     private val declarationWithoutDocument =
-        db.declarationDao.observeOnItemWithoutFiles().map { lst ->
-            lst.map { notificationDTO ->
-                NotificationUi(
-                    id = notificationDTO.id,
-                    text = "В декларации ${notificationDTO.displayName} нет файлов"
-                )
-            }
+        db.declarationDao.observeOnItemWithoutFiles().mapValues { notificationDTO ->
+            NotificationUi(
+                id = notificationDTO.id,
+                text = "В декларации ${notificationDTO.displayName} нет файлов"
+            )
         }
     private val getOnExpiredDeclaration =
-        db.declarationDao.observeOnExpiredDeclaration(DateThreshold.Now).map { lst ->
-            lst.map { notificationDTO ->
-                NotificationUi(
-                    id = notificationDTO.id,
-                    text = notificationDTO.displayName
-                )
-            }
+        db.declarationDao.observeOnExpiredDeclaration(DateThreshold.Now).mapValues { notificationDTO ->
+            NotificationUi(
+                id = notificationDTO.id,
+                text = notificationDTO.displayName
+            )
         }
 
 
@@ -78,25 +73,19 @@ private class ProductZeroRepository(
     override val notificationItem: NotificationItem = NotificationItem.Product
     private val productDeclaration =
         db.productDeclarationDao.observeOnProductDeclarationNotification { db.productDao.observeOnProducts() }
-            .map { lst ->
-                lst.map { notificationDTO ->
-                    NotificationUi(
-                        id = notificationDTO.id,
-                        text = notificationDTO.displayName
-                    )
-                }
-
+            .mapValues { notificationDTO ->
+                NotificationUi(
+                    id = notificationDTO.id,
+                    text = notificationDTO.displayName
+                )
             }
     private val productComposition =
         db.compositionDao.observeProductWithoutComposition { db.productDao.observeOnProducts() }
-            .map { lst ->
-                lst.map { notificationDTO ->
-                    NotificationUi(
-                        id = notificationDTO.id,
-                        text = notificationDTO.displayName
-                    )
-                }
-
+            .mapValues { notificationDTO ->
+                NotificationUi(
+                    id = notificationDTO.id,
+                    text = notificationDTO.displayName
+                )
             }
 
     override val mergedFromDBNotificationFlow: Flow<List<NotificationUi>> =

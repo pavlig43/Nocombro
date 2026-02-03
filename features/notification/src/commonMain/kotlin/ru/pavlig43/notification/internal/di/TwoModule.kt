@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import org.koin.dsl.module
 import ru.pavlig43.core.DateThreshold
+import ru.pavlig43.core.mapValues
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.notification.api.model.NotificationItem
 import ru.pavlig43.notification.api.model.NotificationLevel
@@ -26,13 +27,11 @@ private class DeclarationTwoRepository(
     override val notificationItem: NotificationItem = NotificationItem.Declaration
 
     private val getOnThreeMountExpiredDeclaration =
-        db.declarationDao.observeOnExpiredDeclaration(DateThreshold.ThreeMonth).map { lst ->
-            lst.map { notificationDTO ->
-                NotificationUi(
-                    id = notificationDTO.id,
-                    text = notificationDTO.displayName
-                )
-            }
+        db.declarationDao.observeOnExpiredDeclaration(DateThreshold.ThreeMonth).mapValues { notificationDTO ->
+            NotificationUi(
+                id = notificationDTO.id,
+                text = notificationDTO.displayName
+            )
         }
     override val mergedFromDBNotificationFlow: Flow<List<NotificationUi>> =
         combine(
