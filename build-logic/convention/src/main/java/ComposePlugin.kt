@@ -42,7 +42,7 @@ internal fun Project.configureComposeKmp() {
         implementation(libs.compose.foundation)
         implementation(libs.compose.material3)
         implementation(libs.compose.ui)
-        api(libs.compose.components.resources)
+//        api(libs.compose.components.resources)
 
         implementation(libs.androidx.lifecycle.runtime.compose)
 
