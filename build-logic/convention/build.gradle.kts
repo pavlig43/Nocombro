@@ -37,11 +37,6 @@ dependencies {
 gradlePlugin {
     plugins {
 
-
-        register("library") {
-            id = libs.plugins.pavlig43.library.get().pluginId
-            implementationClass = "LibraryPlugin"
-        }
         register("compose") {
             id = libs.plugins.pavlig43.compose.get().pluginId
             implementationClass = "ComposePlugin"

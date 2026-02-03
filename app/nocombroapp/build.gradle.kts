@@ -5,7 +5,7 @@ import java.time.format.DateTimeFormatter
 
 plugins {
     alias(libs.plugins.androidApplication)
-    alias(libs.plugins.kotlin.android)
+//    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.composeCompiler)
 }
 
@@ -100,10 +100,6 @@ private fun getTime(pattern: String): String {
     val now = ZonedDateTime.now(ZoneId.of("Europe/Moscow"))
     val formatter = DateTimeFormatter.ofPattern(pattern)
     return now.format(formatter)
-}
-
-private fun getApkBuildTime(): String {
-    return getTime(pattern = "yyyy_MM_dd_HH_mm_ss")
 }
 
 private fun getBuildConfigTime(): String {

@@ -1,5 +1,5 @@
 [versions]
-agp = "8.13.2"
+agp = "9.0.0"
 android-compileSdk = "36"
 android-minSdk = "26"
 android-targetSdk = "36"
@@ -161,7 +161,6 @@ room-gradlePlugin = { group = "androidx.room", name = "room-gradle-plugin", vers
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
-androidLibrary = { id = "com.android.library", version.ref = "agp" }
 composeHotReload = { id = "org.jetbrains.compose.hot-reload", version.ref = "composeHotReload"}
 composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "compose-multiplatform" }
 composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
@@ -178,7 +177,6 @@ dokka ={id = "org.jetbrains.dokka",version.ref = "dokka"}
 
 
 #build-logic
-pavlig43-library = { id = "pavlig43.library" }
 pavlig43-compose = { id = "pavlig43.compose" }
 pavlig43-serialization = {id = "pavlig43.serialization"}
 pavlig43-coroutines = {id="pavlig43-coroutines"}
