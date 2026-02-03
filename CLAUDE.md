@@ -115,11 +115,6 @@ Nocombro/
 ./gradlew :core:test
 ```
 
-### Статический анализ (Detekt)
-```bash
-./gradlew detekt
-```
-
 ## Gradle Convention Plugins
 
 Проект использует custom convention plugins из `build-logic/convention/`:
@@ -136,32 +131,7 @@ Nocombro/
 | `pavlig43.decompose` | Decompose навигация |
 | `pavlig43.detekt` | Detekt статический анализ |
 
-## Создание нового feature модуля
-
-```bash
-./gradlew createKmpLib -PmoduleName=myfeature
-```
-
-Эта команда:
-1. Создаст структуру директорий в `features/myfeature/`
-2. Создаст `build.gradle.kts` с плагином `pavlig43.feature`
-3. Добавит модуль в `settings.gradle.kts`
-
-## Git Workflow
-
-### Ветки
-- `separate_application_in_module` — текущая ветка (разделение ApplicationPlugin)
-- `main` / `master` — основная ветка
-
-### Коммиты
-Используется `Co-Authored-By:` для указания моего участия:
-
-```
-Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
-```
-
 ## Code Style
-
 - **Detekt** — статический анализ (см. `default-detekt-config.yml`)
 - **Kotlin conventions** — следуй Kotlin coding conventions
 - **KDoc** — добавляй документацию к публичным API
@@ -173,8 +143,6 @@ Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
 | Агент | Специализация |
 |-------|---------------|
 | `kotlin-specialist` | Kotlin/KMP разработка |
-| `java-architect` | Java архитектура |
-| `mobile-developer` | Мобильная разработка |
 | `code-reviewer` | Ревью кода |
 | `debugger` | Отладка |
 | `security-auditor` | Безопасность |
@@ -223,9 +191,6 @@ A: Создай feature модуль, используй Decompose для нав
 
 **Q: Где бизнес-логика?**
 A: В `core/` и соответствующих feature модулях.
-
-**Q: Как работать с БД?**
-A: Используй `database/` модуль, SQLDelight `.sq` файлы для запросов.
 
 ---
 
