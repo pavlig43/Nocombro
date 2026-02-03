@@ -17,12 +17,7 @@ class ComposePlugin : Plugin<Project> {
             apply(plugin = libs.plugins.composeCompiler.get().pluginId)
             apply(plugin = libs.plugins.composeMultiplatform.get().pluginId)
 
-
-
             configureComposeKmp()
-
-
-
         }
     }
 
@@ -42,17 +37,11 @@ internal fun Project.configureComposeKmp() {
         implementation(libs.compose.foundation)
         implementation(libs.compose.material3)
         implementation(libs.compose.ui)
-//        api(libs.compose.components.resources)
-
         implementation(libs.androidx.lifecycle.runtime.compose)
-
-
         implementation(libs.compose.ui.tooling)
         implementation(libs.compose.ui.tooling.preview)
     }
-    desktopDependencies {
-        implementation(compose.desktop.currentOs)
-    }
+
 
 
 
