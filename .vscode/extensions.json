@@ -1,0 +1,98 @@
+{
+  // ============================================
+  // Рекомендуемые расширения для Kotlin/Android разработки
+  // ============================================
+
+  "recommendations": [
+    // Kotlin
+    "fwcd.kotlin",                      // Kotlin Language
+    "mathiasfrohlich.Kotlin",            // Kotlin
+    "fwcd.kotlin-idea-compat",          // IntelliJ IDEA Kotlin compatibility
+
+    // Gradle
+    "nixelstudio.gradle-for-kotlin",    // Gradle for Kotlin
+    "richardwillis.vscode-gradle",      // Gradle Tasks
+
+    // Темы оформления
+    "lergw.darcula-theme",              // Darcula Theme from IntelliJ
+    "PKief.material-icon-theme",        // Material Icon Theme
+
+    // Шрифты
+    "jetbrains.jetbrains-mono-fira-code-support",  // JetBrains Mono font
+
+    // Инструменты разработки
+    "EditorConfig.EditorConfig",        // EditorConfig
+    "dbaeumer.vscode-eslint",           // ESLint
+    "esbenp.prettier-vscode",           // Prettier
+    "stylelint.vscode-stylelint",       // Stylelint
+
+    // Git
+    "eamodio.gitlens",                  // GitLens (Git supercharged)
+    "mhutchie.git-graph",               // Git Graph
+
+    // Markdown
+    "yzhang.markdown-all-in-one",       // Markdown All in One
+    "davidanson.vscode-markdownlint",   // Markdown linting
+
+    // Detekt (Kotlin static analysis)
+    "pintoinc.detekt-vscode",           // Detekt for VS Code
+
+    // XML
+    "redhat.vscode-xml",                // XML support
+
+    // YAML
+    "redhat.vscode-yaml",               // YAML support
+
+    // TOML
+    "tamasfe.even-better-toml",         // Even Better TOML
+
+    // REST Client
+    "humao.rest-client",                // REST Client
+
+    // Bookmarks
+    "alefragnani.bookmarks",            // Bookmarks
+
+    // TODO Highlight
+    "wayou.vscode-todo-highlight",      // TODO Highlight
+
+    // Error Lens
+    "usernamehw.errorlens",             // Error Lens (показывает ошибки прямо в коде)
+
+    // Import Cost
+    "wix.vscode-import-cost",           // Import Cost
+
+    // Path Intellisense
+    "christian-kohler.path-intellisense", // Path Intellisense
+
+    // Auto Rename Tag
+    "formulahendry.auto-rename-tag",    // Auto Rename Tag
+
+    // Bracket Pair Colorizer
+    "CoenraadS.bracket-pair-colorizer-2", // Bracket Pair Colorizer 2
+
+    // Indent Rainbow
+    "oderwat.indent-rainbow",           // Indent Rainbow
+
+    // Live Server
+    "ritwickdey.liveserver",            // Live Server
+
+    // Code Spell Checker
+    "streetsidesoftware.code-spell-checker", // Code Spell Checker
+
+    // Docker
+    "ms-azuretools.vscode-docker",      // Docker
+
+    // Remote Development
+    "ms-vscode-remote.remote-ssh",      // Remote - SSH
+    "ms-vscode-remote.remote-containers", // Remote - Containers
+
+    // Test Explorer
+    "hbenl.vscode-test-explorer",       // Test Explorer UI
+    "fvictorio.vscode-taskexplorer"     // Task Explorer
+  ],
+
+  "unwantedRecommendations": [
+    "ms-python.python",
+    "ms-vscode.vscode-typescript-next"
+  ]
+}

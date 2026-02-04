@@ -29,15 +29,18 @@ class Converters {
     fun toOwnerType(value: String) = enumValueOf<OwnerType>(value)
 
     @TypeConverter
-    fun fromProductType(productType: ProductType): String {
-        return productType.enumValue.name
+    fun fromProductType(productType: ProductType?): String {
+        return productType?.enumValue?.name ?: ProductType.Pack.enumValue.name
 
     }
 
     @TypeConverter
-    fun toProductType(value: String): ProductType {
+    fun toProductType(value: String?): ProductType {
+        if (value.isNullOrBlank()) {
+            return ProductType.Pack // Значение по умолчанию для null/пустых значений
+        }
         return ProductType.entries.firstOrNull { it.enumValue.name == value }
-            ?: throw IllegalArgumentException("Unknown ProdType: $value")
+            ?: ProductType.Pack // Fallback на Pack если не найдено
     }
 
     @TypeConverter
