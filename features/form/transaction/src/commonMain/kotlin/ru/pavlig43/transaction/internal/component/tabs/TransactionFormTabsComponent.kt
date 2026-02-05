@@ -75,7 +75,7 @@ internal class TransactionFormTabsComponent(
                     )
                     TransactionTab.Reminders -> TransactionTabChild.Reminders(
                         RemindersComponent(
-                            componentComponent = context,
+                            componentContext = context,
                             transactionId = transactionId,
                             repository = scope.get(UpdateCollectionRepositoryType.REMINDERS.qualifier)
                         )

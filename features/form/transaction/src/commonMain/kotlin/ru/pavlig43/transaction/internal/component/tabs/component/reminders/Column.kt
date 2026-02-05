@@ -5,7 +5,7 @@ import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.datetime.LocalDateTime
-import ru.pavlig43.coreui.DateTimeRow
+import ru.pavlig43.coreui.coreFieldBlock.DateTimeRow
 import ru.pavlig43.mutable.api.component.MutableUiEvent
 import ru.pavlig43.mutable.api.ui.idWithSelection
 import ru.pavlig43.tablecore.model.TableData
