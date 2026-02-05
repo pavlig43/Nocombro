@@ -136,6 +136,9 @@ Nocombro/
 - **Kotlin conventions** — следуй Kotlin coding conventions
 - **KDoc** — добавляй документацию к публичным API
 
+## Coding Rules
+Правила проекта находятся в директории `rules/` — обязательно ознакомься перед написанием кода.
+
 ## Claude Code Subagents
 
 В проекте установлены следующие агенты (`.claude/agents/`):
