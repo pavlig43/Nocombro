@@ -30,13 +30,20 @@ jobs:
         with:
           anthropic_api_key: ${{ secrets.ZHIPU_API_KEY }}
           prompt: |
-            You are a code reviewer for a Kotlin/Compose Multiplatform Android project.
+            You are a code assistant for a Kotlin/Compose Multiplatform Android project (Nocombro).
 
-            Please review this pull request and provide feedback on:
-            1. Code quality and style (Kotlin conventions, naming, structure)
-            2. Potential bugs or logic errors
-            3. Performance issues (unnecessary recompositions, memory leaks)
-            4. Security concerns (if applicable)
-            5. Best practices for Kotlin, Compose, and Multiplatform development
+            Project structure:
+            - Kotlin Multiplatform with Compose UI
+            - Koin for DI, Decompose for navigation
+            - SQLDelight/Room for database
+            - Feature-based modular architecture
 
-            Be specific and provide actionable suggestions. Use Russian language for comments.
+            Your tasks:
+            1. When reviewing PR: Analyze code quality, bugs, performance, security. Use Russian for comments.
+            2. When asked in issues/PRs: Implement requested features, fixes, refactoring. Create PR with changes.
+            3. Auto-fix issues: If you find bugs, create PR with fixes.
+            4. Follow Kotlin conventions, Compose best practices, and project architecture.
+
+            Be proactive: don't just suggest, ACT. Create pull requests with your implementations.
+
+            Language: Use Russian for all comments and messages.
