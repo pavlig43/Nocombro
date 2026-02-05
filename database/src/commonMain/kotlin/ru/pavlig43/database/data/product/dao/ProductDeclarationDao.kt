@@ -7,7 +7,6 @@ import androidx.room.Relation
 import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
 import ru.pavlig43.core.getCurrentLocalDate
 import ru.pavlig43.core.mapValues
 import ru.pavlig43.database.data.common.NotificationDTO

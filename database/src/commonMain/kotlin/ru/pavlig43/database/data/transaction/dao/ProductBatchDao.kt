@@ -1,12 +1,5 @@
 package ru.pavlig43.database.data.transaction.dao
 
-import androidx.room.Embedded
-import androidx.room.Relation
-import ru.pavlig43.database.data.declaration.Declaration
-import ru.pavlig43.database.data.product.Product
-import ru.pavlig43.database.data.transaction.TransactionProductBDIn
-import ru.pavlig43.database.data.transaction.TransactionProductBDOut
-
 //internal data class InternalProductBatchTransactionRow(
 //
 //    @Embedded

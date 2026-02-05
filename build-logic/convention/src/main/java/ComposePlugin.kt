@@ -7,7 +7,6 @@ import org.jetbrains.compose.ComposeExtension
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import ru.pavlig43.convention.extension.androidMainDependencies
 import ru.pavlig43.convention.extension.commonMainDependencies
-import ru.pavlig43.convention.extension.desktopDependencies
 import ru.pavlig43.convention.extension.libs
 
 class ComposePlugin : Plugin<Project> {

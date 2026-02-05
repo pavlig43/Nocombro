@@ -61,11 +61,6 @@ plugins {
 
     }
 
-
-
-
-
-
 subprojects {
     if (!path.contains("sampletable")) {
         apply(plugin = "pavlig43.detekt")
@@ -82,43 +77,3 @@ subprojects {
     }
 }
 
-tasks.register("createKmpLib") {
-    group = "custom"
-    doLast {
-        val moduleName = findProperty("moduleName")?.toString()
-            ?: run {
-                println("Имя модуля?")
-                readlnOrNull()?.takeIf { it.isNotBlank() }
-            }
-            ?: error("moduleName not found in gradle.properties for task:createKmpLib- show in root build.gradle.kts")
-        val packageName = "ru.pavlig43.$moduleName"
-        val moduleDir = file("features/$moduleName")
-
-        listOf(
-            "commonMain",
-            "androidMain",
-            "desktopMain",
-        ).forEach { folder ->
-            val kmpDir = "src/$folder/kotlin/${packageName.replace(".", "/")}"
-            val dirName = File(moduleDir, kmpDir)
-            dirName.mkdirs()
-        }
-
-        val buildFile = File(moduleDir, "build.gradle.kts")
-        buildFile.writeText(
-            """
-          plugins {
-            alias(libs.plugins.pavlig43.feature)  
-            }
-          
-          android {
-              namespace = "$packageName"
-          }
-        """.trimIndent()
-        )
-        val settingsFile = project.rootProject.file("settings.gradle.kts")
-        if (settingsFile.exists()) {
-            settingsFile.appendText("\ninclude(\":features:$moduleName\")")
-        }
-    }
-}
