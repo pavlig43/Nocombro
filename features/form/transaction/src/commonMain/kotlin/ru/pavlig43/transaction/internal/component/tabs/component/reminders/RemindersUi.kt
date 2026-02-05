@@ -6,6 +6,7 @@ import ru.pavlig43.tablecore.model.ITableUi
 data class RemindersUi(
     override val composeId: Int,
     val id: Int,
+    val transactionId: Int,
     val text: String,
     val reminderDateTime: LocalDateTime
 ) : ITableUi

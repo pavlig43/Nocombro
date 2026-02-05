@@ -30,6 +30,7 @@ internal class RemindersComponent(
     filterMatcher = RemindersFilterMatcher,
     repository = repository
 ) {
+    private val transactionId = transactionId
     private val dialogNavigation = SlotNavigation<RemindersDialog>()
 
     internal val dialog = childSlot(
@@ -67,6 +68,7 @@ internal class RemindersComponent(
         return RemindersUi(
             composeId = composeId,
             id = 0,
+            transactionId = transactionId,
             text = "",
             reminderDateTime = emptyLocalDateTime
         )
@@ -75,6 +77,7 @@ internal class RemindersComponent(
     override fun ReminderBD.toUi(composeId: Int): RemindersUi {
         return RemindersUi(
             composeId = composeId,
+            transactionId = transactionId,
             text = text,
             reminderDateTime = reminderDateTime,
             id = id
@@ -83,6 +86,7 @@ internal class RemindersComponent(
 
     override fun RemindersUi.toBDIn(): ReminderBD {
         return ReminderBD(
+            transactionId = transactionId,
             text = text,
             reminderDateTime = reminderDateTime,
             id = id

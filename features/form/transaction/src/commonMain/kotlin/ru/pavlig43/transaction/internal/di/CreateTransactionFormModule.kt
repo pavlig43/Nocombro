@@ -87,18 +87,19 @@ private fun createUpdateRemindersRepository(
             dao.deleteByIds(ids)
         },
         upsertCollection = { reminders ->
-            dao.upsertAll(reminders.map { it.toReminder(it.id) })
+            dao.upsertAll(reminders.map { it.toReminder() })
         }
     )
 }
 
 private fun Reminder.toReminderBD() = ReminderBD(
+    transactionId = transactionId,
     text = text,
     reminderDateTime = reminderDateTime,
     id = id
 )
 
-private fun ReminderBD.toReminder(transactionId: Int) = Reminder(
+private fun ReminderBD.toReminder() = Reminder(
     transactionId = transactionId,
     text = text,
     reminderDateTime = reminderDateTime,
