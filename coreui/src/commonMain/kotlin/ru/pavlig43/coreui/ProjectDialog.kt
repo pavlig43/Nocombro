@@ -14,11 +14,14 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ProvideTextStyle
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 
@@ -39,19 +42,23 @@ fun ProjectDialog(
                 .shadow(
                     elevation = 24.dp,
                     shape = RoundedCornerShape(28.dp),
-                    spotColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+                    spotColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+                    ambientColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.05f)
                 ),
             shape = RoundedCornerShape(28.dp),
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
                 contentColor = MaterialTheme.colorScheme.onSurface
             ),
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.1f))
+            border = BorderStroke(
+                width = 1.5.dp,
+                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
+            )
         ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Красивая верхняя панель с градиентом
+                // Enhanced header with better contrast gradient
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -59,14 +66,24 @@ fun ProjectDialog(
                         .background(
                             brush = Brush.linearGradient(
                                 colors = listOf(
-                                    MaterialTheme.colorScheme.primary,
-                                    MaterialTheme.colorScheme.secondary
+                                    MaterialTheme.colorScheme.primaryContainer,
+                                    MaterialTheme.colorScheme.secondaryContainer
                                 )
                             )
-                        )
+                        ),
+                    contentAlignment = Alignment.Center
                 ) {
-                    header()
-
+                    // Provide proper content color for header children
+                    ProvideTextStyle(
+                        value = MaterialTheme.typography.titleMedium
+                    ) {
+                        Surface(
+                            color = Color.Transparent,
+                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        ) {
+                            header()
+                        }
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
