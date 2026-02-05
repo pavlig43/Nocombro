@@ -9,4 +9,7 @@ internal sealed interface TransactionTab {
 
     @Serializable
     data object Buy: TransactionTab
+
+    @Serializable
+    data object Reminders: TransactionTab
 }

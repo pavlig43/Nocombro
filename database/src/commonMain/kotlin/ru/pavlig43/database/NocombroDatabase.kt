@@ -1,5 +1,6 @@
 package ru.pavlig43.database
 
+import androidx.room.AutoMigration
 import androidx.room.ConstructedBy
 import androidx.room.Database
 import androidx.room.RoomDatabase
@@ -32,6 +33,8 @@ import ru.pavlig43.database.data.product.dao.ProductDeclarationDao
 import ru.pavlig43.database.data.transaction.Transaction
 import ru.pavlig43.database.data.transaction.TransactionProductBDIn
 import ru.pavlig43.database.data.transaction.dao.ProductTransactionDao
+import ru.pavlig43.database.data.transaction.reminder.Reminder
+import ru.pavlig43.database.data.transaction.reminder.dao.ReminderDao
 import ru.pavlig43.database.data.vendor.Vendor
 import ru.pavlig43.database.data.vendor.dao.VendorDao
 import kotlin.time.ExperimentalTime
@@ -53,10 +56,13 @@ import kotlin.time.ExperimentalTime
 
         Transaction::class,
         TransactionProductBDIn::class,
+
+        Reminder::class,
     ],
-
-
-    version = 1
+    version = 2,
+    autoMigrations = [
+        AutoMigration(from = 1, to = 2)
+    ]
 )
 @TypeConverters(Converters::class)
 @ConstructedBy(NocombroDatabaseConstructor::class)
@@ -74,6 +80,7 @@ abstract class NocombroDatabase : RoomDatabase() {
     abstract val compositionDao: CompositionDao
 
     abstract val transactionDao: ProductTransactionDao
+    abstract val reminderDao: ReminderDao
 }
 
 
