@@ -3,7 +3,7 @@ package ru.pavlig43.transaction.internal.component.tabs.component.reminders
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
-import ru.pavlig43.coreui.coreFieldBlock.DateTimePickerDialog
+import ru.pavlig43.coreui.DateTimePickerDialog
 import ru.pavlig43.mutable.api.ui.MutableTableBox
 
 @Composable

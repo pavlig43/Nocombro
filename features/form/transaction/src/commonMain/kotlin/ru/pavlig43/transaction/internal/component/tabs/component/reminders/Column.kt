@@ -1,16 +1,24 @@
 @file:Suppress("MatchingDeclarationName")
 package ru.pavlig43.transaction.internal.component.tabs.component.reminders
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.datetime.LocalDateTime
-import ru.pavlig43.coreui.coreFieldBlock.DateTimeRow
 import ru.pavlig43.mutable.api.component.MutableUiEvent
 import ru.pavlig43.mutable.api.ui.idWithSelection
 import ru.pavlig43.tablecore.model.TableData
 import ua.wwind.table.ColumnSpec
-import ua.wwind.table.component.TableCellTextField
 import ua.wwind.table.editableTableColumns
 import ua.wwind.table.filter.data.TableFilterType
 
@@ -19,6 +27,23 @@ enum class RemindersField {
     COMPOSE_ID,
     TEXT,
     REMINDER_DATE_TIME
+}
+
+@Composable
+private fun DateTimeRow(
+    dateTime: LocalDateTime,
+    isChangeDialogVisible: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Text(
+        text = dateTime.toString(),
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable { isChangeDialogVisible() }
+            .padding(4.dp),
+        style = MaterialTheme.typography.bodyMedium,
+        textDecoration = TextDecoration.Underline
+    )
 }
 
 internal fun createRemindersColumns(
@@ -40,9 +65,10 @@ internal fun createRemindersColumns(
                 filter(TableFilterType.TextTableFilter())
                 cell { row, _ -> Text(row.text) }
                 editCell { item, _, _ ->
-                    TableCellTextField(
+                    TextField(
                         value = item.text,
-                        onValueChange = { onEvent(MutableUiEvent.UpdateItem(item.copy(text = it))) }
+                        onValueChange = { onEvent(MutableUiEvent.UpdateItem(item.copy(text = it))) },
+                        singleLine = true
                     )
                 }
                 sortable()
@@ -53,7 +79,7 @@ internal fun createRemindersColumns(
                 align(Alignment.Center)
                 cell { item, _ ->
                     DateTimeRow(
-                        date = item.reminderDateTime,
+                        dateTime = item.reminderDateTime,
                         isChangeDialogVisible = { onOpenDateTimeDialog(item.composeId) }
                     )
                 }
