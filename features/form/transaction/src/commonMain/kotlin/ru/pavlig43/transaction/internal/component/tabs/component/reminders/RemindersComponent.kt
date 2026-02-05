@@ -20,7 +20,7 @@ import ua.wwind.table.ColumnSpec
 
 internal class RemindersComponent(
     componentContext: ComponentContext,
-    transactionId: Int,
+    private val transactionId: Int,
     repository: UpdateCollectionRepository<ReminderBD, ReminderBD>
 ) : MutableTableComponent<ReminderBD, ReminderBD, RemindersUi, RemindersField>(
     componentContext = componentContext,
@@ -30,7 +30,6 @@ internal class RemindersComponent(
     filterMatcher = RemindersFilterMatcher,
     repository = repository
 ) {
-    private val transactionId = transactionId
     private val dialogNavigation = SlotNavigation<RemindersDialog>()
 
     internal val dialog = childSlot(
