@@ -1,0 +1,42 @@
+name: Claude Code
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+  id-token: write
+
+jobs:
+  claude:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Claude Code with GLM
+        id: claude
+        uses: anthropics/claude-code-action@v1
+        env:
+          NODE_VERSION: '22.x'
+          ANTHROPIC_BASE_URL: 'https://api.z.ai/api/anthropic'
+        with:
+          anthropic_api_key: ${{ secrets.ZHIPU_API_KEY }}
+          prompt: |
+            You are a code reviewer for a Kotlin/Compose Multiplatform Android project.
+
+            Please review this pull request and provide feedback on:
+            1. Code quality and style (Kotlin conventions, naming, structure)
+            2. Potential bugs or logic errors
+            3. Performance issues (unnecessary recompositions, memory leaks)
+            4. Security concerns (if applicable)
+            5. Best practices for Kotlin, Compose, and Multiplatform development
+
+            Be specific and provide actionable suggestions. Use Russian language for comments.
