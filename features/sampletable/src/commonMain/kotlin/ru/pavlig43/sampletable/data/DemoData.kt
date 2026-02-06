@@ -1,8 +1,10 @@
 package ru.pavlig43.sampletable.data
 
 import kotlinx.datetime.LocalDate
+import ru.pavlig43.sampletable.model.MegaType
 import ru.pavlig43.sampletable.model.Person
 import ru.pavlig43.sampletable.model.Position
+import kotlin.random.Random
 
 fun createDemoData(): List<Person> =
     listOf(
@@ -846,4 +848,9 @@ fun createDemoData(): List<Person> =
             rating = 5,
             hireDate = LocalDate(2018, 9, 1),
         ),
-    ).mapIndexed { index, person -> person.copy(id = index + 1) }
+    )
+        .map { person ->
+            val randomMegaType = MegaType.entries.random(Random(person.id * 31 + person.age))
+            person.copy(megaType = randomMegaType)
+        }
+        .mapIndexed { index, person -> person.copy(id = index + 1) }

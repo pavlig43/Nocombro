@@ -56,6 +56,7 @@ fun ConditionalFormattingDialog(
                 ru.pavlig43.sampletable.column.PersonColumn.COUNTRY -> "Country"
                 ru.pavlig43.sampletable.column.PersonColumn.DEPARTMENT -> "Department"
                 ru.pavlig43.sampletable.column.PersonColumn.POSITION -> "Position"
+                ru.pavlig43.sampletable.column.PersonColumn.MEGA_TYPE -> "Mega Type"
                 ru.pavlig43.sampletable.column.PersonColumn.SALARY -> "Salary"
                 ru.pavlig43.sampletable.column.PersonColumn.RATING -> "Rating"
                 ru.pavlig43.sampletable.column.PersonColumn.HIRE_DATE -> "Hire Date"

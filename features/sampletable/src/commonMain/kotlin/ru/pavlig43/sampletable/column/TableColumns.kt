@@ -36,7 +36,9 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.format
 import org.jetbrains.compose.resources.painterResource
 import ru.pavlig43.sampletable.config.CellPadding
+import ru.pavlig43.sampletable.filter.createMegaTypeFilter
 import ru.pavlig43.sampletable.filter.createSalaryRangeFilter
+import ru.pavlig43.sampletable.model.MegaType
 import ru.pavlig43.sampletable.model.Person
 import ru.pavlig43.sampletable.model.PersonMovement
 import ru.pavlig43.sampletable.model.PersonMovementColumn
@@ -330,6 +332,58 @@ fun createTableColumns(
                                 onClick = {
                                     selectedPosition = position
                                     onEvent(SampleUiEvent.UpdatePosition(position))
+                                    expanded = false
+                                    onComplete()
+                                },
+                            )
+                        }
+                    }
+                }
+            }
+        }
+        column(PersonColumn.MEGA_TYPE, { it.megaType }) {
+            title { "Mega Type" }
+            autoWidth(500.dp)
+            sortable()
+            // Custom hierarchical filter with tree UI
+            filter(createMegaTypeFilter())
+            cell { item, _ ->
+                Text(item.megaType.displayName, modifier = Modifier.padding(cellPadding))
+            }
+
+            // Editing configuration with dropdown
+            editCell { person, tableData, onComplete ->
+                var expanded by remember { mutableStateOf(false) }
+                var selectedMegaType by remember(person) { mutableStateOf(person.megaType) }
+
+                ExposedDropdownMenuBox(
+                    expanded = expanded,
+                    onExpandedChange = { expanded = it },
+                    modifier = Modifier.fillMaxSize(),
+                ) {
+                    TableCellTextField(
+                        value = selectedMegaType.displayName,
+                        onValueChange = {},
+                        readOnly = true,
+                        trailingIcon = {
+                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                        },
+                        modifier =
+                            Modifier.menuAnchor(
+                                ExposedDropdownMenuAnchorType.PrimaryNotEditable,
+                            ),
+                        singleLine = true,
+                    )
+                    ExposedDropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false },
+                    ) {
+                        MegaType.entries.forEach { megaType ->
+                            DropdownMenuItem(
+                                text = { Text(megaType.displayName) },
+                                onClick = {
+                                    selectedMegaType = megaType
+                                    onEvent(SampleUiEvent.UpdateMegaType(megaType))
                                     expanded = false
                                     onComplete()
                                 },
