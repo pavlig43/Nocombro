@@ -18,3 +18,11 @@ enum class Position(
 
     override fun toString(): String = displayName
 }
+sealed interface MegaType{
+    sealed interface Type1: MegaType{
+        data object PodType11: Type1
+        data object PodType12: Type1
+    }
+    data object Type2: MegaType
+}
+// TODO: fix this later

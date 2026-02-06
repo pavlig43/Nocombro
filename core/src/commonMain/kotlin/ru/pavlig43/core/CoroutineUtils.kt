@@ -26,8 +26,8 @@ public fun CoroutineScope.launchCatching(
     onError: CoroutineContext.(Throwable) -> Unit,
     block: suspend CoroutineScope.() -> Unit,
 ): Job {
-    val handler = CoroutineExceptionHandler { it, e ->
-        onError(it, e)
+    val handler = CoroutineExceptionHandler { context, exception ->
+        onError(context, exception)
     }
     val scope = this + handler + SupervisorJob()
     return scope.launch(context, start, block)
@@ -41,7 +41,7 @@ public suspend fun <T> Iterable<T>.forEachParallel(
     start: CoroutineStart = CoroutineStart.DEFAULT,
     block: suspend (T) -> Unit,
 ): Unit = withContext(context) {
-    map { async(context, start) { block(it) } }.forEach { it.await() }
+    map { value -> async(context, start) { block(value) } }.forEach { deferred -> deferred.await() }
 }
 
 /**
