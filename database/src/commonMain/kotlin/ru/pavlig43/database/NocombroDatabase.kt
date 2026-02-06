@@ -1,5 +1,6 @@
 package ru.pavlig43.database
 
+import androidx.room.AutoMigration
 import androidx.room.ConstructedBy
 import androidx.room.Database
 import androidx.room.RoomDatabase
@@ -10,7 +11,6 @@ import androidx.room.useWriterConnection
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 import ru.pavlig43.core.TransactionExecutor
@@ -32,6 +32,8 @@ import ru.pavlig43.database.data.product.dao.ProductDeclarationDao
 import ru.pavlig43.database.data.transaction.Transaction
 import ru.pavlig43.database.data.transaction.TransactionProductBDIn
 import ru.pavlig43.database.data.transaction.dao.ProductTransactionDao
+import ru.pavlig43.database.data.transaction.reminder.ReminderBD
+import ru.pavlig43.database.data.transaction.reminder.dao.ReminderDao
 import ru.pavlig43.database.data.vendor.Vendor
 import ru.pavlig43.database.data.vendor.dao.VendorDao
 import kotlin.time.ExperimentalTime
@@ -53,10 +55,13 @@ import kotlin.time.ExperimentalTime
 
         Transaction::class,
         TransactionProductBDIn::class,
+
+        ReminderBD::class,
     ],
-
-
-    version = 1
+    version = 2,
+    autoMigrations = [
+        AutoMigration(from = 1, to = 2)
+    ]
 )
 @TypeConverters(Converters::class)
 @ConstructedBy(NocombroDatabaseConstructor::class)
@@ -74,6 +79,7 @@ abstract class NocombroDatabase : RoomDatabase() {
     abstract val compositionDao: CompositionDao
 
     abstract val transactionDao: ProductTransactionDao
+    abstract val reminderDao: ReminderDao
 }
 
 
