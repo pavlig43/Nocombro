@@ -31,7 +31,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Run Detekt format (autoCorrect)
-        run: ./gradlew detektAll --autoCorrect
+        run: ./gradlew detektAll --auto-correct
 
       - name: Run Detekt check
         run: ./gradlew detektAll --continue
