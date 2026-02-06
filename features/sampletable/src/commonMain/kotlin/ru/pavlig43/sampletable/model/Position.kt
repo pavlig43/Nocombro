@@ -25,4 +25,4 @@ sealed interface MegaType{
     }
     data object Type2: MegaType
 }
-// TODO: fix this later
+
