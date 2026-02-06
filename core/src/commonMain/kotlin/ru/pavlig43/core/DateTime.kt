@@ -85,6 +85,9 @@ val dateFormat = LocalDate.Format {
 @Suppress("MagicNumber")
 val emptyDate = LocalDate(1900, 1, 1)
 
+@Suppress("MagicNumber")
+val emptyLocalDateTime = LocalDateTime(1900, 1, 1, 0, 0)
+
 class DateComponent(
     componentContext: ComponentContext,
     initDate: LocalDate,

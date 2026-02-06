@@ -7,6 +7,7 @@ import ru.pavlig43.create.data.CreateEssentialsRepository
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.transaction.Transaction
 import ru.pavlig43.database.data.transaction.buy.BuyBD
+import ru.pavlig43.database.data.transaction.reminder.ReminderBD
 import ru.pavlig43.files.api.FilesDependencies
 import ru.pavlig43.immutable.api.ImmutableTableDependencies
 import ru.pavlig43.transaction.api.TransactionFormDependencies
@@ -23,6 +24,9 @@ internal fun createTransactionFormModule(dependencies: TransactionFormDependenci
         single<UpdateEssentialsRepository<Transaction>> { getUpdateRepository(get()) }
         single<UpdateCollectionRepository<BuyBD, BuyBD>>(UpdateCollectionRepositoryType.BUY.qualifier) {
             createUpdateBuyRepository()
+        }
+        single<UpdateCollectionRepository<ReminderBD, ReminderBD>>(UpdateCollectionRepositoryType.REMINDERS.qualifier) {
+            createUpdateRemindersRepository(get())
         }
 
 
@@ -55,6 +59,7 @@ private fun getUpdateRepository(
 internal enum class UpdateCollectionRepositoryType {
 
     BUY,
+    REMINDERS
 
 }
 
@@ -68,7 +73,21 @@ private fun createUpdateBuyRepository(
     )
 }
 
-
-
+private fun createUpdateRemindersRepository(
+    db: NocombroDatabase
+): UpdateCollectionRepository<ReminderBD, ReminderBD> {
+    val dao = db.reminderDao
+    return UpdateCollectionRepository(
+        loadCollection = { transactionId ->
+            dao.getByTransactionId(transactionId)
+        },
+        deleteCollection = { ids ->
+            dao.deleteByIds(ids)
+        },
+        upsertCollection = { reminders ->
+            dao.upsertAll(reminders)
+        }
+    )
+}
 
 
