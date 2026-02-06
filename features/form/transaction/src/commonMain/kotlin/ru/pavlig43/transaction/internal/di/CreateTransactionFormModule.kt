@@ -7,9 +7,7 @@ import ru.pavlig43.create.data.CreateEssentialsRepository
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.transaction.Transaction
 import ru.pavlig43.database.data.transaction.buy.BuyBD
-import ru.pavlig43.database.data.transaction.reminder.Reminder
 import ru.pavlig43.database.data.transaction.reminder.ReminderBD
-import ru.pavlig43.database.data.transaction.reminder.dao.ReminderDao
 import ru.pavlig43.files.api.FilesDependencies
 import ru.pavlig43.immutable.api.ImmutableTableDependencies
 import ru.pavlig43.transaction.api.TransactionFormDependencies
@@ -81,29 +79,15 @@ private fun createUpdateRemindersRepository(
     val dao = db.reminderDao
     return UpdateCollectionRepository(
         loadCollection = { transactionId ->
-            dao.getByTransactionId(transactionId).map { it.toReminderBD() }
+            dao.getByTransactionId(transactionId)
         },
         deleteCollection = { ids ->
             dao.deleteByIds(ids)
         },
         upsertCollection = { reminders ->
-            dao.upsertAll(reminders.map { it.toReminder() })
+            dao.upsertAll(reminders)
         }
     )
 }
-
-private fun Reminder.toReminderBD() = ReminderBD(
-    transactionId = transactionId,
-    text = text,
-    reminderDateTime = reminderDateTime,
-    id = id
-)
-
-private fun ReminderBD.toReminder() = Reminder(
-    transactionId = transactionId,
-    text = text,
-    reminderDateTime = reminderDateTime,
-    id = id
-)
 
 

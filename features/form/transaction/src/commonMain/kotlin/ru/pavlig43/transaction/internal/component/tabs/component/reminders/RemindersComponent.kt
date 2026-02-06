@@ -30,19 +30,19 @@ internal class RemindersComponent(
     filterMatcher = RemindersFilterMatcher,
     repository = repository
 ) {
-    private val dialogNavigation = SlotNavigation<RemindersDialog>()
+    private val dialogNavigation = SlotNavigation<RemindersDialogChild>()
 
     internal val dialog = childSlot(
         source = dialogNavigation,
         key = "reminders_dialog",
-        serializer = RemindersDialog.serializer(),
+        serializer = RemindersDialogChild.serializer(),
         handleBackButton = true,
         childFactory = ::createDialogChild
     )
 
-    private fun createDialogChild(dialogConfig: RemindersDialog, context: ComponentContext): DialogChild {
+    private fun createDialogChild(dialogConfig: RemindersDialogChild, context: ComponentContext): DialogChild {
         return when (dialogConfig) {
-            is RemindersDialog.DateTimePicker -> {
+            is RemindersDialogChild.DateTimePicker -> {
                 val item = itemList.value.first { it.composeId == dialogConfig.composeId }
                 val dateTimeComponent = DateTimeComponent(
                     componentContext = context,
@@ -59,7 +59,7 @@ internal class RemindersComponent(
 
     override val columns: ImmutableList<ColumnSpec<RemindersUi, RemindersField, TableData<RemindersUi>>> =
         createRemindersColumns(
-            onOpenDateTimeDialog = { dialogNavigation.activate(RemindersDialog.DateTimePicker(it)) },
+            onOpenDateTimeDialog = { dialogNavigation.activate(RemindersDialogChild.DateTimePicker(it)) },
             onEvent = ::onEvent
         )
 
@@ -104,9 +104,9 @@ internal class RemindersComponent(
 }
 
 @Serializable
-internal sealed interface RemindersDialog {
+internal sealed interface RemindersDialogChild {
     @Serializable
-    data class DateTimePicker(val composeId: Int) : RemindersDialog
+    data class DateTimePicker(val composeId: Int) : RemindersDialogChild
 }
 
 sealed interface DialogChild {

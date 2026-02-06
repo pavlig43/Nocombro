@@ -12,10 +12,7 @@ internal fun RemindersScreen(
 ) {
     val dialog by component.dialog.subscribeAsState()
 
-    MutableTableBox(
-        component,
-        tableSettingsModify = { ts -> ts.copy(showFooter = false) }
-    )
+    MutableTableBox(component)
 
     dialog.child?.instance?.also { dialogChild ->
         when (dialogChild) {

@@ -51,7 +51,7 @@ internal fun createRemindersColumns(
             }
 
             column(RemindersField.REMINDER_DATE_TIME, { it.reminderDateTime }) {
-                header("Дата и время")
+                header("Дата/время")
                 align(Alignment.Center)
                 cell { item, _ ->
                     DateTimeRow(

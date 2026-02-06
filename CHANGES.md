@@ -1,3 +1,58 @@
+# Рефакторинг: удаление дублирующего класса ReminderBD
+
+## Описание
+Удалён дублирующий класс `ReminderBD`, который имел идентичную структуру с `Reminder` (Room entity).
+Теперь используется только класс `Reminder` во всех слоях приложения.
+
+## Изменённые файлы
+
+### 1. database/src/commonMain/kotlin/ru/pavlig43/database/data/transaction/reminder/ReminderBD.kt
+**Изменение**: Файл удалён
+
+### 2. features/form/transaction/src/commonMain/kotlin/ru/pavlig43/transaction/internal/di/CreateTransactionFormModule.kt
+**Изменения**:
+- Удалён импорт `ReminderBD`
+- Изменён generic тип с `UpdateCollectionRepository<ReminderBD, ReminderBD>` на `UpdateCollectionRepository<Reminder, Reminder>`
+- Удалены функции маппинга `toReminderBD()` и `toReminder()` (больше не нужны)
+- Репозиторий теперь использует `Reminder` напрямую без преобразований
+
+```kotlin
+// Было:
+single<UpdateCollectionRepository<ReminderBD, ReminderBD>>(...) {
+    createUpdateRemindersRepository(get())
+}
+
+// Стало:
+single<UpdateCollectionRepository<Reminder, Reminder>>(...) {
+    createUpdateRemindersRepository(get())
+}
+```
+
+### 3. features/form/transaction/src/commonMain/kotlin/ru/pavlig43/transaction/internal/component/tabs/component/reminders/RemindersComponent.kt
+**Изменения**:
+- Заменён импорт `ReminderBD` → `Reminder`
+- Все использования `ReminderBD` заменены на `Reminder`
+
+```kotlin
+// Было:
+repository: UpdateCollectionRepository<ReminderBD, ReminderBD>
+fun ReminderBD.toUi(...)
+fun RemindersUi.toBDIn(): ReminderBD
+
+// Стало:
+repository: UpdateCollectionRepository<Reminder, Reminder>
+fun Reminder.toUi (...)
+fun RemindersUi.toBDIn(): Reminder
+```
+
+## Резюме
+- Удалена избыточная прослойка `ReminderBD`
+- Упрощена архитектура — теперь используется только `Reminder` entity
+- Уменьшено количество кода (удалены маппинги)
+- Типобезопасность сохранена (поля идентичны)
+
+---
+
 # Изменения для исправления FOREIGN KEY constraint failed
 
 ## Описание проблемы
