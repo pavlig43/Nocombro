@@ -13,7 +13,7 @@ internal object RemindersFilterMatcher : FilterMatcher<RemindersUi, RemindersFie
             RemindersField.SELECTION -> true
             RemindersField.COMPOSE_ID -> true
             RemindersField.TEXT -> matchesTextField(item.text, stateAny)
-            RemindersField.REMINDER_DATE_TIME -> true // TODO: implement datetime filtering
+            RemindersField.REMINDER_DATE_TIME -> true 
         }
     }
 }

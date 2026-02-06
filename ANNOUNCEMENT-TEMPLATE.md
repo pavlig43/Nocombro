@@ -12,13 +12,15 @@
 - Автоформатирование кода
 - Меньше ошибок в PR
 
-🚀 Что нужно сделать (1 минута):
+🚀 Что нужно сделать:
 
-1. Обновить master:
-   git checkout master && git pull
+Просто обновите и соберите проект:
+```bash
+git pull origin master
+./gradlew build
+```
 
-2. Установить hooks:
-   ./gradlew installGitHooks
+Gradle автоматически установит hooks!
 
 ✅ Всё! Теперь при коммите Detekt будет проверять код автоматически.
 
@@ -46,20 +48,28 @@
 ✓ Автоформатирование кода
 ✓ Меньше правок при code review
 
-Что нужно сделать (займет 2 минуты):
+Что нужно сделать (займет 1 минуту):
 
-1. Обновите ветку master:
-   $ git checkout master
-   $ git pull origin master
+Просто обновите и соберите проект:
+```bash
+$ git checkout master
+$ git pull origin master
+$ ./gradlew build
+```
 
-2. Установите Git hooks:
-   $ ./gradlew installGitHooks
+Gradle автоматически установит hooks при первой сборке!
 
-   Должно появиться: "✅ Git pre-commit hook installed"
+Вы увидите сообщение:
+```
+⚠️  Git hooks not found. Installing automatically...
+✅ Git pre-commit hook installed
+```
 
-3. Проверьте установку:
-   $ ls .git/hooks/pre-commit  # Linux/macOS
-   > dir .git\hooks\pre-commit  # Windows
+Проверьте установку (опционально):
+```bash
+$ ls .git/hooks/pre-commit  # Linux/macOS
+> dir .git\hooks\pre-commit  # Windows
+```
 
 Как это работает теперь:
 
@@ -103,7 +113,10 @@ GitHub Actions:
 ## Краткая шпаргалка (Quick Reference)
 
 ```
-📋 Установка
+📋 Автоматическая установка (при первой сборке)
+./gradlew build
+
+📋 Ручная установка
 ./gradlew installGitHooks
 
 🔍 Проверка
