@@ -6,12 +6,10 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
 import ru.pavlig43.core.getCurrentLocalDate
 import ru.pavlig43.database.data.common.NotificationDTO
-import ru.pavlig43.database.data.transaction.reminder.ReminderBD
 import ru.pavlig43.database.data.transaction.reminder.REMINDER_TABLE_NAME
+import ru.pavlig43.database.data.transaction.reminder.ReminderBD
 
 @Dao
 interface ReminderDao {
