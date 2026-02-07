@@ -43,3 +43,4 @@ sealed interface MegaType {
         )
     }
 }
+
