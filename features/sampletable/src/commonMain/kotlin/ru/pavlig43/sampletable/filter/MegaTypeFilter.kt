@@ -10,8 +10,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.resources.painterResource
 import ru.pavlig43.sampletable.model.MegaType
 import ru.pavlig43.sampletable.model.PersonTableData
+import ru.pavlig43.theme.Res
 import ua.wwind.table.filter.data.*
 
 /**
@@ -248,10 +250,10 @@ private fun MegaTypeGroup(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            // Expand/Collapse text indicator
-            Text(
-                text = if (expanded) "▼" else "▶",
-                style = MaterialTheme.typography.bodyMedium,
+            // Expand/Collapse icon indicator
+            Icon(
+                painter = painterResource(if (expanded) Res.drawable.arrow_downward else Res.drawable.arrow_upward),
+                contentDescription = if (expanded) "Collapse" else "Expand",
                 modifier = Modifier
                     .size(20.dp)
                     .clickable(onClick = onToggleExpanded),
