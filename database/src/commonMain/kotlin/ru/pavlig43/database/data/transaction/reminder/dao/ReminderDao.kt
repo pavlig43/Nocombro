@@ -5,7 +5,12 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+import ru.pavlig43.core.getCurrentLocalDate
 import ru.pavlig43.database.data.transaction.reminder.ReminderBD
+import ru.pavlig43.database.data.transaction.reminder.ReminderNotificationDTO
 import ru.pavlig43.database.data.transaction.reminder.REMINDER_TABLE_NAME
 
 @Dao
@@ -30,4 +35,27 @@ interface ReminderDao {
 
     @Query("SELECT * FROM $REMINDER_TABLE_NAME WHERE transaction_id = :transactionId")
     suspend fun getByTransactionId(transactionId: Int): List<ReminderBD>
+
+    /**
+     * Получает все напоминания для уведомлений
+     */
+    @Query("SELECT * FROM $REMINDER_TABLE_NAME")
+    fun observeAllReminders(): Flow<List<ReminderBD>>
+
+    /**
+     * Получает напоминания на сегодня
+     */
+    fun observeTodayReminders(): Flow<List<ReminderNotificationDTO>> {
+        return observeAllReminders().map { lst ->
+            val today = getCurrentLocalDate()
+            lst.filter { it.reminderDateTime.date == today }.map {
+                ReminderNotificationDTO(
+                    id = it.id,
+                    transactionId = it.transactionId,
+                    text = it.text,
+                    reminderDateTime = it.reminderDateTime
+                )
+            }
+        }
+    }
 }
