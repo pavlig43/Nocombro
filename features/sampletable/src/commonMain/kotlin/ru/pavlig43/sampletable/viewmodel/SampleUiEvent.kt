@@ -1,5 +1,6 @@
 package ru.pavlig43.sampletable.viewmodel
 
+import ru.pavlig43.sampletable.model.MegaType
 import ru.pavlig43.sampletable.model.Person
 import ru.pavlig43.sampletable.model.Position
 
@@ -29,6 +30,11 @@ sealed class SampleUiEvent {
     /** Update position field during editing */
     data class UpdatePosition(
         val position: Position,
+    ) : SampleUiEvent()
+
+    /** Update megaType field during editing */
+    data class UpdateMegaType(
+        val megaType: MegaType,
     ) : SampleUiEvent()
 
     /** Update salary field during editing */

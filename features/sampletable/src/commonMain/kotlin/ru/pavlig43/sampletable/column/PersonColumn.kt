@@ -15,6 +15,7 @@ enum class PersonColumn {
     COUNTRY,
     DEPARTMENT,
     POSITION,
+    MEGA_TYPE,
     SALARY,
     RATING,
     HIRE_DATE,

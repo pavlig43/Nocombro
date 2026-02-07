@@ -262,6 +262,14 @@ class SampleViewModel(
                 }
             }
 
+            is SampleUiEvent.UpdateMegaType -> {
+                editingRowState.update { current ->
+                    current.copy(
+                        person = current.person?.copy(megaType = event.megaType),
+                    )
+                }
+            }
+
             is SampleUiEvent.UpdateSalary -> {
                 editingRowState.update { current ->
                     current.copy(

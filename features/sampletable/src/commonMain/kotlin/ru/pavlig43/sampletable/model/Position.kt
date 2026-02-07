@@ -18,11 +18,29 @@ enum class Position(
 
     override fun toString(): String = displayName
 }
-sealed interface MegaType{
-    sealed interface Type1: MegaType{
-        data object PodType11: Type1
-        data object PodType12: Type1
+sealed interface MegaType {
+    val displayName: String
+
+    sealed interface Type1 : MegaType {
+        data object PodType11 : Type1 {
+            override val displayName = "Pod Type 1.1"
+        }
+
+        data object PodType12 : Type1 {
+            override val displayName = "Pod Type 1.2"
+        }
     }
-    data object Type2: MegaType
+
+    data object Type2 : MegaType {
+        override val displayName = "Type 2"
+    }
+
+    companion object {
+        val entries: List<MegaType> = listOf(
+            Type1.PodType11,
+            Type1.PodType12,
+            Type2,
+        )
+    }
 }
 

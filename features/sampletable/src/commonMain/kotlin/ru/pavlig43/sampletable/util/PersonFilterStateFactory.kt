@@ -2,6 +2,7 @@ package ru.pavlig43.sampletable.util
 
 import kotlinx.datetime.LocalDate
 import ru.pavlig43.sampletable.column.PersonColumn
+import ru.pavlig43.sampletable.filter.MegaTypeFilterState
 import ru.pavlig43.sampletable.model.Position
 import ua.wwind.table.filter.data.FilterConstraint
 import ua.wwind.table.filter.data.TableFilterState
@@ -30,6 +31,12 @@ object PersonFilterStateFactory {
             PersonColumn.DEPARTMENT -> TableFilterState<String>(constraint = null, values = null)
             PersonColumn.POSITION ->
                 TableFilterState<List<Position>>(
+                    constraint = null,
+                    values = null,
+                )
+
+            PersonColumn.MEGA_TYPE ->
+                TableFilterState<MegaTypeFilterState>(
                     constraint = null,
                     values = null,
                 )

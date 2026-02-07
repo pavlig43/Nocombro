@@ -20,6 +20,7 @@ data class Person(
     val salary: Int,
     val rating: Int,
     val hireDate: LocalDate,
+    val megaType: MegaType = MegaType.Type2,
     /** Multiline notes to demonstrate dynamic row height in table. */
     val notes: String =
         when {
