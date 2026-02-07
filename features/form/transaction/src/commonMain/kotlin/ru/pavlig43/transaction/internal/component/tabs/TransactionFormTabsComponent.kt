@@ -45,7 +45,7 @@ internal class TransactionFormTabsComponent(
             componentContext = childContext("tab"),
             startConfigurations = listOf(TransactionTab.Essentials),
             serializer = TransactionTab.serializer(),
-            tabChildFactory = {context, config, closeTab ->
+            tabChildFactory = { context, config, _ ->
                 when(config){
                     TransactionTab.Essentials -> TransactionTabChild.Essentials(
                         TransactionEssentialComponent(
