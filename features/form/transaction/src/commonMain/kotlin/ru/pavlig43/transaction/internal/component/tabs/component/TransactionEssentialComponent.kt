@@ -16,12 +16,14 @@ internal class TransactionEssentialComponent(
     updateRepository: UpdateEssentialsRepository<Transaction>,
     componentFactory: EssentialComponentFactory<Transaction, TransactionEssentialsUi>,
     onSuccessInitData:(TransactionEssentialsUi)-> Unit,
+    observeOnEssentials:(TransactionEssentialsUi)-> Unit,
 ) : UpdateEssentialsComponent<Transaction, TransactionEssentialsUi>(
     componentContext = componentContext,
     id = id,
     updateEssentialsRepository = updateRepository,
     componentFactory = componentFactory,
     mapperToDTO = { toDto() },
+    observeOnEssentials = observeOnEssentials,
     onSuccessInitData = onSuccessInitData
 ){
     override val errorMessages: Flow<List<String>> = flowOf(emptyList())

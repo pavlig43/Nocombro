@@ -2,6 +2,9 @@ package ru.pavlig43.transaction.internal.component.tabs
 
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.koin.core.qualifier.qualifier
 import org.koin.core.scope.Scope
@@ -33,6 +36,8 @@ internal class TransactionFormTabsComponent(
     private val coroutineScope = componentCoroutineScope()
     private var transactionDateTime: kotlinx.datetime.LocalDateTime? = null
 
+    private val essentialsFields = MutableStateFlow(TransactionEssentialsUi())
+
     override val transactionExecutor: TransactionExecutor = scope.get()
 
     override val tabNavigationComponent: TabNavigationComponent<TransactionTab, TransactionTabChild> =
@@ -48,6 +53,8 @@ internal class TransactionFormTabsComponent(
                             id = transactionId,
                             updateRepository = scope.get(),
                             componentFactory = essentialFactory,
+                            observeOnEssentials = {essentialsFields.update { it }},
+
                             onSuccessInitData = {transaction->
                                 transactionDateTime = transaction.createdAt
                                 coroutineScope.launch {
@@ -90,7 +97,7 @@ internal class TransactionFormTabsComponent(
                             componentContext = context,
                             transactionId = transactionId,
                             repository = scope.get(UpdateCollectionRepositoryType.EXPENSES.qualifier),
-                            transactionDateTime = transactionDateTime!!
+                            transactionDateTimeFlow = essentialsFields.map { it.createdAt },
                         )
                     )
 

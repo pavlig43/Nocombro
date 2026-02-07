@@ -3,12 +3,16 @@ package ru.pavlig43.transaction.internal.component.tabs.component.expenses
 import com.arkivanov.decompose.ComponentContext
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.forEach
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDateTime
+import ru.pavlig43.core.emptyLocalDateTime
 import ru.pavlig43.database.data.transaction.expense.ExpenseBD
 import ru.pavlig43.database.data.transaction.expense.ExpenseTypeEnum
 import ru.pavlig43.mutable.api.component.MutableTableComponent
-import ru.pavlig43.mutable.api.component.MutableUiEvent.UpdateItem
 import ru.pavlig43.tablecore.model.TableData
 import ru.pavlig43.update.data.UpdateCollectionRepository
 import ua.wwind.table.ColumnSpec
@@ -17,7 +21,7 @@ internal class ExpensesComponent(
     componentContext: ComponentContext,
     private val transactionId: Int,
     repository: UpdateCollectionRepository<ExpenseBD, ExpenseBD>,
-    private val transactionDateTime: LocalDateTime
+    transactionDateTimeFlow: Flow<LocalDateTime>,
 ) : MutableTableComponent<ExpenseBD, ExpenseBD, ExpensesUi, ExpensesField>(
     componentContext = componentContext,
     parentId = transactionId,
@@ -32,14 +36,26 @@ internal class ExpensesComponent(
             onEvent = ::onEvent
         )
 
+    private val dateTime = transactionDateTimeFlow
+        .stateIn(
+        coroutineScope,
+        SharingStarted.Eagerly,
+        emptyLocalDateTime
+    )
+    init {
+        coroutineScope.launch {
+            transactionDateTimeFlow.collect { println(it) }
+        }
+    }
     override fun createNewItem(composeId: Int): ExpensesUi {
+        println(dateTime.value)
         return ExpensesUi(
             composeId = composeId,
             id = 0,
             transactionId = transactionId,
             expenseType = ExpenseTypeEnum.TRANSPORT_GASOLINE,
             amount = 0,
-            expenseDateTime = transactionDateTime, // Используем дату транзакции
+            expenseDateTime = dateTime.value, // Используем дату транзакции
             comment = ""
         )
     }

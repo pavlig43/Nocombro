@@ -17,6 +17,7 @@ import ru.pavlig43.core.component.EssentialComponentFactory
 import ru.pavlig43.core.tabs.TabOpener
 import ru.pavlig43.corekoin.ComponentKoinContext
 import ru.pavlig43.database.data.transaction.Transaction
+import ru.pavlig43.immutable.internal.component.items.transaction.TransactionTableUi
 import ru.pavlig43.transaction.api.TransactionFormDependencies
 import ru.pavlig43.transaction.internal.component.CreateTransactionComponent
 import ru.pavlig43.transaction.internal.component.tabs.TransactionFormTabsComponent
@@ -45,18 +46,18 @@ class TransactionFormComponent(
     private val stackNavigation = StackNavigation<Config>()
 
 
+
     private val essentialFactory =
         EssentialComponentFactory<Transaction, TransactionEssentialsUi>(
             initItem = TransactionEssentialsUi(),
             isValidFieldsFactory = { transactionType != null },
             mapperToUi = { toUi() },
-            produceInfoForTabName = {
+            produceInfoForTabName = { transaction: TransactionEssentialsUi ->
                 onChangeValueForMainTab(
-                    it.transactionType?.displayName ?: "* Транзакция"
+                    transaction.transactionType?.displayName ?: "* Транзакция"
                 )
             }
         )
-
     private fun onChangeValueForMainTab(title: String) {
 
         val navTabState = MainTabComponent.NavTabState(title)
