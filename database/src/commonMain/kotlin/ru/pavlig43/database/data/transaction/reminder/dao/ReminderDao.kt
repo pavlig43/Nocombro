@@ -9,8 +9,8 @@ import kotlinx.coroutines.flow.map
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import ru.pavlig43.core.getCurrentLocalDate
+import ru.pavlig43.database.data.common.NotificationDTO
 import ru.pavlig43.database.data.transaction.reminder.ReminderBD
-import ru.pavlig43.database.data.transaction.reminder.ReminderNotificationDTO
 import ru.pavlig43.database.data.transaction.reminder.REMINDER_TABLE_NAME
 
 @Dao
@@ -45,15 +45,14 @@ interface ReminderDao {
     /**
      * Получает просроченные и сегодняшние напоминания
      */
-    fun observeTodayReminders(): Flow<List<ReminderNotificationDTO>> {
+    fun observeTodayReminders(): Flow<List<NotificationDTO>> {
         return observeAllReminders().map { lst ->
             val today = getCurrentLocalDate()
             lst.filter { it.reminderDateTime.date <= today }.map {
-                ReminderNotificationDTO(
-                    id = it.id,
-                    transactionId = it.transactionId,
-                    text = it.text,
-                    reminderDateTime = it.reminderDateTime
+
+                NotificationDTO(
+                    id = it.transactionId,
+                    displayName = it.text
                 )
             }
         }

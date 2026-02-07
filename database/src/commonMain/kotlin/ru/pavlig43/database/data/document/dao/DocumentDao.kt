@@ -50,9 +50,6 @@ interface DocumentDao {
 
     }
 
-
-
-
     @Query("SELECT id,display_name AS displayName FROM document WHERE id NOT IN (SELECT owner_id FROM file WHERE owner_type = 'DOCUMENT')")
     fun observeOnItemWithoutFiles(): Flow<List<NotificationDTO>>
 

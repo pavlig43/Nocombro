@@ -108,7 +108,7 @@ private class TransactionZeroRepository(
         db.reminderDao.observeTodayReminders().mapValues { notificationDTO ->
             NotificationUi(
                 id = notificationDTO.id,
-                text = "Напоминание: ${notificationDTO.text}"
+                text = "Напоминание: ${notificationDTO.displayName}"
             )
         }
 
