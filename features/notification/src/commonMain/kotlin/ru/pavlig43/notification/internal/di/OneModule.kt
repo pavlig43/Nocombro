@@ -16,8 +16,6 @@ internal val mediumModule = module {
 
     registerRepository{ DeclarationOneRepository(get()) }
 
-
-
 }
 
 private class DeclarationOneRepository(

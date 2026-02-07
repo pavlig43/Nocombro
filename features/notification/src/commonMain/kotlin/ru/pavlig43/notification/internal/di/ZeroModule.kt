@@ -15,6 +15,7 @@ internal val highModule = module {
     registerRepository { DocumentZeroRepository(get()) }
     registerRepository { DeclarationZeroRepository(get()) }
     registerRepository { ProductZeroRepository(get()) }
+    registerRepository { TransactionZeroRepository(get()) }
 
 }
 
@@ -94,6 +95,22 @@ private class ProductZeroRepository(
         ) { arrays ->
             arrays.flatMap { it }
         }
+}
 
+private class TransactionZeroRepository(
+    db: NocombroDatabase
+) : INotificationRepository {
 
+    override val notificationLevel: NotificationLevel = NotificationLevel.HIGH
+    override val notificationItem: NotificationItem = NotificationItem.Transaction
+
+    private val todayReminders =
+        db.reminderDao.observeTodayReminders().mapValues { notificationDTO ->
+            NotificationUi(
+                id = notificationDTO.id,
+                text = "Напоминание: ${notificationDTO.displayName}"
+            )
+        }
+
+    override val mergedFromDBNotificationFlow: Flow<List<NotificationUi>> = todayReminders
 }

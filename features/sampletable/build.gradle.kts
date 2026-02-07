@@ -11,5 +11,6 @@ kotlin {
         implementation(projects.features.table.immutable)
         implementation(projects.core)
         implementation(projects.coreui)
+        implementation(projects.theme)
     }
 }

@@ -10,5 +10,6 @@ fun getDataBaseBuilder(): RoomDatabase.Builder<NocombroDatabase> {
     val builder =  Room.databaseBuilder<NocombroDatabase>(
         name = dbFile.absolutePath,
     )
+        .fallbackToDestructiveMigration(dropAllTables = true)
     return builder
 }
