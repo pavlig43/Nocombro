@@ -14,6 +14,7 @@ import ru.pavlig43.database.data.transaction.Transaction
 import ru.pavlig43.database.data.transaction.TransactionType
 import ru.pavlig43.transaction.internal.component.tabs.component.TransactionEssentialComponent
 import ru.pavlig43.transaction.internal.component.tabs.component.buy.BuyComponent
+import ru.pavlig43.transaction.internal.component.tabs.component.expenses.ExpensesComponent
 import ru.pavlig43.transaction.internal.component.tabs.component.reminders.RemindersComponent
 import ru.pavlig43.transaction.internal.di.UpdateCollectionRepositoryType
 import ru.pavlig43.transaction.internal.model.TransactionEssentialsUi
@@ -30,6 +31,7 @@ internal class TransactionFormTabsComponent(
     scope: Scope
 ): ComponentContext by componentContext, IItemFormTabsComponent<TransactionTab, TransactionTabChild>{
     private val coroutineScope = componentCoroutineScope()
+    private var transactionDateTime: kotlinx.datetime.LocalDateTime? = null
 
     override val transactionExecutor: TransactionExecutor = scope.get()
 
@@ -47,6 +49,7 @@ internal class TransactionFormTabsComponent(
                             updateRepository = scope.get(),
                             componentFactory = essentialFactory,
                             onSuccessInitData = {transaction->
+                                transactionDateTime = transaction.createdAt
                                 coroutineScope.launch {
                                     when(transaction.transactionType){
                                         TransactionType.BUY -> {
@@ -60,6 +63,8 @@ internal class TransactionFormTabsComponent(
                                     }
                                     // Добавляем вкладку Напоминания для всех типов транзакций
                                     tabNavigationComponent.addTab(TransactionTab.Reminders)
+                                    // Добавляем вкладку Расходы для всех типов транзакций
+                                    tabNavigationComponent.addTab(TransactionTab.Expenses)
                                 }
                             }
                         )
@@ -78,6 +83,14 @@ internal class TransactionFormTabsComponent(
                             componentContext = context,
                             transactionId = transactionId,
                             repository = scope.get(UpdateCollectionRepositoryType.REMINDERS.qualifier)
+                        )
+                    )
+                    TransactionTab.Expenses -> TransactionTabChild.Expenses(
+                        ExpensesComponent(
+                            componentContext = context,
+                            transactionId = transactionId,
+                            repository = scope.get(UpdateCollectionRepositoryType.EXPENSES.qualifier),
+                            transactionDateTime = transactionDateTime!!
                         )
                     )
 

@@ -14,6 +14,7 @@ import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.database.data.product.ProductUnit
 import ru.pavlig43.database.data.transaction.MovementType
 import ru.pavlig43.database.data.transaction.TransactionType
+import ru.pavlig43.database.data.transaction.expense.ExpenseTypeEnum
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
@@ -66,6 +67,12 @@ class Converters {
 
     @TypeConverter
     fun fromTransactionType(value: TransactionType): String = value.name
+
+    @TypeConverter
+    fun toExpenseTypeEnum(value: String): ExpenseTypeEnum = enumValueOf<ExpenseTypeEnum>(value)
+
+    @TypeConverter
+    fun fromExpenseTypeEnum(value: ExpenseTypeEnum): String = value.name
 
 
     @TypeConverter
