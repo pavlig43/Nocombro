@@ -378,7 +378,12 @@ fun createTableColumns(
                         expanded = expanded,
                         onDismissRequest = { expanded = false },
                     ) {
-                        MegaType.entries.forEach { megaType ->
+                        val megaTypes = listOf(
+                            MegaType.Type1.PodType11,
+                            MegaType.Type1.PodType12,
+                            MegaType.Type2
+                        )
+                        megaTypes.forEach { megaType ->
                             DropdownMenuItem(
                                 text = { Text(megaType.displayName) },
                                 onClick = {

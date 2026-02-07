@@ -4,24 +4,21 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ExpandLess
-import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.unit.dp
-import kotlinx.collections.immutable.ImmutableList
 import ru.pavlig43.sampletable.model.MegaType
+import ru.pavlig43.sampletable.model.PersonTableData
 import ua.wwind.table.filter.data.*
 
 /**
  * Creates a custom hierarchical filter for MegaType sealed interface.
- * Demonstrates custom filter with tree-like UI for nested sealed interfaces.
+ * Demonstrates custom filter with tree UI using icons from resources.
  */
-fun createMegaTypeFilter(): TableFilterType.CustomTableFilter<MegaTypeFilterState, Unit> =
+fun createMegaTypeFilter(): TableFilterType.CustomTableFilter<MegaTypeFilterState, PersonTableData> =
     TableFilterType.CustomTableFilter(
         renderFilter = MegaTypeFilterRenderer(),
         stateProvider = MegaTypeFilterStateProvider(),
@@ -38,31 +35,39 @@ data class MegaTypeFilterState(
 /**
  * Renderer for hierarchical MegaType filter with tree UI.
  */
-private class MegaTypeFilterRenderer : CustomFilterRenderer<MegaTypeFilterState, Unit> {
+private class MegaTypeFilterRenderer : CustomFilterRenderer<MegaTypeFilterState, PersonTableData> {
     @Composable
     override fun RenderPanel(
         currentState: TableFilterState<MegaTypeFilterState>?,
-        tableData: Unit,
+        tableData: PersonTableData,
         onDismiss: () -> Unit,
         onChange: (TableFilterState<MegaTypeFilterState>?) -> Unit,
     ): TableFilterType.CustomFilterActions {
         val current = currentState?.values?.firstOrNull() ?: MegaTypeFilterState()
 
         var selectedTypes by remember { mutableStateOf(current.selectedTypes) }
+        var expandedGroup1 by remember { mutableStateOf(false) }
+
+        // All MegaType values
+        val allMegaTypes = listOf(
+            MegaType.Type1.PodType11,
+            MegaType.Type1.PodType12,
+            MegaType.Type2
+        )
 
         // Auto-apply on change
         val applyFilter = {
             val newState = MegaTypeFilterState(selectedTypes = selectedTypes)
             onChange(
                 TableFilterState(
-                    constraint = FilterConstraint.EQUALS,
+                    constraint = FilterConstraint.IN,
                     values = listOf(newState),
                 ),
             )
         }
 
         Column(
-            modifier = Modifier.width(300.dp).height(400.dp),
+            modifier = Modifier.width(320.dp).height(400.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Text(
@@ -79,8 +84,10 @@ private class MegaTypeFilterRenderer : CustomFilterRenderer<MegaTypeFilterState,
                 // Type1 group (with sub-items)
                 MegaTypeGroup(
                     title = "Type 1",
+                    expanded = expandedGroup1,
                     items = listOf(MegaType.Type1.PodType11, MegaType.Type1.PodType12),
                     selectedTypes = selectedTypes,
+                    onToggleExpanded = { expandedGroup1 = !expandedGroup1 },
                     onToggle = { megaType ->
                         selectedTypes = if (megaType in selectedTypes) {
                             selectedTypes - megaType
@@ -102,26 +109,26 @@ private class MegaTypeFilterRenderer : CustomFilterRenderer<MegaTypeFilterState,
                 HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
 
                 // Type2 (single item)
-        MegaTypeItem(
-            title = "Type 2",
-            megaType = MegaType.Type2,
-            selected = MegaType.Type2 in selectedTypes,
-            onToggle = {
-                selectedTypes = if (MegaType.Type2 in selectedTypes) {
-                    selectedTypes - MegaType.Type2
-                } else {
-                    selectedTypes + MegaType.Type2
-                }
-                applyFilter()
-            },
-        )
+                MegaTypeItem(
+                    title = "Type 2",
+                    megaType = MegaType.Type2,
+                    selected = MegaType.Type2 in selectedTypes,
+                    onToggle = {
+                        selectedTypes = if (MegaType.Type2 in selectedTypes) {
+                            selectedTypes - MegaType.Type2
+                        } else {
+                            selectedTypes + MegaType.Type2
+                        }
+                        applyFilter()
+                    },
+                )
             }
 
             HorizontalDivider()
 
             // Selected count
             Text(
-                "Selected: ${selectedTypes.size} of ${MegaType.entries.size}",
+                "Selected: ${selectedTypes.size} of ${allMegaTypes.size}",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -133,7 +140,7 @@ private class MegaTypeFilterRenderer : CustomFilterRenderer<MegaTypeFilterState,
                     val newState = MegaTypeFilterState(selectedTypes = selectedTypes)
                     onChange(
                         TableFilterState(
-                            constraint = FilterConstraint.EQUALS,
+                            constraint = FilterConstraint.IN,
                             values = listOf(newState),
                         ),
                     )
@@ -151,13 +158,19 @@ private class MegaTypeFilterRenderer : CustomFilterRenderer<MegaTypeFilterState,
     @Composable
     override fun RenderFastFilter(
         currentState: TableFilterState<MegaTypeFilterState>?,
-        tableData: Unit,
+        tableData: PersonTableData,
         onChange: (TableFilterState<MegaTypeFilterState>?) -> Unit,
     ) {
         val current = currentState?.values?.firstOrNull()
         val selectedCount = current?.selectedTypes?.size ?: 0
 
-        val allSelected = selectedCount == MegaType.entries.size
+        val allMegaTypes = listOf(
+            MegaType.Type1.PodType11,
+            MegaType.Type1.PodType12,
+            MegaType.Type2
+        )
+
+        val allSelected = selectedCount == allMegaTypes.size
         val someSelected = selectedCount > 0 && !allSelected
 
         // Tri-state checkbox for quick filter
@@ -178,10 +191,10 @@ private class MegaTypeFilterRenderer : CustomFilterRenderer<MegaTypeFilterState,
                         onChange(null)
                     } else {
                         // Select all
-                        val newState = MegaTypeFilterState(selectedTypes = MegaType.entries.toSet())
+                        val newState = MegaTypeFilterState(selectedTypes = allMegaTypes.toSet())
                         onChange(
                             TableFilterState(
-                                constraint = FilterConstraint.EQUALS,
+                                constraint = FilterConstraint.IN,
                                 values = listOf(newState),
                             ),
                         )
@@ -211,16 +224,18 @@ private class MegaTypeFilterStateProvider : CustomFilterStateProvider<MegaTypeFi
 
 /**
  * Hierarchical group item for Type1 with expandable sub-items.
+ * Uses text-based expand/collapse indicators (Unicode symbols).
  */
 @Composable
 private fun MegaTypeGroup(
     title: String,
+    expanded: Boolean,
     items: List<MegaType>,
     selectedTypes: Set<MegaType>,
+    onToggleExpanded: () -> Unit,
     onToggle: (MegaType) -> Unit,
     onToggleGroup: (Boolean) -> Unit,
 ) {
-    var expanded by remember { mutableStateOf(true) }
     val allSelected = items.all { it in selectedTypes }
     val someSelected = items.any { it in selectedTypes } && !allSelected
 
@@ -233,15 +248,13 @@ private fun MegaTypeGroup(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            // Expand/Collapse icon
-            Icon(
-                imageVector = if (expanded) {
-                    Icons.Default.ExpandLess
-                } else {
-                    Icons.Default.ExpandMore
-                },
-                contentDescription = if (expanded) "Collapse" else "Expand",
-                modifier = Modifier.size(20.dp).clickable { expanded = !expanded },
+            // Expand/Collapse text indicator
+            Text(
+                text = if (expanded) "▼" else "▶",
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier
+                    .size(20.dp)
+                    .clickable(onClick = onToggleExpanded),
             )
 
             // Tri-state checkbox for group

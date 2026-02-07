@@ -850,7 +850,12 @@ fun createDemoData(): List<Person> =
         ),
     )
         .map { person ->
-            val randomMegaType = MegaType.entries.random(Random(person.id * 31 + person.age))
+            val megaTypes = listOf(
+                MegaType.Type1.PodType11,
+                MegaType.Type1.PodType12,
+                MegaType.Type2
+            )
+            val randomMegaType = megaTypes.random(Random(person.id * 31 + person.age))
             person.copy(megaType = randomMegaType)
         }
         .mapIndexed { index, person -> person.copy(id = index + 1) }
