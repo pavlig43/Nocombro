@@ -2,6 +2,9 @@ package ru.pavlig43.transaction.internal.component.tabs
 
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.koin.core.qualifier.qualifier
 import org.koin.core.scope.Scope
@@ -14,6 +17,7 @@ import ru.pavlig43.database.data.transaction.Transaction
 import ru.pavlig43.database.data.transaction.TransactionType
 import ru.pavlig43.transaction.internal.component.tabs.component.TransactionEssentialComponent
 import ru.pavlig43.transaction.internal.component.tabs.component.buy.BuyComponent
+import ru.pavlig43.transaction.internal.component.tabs.component.expenses.ExpensesComponent
 import ru.pavlig43.transaction.internal.component.tabs.component.reminders.RemindersComponent
 import ru.pavlig43.transaction.internal.di.UpdateCollectionRepositoryType
 import ru.pavlig43.transaction.internal.model.TransactionEssentialsUi
@@ -30,6 +34,9 @@ internal class TransactionFormTabsComponent(
     scope: Scope
 ): ComponentContext by componentContext, IItemFormTabsComponent<TransactionTab, TransactionTabChild>{
     private val coroutineScope = componentCoroutineScope()
+    private var transactionDateTime: kotlinx.datetime.LocalDateTime? = null
+
+    private val essentialsFields = MutableStateFlow(TransactionEssentialsUi())
 
     override val transactionExecutor: TransactionExecutor = scope.get()
 
@@ -38,7 +45,7 @@ internal class TransactionFormTabsComponent(
             componentContext = childContext("tab"),
             startConfigurations = listOf(TransactionTab.Essentials),
             serializer = TransactionTab.serializer(),
-            tabChildFactory = {context, config, closeTab ->
+            tabChildFactory = { context, config, _ ->
                 when(config){
                     TransactionTab.Essentials -> TransactionTabChild.Essentials(
                         TransactionEssentialComponent(
@@ -46,7 +53,10 @@ internal class TransactionFormTabsComponent(
                             id = transactionId,
                             updateRepository = scope.get(),
                             componentFactory = essentialFactory,
+                            observeOnEssentials = {essentialsFields.update { it }},
+
                             onSuccessInitData = {transaction->
+                                transactionDateTime = transaction.createdAt
                                 coroutineScope.launch {
                                     when(transaction.transactionType){
                                         TransactionType.BUY -> {
@@ -60,6 +70,8 @@ internal class TransactionFormTabsComponent(
                                     }
                                     // Добавляем вкладку Напоминания для всех типов транзакций
                                     tabNavigationComponent.addTab(TransactionTab.Reminders)
+                                    // Добавляем вкладку Расходы для всех типов транзакций
+                                    tabNavigationComponent.addTab(TransactionTab.Expenses)
                                 }
                             }
                         )
@@ -78,6 +90,14 @@ internal class TransactionFormTabsComponent(
                             componentContext = context,
                             transactionId = transactionId,
                             repository = scope.get(UpdateCollectionRepositoryType.REMINDERS.qualifier)
+                        )
+                    )
+                    TransactionTab.Expenses -> TransactionTabChild.Expenses(
+                        ExpensesComponent(
+                            componentContext = context,
+                            transactionId = transactionId,
+                            repository = scope.get(UpdateCollectionRepositoryType.EXPENSES.qualifier),
+                            transactionDateTimeFlow = essentialsFields.map { it.createdAt },
                         )
                     )
 

@@ -66,6 +66,7 @@ abstract class EssentialsComponent<I : GenericItem, T : ItemEssentialsUi>(
     componentContext: ComponentContext,
     private val componentFactory: EssentialComponentFactory<I, T>,
     getInitData: (suspend () -> Result<I>)?,
+    private val observeOnEssentials:(T)-> Unit ={},
     onSuccessInitData:(T)-> Unit = {}
 ) : ComponentContext by componentContext {
     protected val coroutineScope = componentCoroutineScope()
@@ -92,6 +93,7 @@ abstract class EssentialsComponent<I : GenericItem, T : ItemEssentialsUi>(
     fun onChangeItem(item: T) {
         componentFactory.produceInfoForTabName(item)
         _itemFields.update { item }
+        observeOnEssentials(item)
 
     }
 

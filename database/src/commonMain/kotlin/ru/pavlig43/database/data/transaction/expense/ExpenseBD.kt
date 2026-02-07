@@ -1,0 +1,47 @@
+package ru.pavlig43.database.data.transaction.expense
+
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+import kotlinx.datetime.LocalDateTime
+import ru.pavlig43.core.model.CollectionObject
+
+internal const val EXPENSE_TABLE_NAME = "expense"
+
+@Entity(
+    tableName = EXPENSE_TABLE_NAME
+)
+data class ExpenseBD(
+    /**
+     * ID транзакции (может быть null - расход не привязан к транзакции)
+     */
+    @ColumnInfo("transaction_id")
+    val transactionId: Int?,
+
+    /**
+     * Тип расхода
+     */
+    @ColumnInfo("expense_type")
+    val expenseType: ExpenseTypeEnum,
+
+    /**
+     * Сумма расхода в копейках
+     */
+    @ColumnInfo("amount")
+    val amount: Int,
+
+    /**
+     * Дата и время расхода
+     */
+    @ColumnInfo("expense_date_time")
+    val expenseDateTime: LocalDateTime,
+
+    /**
+     * Комментарий
+     */
+    @ColumnInfo("comment")
+    val comment: String,
+
+    @PrimaryKey(autoGenerate = true)
+    override val id: Int = 0
+) : CollectionObject

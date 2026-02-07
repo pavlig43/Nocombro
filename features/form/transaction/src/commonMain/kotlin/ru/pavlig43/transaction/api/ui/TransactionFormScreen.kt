@@ -18,6 +18,7 @@ import ru.pavlig43.transaction.api.component.TransactionFormComponent
 import ru.pavlig43.transaction.internal.component.tabs.TransactionTabChild
 import ru.pavlig43.transaction.internal.component.tabs.component.TransactionEssentialComponent
 import ru.pavlig43.transaction.internal.component.tabs.component.buy.BuyScreen
+import ru.pavlig43.transaction.internal.component.tabs.component.expenses.ExpensesScreen
 import ru.pavlig43.transaction.internal.component.tabs.component.reminders.RemindersScreen
 import ru.pavlig43.transaction.internal.ui.CreateTransactionScreen
 import ru.pavlig43.transaction.internal.ui.TransactionFields
@@ -62,6 +63,7 @@ private fun TabsScreen(
         is TransactionTabChild.Essentials -> UpdateEssentialsBlock(child.component)
         is TransactionTabChild.Buy -> BuyScreen(child.component)
         is TransactionTabChild.Reminders -> RemindersScreen(child.component)
+        is TransactionTabChild.Expenses -> ExpensesScreen(child.component)
 
         null -> Box(Modifier)
 

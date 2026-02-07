@@ -7,6 +7,7 @@ import ru.pavlig43.create.data.CreateEssentialsRepository
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.transaction.Transaction
 import ru.pavlig43.database.data.transaction.buy.BuyBD
+import ru.pavlig43.database.data.transaction.expense.ExpenseBD
 import ru.pavlig43.database.data.transaction.reminder.ReminderBD
 import ru.pavlig43.files.api.FilesDependencies
 import ru.pavlig43.immutable.api.ImmutableTableDependencies
@@ -27,6 +28,9 @@ internal fun createTransactionFormModule(dependencies: TransactionFormDependenci
         }
         single<UpdateCollectionRepository<ReminderBD, ReminderBD>>(UpdateCollectionRepositoryType.REMINDERS.qualifier) {
             createUpdateRemindersRepository(get())
+        }
+        single<UpdateCollectionRepository<ExpenseBD, ExpenseBD>>(UpdateCollectionRepositoryType.EXPENSES.qualifier) {
+            createUpdateExpensesRepository(get())
         }
 
 
@@ -59,7 +63,8 @@ private fun getUpdateRepository(
 internal enum class UpdateCollectionRepositoryType {
 
     BUY,
-    REMINDERS
+    REMINDERS,
+    EXPENSES
 
 }
 
@@ -86,6 +91,23 @@ private fun createUpdateRemindersRepository(
         },
         upsertCollection = { reminders ->
             dao.upsertAll(reminders)
+        }
+    )
+}
+
+private fun createUpdateExpensesRepository(
+    db: NocombroDatabase
+): UpdateCollectionRepository<ExpenseBD, ExpenseBD> {
+    val dao = db.expenseDao
+    return UpdateCollectionRepository(
+        loadCollection = { transactionId ->
+            dao.getByTransactionId(transactionId)
+        },
+        deleteCollection = { ids ->
+            dao.deleteByIds(ids)
+        },
+        upsertCollection = { expenses ->
+            dao.upsertAll(expenses)
         }
     )
 }

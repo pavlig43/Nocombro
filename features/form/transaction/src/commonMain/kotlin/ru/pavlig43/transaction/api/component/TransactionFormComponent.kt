@@ -45,18 +45,18 @@ class TransactionFormComponent(
     private val stackNavigation = StackNavigation<Config>()
 
 
+
     private val essentialFactory =
         EssentialComponentFactory<Transaction, TransactionEssentialsUi>(
             initItem = TransactionEssentialsUi(),
             isValidFieldsFactory = { transactionType != null },
             mapperToUi = { toUi() },
-            produceInfoForTabName = {
+            produceInfoForTabName = { transaction: TransactionEssentialsUi ->
                 onChangeValueForMainTab(
-                    it.transactionType?.displayName ?: "* Транзакция"
+                    transaction.transactionType?.displayName ?: "* Транзакция"
                 )
             }
         )
-
     private fun onChangeValueForMainTab(title: String) {
 
         val navTabState = MainTabComponent.NavTabState(title)

@@ -32,6 +32,8 @@ import ru.pavlig43.database.data.product.dao.ProductDeclarationDao
 import ru.pavlig43.database.data.transaction.Transaction
 import ru.pavlig43.database.data.transaction.TransactionProductBDIn
 import ru.pavlig43.database.data.transaction.dao.ProductTransactionDao
+import ru.pavlig43.database.data.transaction.expense.ExpenseBD
+import ru.pavlig43.database.data.transaction.expense.dao.ExpenseDao
 import ru.pavlig43.database.data.transaction.reminder.ReminderBD
 import ru.pavlig43.database.data.transaction.reminder.dao.ReminderDao
 import ru.pavlig43.database.data.vendor.Vendor
@@ -57,12 +59,15 @@ import kotlin.time.ExperimentalTime
         TransactionProductBDIn::class,
 
         ReminderBD::class,
+
+        ExpenseBD::class,
     ],
     version = 3,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3)
     ]
+
 )
 @TypeConverters(Converters::class)
 @ConstructedBy(NocombroDatabaseConstructor::class)
@@ -81,6 +86,7 @@ abstract class NocombroDatabase : RoomDatabase() {
 
     abstract val transactionDao: ProductTransactionDao
     abstract val reminderDao: ReminderDao
+    abstract val expenseDao: ExpenseDao
 }
 
 

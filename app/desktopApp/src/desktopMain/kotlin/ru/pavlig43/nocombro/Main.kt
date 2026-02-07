@@ -16,6 +16,9 @@ import ru.pavlig43.rootnocombro.internal.di.initKoin
 
 
 fun main() {
+    // Disable verbose logging from table library (Kermit logger)
+    System.setProperty("kermit.minSeverity", "WARN")
+
     val lifecycle = LifecycleRegistry()
     initKoin {}
     FileKit.init(appId = "Nocombro")
