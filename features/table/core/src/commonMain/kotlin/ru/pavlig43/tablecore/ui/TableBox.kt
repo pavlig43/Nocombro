@@ -54,7 +54,7 @@ fun <I : ITableUi, C, E : TableData<I>> TableBox(
     editingEnabled = true,
     rowHeightMode = RowHeightMode.Dynamic,
     showFooter = false,
-    enableTextSelection = true,
+    enableTextSelection = false,
     selectionMode = SelectionMode.Multiple,
     pinnedColumnsCount = 3
     )

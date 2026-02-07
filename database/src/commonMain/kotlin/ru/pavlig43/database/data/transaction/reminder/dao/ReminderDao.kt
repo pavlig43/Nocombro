@@ -43,12 +43,12 @@ interface ReminderDao {
     fun observeAllReminders(): Flow<List<ReminderBD>>
 
     /**
-     * Получает напоминания на сегодня
+     * Получает просроченные и сегодняшние напоминания
      */
     fun observeTodayReminders(): Flow<List<ReminderNotificationDTO>> {
         return observeAllReminders().map { lst ->
             val today = getCurrentLocalDate()
-            lst.filter { it.reminderDateTime.date == today }.map {
+            lst.filter { it.reminderDateTime.date <= today }.map {
                 ReminderNotificationDTO(
                     id = it.id,
                     transactionId = it.transactionId,

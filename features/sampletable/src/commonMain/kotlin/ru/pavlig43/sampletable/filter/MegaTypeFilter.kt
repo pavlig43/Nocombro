@@ -14,6 +14,8 @@ import org.jetbrains.compose.resources.painterResource
 import ru.pavlig43.sampletable.model.MegaType
 import ru.pavlig43.sampletable.model.PersonTableData
 import ru.pavlig43.theme.Res
+import ru.pavlig43.theme.arrow_downward
+import ru.pavlig43.theme.arrow_upward
 import ua.wwind.table.filter.data.*
 
 /**

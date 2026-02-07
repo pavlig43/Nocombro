@@ -134,6 +134,7 @@ internal class MainTabNavigationComponent(
             NotificationItem.Document -> tabOpener.openDocumentTab(id)
             NotificationItem.Product -> tabOpener.openProductTab(id)
             NotificationItem.Declaration -> tabOpener.openDeclarationTab(id)
+            NotificationItem.Transaction -> tabOpener.openTransactionTab(id)
         }
     }
 
