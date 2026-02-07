@@ -14,6 +14,7 @@ find . -name "*Entity.kt" -o -name "*BD.kt" | grep -i "$ARGUMENTS"
 
 Проверь поля:
 - Поля с датой/временем? (`LocalDateTime`, `Instant`, `LocalDate`)
+- Поля с деньгами/весом? (`price`, `cost`, `weight`, `amount`)
 - Связи с другими сущностями? (`@Relation`)
 - Это mutable или immutable таблица?
 
@@ -36,6 +37,7 @@ find . -name "*Entity.kt" -o -name "*BD.kt" | grep -i "$ARGUMENTS"
 | Если есть... | Примени правило... |
 |--------------|-------------------|
 | Поля `LocalDateTime`, `Instant` | `.claude/rules/date-time-picker.md` |
+| Поля `price`, `weight`, `cost` | `.claude/rules/decimal-fields.md` |
 | Запросы к Room Database | `.claude/rules/database.md` |
 
 ## 4. Структура Feature
@@ -53,6 +55,7 @@ features/<feature-name>/
 - [ ] Проанализировал сущность
 - [ ] Спросил пользователя где выполнить
 - [ ] Применил `.claude/rules/date-time-picker.md` (если есть дата/время)
+- [ ] Применил `.claude/rules/decimal-fields.md` (если есть деньги/вес)
 - [ ] Применил `.claude/rules/database.md` (если есть БД)
 - [ ] Создал Component/Screen
 - [ ] Добавил в DI

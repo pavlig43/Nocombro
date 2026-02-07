@@ -18,6 +18,7 @@ find . -name "*Entity.kt" | grep -i "$ARGUMENTS"
 
 Проверь:
 - `LocalDateTime` поля? → `.claude/rules/date-time-picker.md`
+- `price`, `weight`, `cost` поля? → `.claude/rules/decimal-fields.md`
 - `@Relation`? → `.claude/rules/database.md`
 
 ## 3. Выбор места выполнения
@@ -31,7 +32,17 @@ find . -name "*Entity.kt" | grep -i "$ARGUMENTS"
 3. Текущая ветка
 ```
 
-## 4. Структура
+## 4. Применение правил
+
+| Тип поля | Что использовать |
+|----------|-----------------|
+| Дата/время | `DateTimeRow` из `coreui` |
+| Деньги (рубли) | `decimalColumn` с `DecimalFormat.RUB()` |
+| Вес (кг) | `decimalColumn` с `DecimalFormat.KG()` |
+| Текст | `TextFieldRow` |
+| Числа (Int) | Обычная колонка |
+
+## 5. Структура
 
 ```
 features/<feature>/
@@ -40,26 +51,64 @@ features/<feature>/
 └── columns/<Entity>Columns.kt
 ```
 
-## 5. Component с диалогами
+## 6. Пример колонок с разными типами
 
 ```kotlin
-internal class MyTableComponent(componentContext: ComponentContext) : ComponentContext by componentContext {
-    private val dialogNavigation = SlotNavigation<MyDialog>()
+import ru.pavlig43.mutable.api.ui.decimalColumn
+import ru.pavlig43.mutable.api.ui.DecimalFormat
+
+override val columns = createColumns(
+    onOpenDateTimeDialog = { composeId -> /* ... */ },
+    onEvent = ::onEvent
+)
+
+// В createColumns():
+fun createColumns(
+    onOpenDateTimeDialog: (Int) -> Unit,
+    onEvent: (MutableUiEvent) -> Unit
+): ImmutableList<ColumnSpec<Item>> = immutableListOf(
+    // Текст
+    column(
+        key = Columns.Name,
+        header = "Название",
+        getter = { it.name },
+        cell = { _, item -> Text(item.name) }
+    ),
     
-    internal val dialog = childSlot(
-        source = dialogNavigation,
-        key = "my_dialog",
-        serializer = MyDialog.serializer(),
-        handleBackButton = true,
-        childFactory = ::createDialogChild
-    )
-    
-    override val columns = createMyColumns(
-        onOpenDateTimeDialog = { composeId ->
-            dialogNavigation.activate(MyDialog.DateTimePicker(composeId))
+    // Дата/время
+    column(
+        key = Columns.Date,
+        header = "Дата",
+        getter = { it.createdAt.toString() },
+        cell = { column, item ->
+            DateTimeRow(
+                date = item.createdAt,
+                isChangeDialogVisible = { onOpenDateTimeDialog(item.composeId) }
+            )
         }
+    ),
+    
+    // Вес (кг)
+    decimalColumn(
+        key = Columns.Weight,
+        getValue = { it.weightInGrams },
+        headerText = "Вес (кг)",
+        decimalFormat = DecimalFormat.KG(),
+        onEvent = onEvent,
+        updateItem = { item, grams -> item.copy(weightInGrams = grams) }
+    ),
+    
+    // Цена (₽)
+    decimalColumn(
+        key = Columns.Price,
+        getValue = { it.priceInKopecks },
+        headerText = "Цена (₽)",
+        decimalFormat = DecimalFormat.RUB(),
+        onEvent = onEvent,
+        updateItem = { item, kopecks -> item.copy(priceInKopecks = kopecks) },
+        footerValue = { items -> items.sumOf { it.priceInKopecks } }
     )
-}
+)
 ```
 
 ## Чек-лист
@@ -67,7 +116,7 @@ internal class MyTableComponent(componentContext: ComponentContext) : ComponentC
 - [ ] Определил тип (mutable/immutable)
 - [ ] Проверил поля
 - [ ] Спросил где выполнить
-- [ ] Применил правила
+- [ ] Применил правила для каждого типа поля
 - [ ] Создал Component с SlotNavigation
 - [ ] Создал Screen
 - [ ] Добавил в DI

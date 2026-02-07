@@ -13,8 +13,10 @@ find . -name "*Entity.kt" | grep -i "$ARGUMENTS"
 
 Поля:
 - Текст → `TextFieldRow`
-- Числа → `IntFieldRow`, `BigDecimalFieldRow`
+- Целые числа → `IntFieldRow`
 - Дата/время → см. `.claude/rules/date-time-picker.md`
+- **Деньги (рубли)** → см. `.claude/rules/decimal-fields.md`
+- **Вес (кг)** → см. `.claude/rules/decimal-fields.md`
 - Список → `DropdownRow`
 
 ## 2. Компоненты из `coreui`
@@ -29,6 +31,38 @@ find . -name "*Entity.kt" | grep -i "$ARGUMENTS"
 | DateTimeRow | Дата + время |
 | DateRow | Только дата |
 | DropdownRow | Выбор из списка |
+
+### Для денег и веса
+
+Используй `decimalColumn` для таблиц. Для форм используй стандартные компоненты с конвертацией:
+
+```kotlin
+// В Entity храним Int (копейки/граммы)
+data class Product(
+    val priceInKopecks: Int,    // Храним копейки
+    val weightInGrams: Int      // Храним граммы
+)
+
+// В форме конвертируем при отображении/сохранении
+@Composable
+fun ProductFormScreen(component: ProductFormComponent) {
+    val priceRubles by derivedStateOf {
+        component.formData.priceInKopecks / 100.0
+    }
+    
+    BigDecimalFieldRow(
+        label = "Цена (₽)",
+        value = priceRubles.toBigDecimal(),
+        onValueChange = { newRubles ->
+            component.onEvent(
+                FormEvent.UpdatePrice(
+                    (newRubles * 100.toBigDecimal()).toInt()
+                )
+            )
+        }
+    )
+}
+```
 
 ## 3. Структура
 
@@ -61,7 +95,12 @@ internal class MyFormComponent(
     fun onEvent(event: FormEvent) {
         when (event) {
             is FormEvent.Save -> onSave(formData.value)
-            is FormEvent.UpdateField -> { /* ... */ }
+            is FormEvent.UpdatePrice -> {
+                formData.value = formData.value.copy(priceInKopecks = event.kopecks)
+            }
+            is FormEvent.UpdateWeight -> {
+                formData.value = formData.value.copy(weightInGrams = event.grams)
+            }
             is FormEvent.OpenDatePicker -> {
                 dialogNavigation.activate(FormDialog.DatePicker)
             }
@@ -79,12 +118,44 @@ internal fun MyFormScreen(component: MyFormComponent) {
     val data by component.formData
 
     Column {
+        // Текст
         TextFieldRow(
             label = "Название",
             value = data.name,
             onValueChange = { component.onEvent(FormEvent.UpdateName(it)) }
         )
-
+        
+        // Цена (рубли)
+        // Конвертируем копейки → рубли для отображения
+        val priceRubles by remember {
+            derivedStateOf { data.priceInKopecks / 100.0 }
+        }
+        BigDecimalFieldRow(
+            label = "Цена (₽)",
+            value = priceRubles.toBigDecimal(),
+            onValueChange = { newRubles ->
+                // Конвертируем рубли → копейки для сохранения
+                component.onEvent(
+                    FormEvent.UpdatePrice((newRubles * 100).toInt())
+                )
+            }
+        )
+        
+        // Вес (кг)
+        val weightKg by remember {
+            derivedStateOf { data.weightInGrams / 1000.0 }
+        }
+        BigDecimalFieldRow(
+            label = "Вес (кг)",
+            value = weightKg.toBigDecimal(),
+            onValueChange = { newKg ->
+                component.onEvent(
+                    FormEvent.UpdateWeight((newKg * 1000).toInt())
+                )
+            }
+        )
+        
+        // Дата
         DateTimeRow(
             date = data.createdAt,
             isChangeDialogVisible = {
@@ -101,8 +172,10 @@ internal fun MyFormScreen(component: MyFormComponent) {
 
 - [ ] Проанализировал поля
 - [ ] Проверил date-time-picker.md
+- [ ] Проверил decimal-fields.md для денег/веса
 - [ ] Спросил где выполнить
 - [ ] Выбрал компоненты из coreui
+- [ ] Добавил конвертацию для денег/веса
 - [ ] Создал FormComponent
 - [ ] Создал FormScreen
 - [ ] Добавил в DI
