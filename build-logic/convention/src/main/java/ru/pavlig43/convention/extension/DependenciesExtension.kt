@@ -23,10 +23,30 @@ fun Project.androidMainDependencies(block: KotlinDependencyHandler.() -> Unit) {
     }
 }
 
+fun Project.androidDebugDependencies(block: KotlinDependencyHandler.() -> Unit) {
+    kotlinMultiplatformConfig {
+        // Android debug variant may not exist in all modules
+        sourceSets.findByName("androidDebug")?.dependencies(block)
+    }
+}
+
 
 fun Project.desktopDependencies(block: KotlinDependencyHandler.() -> Unit) {
     kotlinMultiplatformConfig {
         sourceSets.getByName("desktopMain").dependencies(block)
+    }
+}
+
+fun Project.desktopTestDependencies(block: KotlinDependencyHandler.() -> Unit) {
+    kotlinMultiplatformConfig {
+        sourceSets.getByName("desktopTest").dependencies(block)
+    }
+}
+
+fun Project.androidInstrumentedTestDependencies(block: KotlinDependencyHandler.() -> Unit) {
+    kotlinMultiplatformConfig {
+        // Android instrumented tests may not exist in all modules
+        sourceSets.findByName("androidInstrumentedTest")?.dependencies(block)
     }
 }
 
