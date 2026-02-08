@@ -58,7 +58,7 @@ private class DeclarationZeroRepository(
             declarationWithoutDocument,
             getOnExpiredDeclaration
         ) { arrays ->
-            arrays.flatMap { it }
+            arrays.toList().flatten()
         }
     override val notificationLevel: NotificationLevel = NotificationLevel.HIGH
     override val notificationItem: NotificationItem = NotificationItem.Declaration
@@ -93,7 +93,7 @@ private class ProductZeroRepository(
             productDeclaration,
             productComposition
         ) { arrays ->
-            arrays.flatMap { it }
+            arrays.toList().flatten()
         }
 }
 
