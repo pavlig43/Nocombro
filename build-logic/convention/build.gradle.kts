@@ -85,6 +85,10 @@ gradlePlugin {
             id = libs.plugins.pavlig43.table.get().pluginId
             implementationClass = "TablePlugin"
         }
+        register("testing") {
+            id = libs.plugins.pavlig43.testing.get().pluginId
+            implementationClass = "TestingPlugin"
+        }
 
     }
 }
