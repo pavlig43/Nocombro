@@ -2,7 +2,6 @@ package ru.pavlig43.sampletable.util
 
 import kotlinx.datetime.LocalDate
 import ru.pavlig43.sampletable.column.PersonColumn
-import ru.pavlig43.sampletable.filter.MegaTypeFilterState
 import ru.pavlig43.sampletable.filter.NumericRangeFilterState
 import ru.pavlig43.sampletable.model.Person
 import ru.pavlig43.sampletable.model.Position
@@ -44,7 +43,6 @@ object PersonFilterMatcher {
                     PersonColumn.COUNTRY -> matchesTextField(person.country, stateAny)
                     PersonColumn.DEPARTMENT -> matchesTextField(person.department, stateAny)
                     PersonColumn.POSITION -> matchesPositionField(person.position, stateAny)
-                    PersonColumn.MEGA_TYPE -> matchesMegaTypeField(person.megaType, stateAny)
                     PersonColumn.SALARY -> matchesSalaryField(person.salary, stateAny)
                     PersonColumn.RATING -> matchesIntField(person.rating, stateAny)
                     PersonColumn.HIRE_DATE -> matchesDateField(person.hireDate, stateAny)
@@ -52,6 +50,7 @@ object PersonFilterMatcher {
                     PersonColumn.AGE_GROUP -> matchesAgeGroupField(person.age, stateAny)
                     PersonColumn.EXPAND -> true
                     PersonColumn.SELECTION -> true
+                    else -> true
                 }
 
             if (!matches) return false
@@ -196,17 +195,5 @@ object PersonFilterMatcher {
         }
     }
 
-    private fun matchesMegaTypeField(
-        value: ru.pavlig43.sampletable.model.MegaType,
-        state: TableFilterState<*>,
-    ): Boolean {
-        // Check if using custom MegaTypeFilter
-        if (state.values?.firstOrNull() is MegaTypeFilterState) {
-            val customState = state.values?.firstOrNull() as? MegaTypeFilterState
-            return customState?.let { value in it.selectedTypes } ?: true
-        }
 
-        // No filter applied
-        return true
-    }
 }

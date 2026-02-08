@@ -36,6 +36,6 @@ private class DeclarationTwoRepository(
         combine(
             getOnThreeMountExpiredDeclaration,
         ) { arrays ->
-            arrays.flatMap { it }
+            arrays.toList().flatten()
         }
 }
