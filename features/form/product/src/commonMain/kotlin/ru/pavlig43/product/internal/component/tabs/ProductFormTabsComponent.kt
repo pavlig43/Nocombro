@@ -56,7 +56,7 @@ internal class ProductFormTabsComponent(
                             componentFactory = componentFactory,
                             onSuccessInitData = {product->
                                 coroutineScope.launch {
-                                    if (product.productType is ProductType.Food.Pf){
+                                    if (product.productType == ProductType.FOOD_PF){
                                         tabNavigationComponent.addTab(ProductTab.Composition)
                                     }
                                 }

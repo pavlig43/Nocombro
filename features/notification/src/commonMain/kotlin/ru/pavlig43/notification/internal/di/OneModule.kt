@@ -2,7 +2,6 @@ package ru.pavlig43.notification.internal.di
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
 import org.koin.dsl.module
 import ru.pavlig43.core.DateThreshold
 import ru.pavlig43.core.mapValues

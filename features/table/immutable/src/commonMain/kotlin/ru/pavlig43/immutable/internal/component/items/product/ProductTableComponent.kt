@@ -27,7 +27,7 @@ internal class ProductTableComponent(
 ) {
 
     override val columns: ImmutableList<ColumnSpec<ProductTableUi, ProductField, TableData<ProductTableUi>>> =
-        createProductColumn(tableBuilder.fullListProductTypes,::onEvent)
+        createProductColumn(::onEvent)
 
 }
 private fun Product.toUi(): ProductTableUi {

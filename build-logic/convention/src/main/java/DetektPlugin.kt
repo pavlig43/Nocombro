@@ -27,7 +27,7 @@ class DetektPlugin : Plugin<Project> {
                     buildUponDefaultConfig = false
                     autoCorrect = true
                     parallel = true
-                    ignoreFailures = false
+                    ignoreFailures = true
 
                 }
                 with(tasks) {

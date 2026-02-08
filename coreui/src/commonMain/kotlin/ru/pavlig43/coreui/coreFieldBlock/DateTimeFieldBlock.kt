@@ -43,12 +43,6 @@ fun DateTimeFieldBlock(
             isChangeDialogVisible = { isDateTimePickerVisible = !isDateTimePickerVisible }
         )
 
-        ToolTipIconButton(
-            tooltipText = "Дата",
-            onClick = { isDateTimePickerVisible = !isDateTimePickerVisible },
-            icon = Res.drawable.clock
-
-        )
         if (isDateTimePickerVisible) {
             DateTimePickerDialog(
                 onDismissRequest = { isDateTimePickerVisible = false },
@@ -70,13 +64,12 @@ fun DateTimeRow(
         horizontalArrangement = Arrangement.spacedBy(4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(date.format(dateTimeFormat), textDecoration = TextDecoration.Underline)
-
         ToolTipIconButton(
             tooltipText = "Дата/время",
             onClick = isChangeDialogVisible,
             icon = Res.drawable.clock
 
         )
+        Text(date.format(dateTimeFormat), textDecoration = TextDecoration.Underline)
     }
 }

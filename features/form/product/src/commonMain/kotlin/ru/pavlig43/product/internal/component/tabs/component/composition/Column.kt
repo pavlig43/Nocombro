@@ -58,7 +58,7 @@ internal fun createCompositionColumn(
                 align(Alignment.Center)
                 filter(
                     TableFilterType.EnumTableFilter(
-                        options = ProductType.entries.map { it.enumValue }.toImmutableList(),
+                        options = ProductType.entries.toImmutableList(),
                         getTitle = { it.displayName }
 
                     ),

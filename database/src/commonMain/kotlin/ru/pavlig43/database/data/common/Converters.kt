@@ -3,20 +3,14 @@ package ru.pavlig43.database.data.common
 import androidx.room.TypeConverter
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.LocalTime
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.atTime
-import kotlinx.datetime.toInstant
-import kotlinx.datetime.toLocalDateTime
 import ru.pavlig43.database.data.document.DocumentType
 import ru.pavlig43.database.data.files.OwnerType
 import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.database.data.product.ProductUnit
 import ru.pavlig43.database.data.transaction.MovementType
 import ru.pavlig43.database.data.transaction.TransactionType
-import ru.pavlig43.database.data.transaction.expense.ExpenseTypeEnum
+import ru.pavlig43.database.data.transaction.expense.ExpenseType
 import kotlin.time.ExperimentalTime
-import kotlin.time.Instant
 
 @Suppress("TooManyFunctions")
 @OptIn(ExperimentalTime::class)
@@ -30,19 +24,10 @@ class Converters {
     fun toOwnerType(value: String) = enumValueOf<OwnerType>(value)
 
     @TypeConverter
-    fun fromProductType(productType: ProductType?): String {
-        return productType?.enumValue?.name ?: ProductType.Pack.enumValue.name
-
-    }
+    fun fromProductType(value: ProductType): String = value.name
 
     @TypeConverter
-    fun toProductType(value: String?): ProductType {
-        if (value.isNullOrBlank()) {
-            return ProductType.Pack // Значение по умолчанию для null/пустых значений
-        }
-        return ProductType.entries.firstOrNull { it.enumValue.name == value }
-            ?: ProductType.Pack // Fallback на Pack если не найдено
-    }
+    fun toProductType(value: String): ProductType  = enumValueOf<ProductType>(value)
 
     @TypeConverter
     fun toDocumentType(value: String) = enumValueOf<DocumentType>(value)
@@ -69,30 +54,21 @@ class Converters {
     fun fromTransactionType(value: TransactionType): String = value.name
 
     @TypeConverter
-    fun toExpenseTypeEnum(value: String): ExpenseTypeEnum = enumValueOf<ExpenseTypeEnum>(value)
+    fun toExpenseTypeEnum(value: String): ExpenseType = enumValueOf<ExpenseType>(value)
 
     @TypeConverter
-    fun fromExpenseTypeEnum(value: ExpenseTypeEnum): String = value.name
+    fun fromExpenseTypeEnum(value: ExpenseType): String = value.name
 
 
     @TypeConverter
-    fun toLocalDate(value: Long): LocalDate = Instant.fromEpochMilliseconds(value)
-        .toLocalDateTime(TimeZone.currentSystemDefault()).date
+    fun toLocalDate(value: String): LocalDate = LocalDate.parse(value)
 
     @TypeConverter
-    fun fromLocalDate(value: LocalDate): Long {
-        val startOfDay = value.atTime(LocalTime(0,0))
-        return startOfDay.toInstant(TimeZone.currentSystemDefault())
-            .toEpochMilliseconds()
-    }
+    fun fromLocalDate(value: LocalDate): String  = value.toString()
     @TypeConverter
-    fun toLocalDateTime(value: Long): LocalDateTime =
-        Instant.fromEpochMilliseconds(value)
-            .toLocalDateTime(TimeZone.currentSystemDefault())
+    fun toLocalDateTime(value: String): LocalDateTime = LocalDateTime.parse(value)
 
     @TypeConverter
-    fun fromLocalDateTime(value: LocalDateTime): Long =
-        value.toInstant(TimeZone.currentSystemDefault())
-            .toEpochMilliseconds()
+    fun fromLocalDateTime(value: LocalDateTime): String = value.toString()
 
 }

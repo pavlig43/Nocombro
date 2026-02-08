@@ -7,8 +7,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.dp
 import dev.darkokoa.datetimewheelpicker.WheelDateTimePicker
@@ -45,8 +43,7 @@ fun DateTimePickerDialog(
             Text(
                 text = "Выберите дату/время",
                 style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.onPrimary,
-                modifier = Modifier.align(Alignment.Center)
+                color = MaterialTheme.colorScheme.onPrimary
             )
         }
     ) {

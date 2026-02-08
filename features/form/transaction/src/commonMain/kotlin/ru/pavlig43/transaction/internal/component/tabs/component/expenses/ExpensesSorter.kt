@@ -12,7 +12,7 @@ internal object ExpensesSorter : SortMatcher<ExpensesUi, ExpensesField> {
         if (sort == null) return items
 
         val sortedList = when (sort.column) {
-            ExpensesField.EXPENSE_TYPE -> items.sortedBy { it.expenseType.displayName.lowercase() }
+            ExpensesField.EXPENSE_TYPE -> items.sortedBy { it.expenseType?.displayName?.lowercase() }
             ExpensesField.AMOUNT -> items.sortedBy { it.amount }
             ExpensesField.COMMENT -> items.sortedBy { it.comment.lowercase() }
             else -> items

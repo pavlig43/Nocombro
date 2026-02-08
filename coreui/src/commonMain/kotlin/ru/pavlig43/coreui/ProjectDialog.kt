@@ -3,7 +3,6 @@ package ru.pavlig43.coreui
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -29,7 +28,7 @@ import androidx.compose.ui.window.Dialog
 @Composable
 fun ProjectDialog(
     onDismissRequest: () -> Unit,
-    header: @Composable BoxScope.() -> Unit,
+    header: @Composable () -> Unit,
     content: @Composable () -> Unit
 ) {
     Dialog(

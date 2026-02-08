@@ -13,7 +13,7 @@ internal object ExpensesFilterMatcher : FilterMatcher<ExpensesUi, ExpensesField>
             ExpensesField.SELECTION -> true
             ExpensesField.COMPOSE_ID -> true
             ExpensesField.TRANSACTION_ID -> true
-            ExpensesField.EXPENSE_TYPE -> matchesTextField(item.expenseType.displayName, stateAny)
+            ExpensesField.EXPENSE_TYPE -> matchesTypeField(item.expenseType?.displayName, stateAny)
             ExpensesField.AMOUNT -> true
             ExpensesField.COMMENT -> matchesTextField(item.comment, stateAny)
         }

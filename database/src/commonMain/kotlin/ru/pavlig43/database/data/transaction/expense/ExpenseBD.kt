@@ -22,7 +22,7 @@ data class ExpenseBD(
      * Тип расхода
      */
     @ColumnInfo("expense_type")
-    val expenseType: ExpenseTypeEnum,
+    val expenseType: ExpenseType,
 
     /**
      * Сумма расхода в копейках
