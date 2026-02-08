@@ -106,6 +106,50 @@ abstract class EssentialsComponent<I : GenericItem, T : ItemEssentialsUi>(
     )
 
 }
+abstract class EssentialsComponent1<I : GenericItem, T : ItemEssentialsUi>(
+    componentContext: ComponentContext,
+    private val componentFactory: EssentialComponentFactory<I, T>,
+    getInitData: (suspend () -> Result<I>)?,
+    private val observeOnEssentials:(T)-> Unit ={},
+    onSuccessInitData:(T)-> Unit = {}
+) : ComponentContext by componentContext {
+    protected val coroutineScope = componentCoroutineScope()
+
+    private val _itemFields = MutableStateFlow(componentFactory.initItem)
+    val itemFields = _itemFields.asStateFlow()
+
+    val initDataComponent = LoadInitDataComponent<T>(
+        componentContext = childContext("init"),
+        getInitData = {
+            getInitData?.invoke()?.map { item ->
+                componentFactory.mapperToUi(item)
+                    .also { componentFactory.produceInfoForTabName(it) }
+            }?:Result.success(componentFactory.initItem)
+
+        },
+        onSuccessGetInitData = { item ->
+            onSuccessInitData(item)
+            _itemFields.update { item }
+        }
+    )
+
+
+    fun onChangeItem(item: T) {
+        componentFactory.produceInfoForTabName(item)
+        _itemFields.update { item }
+        observeOnEssentials(item)
+
+    }
+
+    val isValidFields = _itemFields.map { item ->
+        componentFactory.isValidFieldsFactory(item)
+    }.stateIn(
+        coroutineScope,
+        SharingStarted.Eagerly,
+        false
+    )
+
+}
 
 
 
