@@ -1,12 +1,9 @@
 package ru.pavlig43.update.ui
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -14,48 +11,50 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
+import ru.pavlig43.coreui.ProjectDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun SaveDialog(
     onConfirmSave: () -> Unit,
-    onDismissRequest: () -> Unit,
-    modifier: Modifier = Modifier
+    onDismissRequest: () -> Unit
 ) {
-
-    BasicAlertDialog(
+    ProjectDialog(
         onDismissRequest = onDismissRequest,
-        Modifier
-            .clip(MaterialTheme.shapes.large)
-            .background(MaterialTheme.colorScheme.primaryContainer)
-
-            .padding(32.dp)
-
-    ) {
-        Column(
-            modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceEvenly
-        ) {
-            Text("Сохранить и закрыть эту вкладку?")
-            Row(
-                modifier = Modifier.fillMaxWidth(),
+        header = {
+            Row(Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceEvenly
+                horizontalArrangement = Arrangement.Center
+                ){
+                Text(
+                    text = "Сохранить и закрыть эту вкладку?",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onPrimary,
+                )
+            }
+
+        }
+    ){
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Button(
+                onClick = {
+                onConfirmSave()
+                onDismissRequest()
+            },
+                modifier = Modifier.weight(1f)
             ) {
-                Button(onClick = {
-                    onConfirmSave()
-                    onDismissRequest()
-                }
-                ) {
-                    Text("OK")
-                }
-                Button(onDismissRequest) {
-                    Text("Нет")
-                }
+                Text("OK")
+            }
+            Button(onDismissRequest,Modifier.weight(1f)) {
+                Text("Нет")
             }
         }
     }
+
+
 }

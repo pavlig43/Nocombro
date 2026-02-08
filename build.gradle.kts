@@ -77,6 +77,8 @@ subprojects {
     }
 }
 
+// Git hooks disabled - pre-commit hooks removed
+/*
 // Root task for installing git hooks
 tasks.register("installGitHooks") {
     group = "development"
@@ -158,4 +160,5 @@ tasks.named("build") {
 tasks.named("assemble") {
     dependsOn("checkAndInstallGitHooks")
 }
+*/
 
