@@ -79,7 +79,6 @@ internal class CompositionComponent(
         )
 
 
-
     override fun createNewItem(composeId: Int): CompositionUi {
         return CompositionUi(
             composeId = composeId,
@@ -123,7 +122,12 @@ internal class CompositionComponent(
                 }
             }
             @Suppress("MagicNumber")
-            val totalSum = lst.filter { it.productType is ProductType.Food }.sumOf { it.count/1000.0 }
+            val totalSum = lst.filter {
+                it.productType in arrayOf(
+                    ProductType.FOOD_BASE,
+                    ProductType.FOOD_PF
+                )
+            }.sumOf { it.count / 1000.0 }
             if (totalSum != 1.0) {
                 add("Сумма в составе должна быть равна 1 кг (сейчас: ${totalSum}кг)")
             }

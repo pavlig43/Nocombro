@@ -17,7 +17,7 @@ internal object ProductSorter: SortMatcher<ProductTableUi, ProductField> {
             when (sort.column) {
                 ProductField.ID -> items.sortedBy { it.composeId }
                 ProductField.NAME -> items.sortedBy { it.displayName.lowercase() }
-                ProductField.TYPE -> items.sortedBy { it.type.enumValue.displayName.lowercase() }
+                ProductField.TYPE -> items.sortedBy { it.type.displayName.lowercase() }
                 ProductField.CREATED_AT -> items.sortedBy { it.createdAt }
                 ProductField.COMMENT -> items.sortedBy { it.comment.lowercase() }
                 else -> items

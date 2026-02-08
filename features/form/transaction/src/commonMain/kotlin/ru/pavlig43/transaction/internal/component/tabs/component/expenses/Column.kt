@@ -1,15 +1,11 @@
 @file:Suppress("MatchingDeclarationName")
+
 package ru.pavlig43.transaction.internal.component.tabs.component.expenses
 
-import androidx.compose.foundation.clickable
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
+import ru.pavlig43.coreui.coreFieldBlock.ReadWriteItemTypeField
 import ru.pavlig43.database.data.transaction.expense.ExpenseType
 import ru.pavlig43.mutable.api.component.MutableUiEvent
 import ru.pavlig43.mutable.api.ui.DecimalFormat
@@ -35,52 +31,28 @@ internal fun createExpensesColumns(
             )
 
             // Тип расхода - dropdown
-            column(ExpensesField.EXPENSE_TYPE, valueOf = { it.expenseType.displayName }) {
+            column(ExpensesField.EXPENSE_TYPE, valueOf = { it.expenseType }) {
                 header("Тип расхода")
-                filter(TableFilterType.TextTableFilter())
+                filter(
+                    TableFilterType.EnumTableFilter(
+                    options = ExpenseType.entries.toImmutableList(),
+                    getTitle = { it.displayName }
+                ))
                 cell { item, _ ->
-                    var expanded by remember { mutableStateOf(false) }
-                    var selectedType by remember(item) { mutableStateOf(item.expenseType) }
-
-                    androidx.compose.material3.ExposedDropdownMenuBox(
-                        expanded = expanded,
-                        onExpandedChange = { expanded = it },
-                    ) {
-                        TableCellTextField(
-                            value = selectedType.displayName,
-                            onValueChange = {},
-                            readOnly = true,
-                            trailingIcon = {
-                                androidx.compose.material3.ExposedDropdownMenuDefaults.TrailingIcon(
-                                    expanded = expanded
+                    ReadWriteItemTypeField(
+                        readOnly = false,
+                        currentType = item.expenseType,
+                        typeVariants = ExpenseType.entries,
+                        onChangeType = { type ->
+                            onEvent(
+                                MutableUiEvent.UpdateItem(
+                                    item.copy(
+                                        expenseType = type
+                                    )
                                 )
-                            },
-                            modifier = Modifier
-                                .menuAnchor()
-                                .clickable { expanded = true }
-                        )
-
-                        androidx.compose.material3.DropdownMenu(
-                            expanded = expanded,
-                            onDismissRequest = { expanded = false },
-                            modifier = Modifier.menuAnchor()
-                        ) {
-                            ExpenseType.entries.forEach { type ->
-                                androidx.compose.material3.DropdownMenuItem(
-                                    text = { Text(type.displayName) },
-                                    onClick = {
-                                        selectedType = type.enumValue
-                                        expanded = false
-                                        onEvent(
-                                            MutableUiEvent.UpdateItem(
-                                                item.copy(expenseType = type.enumValue)
-                                            )
-                                        )
-                                    }
-                                )
-                            }
+                            )
                         }
-                    }
+                    )
                 }
                 sortable()
             }

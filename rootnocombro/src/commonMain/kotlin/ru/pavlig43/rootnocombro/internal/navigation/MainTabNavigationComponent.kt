@@ -10,7 +10,13 @@ import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.database.data.transaction.TransactionType
 import ru.pavlig43.declaration.api.DeclarationFormComponent
 import ru.pavlig43.document.api.component.DocumentFormComponent
-import ru.pavlig43.immutable.api.component.*
+import ru.pavlig43.immutable.api.component.DeclarationImmutableTableBuilder
+import ru.pavlig43.immutable.api.component.DocumentImmutableTableBuilder
+import ru.pavlig43.immutable.api.component.ImmutableTableBuilderData
+import ru.pavlig43.immutable.api.component.ImmutableTableComponentFactoryMain
+import ru.pavlig43.immutable.api.component.ProductImmutableTableBuilder
+import ru.pavlig43.immutable.api.component.TransactionImmutableTableBuilder
+import ru.pavlig43.immutable.api.component.VendorImmutableTableBuilder
 import ru.pavlig43.notification.api.component.NotificationComponent
 import ru.pavlig43.notification.api.model.NotificationItem
 import ru.pavlig43.product.api.component.ProductFormComponent

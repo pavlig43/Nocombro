@@ -137,21 +137,21 @@ suspend fun initData(db: NocombroDatabase) {
     } catch (_: Exception) {
         val products = listOf(
             Product(
-                type = ProductType.Food.Base,
+                type = ProductType.FOOD_BASE,
                 displayName = "Соль",
                 createdAt = LocalDate.fromEpochDays(0),
                 comment = "",
                 id = 1
             ),
             Product(
-                type = ProductType.Food.Pf,
+                type = ProductType.FOOD_PF,
                 displayName = "БАварские",
                 createdAt = LocalDate.fromEpochDays(0),
                 comment = "",
                 id = 2
             ),
             Product(
-                type = ProductType.Food.Base,
+                type = ProductType.FOOD_BASE,
                 displayName = "Декстроза",
                 createdAt = LocalDate.fromEpochDays(0),
                 comment = "",

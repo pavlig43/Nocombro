@@ -5,8 +5,8 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
-import ru.pavlig43.database.data.transaction.expense.ExpenseBD
 import ru.pavlig43.database.data.transaction.expense.EXPENSE_TABLE_NAME
+import ru.pavlig43.database.data.transaction.expense.ExpenseBD
 
 @Dao
 interface ExpenseDao {

@@ -39,7 +39,6 @@ internal fun NotificationItemList(
         listNotificationUi.forEachIndexed { index, notification ->
             NotificationCard(
                 notification = notification,
-                index = index,
                 onClick = { onOpenTab(notification.id) }
             )
         }
@@ -49,7 +48,6 @@ internal fun NotificationItemList(
 @Composable
 private fun NotificationCard(
     notification: NotificationUi,
-    index: Int,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {

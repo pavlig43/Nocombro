@@ -10,7 +10,6 @@ import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.core.emptyLocalDateTime
 import ru.pavlig43.database.data.transaction.expense.ExpenseBD
-import ru.pavlig43.database.data.transaction.expense.ExpenseTypeEnum
 import ru.pavlig43.mutable.api.component.MutableTableComponent
 import ru.pavlig43.tablecore.model.TableData
 import ru.pavlig43.update.data.UpdateCollectionRepository
@@ -47,12 +46,11 @@ internal class ExpensesComponent(
         }
     }
     override fun createNewItem(composeId: Int): ExpensesUi {
-        println(dateTime.value)
         return ExpensesUi(
             composeId = composeId,
             id = 0,
             transactionId = transactionId,
-            expenseType = ExpenseTypeEnum.TRANSPORT_GASOLINE,
+            expenseType = null,
             amount = 0,
             expenseDateTime = dateTime.value, // Используем дату транзакции
             comment = ""
@@ -74,7 +72,7 @@ internal class ExpensesComponent(
     override fun ExpensesUi.toBDIn(): ExpenseBD {
         return ExpenseBD(
             transactionId = transactionId,
-            expenseType = expenseType,
+            expenseType = expenseType?:throw IllegalArgumentException("Такой ошибки не может быть"),
             amount = amount,
             expenseDateTime = expenseDateTime,
             comment = comment,
@@ -87,6 +85,7 @@ internal class ExpensesComponent(
             lst.forEach { expenseUi ->
                 val place = "В строке ${expenseUi.composeId + 1}"
                 if (expenseUi.amount == 0) add("$place сумма равна 0")
+                if (expenseUi.expenseType == null) add("$place не выбран тип расхода")
             }
         }
     }

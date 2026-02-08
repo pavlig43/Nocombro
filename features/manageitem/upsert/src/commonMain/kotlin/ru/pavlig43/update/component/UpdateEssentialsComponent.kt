@@ -13,6 +13,7 @@ import ru.pavlig43.update.data.UpdateEssentialsRepository
  * Абстрактный компонент для создания новых обязательных полей.
  * @see [ru.pavlig43.create.component.CreateEssentialsComponent]
  */
+@Suppress("LongParameterList")
 abstract class UpdateEssentialsComponent<I : GenericItem, T : ItemEssentialsUi>(
     componentContext: ComponentContext,
     componentFactory: EssentialComponentFactory<I, T>,

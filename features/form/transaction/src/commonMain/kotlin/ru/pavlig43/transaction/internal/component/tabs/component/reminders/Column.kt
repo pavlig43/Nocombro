@@ -3,10 +3,8 @@ package ru.pavlig43.transaction.internal.component.tabs.component.reminders
 
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import kotlinx.collections.immutable.ImmutableList
-import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.coreui.coreFieldBlock.DateTimeRow
 import ru.pavlig43.mutable.api.component.MutableUiEvent
 import ru.pavlig43.mutable.api.ui.idWithSelection

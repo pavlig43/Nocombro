@@ -3,7 +3,6 @@ package ru.pavlig43.coreui
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -26,7 +25,7 @@ import ru.pavlig43.core.DateComponent
 import ru.pavlig43.core.dateFormat
 import ru.pavlig43.coreui.tooltip.ToolTipIconButton
 import ru.pavlig43.theme.Res
-import ru.pavlig43.theme.clock
+import ru.pavlig43.theme.calendar
 
 @Composable
 fun DatePickerDialog(
@@ -53,8 +52,7 @@ fun DatePickerDialog(
             Text(
                 text = "Выберите дату",
                 style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.onPrimary,
-                modifier = Modifier.align(Alignment.Center)
+                color = MaterialTheme.colorScheme.onPrimary
             )
         }
     ) {
@@ -89,18 +87,18 @@ fun DateRow(
     modifier: Modifier = Modifier
 ){
     Row(
-        modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.Center,
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.Start),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(date.format(dateFormat), textDecoration = TextDecoration.Underline)
-
         ToolTipIconButton(
             tooltipText = "Дата",
             onClick = isChangeDialogVisible,
-            icon = Res.drawable.clock
+            icon = Res.drawable.calendar
 
         )
+
+        Text(date.format(dateFormat), textDecoration = TextDecoration.Underline)
 }
 }
 

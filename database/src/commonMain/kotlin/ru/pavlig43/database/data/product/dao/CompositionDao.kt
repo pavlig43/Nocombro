@@ -43,31 +43,36 @@ abstract class CompositionDao {
             observeOnComposition()
         ) { products, compositions ->
             val productWithComposition = compositions.map { it.parentId }.toSet()
-            products.filter { it.type == ProductType.Food.Pf && it.id !in productWithComposition }
+            products.filter {
+                it.type in arrayOf(
+                    ProductType.FOOD_BASE,
+                    ProductType.FOOD_PF
+                ) && it.id !in productWithComposition
+            }
                 .map { NotificationDTO(it.id, "В продукте ${it.displayName} нет состава") }
         }
 
     }
 }
 
-    internal data class InternalComposition(
-        @Embedded
-        val composition: CompositionIn,
-        @Relation(
-            entity = Product::class,
-            parentColumn = "product_id",
-            entityColumn = "id"
-        )
-        val product: Product,
+internal data class InternalComposition(
+    @Embedded
+    val composition: CompositionIn,
+    @Relation(
+        entity = Product::class,
+        parentColumn = "product_id",
+        entityColumn = "id"
+    )
+    val product: Product,
 
-        )
+    )
 
-    private fun InternalComposition.toCompositionOut(): CompositionOut {
-        return CompositionOut(
-            id = composition.id,
-            productId = product.id,
-            productName = product.displayName,
-            productType = product.type,
-            count = composition.count
-        )
-    }
+private fun InternalComposition.toCompositionOut(): CompositionOut {
+    return CompositionOut(
+        id = composition.id,
+        productId = product.id,
+        productName = product.displayName,
+        productType = product.type,
+        count = composition.count
+    )
+}

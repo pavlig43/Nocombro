@@ -27,7 +27,6 @@ internal enum class ProductField {
 }
 @Suppress("LongMethod")
 internal fun createProductColumn(
-    listTypeForFilter: List<ProductType>,
     onEvent: (ImmutableTableUiEvent) -> Unit,
 ): ImmutableList<ColumnSpec<ProductTableUi, ProductField, TableData<ProductTableUi>>> {
     val columns =
@@ -51,10 +50,10 @@ internal fun createProductColumn(
                 align(Alignment.Center)
                 filter(
                     TableFilterType.EnumTableFilter(
-                        listTypeForFilter.map { it.enumValue }.toImmutableList(),
+                        ProductType.entries.toImmutableList(),
                         getTitle = { it.displayName })
                 )
-                cell { document, _ -> Text(document.type.enumValue.displayName) }
+                cell { item, _ -> Text(item.type.displayName) }
             }
             column(ProductField.CREATED_AT, valueOf = { it.createdAt }) {
                 header("Создан")
