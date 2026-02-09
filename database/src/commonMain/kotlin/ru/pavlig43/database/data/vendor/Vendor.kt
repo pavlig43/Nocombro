@@ -3,7 +3,7 @@ package ru.pavlig43.database.data.vendor
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import ru.pavlig43.core.model.GenericItem
+import ru.pavlig43.core.model.SingleItem
 
 const val VENDOR_TABLE_NAME = "vendor"
 
@@ -18,4 +18,4 @@ data class Vendor(
     @PrimaryKey(autoGenerate = true)
     override val id: Int = 0,
 
-    ) : GenericItem
+    ) : SingleItem

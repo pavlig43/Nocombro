@@ -1,6 +1,6 @@
-package ru.pavlig43.mutable.api.ui
+package ru.pavlig43.mutable.api.column
 
-import ru.pavlig43.mutable.api.component.MutableUiEvent
+import ru.pavlig43.mutable.api.multiLine.component.MutableUiEvent
 import ru.pavlig43.tablecore.model.ITableUi
 import ru.pavlig43.tablecore.model.TableData
 import ru.pavlig43.tablecore.ui.coreIdWithSelection

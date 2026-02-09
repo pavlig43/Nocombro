@@ -1,7 +1,6 @@
-package ru.pavlig43.mutable.api.ui
+package ru.pavlig43.mutable.api.singleLine.ui
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -10,7 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.toImmutableList
 import ru.pavlig43.loadinitdata.api.ui.LoadInitDataScreen
-import ru.pavlig43.mutable.api.component.singleLine.SingleLineComponent
+import ru.pavlig43.mutable.api.singleLine.component.SingleLineComponent
 import ru.pavlig43.tablecore.model.ITableUi
 import ua.wwind.table.EditableTable
 import ua.wwind.table.ExperimentalTableApi
@@ -20,7 +19,7 @@ import ua.wwind.table.state.rememberTableState
 
 @OptIn(ExperimentalTableApi::class)
 @Composable
-fun <I : ITableUi, C> SingleLineScreen(
+fun <I : ITableUi, C> SingleLineBlockScreen(
     component: SingleLineComponent<*, I, C>,
     modifier: Modifier = Modifier,
 ) {
@@ -42,9 +41,7 @@ fun <I : ITableUi, C> SingleLineScreen(
             settings = defaultTableSettings
         )
         Box(
-            modifier = modifier
-                .fillMaxSize()
-                .padding(16.dp)
+            modifier = modifier.padding(16.dp)
         ) {
             EditableTable(
                 itemsCount = items.size,
@@ -52,6 +49,7 @@ fun <I : ITableUi, C> SingleLineScreen(
                 state = state,
                 columns = component.columns,
                 tableData = Unit,
+                embedded = true,
             )
         }
     }

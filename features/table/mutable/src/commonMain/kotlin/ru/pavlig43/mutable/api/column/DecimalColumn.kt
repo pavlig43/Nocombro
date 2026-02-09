@@ -1,4 +1,4 @@
-package ru.pavlig43.mutable.api.ui
+package ru.pavlig43.mutable.api.column
 
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material3.Text
@@ -8,9 +8,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import ru.pavlig43.mutable.api.component.MutableUiEvent
 import ru.pavlig43.tablecore.model.ITableUi
-import ru.pavlig43.tablecore.model.TableData
 import ua.wwind.table.EditableColumnBuilder
 import ua.wwind.table.EditableTableColumnsBuilder
 import ua.wwind.table.component.TableCellTextFieldWithTooltipError
@@ -19,13 +17,12 @@ import kotlin.math.pow
 
 
 @Suppress("LongParameterList")
-fun <T : ITableUi, C, E : TableData<T>> EditableTableColumnsBuilder<T, C, E>.decimalColumn(
+fun <T : ITableUi, C, E> EditableTableColumnsBuilder<T, C, E>.decimalColumn(
     key: C,
     getValue: (T) -> Int,
     headerText: String,
     decimalFormat: DecimalFormat,
-    onEvent: (MutableUiEvent.UpdateItem) -> Unit,
-    updateItem: (T, Int) -> T,
+    updateItem: (T, Int) -> Unit,
     footerValue: ((E) -> Int)? = null
 ) {
     column(key, valueOf = { getValue(it) }) {
@@ -39,17 +36,28 @@ fun <T : ITableUi, C, E : TableData<T>> EditableTableColumnsBuilder<T, C, E>.dec
         cellForDecimalFormat(
             format = decimalFormat,
             getCount = { getValue(it) },
-            saveInModel = { item, count ->
-                onEvent(MutableUiEvent.UpdateItem(updateItem(item, count)))
-            }
+            saveInModel = updateItem
         )
-        footerValue?.let { accumulateFunction->
-            footer {tableData->
+        footerValue?.let { accumulateFunction ->
+            footer { tableData ->
                 val accumValue = accumulateFunction(tableData)
                 Text(accumValue.toStartDoubleFormat(decimalFormat))
             }
         }
         sortable()
+    }
+}
+
+fun <T : ITableUi, C, E> EditableTableColumnsBuilder<T, C, E>.readDecimalColumn(
+    key: C,
+    getValue: (T) -> Int,
+    headerText: String,
+    decimalFormat: DecimalFormat,
+) {
+    column(key, valueOf = { getValue(it) }) {
+        header(headerText)
+        align(Alignment.Center)
+        readNumberCell(format = decimalFormat, getCount = { getValue(it) })
     }
 }
 
@@ -66,12 +74,21 @@ sealed interface DecimalFormat {
     }
 }
 
-private fun <T : Any, C, E> EditableColumnBuilder<T, C, E>.cellForDecimalFormat(
+private fun <T : ITableUi, C, E> EditableColumnBuilder<T, C, E>.readNumberCell(
+    format: DecimalFormat,
+    getCount: (T) -> Int,
+) {
+    cell { item, _ ->
+        LockText(text = getCount(item).toStartDoubleFormat(format))
+    }
+}
+
+private fun <T : ITableUi, C, E> EditableColumnBuilder<T, C, E>.cellForDecimalFormat(
     format: DecimalFormat,
     getCount: (T) -> Int,
     saveInModel: (T, Int) -> Unit,
 
-) {
+    ) {
     // Для отображения значения, когда оно не редактируется
     cell { item, _ -> Text(getCount(item).toStartDoubleFormat(format)) }
 

@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import ru.pavlig43.core.component.EssentialComponentFactory
 import ru.pavlig43.core.component.EssentialsComponent
-import ru.pavlig43.core.model.GenericItem
+import ru.pavlig43.core.model.SingleItem
 import ru.pavlig43.core.model.ItemEssentialsUi
 import ru.pavlig43.create.data.CreateSingleItemRepository
 
@@ -40,7 +40,7 @@ import ru.pavlig43.create.data.CreateSingleItemRepository
  *    - При ошибке: состояние ошибки доступно в UI для показа пользователю
  * @see EssentialsComponent Базовый компонент для работы с формами
  */
-abstract class CreateEssentialsComponent<I : GenericItem, T : ItemEssentialsUi>(
+abstract class CreateEssentialsComponent<I : SingleItem, T : ItemEssentialsUi>(
     componentContext: ComponentContext,
     val onSuccessCreate: (Int) -> Unit,
     componentFactory: EssentialComponentFactory<I, T>,

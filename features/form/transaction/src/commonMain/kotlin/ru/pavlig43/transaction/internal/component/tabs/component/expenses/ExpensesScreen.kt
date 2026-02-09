@@ -1,7 +1,7 @@
 package ru.pavlig43.transaction.internal.component.tabs.component.expenses
 
 import androidx.compose.runtime.Composable
-import ru.pavlig43.mutable.api.ui.MutableTableBox
+import ru.pavlig43.mutable.api.multiLine.ui.MutableTableBox
 
 @Composable
 internal fun ExpensesScreen(

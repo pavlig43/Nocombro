@@ -7,10 +7,10 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import ru.pavlig43.coreui.coreFieldBlock.ReadWriteItemTypeField
 import ru.pavlig43.database.data.transaction.expense.ExpenseType
-import ru.pavlig43.mutable.api.component.MutableUiEvent
-import ru.pavlig43.mutable.api.ui.DecimalFormat
-import ru.pavlig43.mutable.api.ui.decimalColumn
-import ru.pavlig43.mutable.api.ui.idWithSelection
+import ru.pavlig43.mutable.api.column.DecimalFormat
+import ru.pavlig43.mutable.api.column.decimalColumn
+import ru.pavlig43.mutable.api.column.idWithSelection
+import ru.pavlig43.mutable.api.multiLine.component.MutableUiEvent
 import ru.pavlig43.tablecore.model.TableData
 import ua.wwind.table.ColumnSpec
 import ua.wwind.table.component.TableCellTextField
@@ -63,8 +63,7 @@ internal fun createExpensesColumns(
                 getValue = { it.amount },
                 headerText = "Сумма (₽)",
                 decimalFormat = DecimalFormat.RUB(),
-                onEvent = { updateEvent -> onEvent(updateEvent) },
-                updateItem = { item, newAmount -> item.copy(amount = newAmount) },
+                updateItem  = { item, amount -> onEvent(MutableUiEvent.UpdateItem(item.copy(amount = amount))) },
                 footerValue = { tableData -> tableData.displayedItems.sumOf { it.amount } }
             )
 

@@ -1,4 +1,4 @@
-package ru.pavlig43.mutable.api.ui
+package ru.pavlig43.mutable.api.multiLine.ui
 
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Box
@@ -14,8 +14,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.ImmutableList
 import ru.pavlig43.loadinitdata.api.ui.LoadInitDataScreen
-import ru.pavlig43.mutable.api.component.MutableTableComponent
-import ru.pavlig43.mutable.api.component.MutableUiEvent
+import ru.pavlig43.mutable.api.multiLine.component.MutableTableComponent
+import ru.pavlig43.mutable.api.multiLine.component.MutableUiEvent
 import ru.pavlig43.tablecore.manger.SelectionUiEvent
 import ru.pavlig43.tablecore.model.ITableUi
 import ru.pavlig43.tablecore.model.TableData

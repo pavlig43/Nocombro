@@ -4,7 +4,7 @@ package ru.pavlig43.core.model
  * Базовый интерфейс для общих типов(документ, продукты), нужен для более простой работы с дженериками
  * Больше пользы не несет
  */
-interface GenericItem{
+interface SingleItem{
     val id:Int
 }
 

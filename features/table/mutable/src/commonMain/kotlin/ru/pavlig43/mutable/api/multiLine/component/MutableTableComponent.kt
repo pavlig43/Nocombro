@@ -1,4 +1,4 @@
-package ru.pavlig43.mutable.api.component
+package ru.pavlig43.mutable.api.multiLine.component
 
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext

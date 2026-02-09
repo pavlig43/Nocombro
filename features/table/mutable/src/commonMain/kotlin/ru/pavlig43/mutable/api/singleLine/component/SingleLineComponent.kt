@@ -1,4 +1,4 @@
-package ru.pavlig43.mutable.api.component.singleLine
+package ru.pavlig43.mutable.api.singleLine.component
 
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
@@ -10,24 +10,25 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import ru.pavlig43.core.componentCoroutineScope
-import ru.pavlig43.core.model.GenericItem
+import ru.pavlig43.core.model.SingleItem
 import ru.pavlig43.loadinitdata.api.component.LoadInitDataComponent
 import ru.pavlig43.tablecore.model.ITableUi
 import ua.wwind.table.ColumnSpec
 
 
-data class SingleLineComponentFactory<I : GenericItem, T : ITableUi>(
+data class SingleLineComponentFactory<I : SingleItem, T : ITableUi>(
     val initItem: T,
-    val isValidFieldsFactory: T.() -> Boolean,
+    val errorFactory: (T) -> List<String>,
     val mapperToUi: I.() -> T,
     val produceInfoForTabName: (T) -> Unit,
 )
-abstract class SingleLineComponent<I : GenericItem, UI : ITableUi,C>(
+
+abstract class SingleLineComponent<I : SingleItem, UI : ITableUi, C>(
     componentContext: ComponentContext,
     private val componentFactory: SingleLineComponentFactory<I, UI>,
     getInitData: (suspend () -> Result<I>)?,
-    private val observeOnEssentials:(UI)-> Unit ={},
-    onSuccessInitData:(UI)-> Unit = {}
+    private val observeOnEssentials: (UI) -> Unit = {},
+    onSuccessInitData: (UI) -> Unit = {}
 ) : ComponentContext by componentContext {
     protected val coroutineScope = componentCoroutineScope()
 
@@ -42,7 +43,7 @@ abstract class SingleLineComponent<I : GenericItem, UI : ITableUi,C>(
             getInitData?.invoke()?.map { item ->
                 componentFactory.mapperToUi(item)
                     .also { componentFactory.produceInfoForTabName(it) }
-            }?:Result.success(componentFactory.initItem)
+            } ?: Result.success(componentFactory.initItem)
 
         },
         onSuccessGetInitData = { item ->
@@ -59,12 +60,11 @@ abstract class SingleLineComponent<I : GenericItem, UI : ITableUi,C>(
 
     }
 
-    val isValidFields = _itemFields.map { items ->
-        componentFactory.isValidFieldsFactory(items[0])
+    val errorMessages = _itemFields.map { lst ->
+        componentFactory.errorFactory(lst[0])
     }.stateIn(
         coroutineScope,
         SharingStarted.Eagerly,
-        false
+        emptyList()
     )
-
 }

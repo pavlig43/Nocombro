@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import ru.pavlig43.core.componentCoroutineScope
-import ru.pavlig43.core.model.GenericItem
+import ru.pavlig43.core.model.SingleItem
 import ru.pavlig43.core.model.ItemEssentialsUi
 import ru.pavlig43.loadinitdata.api.component.LoadInitDataComponent
 
@@ -26,7 +26,7 @@ import ru.pavlig43.loadinitdata.api.component.LoadInitDataComponent
  * @property mapperToUi Функция преобразования предметной модели (I) в UI-модель (T) для отображения
  * @property produceInfoForTabName Callback для обновления информации в названии вкладки(та которая с крестиком).
  */
-data class EssentialComponentFactory<I : GenericItem, T : ItemEssentialsUi>(
+data class EssentialComponentFactory<I : SingleItem, T : ItemEssentialsUi>(
     val initItem: T,
     val isValidFieldsFactory: T.() -> Boolean,
     val mapperToUi: I.() -> T,
@@ -62,7 +62,7 @@ data class EssentialComponentFactory<I : GenericItem, T : ItemEssentialsUi>(
  *
  * @see LoadInitDataComponent Компонент загрузки данных с обработкой состояний
  */
-abstract class EssentialsComponent<I : GenericItem, T : ItemEssentialsUi>(
+abstract class EssentialsComponent<I : SingleItem, T : ItemEssentialsUi>(
     componentContext: ComponentContext,
     private val componentFactory: EssentialComponentFactory<I, T>,
     getInitData: (suspend () -> Result<I>)?,
@@ -106,7 +106,7 @@ abstract class EssentialsComponent<I : GenericItem, T : ItemEssentialsUi>(
     )
 
 }
-abstract class EssentialsComponent1<I : GenericItem, T : ItemEssentialsUi>(
+abstract class EssentialsComponent1<I : SingleItem, T : ItemEssentialsUi>(
     componentContext: ComponentContext,
     private val componentFactory: EssentialComponentFactory<I, T>,
     getInitData: (suspend () -> Result<I>)?,

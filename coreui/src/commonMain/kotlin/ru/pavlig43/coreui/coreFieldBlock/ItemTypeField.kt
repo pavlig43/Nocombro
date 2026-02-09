@@ -107,5 +107,4 @@ fun <I : ItemType> ItemTypeField(
         }
     }
 
-
 }

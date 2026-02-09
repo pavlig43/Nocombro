@@ -10,7 +10,7 @@ import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.core.emptyLocalDateTime
 import ru.pavlig43.database.data.transaction.expense.ExpenseBD
-import ru.pavlig43.mutable.api.component.MutableTableComponent
+import ru.pavlig43.mutable.api.multiLine.component.MutableTableComponent
 import ru.pavlig43.tablecore.model.TableData
 import ru.pavlig43.update.data.UpdateCollectionRepository
 import ua.wwind.table.ColumnSpec

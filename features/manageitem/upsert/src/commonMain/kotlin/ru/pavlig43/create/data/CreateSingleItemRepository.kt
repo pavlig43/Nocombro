@@ -1,8 +1,8 @@
 package ru.pavlig43.create.data
 
-import ru.pavlig43.core.model.GenericItem
+import ru.pavlig43.core.model.SingleItem
 
-class CreateSingleItemRepository<I : GenericItem>(
+class CreateSingleItemRepository<I : SingleItem>(
     private val isCanSave: suspend (I) -> Result<Unit>,
     private val create: suspend (I) -> Long,
 ) {

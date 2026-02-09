@@ -5,7 +5,7 @@ import ru.pavlig43.core.FormTabComponent
 import ru.pavlig43.core.component.EssentialComponentFactory
 import ru.pavlig43.core.component.EssentialsComponent
 import ru.pavlig43.core.model.ChangeSet
-import ru.pavlig43.core.model.GenericItem
+import ru.pavlig43.core.model.SingleItem
 import ru.pavlig43.core.model.ItemEssentialsUi
 import ru.pavlig43.update.data.UpdateEssentialsRepository
 
@@ -14,7 +14,7 @@ import ru.pavlig43.update.data.UpdateEssentialsRepository
  * @see [ru.pavlig43.create.component.CreateEssentialsComponent]
  */
 @Suppress("LongParameterList")
-abstract class UpdateEssentialsComponent<I : GenericItem, T : ItemEssentialsUi>(
+abstract class UpdateEssentialsComponent<I : SingleItem, T : ItemEssentialsUi>(
     componentContext: ComponentContext,
     componentFactory: EssentialComponentFactory<I, T>,
     id: Int,

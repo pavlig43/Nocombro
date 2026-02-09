@@ -1,4 +1,4 @@
-package ru.pavlig43.mutable.api.ui
+package ru.pavlig43.mutable.api.multiLine.ui
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically

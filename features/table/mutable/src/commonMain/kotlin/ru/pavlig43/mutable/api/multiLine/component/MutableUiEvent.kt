@@ -1,4 +1,4 @@
-package ru.pavlig43.mutable.api.component
+package ru.pavlig43.mutable.api.multiLine.component
 
 import ru.pavlig43.tablecore.manger.SelectionUiEvent
 import ru.pavlig43.tablecore.model.ITableUi

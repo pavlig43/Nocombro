@@ -7,10 +7,10 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import ru.pavlig43.coreui.NameRowWithSearchIcon
 import ru.pavlig43.database.data.product.ProductType
-import ru.pavlig43.mutable.api.component.MutableUiEvent
-import ru.pavlig43.mutable.api.ui.DecimalFormat
-import ru.pavlig43.mutable.api.ui.decimalColumn
-import ru.pavlig43.mutable.api.ui.idWithSelection
+import ru.pavlig43.mutable.api.column.DecimalFormat
+import ru.pavlig43.mutable.api.column.decimalColumn
+import ru.pavlig43.mutable.api.column.idWithSelection
+import ru.pavlig43.mutable.api.multiLine.component.MutableUiEvent
 import ru.pavlig43.tablecore.model.TableData
 import ua.wwind.table.ColumnSpec
 import ua.wwind.table.editableTableColumns
@@ -73,8 +73,8 @@ internal fun createCompositionColumn(
                 getValue = { it.count },
                 headerText = "Количество",
                 decimalFormat = DecimalFormat.KG(),
-                onEvent = { updateEvent -> onEvent(updateEvent) },
-                updateItem = { item, count -> item.copy(count = count) }
+                updateItem = {item,count-> onEvent(MutableUiEvent.UpdateItem(item.copy(count = count)))},
+
             )
 
 

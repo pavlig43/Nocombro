@@ -6,8 +6,8 @@ import androidx.compose.material3.TextField
 import androidx.compose.ui.Alignment
 import kotlinx.collections.immutable.ImmutableList
 import ru.pavlig43.coreui.coreFieldBlock.DateTimeRow
-import ru.pavlig43.mutable.api.component.MutableUiEvent
-import ru.pavlig43.mutable.api.ui.idWithSelection
+import ru.pavlig43.mutable.api.multiLine.component.MutableUiEvent
+import ru.pavlig43.mutable.api.column.idWithSelection
 import ru.pavlig43.tablecore.model.TableData
 import ua.wwind.table.ColumnSpec
 import ua.wwind.table.editableTableColumns

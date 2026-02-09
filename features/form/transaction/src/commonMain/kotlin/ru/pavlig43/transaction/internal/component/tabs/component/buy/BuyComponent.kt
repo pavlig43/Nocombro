@@ -20,8 +20,8 @@ import ru.pavlig43.immutable.api.component.ProductDeclarationImmutableTableBuild
 import ru.pavlig43.immutable.api.component.ProductImmutableTableBuilder
 import ru.pavlig43.immutable.internal.component.items.product.ProductTableUi
 import ru.pavlig43.immutable.internal.component.items.productDeclaration.ProductDeclarationTableUi
-import ru.pavlig43.mutable.api.component.MutableTableComponent
-import ru.pavlig43.mutable.api.component.MutableUiEvent.UpdateItem
+import ru.pavlig43.mutable.api.multiLine.component.MutableTableComponent
+import ru.pavlig43.mutable.api.multiLine.component.MutableUiEvent.UpdateItem
 import ru.pavlig43.tablecore.model.TableData
 import ru.pavlig43.update.data.UpdateCollectionRepository
 import ua.wwind.table.ColumnSpec

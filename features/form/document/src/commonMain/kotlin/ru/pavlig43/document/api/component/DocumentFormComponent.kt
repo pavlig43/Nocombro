@@ -22,6 +22,7 @@ import ru.pavlig43.document.internal.component.tabs.DocumentFormTabsComponent
 import ru.pavlig43.document.internal.data.DocumentEssentialsUi
 import ru.pavlig43.document.internal.data.toUi
 import ru.pavlig43.document.internal.di.createDocumentFormModule
+import ru.pavlig43.mutable.api.singleLine.component.SingleLineComponentFactory
 
 
 class DocumentFormComponent(
@@ -50,6 +51,17 @@ class DocumentFormComponent(
         mapperToUi = { toUi() },
         produceInfoForTabName = { d -> onChangeValueForMainTab("*Документ ${d.displayName}") }
     )
+    private val essentialsComponentFactory = SingleLineComponentFactory<Document, DocumentEssentialsUi>(
+        initItem = DocumentEssentialsUi(),
+        errorFactory = {item: DocumentEssentialsUi->
+            buildList {
+                if (item.displayName.isBlank()) add("Название документа обязательно")
+                if (item.type == null) add("Тип документа обязателен")
+            }
+        },
+        mapperToUi = {toUi()},
+        produceInfoForTabName = { d -> onChangeValueForMainTab("*Документ ${d.displayName}") }
+    )
 
     private fun onChangeValueForMainTab(title: String) {
 
@@ -62,9 +74,10 @@ class DocumentFormComponent(
     ): Child {
         return when (config) {
             is Config.Create -> Child.Create(
-                ru.pavlig43.document.internal.component.CreateDocumentSingleLineComponent(
+                CreateDocumentSingleLineComponent(
                     componentContext = componentContext,
                     onSuccessCreate = { stackNavigation.replaceAll(Config.Update(it)) },
+                    componentFactory = essentialsComponentFactory,
                     createDocumentRepository = scope.get()
                 )
 
@@ -99,7 +112,7 @@ class DocumentFormComponent(
     }
 
     internal sealed class Child {
-        class Create(val component: ru.pavlig43.document.internal.component.CreateDocumentSingleLineComponent) : Child()
+        class Create(val component: CreateDocumentSingleLineComponent) : Child()
         class Update(val component: DocumentFormTabsComponent) : Child()
     }
 }

@@ -1,4 +1,4 @@
-package ru.pavlig43.mutable.api.component.singleLine
+package ru.pavlig43.mutable.api.singleLine.component
 
 import com.arkivanov.decompose.ComponentContext
 import kotlinx.coroutines.Dispatchers
@@ -6,8 +6,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import ru.pavlig43.core.componentCoroutineScope
-import ru.pavlig43.core.model.GenericItem
+import ru.pavlig43.core.model.SingleItem
 import ru.pavlig43.create.data.CreateSingleItemRepository
 import ru.pavlig43.tablecore.model.ITableUi
 
@@ -38,7 +37,7 @@ import ru.pavlig43.tablecore.model.ITableUi
  *    - При ошибке: состояние ошибки доступно в UI для показа пользователю
  * @see SingleLineComponent Базовый компонент для работы с формами
  */
-abstract class CreateSingleLineComponent<I : GenericItem, UI : ITableUi, C>(
+abstract class CreateSingleLineComponent<I : SingleItem, UI : ITableUi, C>(
     componentContext: ComponentContext,
     val onSuccessCreate: (Int) -> Unit,
     componentFactory: SingleLineComponentFactory<I, UI>,
@@ -50,12 +49,12 @@ abstract class CreateSingleLineComponent<I : GenericItem, UI : ITableUi, C>(
     getInitData = null,
 ) {
     private val _createState: MutableStateFlow<CreateState> = MutableStateFlow(CreateState.Init)
-    val createState = _createState.asStateFlow()
+    internal val createState = _createState.asStateFlow()
 
     fun create() {
         coroutineScope.launch(Dispatchers.IO) {
             _createState.update { CreateState.Loading }
-            val item = itemFields.value.first().mapperToDTO()
+            val item = itemFields.value[0].mapperToDTO()
             val idResult = createSingleItemRepository.createEssential(item)
             val state = idResult.fold(
                 onSuccess = { CreateState.Success(it) },
@@ -69,7 +68,7 @@ abstract class CreateSingleLineComponent<I : GenericItem, UI : ITableUi, C>(
 /**
  * Состояние процесса создания сущности
  */
-sealed interface CreateState {
+internal sealed interface CreateState {
     /** Начальное состояние */
     data object Init : CreateState
 
