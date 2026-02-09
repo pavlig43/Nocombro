@@ -17,7 +17,7 @@ import ru.pavlig43.core.component.EssentialComponentFactory
 import ru.pavlig43.corekoin.ComponentKoinContext
 import ru.pavlig43.database.data.document.Document
 import ru.pavlig43.document.api.DocumentFormDependencies
-import ru.pavlig43.document.internal.component.CreateDocumentComponent
+import ru.pavlig43.document.internal.component.CreateDocumentSingleLineComponent
 import ru.pavlig43.document.internal.component.tabs.DocumentFormTabsComponent
 import ru.pavlig43.document.internal.data.DocumentEssentialsUi
 import ru.pavlig43.document.internal.data.toUi
@@ -62,11 +62,10 @@ class DocumentFormComponent(
     ): Child {
         return when (config) {
             is Config.Create -> Child.Create(
-                CreateDocumentComponent(
+                ru.pavlig43.document.internal.component.CreateDocumentSingleLineComponent(
                     componentContext = componentContext,
                     onSuccessCreate = { stackNavigation.replaceAll(Config.Update(it)) },
-                    createDocumentRepository = scope.get(),
-                    componentFactory = essentialFactory
+                    createDocumentRepository = scope.get()
                 )
 
             )
@@ -100,7 +99,7 @@ class DocumentFormComponent(
     }
 
     internal sealed class Child {
-        class Create(val component: CreateDocumentComponent) : Child()
+        class Create(val component: ru.pavlig43.document.internal.component.CreateDocumentSingleLineComponent) : Child()
         class Update(val component: DocumentFormTabsComponent) : Child()
     }
 }

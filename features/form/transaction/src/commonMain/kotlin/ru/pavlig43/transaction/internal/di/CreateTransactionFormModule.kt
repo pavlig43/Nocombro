@@ -3,7 +3,7 @@ package ru.pavlig43.transaction.internal.di
 import org.koin.core.qualifier.qualifier
 import org.koin.dsl.module
 import ru.pavlig43.core.TransactionExecutor
-import ru.pavlig43.create.data.CreateEssentialsRepository
+import ru.pavlig43.create.data.CreateSingleItemRepository
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.transaction.Transaction
 import ru.pavlig43.database.data.transaction.buy.BuyBD
@@ -21,7 +21,7 @@ internal fun createTransactionFormModule(dependencies: TransactionFormDependenci
         single<TransactionExecutor> { dependencies.dbTransaction }
         single<FilesDependencies> { dependencies.filesDependencies }
         single<ImmutableTableDependencies> { dependencies.immutableTableDependencies }
-        single<CreateEssentialsRepository<Transaction>> { getCreateRepository(get()) }
+        single<CreateSingleItemRepository<Transaction>> { getCreateRepository(get()) }
         single<UpdateEssentialsRepository<Transaction>> { getUpdateRepository(get()) }
         single<UpdateCollectionRepository<BuyBD, BuyBD>>(UpdateCollectionRepositoryType.BUY.qualifier) {
             createUpdateBuyRepository()
@@ -41,9 +41,9 @@ internal fun createTransactionFormModule(dependencies: TransactionFormDependenci
 
 private fun getCreateRepository(
     db: NocombroDatabase
-): CreateEssentialsRepository<Transaction> {
+): CreateSingleItemRepository<Transaction> {
     val dao = db.transactionDao
-    return CreateEssentialsRepository(
+    return CreateSingleItemRepository(
         create = dao::create,
         isCanSave = dao::isCanSave
     )

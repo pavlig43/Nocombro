@@ -1,4 +1,4 @@
-package ru.pavlig43.create.component
+package ru.pavlig43.mutable.api.component.singleLine
 
 import com.arkivanov.decompose.ComponentContext
 import kotlinx.coroutines.Dispatchers
@@ -6,60 +6,56 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import ru.pavlig43.core.component.EssentialComponentFactory
-import ru.pavlig43.core.component.EssentialsComponent
+import ru.pavlig43.core.componentCoroutineScope
 import ru.pavlig43.core.model.GenericItem
-import ru.pavlig43.core.model.ItemEssentialsUi
 import ru.pavlig43.create.data.CreateSingleItemRepository
+import ru.pavlig43.tablecore.model.ITableUi
 
 /**
- * Абстрактный компонент для создания новых обязательных полей.
+ * Абстрактный компонент для создания новых сущностей через таблицу с одной строкой.
  *
- * Расширяет [EssentialsComponent] добавляя функциональность создания новых записей
+ * Расширяет [SingleLineComponent] добавляя функциональность создания новых записей
  * с отправкой данных в репозиторий и обработкой результата операции.
  *
  * @param I Тип предметной модели (GenericItem) - DTO для отправки в бэкенд/БД
- * @param T Тип UI-модели (ItemEssentialsUi) - данные формы
+ * @param UI Тип UI-модели (ITableUi) - данные формы
  * @param onSuccessCreate Callback вызываемый при успешном создании сущности.
  *                        Принимает ID созданной записи для дальнейшей навигации/обработки
  * @param componentFactory Фабрика с логикой преобразования и валидации данных
  * @param createSingleItemRepository Репозиторий для создания сущностей в системе
- * @param mapperToDTO Функция преобразования UI-модели (T) в предметную модель (I)
+ * @param mapperToDTO Функция преобразования UI-модели (UI) в предметную модель (I)
  *                    для отправки на сервер/сохранения в БД
  *
- *
  * ## Поток создания сущности:
- * 1. **Заполнение формы**: Пользователь заполняет поля в UI
- * 2. **Валидация**: Поля проверяются через `isValidValuesFactory` из фабрики
+ * 1. **Заполнение формы**: Пользователь заполняет поля в таблице с одной строкой
+ * 2. **Валидация**: Поля проверяются через `isValidFieldsFactory` из фабрики
  * 3. **Создание**: При вызове `create()`:
  *    - Данные преобразуются из UI-модели в DTO через `mapperToDTO`
- *    - Отправляются в репозиторий `createEssentialsRepository`
+ *    - Отправляются в репозиторий `createSingleItemRepository`
  *    - Обновляется `createState` для отображения прогресса/результата
  * 4. **Обработка результата**:
  *    - При успехе: вызывается `onSuccessCreate` с ID новой записи
  *    - При ошибке: состояние ошибки доступно в UI для показа пользователю
- * @see EssentialsComponent Базовый компонент для работы с формами
+ * @see SingleLineComponent Базовый компонент для работы с формами
  */
-abstract class CreateEssentialsComponent<I : GenericItem, T : ItemEssentialsUi>(
+abstract class CreateSingleLineComponent<I : GenericItem, UI : ITableUi, C>(
     componentContext: ComponentContext,
     val onSuccessCreate: (Int) -> Unit,
-    componentFactory: EssentialComponentFactory<I, T>,
+    componentFactory: SingleLineComponentFactory<I, UI>,
     private val createSingleItemRepository: CreateSingleItemRepository<I>,
-    private val mapperToDTO: T.() -> I,
-) : EssentialsComponent<I, T>(
+    private val mapperToDTO: UI.() -> I,
+) : SingleLineComponent<I, UI, C>(
     componentContext = componentContext,
     componentFactory = componentFactory,
     getInitData = null,
-
-    ) {
-
+) {
     private val _createState: MutableStateFlow<CreateState> = MutableStateFlow(CreateState.Init)
-    internal val createState = _createState.asStateFlow()
+    val createState = _createState.asStateFlow()
 
-    internal fun create() {
+    fun create() {
         coroutineScope.launch(Dispatchers.IO) {
             _createState.update { CreateState.Loading }
-            val item = itemFields.value.mapperToDTO()
+            val item = itemFields.value.first().mapperToDTO()
             val idResult = createSingleItemRepository.createEssential(item)
             val state = idResult.fold(
                 onSuccess = { CreateState.Success(it) },
@@ -68,5 +64,21 @@ abstract class CreateEssentialsComponent<I : GenericItem, T : ItemEssentialsUi>(
             _createState.update { state }
         }
     }
+}
 
+/**
+ * Состояние процесса создания сущности
+ */
+sealed interface CreateState {
+    /** Начальное состояние */
+    data object Init : CreateState
+
+    /** Идет создание */
+    data object Loading : CreateState
+
+    /** Успешное создание */
+    data class Success(val id: Int) : CreateState
+
+    /** Ошибка при создании */
+    data class Error(val message: String) : CreateState
 }

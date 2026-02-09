@@ -115,6 +115,8 @@ abstract class EssentialsComponent1<I : GenericItem, T : ItemEssentialsUi>(
 ) : ComponentContext by componentContext {
     protected val coroutineScope = componentCoroutineScope()
 
+
+
     private val _itemFields = MutableStateFlow(componentFactory.initItem)
     val itemFields = _itemFields.asStateFlow()
 

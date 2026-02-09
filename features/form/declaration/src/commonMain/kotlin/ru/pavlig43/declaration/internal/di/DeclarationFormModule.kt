@@ -2,7 +2,7 @@ package ru.pavlig43.declaration.internal.di
 
 import org.koin.dsl.module
 import ru.pavlig43.core.TransactionExecutor
-import ru.pavlig43.create.data.CreateEssentialsRepository
+import ru.pavlig43.create.data.CreateSingleItemRepository
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.declaration.api.DeclarationFormDependencies
@@ -16,7 +16,7 @@ internal fun createDeclarationFormModule(dependencies: DeclarationFormDependenci
         single<TransactionExecutor> { dependencies.transaction }
         single<ImmutableTableDependencies> {dependencies.immutableTableDependencies  }
         single<FilesDependencies> {dependencies.filesDependencies  }
-        single<CreateEssentialsRepository<Declaration>> {  getCreateRepository(get())}
+        single<CreateSingleItemRepository<Declaration>> {  getCreateRepository(get())}
         single<UpdateEssentialsRepository<Declaration>> {  getUpdateRepository(get())}
 
     }
@@ -25,9 +25,9 @@ internal fun createDeclarationFormModule(dependencies: DeclarationFormDependenci
 
 private fun getCreateRepository(
     db: NocombroDatabase
-): CreateEssentialsRepository<Declaration> {
+): CreateSingleItemRepository<Declaration> {
     val dao = db.declarationDao
-    return CreateEssentialsRepository(
+    return CreateSingleItemRepository(
         create = dao::create,
         isCanSave = dao::isCanSave
     )

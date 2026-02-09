@@ -3,6 +3,7 @@ package ru.pavlig43.document.internal.data
 import kotlinx.datetime.LocalDate
 import ru.pavlig43.core.getCurrentLocalDate
 import ru.pavlig43.core.model.ItemEssentialsUi
+import ru.pavlig43.tablecore.model.ITableUi
 import ru.pavlig43.database.data.document.Document
 import ru.pavlig43.database.data.document.DocumentType
 import kotlin.time.ExperimentalTime
@@ -17,7 +18,8 @@ internal data class DocumentEssentialsUi(
     val comment:String ="",
 
     override val id: Int = 0,
-): ItemEssentialsUi
+    override val composeId: Int = 0,
+): ItemEssentialsUi, ITableUi
 @OptIn(ExperimentalTime::class)
 internal fun DocumentEssentialsUi.toDto(): Document {
     return Document(

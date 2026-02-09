@@ -19,7 +19,8 @@ import ru.pavlig43.core.ui.EssentialBlockScreen
 import ru.pavlig43.document.api.component.DocumentFormComponent
 import ru.pavlig43.document.internal.component.tabs.DocumentTabChild
 import ru.pavlig43.document.internal.component.tabs.component.DocumentEssentialComponent
-import ru.pavlig43.document.internal.ui.CreateDocumentScreen
+import ru.pavlig43.document.internal.ui.CreateDocumentSingleLineScreen
+import ru.pavlig43.document.internal.ui.CreateDocumentSingleLineScreen
 import ru.pavlig43.document.internal.ui.DocumentFields
 import ru.pavlig43.files.api.ui.FilesScreen
 import ru.pavlig43.update.ui.FormTabsUi
@@ -42,7 +43,7 @@ fun DocumentFormScreen(
             stack = stack,
         ) { child ->
             when (val instance = child.instance) {
-                is DocumentFormComponent.Child.Create -> CreateDocumentScreen(instance.component)
+                is DocumentFormComponent.Child.Create -> CreateDocumentSingleLineScreen(instance.component)
                 is DocumentFormComponent.Child.Update -> FormTabsUi(
                     component = instance.component,
                     tabChildFactory = { child: DocumentTabChild?->

@@ -3,7 +3,7 @@ package ru.pavlig43.product.internal.di
 import org.koin.core.qualifier.qualifier
 import org.koin.dsl.module
 import ru.pavlig43.core.TransactionExecutor
-import ru.pavlig43.create.data.CreateEssentialsRepository
+import ru.pavlig43.create.data.CreateSingleItemRepository
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.product.CompositionIn
 import ru.pavlig43.database.data.product.CompositionOut
@@ -22,7 +22,7 @@ internal fun createProductFormModule(dependencies: ProductFormDependencies) = li
         single<TransactionExecutor> { dependencies.transaction }
         single<FilesDependencies> {dependencies.filesDependencies  }
         single<ImmutableTableDependencies> { dependencies.immutableTableDependencies }
-        single<CreateEssentialsRepository<Product>> { getCreateRepository(get()) }
+        single<CreateSingleItemRepository<Product>> { getCreateRepository(get()) }
         single<UpdateEssentialsRepository<Product>> { getUpdateRepository(get()) }
 
 
@@ -43,9 +43,9 @@ internal fun createProductFormModule(dependencies: ProductFormDependencies) = li
 
 private fun getCreateRepository(
     db: NocombroDatabase
-): CreateEssentialsRepository<Product> {
+): CreateSingleItemRepository<Product> {
     val dao = db.productDao
-    return CreateEssentialsRepository(
+    return CreateSingleItemRepository(
         create = dao::create,
         isCanSave = dao::isCanSave
     )

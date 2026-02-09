@@ -2,7 +2,7 @@ package ru.pavlig43.vendor.internal.di
 
 import org.koin.dsl.module
 import ru.pavlig43.core.TransactionExecutor
-import ru.pavlig43.create.data.CreateEssentialsRepository
+import ru.pavlig43.create.data.CreateSingleItemRepository
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.vendor.Vendor
 import ru.pavlig43.files.api.FilesDependencies
@@ -14,7 +14,7 @@ internal fun createVendorFormModule(dependencies: VendorFormDependencies) = list
         single<NocombroDatabase> { dependencies.db }
         single<TransactionExecutor> { dependencies.transaction }
         single<FilesDependencies> {dependencies.filesDependencies  }
-        single<CreateEssentialsRepository<Vendor>> { getCreateRepository(get()) }
+        single<CreateSingleItemRepository<Vendor>> { getCreateRepository(get()) }
         single<UpdateEssentialsRepository<Vendor>> { getUpdateRepository(get()) }
 
     }
@@ -22,9 +22,9 @@ internal fun createVendorFormModule(dependencies: VendorFormDependencies) = list
 
 private fun getCreateRepository(
     db: NocombroDatabase
-): CreateEssentialsRepository<Vendor> {
+): CreateSingleItemRepository<Vendor> {
     val dao = db.vendorDao
-    return CreateEssentialsRepository(
+    return CreateSingleItemRepository(
         create = dao::create,
         isCanSave = dao::isCanSave
     )

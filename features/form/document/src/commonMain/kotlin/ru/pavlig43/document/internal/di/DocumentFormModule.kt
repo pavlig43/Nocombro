@@ -2,7 +2,7 @@ package ru.pavlig43.document.internal.di
 
 import org.koin.dsl.module
 import ru.pavlig43.core.TransactionExecutor
-import ru.pavlig43.create.data.CreateEssentialsRepository
+import ru.pavlig43.create.data.CreateSingleItemRepository
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.document.Document
 import ru.pavlig43.document.api.DocumentFormDependencies
@@ -14,16 +14,16 @@ internal fun createDocumentFormModule(dependencies: DocumentFormDependencies) = 
         single<NocombroDatabase> { dependencies.db }
         single<TransactionExecutor> { dependencies.transaction }
         single<FilesDependencies> {dependencies.filesDependencies  }
-        single<CreateEssentialsRepository<Document>> { getCreateRepository(get()) }
+        single<CreateSingleItemRepository<Document>> { getCreateRepository(get()) }
         single<UpdateEssentialsRepository<Document>> { getUpdateRepository(get()) }
     }
 )
 
 private fun getCreateRepository(
     db: NocombroDatabase
-): CreateEssentialsRepository<Document> {
+): CreateSingleItemRepository<Document> {
     val documentDao = db.documentDao
-    return CreateEssentialsRepository(
+    return CreateSingleItemRepository(
         create = documentDao::create,
         isCanSave = documentDao::isCanSave
     )
