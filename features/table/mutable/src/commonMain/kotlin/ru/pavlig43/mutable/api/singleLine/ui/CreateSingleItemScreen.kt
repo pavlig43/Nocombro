@@ -20,17 +20,18 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import ru.pavlig43.core.model.SingleItem
 import ru.pavlig43.coreui.LoadingUi
+import ru.pavlig43.coreui.ValidationErrorsCard
 import ru.pavlig43.mutable.api.singleLine.component.CreateSingleLineComponent
 import ru.pavlig43.mutable.api.singleLine.component.CreateState
-import ru.pavlig43.tablecore.model.ITableUi
+import ru.pavlig43.tablecore.model.ISingleLineTableUi
 
 
 @Composable
-fun <I : ITableUi, C>CreateSingleItemScreen(
+fun <I : ISingleLineTableUi, C>CreateSingleItemScreen(
     component: CreateSingleLineComponent<out SingleItem,I,C>
 ){
     val createState by component.createState.collectAsState()
-    val errorMessages by component.errorMessages.collectAsState()
+    val errorMessages by component.errorTableMessages.collectAsState()
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -85,48 +86,20 @@ private fun CreateButton(
 
         // Ошибки валидации
         if (errorMessages.isNotEmpty()) {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.errorContainer
-                )
-            ) {
-                Column(
-                    modifier = Modifier.padding(12.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    Text(
-                        text = "Пожалуйста, исправьте ошибки:",
-                        style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.onErrorContainer
-                    )
-                    errorMessages.forEach { error ->
-                        Text(
-                            text = "• $error",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onErrorContainer
-                        )
-                    }
-                }
-            }
+            ValidationErrorsCard(
+                errorMessages = errorMessages,
+                modifier = Modifier.fillMaxWidth()
+            )
         }
 
         // Ошибка сервера
         if (createState is CreateState.Error) {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.errorContainer
-                )
-            ) {
-                Text(
-                    text = createState.message,
-                    modifier = Modifier.padding(12.dp),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onErrorContainer,
-                    textAlign = TextAlign.Center
-                )
-            }
+            ValidationErrorsCard(
+                errorMessages = listOf(createState.message),
+                modifier = Modifier.fillMaxWidth()
+            )
+
         }
     }
 }
+

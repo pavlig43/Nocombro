@@ -1,10 +1,8 @@
-@file:Suppress("MatchingDeclarationName")
+package ru.pavlig43.document.internal.create.component
 
-package ru.pavlig43.document.internal.component
-
-import androidx.compose.ui.Alignment
 import kotlinx.collections.immutable.ImmutableList
 import ru.pavlig43.database.data.document.DocumentType
+import ru.pavlig43.document.internal.DocumentField
 import ru.pavlig43.document.internal.data.DocumentEssentialsUi
 import ru.pavlig43.mutable.api.column.writeDateColumn
 import ru.pavlig43.mutable.api.column.writeItemTypeColumn
@@ -19,7 +17,7 @@ import ua.wwind.table.editableTableColumns
  * @param onChangeItem Callback для обновления данных документа
  */
 @Suppress("LongMethod")
-internal fun createDocumentColumns(
+internal fun createDocumentColumns0(
     onOpenDateDialog: () -> Unit,
     onChangeItem: (DocumentEssentialsUi) -> Unit
 ): ImmutableList<ColumnSpec<DocumentEssentialsUi, DocumentField, Unit>> {
@@ -30,7 +28,7 @@ internal fun createDocumentColumns(
             writeTextColumn(
                 headerText = "Название",
                 column = DocumentField.DISPLAY_NAME,
-                valueOf = {it.displayName},
+                valueOf = { it.displayName },
                 onChangeItem = { item, newValue ->
                     onChangeItem(item.copy(displayName = newValue))
                 },
@@ -64,4 +62,3 @@ internal fun createDocumentColumns(
 
     return columns
 }
-

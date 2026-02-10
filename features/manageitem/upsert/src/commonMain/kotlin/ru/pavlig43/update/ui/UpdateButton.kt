@@ -22,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
+import ru.pavlig43.coreui.ClickableValidationErrorsCard
 import ru.pavlig43.coreui.LoadingUi
 import ru.pavlig43.update.component.UpdateComponent
 import ru.pavlig43.update.component.UpdateState
@@ -55,15 +56,10 @@ internal fun UpdateButton(
                 onDismissRequest = { saveDialogState = false },
             )
         }
-        isValidValue.forEach { error ->
-            TextButton(onClick = error.onSelectProblemTab){
-                Text(
-                    text = error.message,
-                    textDecoration = TextDecoration.Underline,
-                    color = MaterialTheme.colorScheme.error
-                )
-            }
-
+        if (isValidValue.isNotEmpty()) {
+            ClickableValidationErrorsCard(
+                errorMessages = isValidValue.map { it.message to it.onSelectProblemTab }
+            )
         }
         Button(
             onClick = { saveDialogState = true },
