@@ -1,4 +1,4 @@
-package ru.pavlig43.database.data.transaction
+package ru.pavlig43.database.data.batch
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
@@ -14,7 +14,7 @@ import ru.pavlig43.database.data.product.Product
             entity = Product::class,
             parentColumns = ["id"],
             childColumns = ["product_id"],
-            onDelete = ForeignKey.RESTRICT
+            onDelete = ForeignKey.Companion.RESTRICT
         ),
         ForeignKey(
             entity = Declaration::class,

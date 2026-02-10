@@ -13,7 +13,7 @@ import ru.pavlig43.core.component.EssentialComponentFactory
 import ru.pavlig43.core.componentCoroutineScope
 import ru.pavlig43.core.tabs.TabNavigationComponent
 import ru.pavlig43.core.tabs.TabOpener
-import ru.pavlig43.database.data.transaction.Transaction
+import ru.pavlig43.database.data.transaction.Transact
 import ru.pavlig43.database.data.transaction.TransactionType
 import ru.pavlig43.transaction.internal.component.tabs.component.TransactionEssentialComponent
 import ru.pavlig43.transaction.internal.component.tabs.component.buy.BuyComponent
@@ -27,7 +27,7 @@ import ru.pavlig43.update.component.getDefaultUpdateComponent
 
 internal class TransactionFormTabsComponent(
     componentContext: ComponentContext,
-    essentialFactory: EssentialComponentFactory<Transaction, TransactionEssentialsUi>,
+    essentialFactory: EssentialComponentFactory<Transact, TransactionEssentialsUi>,
     closeFormScreen: () -> Unit,
     transactionId: Int,
     tabOpener: TabOpener,

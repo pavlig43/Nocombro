@@ -13,7 +13,8 @@ import ru.pavlig43.core.DateComponent
 import ru.pavlig43.core.emptyDate
 import ru.pavlig43.core.tabs.TabOpener
 import ru.pavlig43.database.data.product.ProductType
-import ru.pavlig43.database.data.transaction.buy.BuyBD
+import ru.pavlig43.database.data.transaction.buy.BuyBDIn
+import ru.pavlig43.database.data.transaction.buy.BuyBDOut
 import ru.pavlig43.immutable.api.ImmutableTableDependencies
 import ru.pavlig43.immutable.api.component.MBSImmutableTableComponent
 import ru.pavlig43.immutable.api.component.ProductDeclarationImmutableTableBuilder
@@ -28,12 +29,12 @@ import ua.wwind.table.ColumnSpec
 
 internal class BuyComponent(
     componentComponent: ComponentContext,
-    transactionId: Int,
+    private val transactionId: Int,
     private val tabOpener: TabOpener,
     private val immutableTableDependencies: ImmutableTableDependencies,
-    repository: UpdateCollectionRepository<BuyBD, BuyBD>,
+    repository: UpdateCollectionRepository<BuyBDOut, BuyBDIn>,
 
-    ) : MutableTableComponent<BuyBD, BuyBD, BuyUi, BuyField>(
+    ) : MutableTableComponent<BuyBDOut, BuyBDIn, BuyUi, BuyField>(
     componentContext = componentComponent,
     parentId = transactionId,
     title = "Покупка",
@@ -138,7 +139,7 @@ internal class BuyComponent(
         )
     }
 
-    override fun BuyBD.toUi(composeId: Int): BuyUi {
+    override fun BuyBDOut.toUi(composeId: Int): BuyUi {
         return BuyUi(
             composeId = composeId,
             productName = productName,
@@ -152,16 +153,16 @@ internal class BuyComponent(
         )
     }
 
-    override fun BuyUi.toBDIn(): BuyBD {
-        return BuyBD(
-            productName = productName,
+    override fun BuyUi.toBDIn(): BuyBDIn {
+        return BuyBDIn(
             count = count,
-            declarationName = declarationName,
-            vendorName = vendorName,
+            transactionId = transactionId,
             dateBorn = dateBorn,
             price = price,
             comment = comment,
-            id = id
+            id = id,
+            productId = productId,
+            declarationId = declarationId
         )
     }
 

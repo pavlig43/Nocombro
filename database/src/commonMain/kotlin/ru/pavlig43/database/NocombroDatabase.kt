@@ -27,13 +27,17 @@ import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductDeclarationIn
 import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.database.data.product.dao.CompositionDao
+import ru.pavlig43.database.data.batch.Batch
 import ru.pavlig43.database.data.product.dao.ProductDao
 import ru.pavlig43.database.data.product.dao.ProductDeclarationDao
-import ru.pavlig43.database.data.transaction.Transaction
+import ru.pavlig43.database.data.transaction.BatchMovement
+import ru.pavlig43.database.data.transaction.Transact
 import ru.pavlig43.database.data.transaction.TransactionProductBDIn
-import ru.pavlig43.database.data.transaction.dao.ProductTransactionDao
+import ru.pavlig43.database.data.transaction.dao.TransactionDao
 import ru.pavlig43.database.data.transaction.expense.ExpenseBD
 import ru.pavlig43.database.data.transaction.expense.dao.ExpenseDao
+import ru.pavlig43.database.data.transaction.buy.BuyBDIn
+import ru.pavlig43.database.data.transaction.buy.dao.BuyDao
 import ru.pavlig43.database.data.transaction.reminder.ReminderBD
 import ru.pavlig43.database.data.transaction.reminder.dao.ReminderDao
 import ru.pavlig43.database.data.vendor.Vendor
@@ -54,18 +58,22 @@ import kotlin.time.ExperimentalTime
         CompositionIn::class,
         ProductDeclarationIn::class,
 
+        Batch::class,
 
-        Transaction::class,
+        Transact::class,
+        BatchMovement::class,
         TransactionProductBDIn::class,
+        BuyBDIn::class,
 
         ReminderBD::class,
 
         ExpenseBD::class,
     ],
-    version = 3,
+    version = 4,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
-        AutoMigration(from = 2, to = 3)
+        AutoMigration(from = 2, to = 3),
+        AutoMigration(from = 3, to = 4)
     ]
 
 )
@@ -84,7 +92,9 @@ abstract class NocombroDatabase : RoomDatabase() {
     abstract val productDeclarationDao: ProductDeclarationDao
     abstract val compositionDao: CompositionDao
 
-    abstract val transactionDao: ProductTransactionDao
+    abstract val transactionDao: TransactionDao
+    abstract val buyDao: BuyDao
+    abstract val batchDao: Batch
     abstract val reminderDao: ReminderDao
     abstract val expenseDao: ExpenseDao
 }

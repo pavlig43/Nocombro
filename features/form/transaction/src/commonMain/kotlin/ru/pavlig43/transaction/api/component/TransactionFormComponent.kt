@@ -16,7 +16,7 @@ import ru.pavlig43.core.MainTabComponent
 import ru.pavlig43.core.component.EssentialComponentFactory
 import ru.pavlig43.core.tabs.TabOpener
 import ru.pavlig43.corekoin.ComponentKoinContext
-import ru.pavlig43.database.data.transaction.Transaction
+import ru.pavlig43.database.data.transaction.Transact
 import ru.pavlig43.transaction.api.TransactionFormDependencies
 import ru.pavlig43.transaction.internal.component.CreateTransactionComponent
 import ru.pavlig43.transaction.internal.component.tabs.TransactionFormTabsComponent
@@ -47,7 +47,7 @@ class TransactionFormComponent(
 
 
     private val essentialFactory =
-        EssentialComponentFactory<Transaction, TransactionEssentialsUi>(
+        EssentialComponentFactory<Transact, TransactionEssentialsUi>(
             initItem = TransactionEssentialsUi(),
             isValidFieldsFactory = { transactionType != null },
             mapperToUi = { toUi() },

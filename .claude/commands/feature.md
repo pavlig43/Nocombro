@@ -40,6 +40,10 @@ find . -name "*Entity.kt" -o -name "*BD.kt" | grep -i "$ARGUMENTS"
 | Поля `price`, `weight`, `cost` | `.claude/rules/decimal-fields.md` |
 | Запросы к Room Database | `.claude/rules/database.md` |
 
+## 3.1. Ознакомление с бизнес-логикой (ОБЯЗАТЕЛЬНО!)
+
+**ПЕРЕД** началом работы ознакомься с `.claude/database-business-logic.md`
+
 ## 4. Структура Feature
 
 ```
@@ -52,6 +56,7 @@ features/<feature-name>/
 
 ## Чек-лист
 
+- [ ] Ознакомился с `.claude/database-business-logic.md`
 - [ ] Проанализировал сущность
 - [ ] Спросил пользователя где выполнить
 - [ ] Применил `.claude/rules/date-time-picker.md` (если есть дата/время)

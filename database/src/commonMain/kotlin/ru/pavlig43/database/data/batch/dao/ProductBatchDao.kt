@@ -1,4 +1,4 @@
-package ru.pavlig43.database.data.transaction.dao
+package ru.pavlig43.database.data.batch.dao
 
 //internal data class InternalProductBatchTransactionRow(
 //
