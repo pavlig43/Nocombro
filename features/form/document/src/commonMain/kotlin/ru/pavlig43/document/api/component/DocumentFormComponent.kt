@@ -13,15 +13,15 @@ import kotlinx.coroutines.flow.update
 import kotlinx.serialization.Serializable
 import org.koin.core.scope.Scope
 import ru.pavlig43.core.MainTabComponent
-import ru.pavlig43.core.component.EssentialComponentFactory
 import ru.pavlig43.corekoin.ComponentKoinContext
 import ru.pavlig43.database.data.document.Document
 import ru.pavlig43.document.api.DocumentFormDependencies
-import ru.pavlig43.document.internal.component.CreateDocumentComponent
-import ru.pavlig43.document.internal.component.tabs.DocumentFormTabsComponent
-import ru.pavlig43.document.internal.data.DocumentEssentialsUi
-import ru.pavlig43.document.internal.data.toUi
+import ru.pavlig43.document.internal.create.component.CreateDocumentSingleLineComponent
+import ru.pavlig43.document.internal.update.DocumentFormTabsComponent
+import ru.pavlig43.document.internal.model.DocumentEssentialsUi
+import ru.pavlig43.document.internal.model.toUi
 import ru.pavlig43.document.internal.di.createDocumentFormModule
+import ru.pavlig43.mutable.api.singleLine.component.SingleLineComponentFactory
 
 
 class DocumentFormComponent(
@@ -44,15 +44,19 @@ class DocumentFormComponent(
     private val stackNavigation = StackNavigation<Config>()
 
 
-    private val essentialFactory = EssentialComponentFactory<Document, DocumentEssentialsUi>(
+    private val essentialsComponentFactory = SingleLineComponentFactory<Document, DocumentEssentialsUi>(
         initItem = DocumentEssentialsUi(),
-        isValidFieldsFactory = { displayName.isNotBlank() && type != null },
-        mapperToUi = { toUi() },
-        produceInfoForTabName = { d -> onChangeValueForMainTab("*Документ ${d.displayName}") }
+        errorFactory = {item: DocumentEssentialsUi->
+            buildList {
+                if (item.displayName.isBlank()) add("Название документа обязательно")
+                if (item.type == null) add("Тип документа обязателен")
+            }
+        },
+        mapperToUi = {toUi()}
     )
 
-    private fun onChangeValueForMainTab(title: String) {
-
+    private fun onChangeValueForMainTab(document: DocumentEssentialsUi) {
+        val title = "*Документ ${document.displayName}"
         val navTabState = MainTabComponent.NavTabState(title)
         _model.update { navTabState }
     }
@@ -62,11 +66,12 @@ class DocumentFormComponent(
     ): Child {
         return when (config) {
             is Config.Create -> Child.Create(
-                CreateDocumentComponent(
+                CreateDocumentSingleLineComponent(
                     componentContext = componentContext,
                     onSuccessCreate = { stackNavigation.replaceAll(Config.Update(it)) },
+                    componentFactory = essentialsComponentFactory,
                     createDocumentRepository = scope.get(),
-                    componentFactory = essentialFactory
+                    observeOnItem = {document -> onChangeValueForMainTab(document)}
                 )
 
             )
@@ -74,10 +79,11 @@ class DocumentFormComponent(
             is Config.Update -> Child.Update(
                 DocumentFormTabsComponent(
                     componentContext = componentContext,
-                    essentialFactory = essentialFactory,
                     scope = scope,
                     documentId = config.id,
-                    closeFormScreen = closeTab
+                    closeFormScreen = closeTab,
+                    componentFactory = essentialsComponentFactory,
+                    observeOnDocument = ::onChangeValueForMainTab
                 )
             )
         }
@@ -100,7 +106,7 @@ class DocumentFormComponent(
     }
 
     internal sealed class Child {
-        class Create(val component: CreateDocumentComponent) : Child()
+        class Create(val component: CreateDocumentSingleLineComponent) : Child()
         class Update(val component: DocumentFormTabsComponent) : Child()
     }
 }

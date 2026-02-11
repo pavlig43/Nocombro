@@ -15,7 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
-import ru.pavlig43.tablecore.model.ITableUi
+import ru.pavlig43.tablecore.model.IMultiLineTableUi
 import ru.pavlig43.tablecore.model.TableData
 import ua.wwind.table.ColumnSpec
 import ua.wwind.table.ExperimentalTableApi
@@ -32,7 +32,7 @@ import ua.wwind.table.strings.StringProvider
 @Suppress("LongParameterList", "LongMethod")
 @OptIn(ExperimentalTableApi::class)
 @Composable
-fun <I : ITableUi, C, E : TableData<I>> TableBox(
+fun <I : IMultiLineTableUi, C, E : TableData<I>> TableBox(
     columns: ImmutableList<ColumnSpec<I, C, E>>,
     onFiltersChanged: (Map<C, TableFilterState<*>>) -> Unit,
     onSortChanged: (SortState<C>?) -> Unit,

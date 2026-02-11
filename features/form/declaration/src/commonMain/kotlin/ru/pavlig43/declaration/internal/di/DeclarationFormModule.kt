@@ -2,13 +2,13 @@ package ru.pavlig43.declaration.internal.di
 
 import org.koin.dsl.module
 import ru.pavlig43.core.TransactionExecutor
-import ru.pavlig43.create.data.CreateEssentialsRepository
+import ru.pavlig43.mutable.api.singleLine.data.CreateSingleItemRepository
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.declaration.api.DeclarationFormDependencies
 import ru.pavlig43.files.api.FilesDependencies
 import ru.pavlig43.immutable.api.ImmutableTableDependencies
-import ru.pavlig43.update.data.UpdateEssentialsRepository
+import ru.pavlig43.mutable.api.singleLine.data.UpdateSingleLineRepository
 
 internal fun createDeclarationFormModule(dependencies: DeclarationFormDependencies) = listOf(
     module {
@@ -16,8 +16,8 @@ internal fun createDeclarationFormModule(dependencies: DeclarationFormDependenci
         single<TransactionExecutor> { dependencies.transaction }
         single<ImmutableTableDependencies> {dependencies.immutableTableDependencies  }
         single<FilesDependencies> {dependencies.filesDependencies  }
-        single<CreateEssentialsRepository<Declaration>> {  getCreateRepository(get())}
-        single<UpdateEssentialsRepository<Declaration>> {  getUpdateRepository(get())}
+        single<CreateSingleItemRepository<Declaration>> {  getCreateRepository(get())}
+        single<UpdateSingleLineRepository<Declaration>> {  getUpdateRepository(get())}
 
     }
 
@@ -25,18 +25,18 @@ internal fun createDeclarationFormModule(dependencies: DeclarationFormDependenci
 
 private fun getCreateRepository(
     db: NocombroDatabase
-): CreateEssentialsRepository<Declaration> {
+): CreateSingleItemRepository<Declaration> {
     val dao = db.declarationDao
-    return CreateEssentialsRepository(
+    return CreateSingleItemRepository(
         create = dao::create,
         isCanSave = dao::isCanSave
     )
 }
 private fun getUpdateRepository(
     db: NocombroDatabase
-): UpdateEssentialsRepository<Declaration>{
+): UpdateSingleLineRepository<Declaration>{
     val dao = db.declarationDao
-    return UpdateEssentialsRepository(
+    return UpdateSingleLineRepository(
         isCanSave = dao::isCanSave,
         loadItem = dao::getDeclaration,
         updateItem = dao::updateDeclaration

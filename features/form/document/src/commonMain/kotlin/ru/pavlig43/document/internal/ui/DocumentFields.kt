@@ -5,7 +5,7 @@ import ru.pavlig43.coreui.coreFieldBlock.CommentFieldBlock
 import ru.pavlig43.coreui.coreFieldBlock.NameFieldBlock
 import ru.pavlig43.coreui.coreFieldBlock.ReadWriteItemTypeField
 import ru.pavlig43.database.data.document.DocumentType
-import ru.pavlig43.document.internal.data.DocumentEssentialsUi
+import ru.pavlig43.document.internal.model.DocumentEssentialsUi
 
 @Composable
 internal fun DocumentFields(

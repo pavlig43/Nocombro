@@ -11,7 +11,7 @@ kotlin{
         implementation(libs.filekit.dialogs.compose)
         implementation(projects.database)
         implementation(projects.features.manageitem.loadinitdata)
-        implementation(projects.features.manageitem.upsert)
+        implementation(projects.features.manageitem.update)
 
     }
 }

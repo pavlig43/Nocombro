@@ -1,6 +1,6 @@
 package ru.pavlig43.immutable.internal.component.items.productDeclaration
 
-import ru.pavlig43.tablecore.model.ITableUi
+import ru.pavlig43.tablecore.model.IMultiLineTableUi
 
 
 data class ProductDeclarationTableUi(
@@ -9,4 +9,4 @@ data class ProductDeclarationTableUi(
     val displayName: String,
     val vendorName: String,
     val isActual: Boolean
-): ITableUi
+): IMultiLineTableUi

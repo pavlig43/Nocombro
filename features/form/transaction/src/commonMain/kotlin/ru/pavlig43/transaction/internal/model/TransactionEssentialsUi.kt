@@ -2,9 +2,9 @@ package ru.pavlig43.transaction.internal.model
 
 import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.core.getCurrentLocalDateTime
-import ru.pavlig43.core.model.ItemEssentialsUi
 import ru.pavlig43.database.data.transaction.Transaction
 import ru.pavlig43.database.data.transaction.TransactionType
+import ru.pavlig43.mutable.api.singleLine.model.ISingleLineTableUi
 import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalTime::class)
@@ -17,9 +17,9 @@ internal data class TransactionEssentialsUi(
 
     val isCompleted: Boolean = true,
 
-    override val id: Int = 0,
+    val id: Int = 0,
 
-    ) : ItemEssentialsUi
+    ) : ISingleLineTableUi
 
 
 internal fun Transaction.toUi(): TransactionEssentialsUi {

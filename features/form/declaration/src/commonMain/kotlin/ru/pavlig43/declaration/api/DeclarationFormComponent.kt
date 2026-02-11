@@ -1,6 +1,5 @@
 package ru.pavlig43.declaration.api
 
-
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.router.stack.ChildStack
 import com.arkivanov.decompose.router.stack.StackNavigation
@@ -14,15 +13,15 @@ import kotlinx.coroutines.flow.update
 import kotlinx.serialization.Serializable
 import org.koin.core.scope.Scope
 import ru.pavlig43.core.MainTabComponent
-import ru.pavlig43.core.component.EssentialComponentFactory
 import ru.pavlig43.core.emptyDate
 import ru.pavlig43.core.tabs.TabOpener
 import ru.pavlig43.corekoin.ComponentKoinContext
+import ru.pavlig43.mutable.api.singleLine.component.SingleLineComponentFactory
 import ru.pavlig43.database.data.declaration.Declaration
-import ru.pavlig43.declaration.internal.component.CreateDeclarationComponent
-import ru.pavlig43.declaration.internal.component.tabs.DeclarationFormTabsComponent
-import ru.pavlig43.declaration.internal.data.DeclarationEssentialsUi
-import ru.pavlig43.declaration.internal.data.toUi
+import ru.pavlig43.declaration.internal.create.component.CreateDeclarationSingleLineComponent
+import ru.pavlig43.declaration.internal.model.DeclarationEssentialsUi
+import ru.pavlig43.declaration.internal.model.toUi
+import ru.pavlig43.declaration.internal.update.DeclarationFormTabsComponent
 import ru.pavlig43.declaration.internal.di.createDeclarationFormModule
 
 class DeclarationFormComponent(
@@ -45,14 +44,23 @@ class DeclarationFormComponent(
 
     private val stackNavigation = StackNavigation<Config>()
 
-
-
-    private val componentFactory = EssentialComponentFactory<Declaration, DeclarationEssentialsUi>(
+    private val componentFactory = SingleLineComponentFactory<Declaration, DeclarationEssentialsUi>(
         initItem = DeclarationEssentialsUi(),
-        isValidFieldsFactory = { displayName.isNotBlank() && vendorId != null && bestBefore != emptyDate && bornDate != emptyDate },
-        mapperToUi = { toUi() },
-        produceInfoForTabName = {onChangeValueForMainTab("Декларация ${it.displayName}")}
+        errorFactory = { item: DeclarationEssentialsUi ->
+            buildList {
+                if (item.displayName.isBlank()) add("Название обязательно")
+                if (item.vendorId == null) add("Поставщик обязателен")
+                if (item.bornDate == emptyDate) add("Дата создания обязательна")
+                if (item.bestBefore == emptyDate) add("Дата истечения обязательна")
+            }
+        },
+        mapperToUi = { toUi() }
     )
+
+    private fun onChangeValueForMainTab(declaration: DeclarationEssentialsUi) {
+        val title = "*Декларация ${declaration.displayName}"
+        _model.update { MainTabComponent.NavTabState(title) }
+    }
 
     private fun createChild(
         config: Config,
@@ -60,17 +68,16 @@ class DeclarationFormComponent(
     ): Child {
         return when (config) {
             is Config.Create -> Child.Create(
-                CreateDeclarationComponent(
+                CreateDeclarationSingleLineComponent(
                     componentContext = componentContext,
                     onSuccessCreate = { stackNavigation.replaceAll(Config.Update(it)) },
+                    observeOnItem = { declaration -> onChangeValueForMainTab(declaration) },
+                    componentFactory = componentFactory,
                     createDeclarationRepository = scope.get(),
-                    dependencies = scope.get(),
-                    tabOpener = tabOpener,
-                    componentFactory = componentFactory
+                    immutableDependencies = scope.get(),
+                    tabOpener = tabOpener
                 )
-
             )
-
             is Config.Update -> Child.Update(
                 DeclarationFormTabsComponent(
                     componentContext = componentContext,
@@ -78,27 +85,22 @@ class DeclarationFormComponent(
                     declarationId = config.id,
                     closeFormScreen = closeTab,
                     componentFactory = componentFactory,
-                    tabOpener = tabOpener
+                    tabOpener = tabOpener,
+                    observeOnDeclaration = ::onChangeValueForMainTab
                 )
             )
         }
     }
 
-    private fun onChangeValueForMainTab(title: String) {
-        val navTabState = MainTabComponent.NavTabState(title)
-        _model.update { navTabState }
-    }
     internal val stack: Value<ChildStack<Config, Child>> = childStack(
         source = stackNavigation,
         serializer = Config.serializer(),
-        key = "declaration",
         initialConfiguration = if (declarationId == 0) Config.Create else Config.Update(
             declarationId
         ),
         handleBackButton = false,
         childFactory = ::createChild
     )
-
 
     @Serializable
     sealed interface Config {
@@ -110,7 +112,7 @@ class DeclarationFormComponent(
     }
 
     internal sealed class Child {
-        class Create(val component: CreateDeclarationComponent) : Child()
+        class Create(val component: CreateDeclarationSingleLineComponent) : Child()
         class Update(val component: DeclarationFormTabsComponent) : Child()
     }
 }
