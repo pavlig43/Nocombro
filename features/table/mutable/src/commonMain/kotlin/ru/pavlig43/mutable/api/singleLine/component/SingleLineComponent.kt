@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.update
 import ru.pavlig43.core.componentCoroutineScope
 import ru.pavlig43.core.model.SingleItem
 import ru.pavlig43.loadinitdata.api.component.LoadInitDataComponent
-import ru.pavlig43.tablecore.model.ISingleLineTableUi
+import ru.pavlig43.mutable.api.singleLine.model.ISingleLineTableUi
 import ua.wwind.table.ColumnSpec
 
 

@@ -8,7 +8,7 @@ import com.arkivanov.decompose.router.slot.dismiss
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.serialization.Serializable
 import ru.pavlig43.core.DateComponent
-import ru.pavlig43.create.data.CreateSingleItemRepository
+import ru.pavlig43.mutable.api.singleLine.data.CreateSingleItemRepository
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.mutable.api.singleLine.component.CreateSingleLineComponent
 import ru.pavlig43.mutable.api.singleLine.component.SingleLineComponentFactory

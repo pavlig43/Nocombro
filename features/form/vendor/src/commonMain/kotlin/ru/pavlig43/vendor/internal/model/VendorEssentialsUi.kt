@@ -1,7 +1,7 @@
 package ru.pavlig43.vendor.internal.model
 
 import ru.pavlig43.database.data.vendor.Vendor
-import ru.pavlig43.tablecore.model.ISingleLineTableUi
+import ru.pavlig43.mutable.api.singleLine.model.ISingleLineTableUi
 
 internal data class VendorEssentialsUi(
     val displayName: String = "",

@@ -20,7 +20,7 @@ import ru.pavlig43.immutable.internal.component.items.product.ProductTableUi
 import ru.pavlig43.mutable.api.multiLine.component.MutableTableComponent
 import ru.pavlig43.mutable.api.multiLine.component.MutableUiEvent
 import ru.pavlig43.tablecore.model.TableData
-import ru.pavlig43.update.data.UpdateCollectionRepository
+import ru.pavlig43.mutable.api.singleLine.data.UpdateCollectionRepository
 import ua.wwind.table.ColumnSpec
 
 internal class CompositionComponent(

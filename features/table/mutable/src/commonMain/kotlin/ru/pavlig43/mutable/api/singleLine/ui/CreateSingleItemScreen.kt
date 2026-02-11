@@ -23,7 +23,7 @@ import ru.pavlig43.coreui.LoadingUi
 import ru.pavlig43.coreui.ValidationErrorsCard
 import ru.pavlig43.mutable.api.singleLine.component.CreateSingleLineComponent
 import ru.pavlig43.mutable.api.singleLine.component.CreateState
-import ru.pavlig43.tablecore.model.ISingleLineTableUi
+import ru.pavlig43.mutable.api.singleLine.model.ISingleLineTableUi
 
 
 @Composable

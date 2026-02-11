@@ -7,9 +7,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import ru.pavlig43.core.model.SingleItem
-import ru.pavlig43.create.data.CreateSingleItemRepository
+import ru.pavlig43.mutable.api.singleLine.data.CreateSingleItemRepository
 import ru.pavlig43.tablecore.model.IMultiLineTableUi
-import ru.pavlig43.tablecore.model.ISingleLineTableUi
+import ru.pavlig43.mutable.api.singleLine.model.ISingleLineTableUi
 
 /**
  * Абстрактный компонент для создания новых сущностей через таблицу с одной строкой.

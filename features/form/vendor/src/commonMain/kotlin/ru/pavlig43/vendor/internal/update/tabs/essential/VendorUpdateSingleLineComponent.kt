@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.Flow
 import ru.pavlig43.database.data.vendor.Vendor
 import ru.pavlig43.mutable.api.singleLine.component.SingleLineComponentFactory
 import ru.pavlig43.mutable.api.singleLine.component.UpdateSingleLineComponent
-import ru.pavlig43.update.data.UpdateSingleLineRepository
+import ru.pavlig43.mutable.api.singleLine.data.UpdateSingleLineRepository
 import ru.pavlig43.vendor.internal.VendorField
 import ru.pavlig43.vendor.internal.model.VendorEssentialsUi
 import ru.pavlig43.vendor.internal.model.toDto

@@ -4,8 +4,8 @@ import com.arkivanov.decompose.ComponentContext
 import ru.pavlig43.core.FormTabComponent
 import ru.pavlig43.core.model.ChangeSet
 import ru.pavlig43.core.model.SingleItem
-import ru.pavlig43.tablecore.model.ISingleLineTableUi
-import ru.pavlig43.update.data.UpdateSingleLineRepository
+import ru.pavlig43.mutable.api.singleLine.model.ISingleLineTableUi
+import ru.pavlig43.mutable.api.singleLine.data.UpdateSingleLineRepository
 
 @Suppress("LongParameterList")
 abstract class UpdateSingleLineComponent<I : SingleItem, T : ISingleLineTableUi, C>(

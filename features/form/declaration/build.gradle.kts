@@ -11,7 +11,7 @@ kotlin{
         implementation(projects.features.files)
         implementation(projects.features.table.immutable)
         implementation(projects.features.table.mutable)
-        implementation(projects.features.manageitem.upsert)
+        implementation(projects.features.manageitem.update)
         implementation(projects.features.manageitem.loadinitdata)
 
 

@@ -22,7 +22,7 @@ import ru.pavlig43.immutable.api.component.VendorImmutableTableBuilder
 import ru.pavlig43.immutable.internal.component.items.vendor.VendorTableUi
 import ru.pavlig43.mutable.api.singleLine.component.SingleLineComponentFactory
 import ru.pavlig43.mutable.api.singleLine.component.UpdateSingleLineComponent
-import ru.pavlig43.update.data.UpdateSingleLineRepository
+import ru.pavlig43.mutable.api.singleLine.data.UpdateSingleLineRepository
 import ua.wwind.table.ColumnSpec
 
 internal class DeclarationUpdateSingleLineComponent(

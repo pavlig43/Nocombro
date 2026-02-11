@@ -2,10 +2,9 @@ package ru.pavlig43.document.internal.model
 
 import kotlinx.datetime.LocalDate
 import ru.pavlig43.core.getCurrentLocalDate
-import ru.pavlig43.core.model.ItemEssentialsUi
 import ru.pavlig43.database.data.document.Document
 import ru.pavlig43.database.data.document.DocumentType
-import ru.pavlig43.tablecore.model.ISingleLineTableUi
+import ru.pavlig43.mutable.api.singleLine.model.ISingleLineTableUi
 import kotlin.time.ExperimentalTime
 
 internal data class DocumentEssentialsUi(

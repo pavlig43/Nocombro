@@ -11,7 +11,7 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.serialization.Serializable
 import ru.pavlig43.core.DateTimeComponent
 import ru.pavlig43.core.tabs.TabOpener
-import ru.pavlig43.create.data.CreateSingleItemRepository
+import ru.pavlig43.mutable.api.singleLine.data.CreateSingleItemRepository
 import ru.pavlig43.database.data.transaction.Transaction
 import ru.pavlig43.mutable.api.singleLine.component.CreateSingleLineComponent
 import ru.pavlig43.mutable.api.singleLine.component.SingleLineComponentFactory

@@ -15,7 +15,7 @@ import ru.pavlig43.document.internal.model.DocumentEssentialsUi
 import ru.pavlig43.document.internal.model.toDto
 import ru.pavlig43.mutable.api.singleLine.component.SingleLineComponentFactory
 import ru.pavlig43.mutable.api.singleLine.component.UpdateSingleLineComponent
-import ru.pavlig43.update.data.UpdateSingleLineRepository
+import ru.pavlig43.mutable.api.singleLine.data.UpdateSingleLineRepository
 import ua.wwind.table.ColumnSpec
 
 

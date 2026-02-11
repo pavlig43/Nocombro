@@ -15,7 +15,7 @@ import ru.pavlig43.mutable.api.singleLine.component.UpdateSingleLineComponent
 import ru.pavlig43.product.internal.ProductField
 import ru.pavlig43.product.internal.model.ProductEssentialsUi
 import ru.pavlig43.product.internal.model.toDto
-import ru.pavlig43.update.data.UpdateSingleLineRepository
+import ru.pavlig43.mutable.api.singleLine.data.UpdateSingleLineRepository
 import ua.wwind.table.ColumnSpec
 
 /**

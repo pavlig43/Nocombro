@@ -1,4 +1,4 @@
-package ru.pavlig43.update.data
+package ru.pavlig43.mutable.api.singleLine.data
 
 import ru.pavlig43.core.model.ChangeSet
 import ru.pavlig43.core.model.SingleItem

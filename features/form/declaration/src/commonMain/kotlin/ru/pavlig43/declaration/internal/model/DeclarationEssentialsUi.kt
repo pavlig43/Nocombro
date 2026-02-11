@@ -4,7 +4,7 @@ import kotlinx.datetime.LocalDate
 import ru.pavlig43.core.emptyDate
 import ru.pavlig43.core.getCurrentLocalDate
 import ru.pavlig43.database.data.declaration.Declaration
-import ru.pavlig43.tablecore.model.ISingleLineTableUi
+import ru.pavlig43.mutable.api.singleLine.model.ISingleLineTableUi
 import kotlin.time.ExperimentalTime
 
 data class DeclarationEssentialsUi(

@@ -2,13 +2,13 @@ package ru.pavlig43.declaration.internal.di
 
 import org.koin.dsl.module
 import ru.pavlig43.core.TransactionExecutor
-import ru.pavlig43.create.data.CreateSingleItemRepository
+import ru.pavlig43.mutable.api.singleLine.data.CreateSingleItemRepository
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.declaration.api.DeclarationFormDependencies
 import ru.pavlig43.files.api.FilesDependencies
 import ru.pavlig43.immutable.api.ImmutableTableDependencies
-import ru.pavlig43.update.data.UpdateSingleLineRepository
+import ru.pavlig43.mutable.api.singleLine.data.UpdateSingleLineRepository
 
 internal fun createDeclarationFormModule(dependencies: DeclarationFormDependencies) = listOf(
     module {
