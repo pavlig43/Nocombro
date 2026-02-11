@@ -15,8 +15,8 @@ import ru.pavlig43.files.api.ui.FilesScreen
 import ru.pavlig43.product.api.component.ProductFormComponent
 import ru.pavlig43.product.internal.create.ui.CreateProductSingleLineScreen
 import ru.pavlig43.product.internal.update.ProductTabChild
-import ru.pavlig43.product.internal.update.tabs.composition.CompositionScreen
 import ru.pavlig43.product.internal.update.tabs.DeclarationScreen
+import ru.pavlig43.product.internal.update.tabs.composition.CompositionScreen
 import ru.pavlig43.product.internal.update.tabs.essential.UpdateProductSingleLineScreen
 import ru.pavlig43.update.ui.FormTabsUi
 

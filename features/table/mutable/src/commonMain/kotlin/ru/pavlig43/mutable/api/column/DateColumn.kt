@@ -2,7 +2,6 @@ package ru.pavlig43.mutable.api.column
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -12,7 +11,6 @@ import androidx.compose.ui.unit.dp
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.format
 import ru.pavlig43.core.dateFormat
-import ru.pavlig43.coreui.DateRow
 import ru.pavlig43.coreui.tooltip.ToolTipIconButton
 import ru.pavlig43.theme.Res
 import ru.pavlig43.theme.calendar
@@ -24,7 +22,7 @@ fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.writeDateColumn(
     headerText: String,
     column: C,
     valueOf: (T) -> LocalDate,
-    onOpenDateDialog: () -> Unit,
+    onOpenDateDialog: (T) -> Unit,
     filterType: TableFilterType.DateTableFilter? = null,
     alignment: Alignment = Alignment.Center
 ) {
@@ -38,6 +36,7 @@ fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.writeDateColumn(
             valueOf = valueOf,
             onOpenDateDialog = onOpenDateDialog
         )
+        sortable()
     }
 }
 
@@ -55,6 +54,7 @@ fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.readDateColumn(
             filter(it)
         }
         readDateCell(valueOf = valueOf)
+        sortable()
     }
 }
 
@@ -68,12 +68,12 @@ private fun <T : Any, C, E> EditableColumnBuilder<T, C, E>.readDateCell(
 
 private fun <T : Any, C, E> EditableColumnBuilder<T, C, E>.writeDateCell(
     valueOf: (T) -> LocalDate,
-    onOpenDateDialog: () -> Unit,
+    onOpenDateDialog: (T) -> Unit,
 ) {
     cell { item, _ ->
         WriteDateRow(
             date = valueOf(item),
-            onOpenDateDialog = onOpenDateDialog
+            onOpenDateDialog = {onOpenDateDialog(item)}
         )
     }
 }

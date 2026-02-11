@@ -10,7 +10,6 @@ import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.toImmutableList
 import ru.pavlig43.loadinitdata.api.ui.LoadInitDataScreen
 import ru.pavlig43.mutable.api.singleLine.component.SingleLineComponent
-import ru.pavlig43.tablecore.model.IMultiLineTableUi
 import ru.pavlig43.mutable.api.singleLine.model.ISingleLineTableUi
 import ua.wwind.table.EditableTable
 import ua.wwind.table.ExperimentalTableApi

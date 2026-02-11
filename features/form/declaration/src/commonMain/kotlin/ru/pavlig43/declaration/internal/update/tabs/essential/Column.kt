@@ -4,7 +4,11 @@ package ru.pavlig43.declaration.internal.update.tabs.essential
 import kotlinx.collections.immutable.ImmutableList
 import ru.pavlig43.declaration.internal.DeclarationField
 import ru.pavlig43.declaration.internal.model.DeclarationEssentialsUi
-import ru.pavlig43.mutable.api.column.*
+import ru.pavlig43.mutable.api.column.readDateColumn
+import ru.pavlig43.mutable.api.column.textWithSearchIconColumn
+import ru.pavlig43.mutable.api.column.writeCheckBoxColumn
+import ru.pavlig43.mutable.api.column.writeDateColumn
+import ru.pavlig43.mutable.api.column.writeTextColumn
 import ua.wwind.table.ColumnSpec
 import ua.wwind.table.editableTableColumns
 import ua.wwind.table.filter.data.TableFilterType
@@ -31,7 +35,6 @@ internal fun createDeclarationColumns1(
                 column = DeclarationField.VENDOR_NAME,
                 valueOf = { it.vendorName ?: "" },
                 onOpenDialog = { onOpenVendorDialog() },
-                filterType = null
             )
 
             writeDateColumn(
@@ -39,7 +42,6 @@ internal fun createDeclarationColumns1(
                 column = DeclarationField.BORN_DATE,
                 valueOf = { it.bornDate },
                 onOpenDateDialog = onOpenBornDateDialog,
-                filterType = TableFilterType.DateTableFilter()
             )
 
             writeDateColumn(
@@ -47,7 +49,6 @@ internal fun createDeclarationColumns1(
                 column = DeclarationField.BEST_BEFORE,
                 valueOf = { it.bestBefore },
                 onOpenDateDialog = onOpenBestBeforeDialog,
-                filterType = TableFilterType.DateTableFilter()
             )
 
             writeCheckBoxColumn(
@@ -55,14 +56,12 @@ internal fun createDeclarationColumns1(
                 column = DeclarationField.IS_OBSERVE,
                 valueOf = { it.isObserveFromNotification },
                 onChangeChecked = { item, checked -> onChangeItem(item.copy(isObserveFromNotification = checked)) },
-                filterType = TableFilterType.BooleanTableFilter()
             )
 
             readDateColumn(
                 headerText = "Дата создания",
                 column = DeclarationField.CREATED_AT,
                 valueOf = { it.createdAt },
-                filterType = TableFilterType.DateTableFilter()
             )
         }
     return columns

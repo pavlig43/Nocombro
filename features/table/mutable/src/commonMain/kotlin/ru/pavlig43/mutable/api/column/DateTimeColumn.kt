@@ -3,7 +3,6 @@ package ru.pavlig43.mutable.api.column
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -24,7 +23,7 @@ fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.writeDateTimeColumn(
     headerText: String,
     column: C,
     valueOf: (T) -> LocalDateTime,
-    onOpenDateTimeDialog: () -> Unit,
+    onOpenDateTimeDialog: (T) -> Unit,
     filterType: TableFilterType.DateTableFilter? = null,
     alignment: Alignment = Alignment.Center
 ) {
@@ -38,6 +37,7 @@ fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.writeDateTimeColumn(
             valueOf = valueOf,
             onOpenDateTimeDialog = onOpenDateTimeDialog
         )
+        sortable()
     }
 }
 
@@ -55,6 +55,7 @@ fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.readDateTimeColumn(
             filter(it)
         }
         readDateTimeCell(valueOf = valueOf)
+        sortable()
     }
 }
 
@@ -68,12 +69,12 @@ private fun <T : Any, C, E> EditableColumnBuilder<T, C, E>.readDateTimeCell(
 
 private fun <T : Any, C, E> EditableColumnBuilder<T, C, E>.writeDateTimeCell(
     valueOf: (T) -> LocalDateTime,
-    onOpenDateTimeDialog: () -> Unit,
+    onOpenDateTimeDialog: (T) -> Unit,
 ) {
     cell { item, _ ->
         WriteDateTimeRow(
             dateTime = valueOf(item),
-            onOpenDateTimeDialog = onOpenDateTimeDialog
+            onOpenDateTimeDialog = {onOpenDateTimeDialog(item)}
         )
     }
 }

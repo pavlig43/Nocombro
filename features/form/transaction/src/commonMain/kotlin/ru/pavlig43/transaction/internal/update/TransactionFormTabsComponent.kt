@@ -10,13 +10,10 @@ import org.koin.core.qualifier.qualifier
 import org.koin.core.scope.Scope
 import ru.pavlig43.core.TransactionExecutor
 import ru.pavlig43.core.componentCoroutineScope
-import ru.pavlig43.core.emptyLocalDateTime
 import ru.pavlig43.core.tabs.TabNavigationComponent
 import ru.pavlig43.core.tabs.TabOpener
 import ru.pavlig43.database.data.transaction.Transaction
 import ru.pavlig43.database.data.transaction.TransactionType
-import ru.pavlig43.immutable.api.ImmutableTableDependencies
-import ru.pavlig43.immutable.internal.component.items.transaction.TransactionTableUi
 import ru.pavlig43.mutable.api.singleLine.component.SingleLineComponentFactory
 import ru.pavlig43.transaction.internal.di.UpdateCollectionRepositoryType
 import ru.pavlig43.transaction.internal.model.TransactionEssentialsUi
@@ -28,6 +25,7 @@ import ru.pavlig43.update.component.IItemFormTabsComponent
 import ru.pavlig43.update.component.UpdateComponent
 import ru.pavlig43.update.component.getDefaultUpdateComponent
 
+@Suppress("LongParameterList")
 internal class TransactionFormTabsComponent(
     componentContext: ComponentContext,
     componentFactory: SingleLineComponentFactory<Transaction, TransactionEssentialsUi>,
@@ -103,7 +101,7 @@ internal class TransactionFormTabsComponent(
                             componentContext = context,
                             transactionId = transactionId,
                             repository = scope.get(UpdateCollectionRepositoryType.EXPENSES.qualifier),
-                            transactionDateTimeFlow = essentialsFields.map { it?.createdAt ?: emptyLocalDateTime },
+                            transactionDateTimeFlow = essentialsFields.map { it.createdAt },
                         )
                     )
                 }

@@ -3,7 +3,6 @@ package ru.pavlig43.transaction.internal.di
 import org.koin.core.qualifier.qualifier
 import org.koin.dsl.module
 import ru.pavlig43.core.TransactionExecutor
-import ru.pavlig43.mutable.api.singleLine.data.CreateSingleItemRepository
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.transaction.Transaction
 import ru.pavlig43.database.data.transaction.buy.BuyBD
@@ -11,9 +10,10 @@ import ru.pavlig43.database.data.transaction.expense.ExpenseBD
 import ru.pavlig43.database.data.transaction.reminder.ReminderBD
 import ru.pavlig43.files.api.FilesDependencies
 import ru.pavlig43.immutable.api.ImmutableTableDependencies
-import ru.pavlig43.transaction.api.TransactionFormDependencies
+import ru.pavlig43.mutable.api.singleLine.data.CreateSingleItemRepository
 import ru.pavlig43.mutable.api.singleLine.data.UpdateCollectionRepository
 import ru.pavlig43.mutable.api.singleLine.data.UpdateSingleLineRepository
+import ru.pavlig43.transaction.api.TransactionFormDependencies
 
 internal fun createTransactionFormModule(dependencies: TransactionFormDependencies) = listOf(
     module {

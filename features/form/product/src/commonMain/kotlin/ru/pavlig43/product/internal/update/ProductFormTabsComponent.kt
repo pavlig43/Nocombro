@@ -14,7 +14,10 @@ import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.mutable.api.singleLine.component.SingleLineComponentFactory
 import ru.pavlig43.product.internal.di.UpdateCollectionRepositoryType
 import ru.pavlig43.product.internal.model.ProductEssentialsUi
-import ru.pavlig43.product.internal.update.ProductTabChild.*
+import ru.pavlig43.product.internal.update.ProductTabChild.Composition
+import ru.pavlig43.product.internal.update.ProductTabChild.Declaration
+import ru.pavlig43.product.internal.update.ProductTabChild.Essentials
+import ru.pavlig43.product.internal.update.ProductTabChild.Files
 import ru.pavlig43.product.internal.update.tabs.ProductDeclarationComponent
 import ru.pavlig43.product.internal.update.tabs.ProductFilesComponent
 import ru.pavlig43.product.internal.update.tabs.composition.CompositionComponent

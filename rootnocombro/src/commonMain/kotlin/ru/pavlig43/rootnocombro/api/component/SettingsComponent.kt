@@ -16,7 +16,7 @@ class SettingsComponent(
 
     val darkMode: StateFlow<Boolean> = settingsRepository.isDarkMode.stateIn(
         scope = coroutineScope,
-        started = SharingStarted.Companion.Eagerly,
+        started = SharingStarted.Eagerly,
         initialValue = true
     )
 

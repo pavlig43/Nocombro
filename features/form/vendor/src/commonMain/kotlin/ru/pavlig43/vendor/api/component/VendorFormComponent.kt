@@ -18,9 +18,9 @@ import ru.pavlig43.database.data.vendor.Vendor
 import ru.pavlig43.mutable.api.singleLine.component.SingleLineComponentFactory
 import ru.pavlig43.vendor.api.VendorFormDependencies
 import ru.pavlig43.vendor.internal.create.component.CreateVendorSingleLineComponent
+import ru.pavlig43.vendor.internal.di.createVendorFormModule
 import ru.pavlig43.vendor.internal.model.VendorEssentialsUi
 import ru.pavlig43.vendor.internal.model.toUi
-import ru.pavlig43.vendor.internal.di.createVendorFormModule
 import ru.pavlig43.vendor.internal.update.VendorFormTabsComponent
 
 class VendorFormComponent(

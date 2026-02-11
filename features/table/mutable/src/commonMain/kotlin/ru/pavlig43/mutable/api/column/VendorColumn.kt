@@ -12,7 +12,6 @@ import ru.pavlig43.coreui.tooltip.ToolTipIconButton
 import ru.pavlig43.theme.Res
 import ru.pavlig43.theme.add_circle
 import ru.pavlig43.theme.refresh
-import ua.wwind.table.EditableColumnBuilder
 import ua.wwind.table.EditableTableColumnsBuilder
 import ua.wwind.table.filter.data.TableFilterType
 
@@ -36,6 +35,7 @@ fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.vendorNameColumn(
                 onOpenDialog = onOpenDialog
             )
         }
+        sortable()
     }
 }
 

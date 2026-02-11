@@ -3,9 +3,7 @@ package ru.pavlig43.mutable.api.column
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import ua.wwind.table.EditableColumnBuilder
 import ua.wwind.table.EditableTableColumnsBuilder
@@ -29,6 +27,7 @@ fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.writeCheckBoxColumn(
             valueOf = valueOf,
             onCheckedChange = onChangeChecked
         )
+        sortable()
     }
 }
 

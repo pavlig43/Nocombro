@@ -6,5 +6,4 @@ package ru.pavlig43.signsignin.internal.ui
 internal const val COMPONENT_WIDTH = 342
 internal const val ENTER = "Вход"
 internal const val LOGIN_IN_ACCOUNT = "Вход в аккаунт"
-internal const val LOGIN_IN = "Войти"
 internal const val REGISTER = "Зарегистрироваться"

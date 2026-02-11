@@ -8,7 +8,8 @@ import ru.pavlig43.core.tabs.TabNavigationComponent
 import ru.pavlig43.core.tabs.TabOpener
 import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.declaration.internal.model.DeclarationEssentialsUi
-import ru.pavlig43.declaration.internal.update.DeclarationTabChild.*
+import ru.pavlig43.declaration.internal.update.DeclarationTabChild.Essential
+import ru.pavlig43.declaration.internal.update.DeclarationTabChild.File
 import ru.pavlig43.declaration.internal.update.tabs.component.DeclarationFilesComponent
 import ru.pavlig43.declaration.internal.update.tabs.essential.DeclarationUpdateSingleLineComponent
 import ru.pavlig43.mutable.api.singleLine.component.SingleLineComponentFactory

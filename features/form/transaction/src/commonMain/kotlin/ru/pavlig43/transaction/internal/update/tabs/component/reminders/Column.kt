@@ -1,17 +1,14 @@
 @file:Suppress("MatchingDeclarationName")
 package ru.pavlig43.transaction.internal.update.tabs.component.reminders
 
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.ui.Alignment
 import kotlinx.collections.immutable.ImmutableList
-import ru.pavlig43.coreui.coreFieldBlock.DateTimeRow
-import ru.pavlig43.mutable.api.multiLine.component.MutableUiEvent
 import ru.pavlig43.mutable.api.column.idWithSelection
+import ru.pavlig43.mutable.api.column.writeDateTimeColumn
+import ru.pavlig43.mutable.api.column.writeTextColumn
+import ru.pavlig43.mutable.api.multiLine.component.MutableUiEvent
 import ru.pavlig43.tablecore.model.TableData
 import ua.wwind.table.ColumnSpec
 import ua.wwind.table.editableTableColumns
-import ua.wwind.table.filter.data.TableFilterType
 
 enum class RemindersField {
     SELECTION,
@@ -32,33 +29,21 @@ internal fun createRemindersColumns(
                 idKey = RemindersField.COMPOSE_ID,
                 onEvent = onEvent
             )
+            writeTextColumn(
+                headerText = "Текст напоминания",
+                column = RemindersField.TEXT,
+                valueOf = {it.text},
+                onChangeItem = {item,text -> onEvent(MutableUiEvent.UpdateItem(item.copy(text = text))) },
+            )
 
-            column(RemindersField.TEXT, valueOf = { it.text }) {
-                header("Текст напоминания")
-                align(Alignment.Center)
-                filter(TableFilterType.TextTableFilter())
-                cell { row, _ -> Text(row.text) }
-                editCell { item, _, _ ->
-                    TextField(
-                        value = item.text,
-                        onValueChange = { onEvent(MutableUiEvent.UpdateItem(item.copy(text = it))) },
-                        singleLine = true
-                    )
-                }
-                sortable()
-            }
+            writeDateTimeColumn(
+                headerText = "Дата/время",
+                column = RemindersField.REMINDER_DATE_TIME,
+                valueOf = {it.reminderDateTime},
+                onOpenDateTimeDialog = { onOpenDateTimeDialog(it.composeId) },
+            )
 
-            column(RemindersField.REMINDER_DATE_TIME, { it.reminderDateTime }) {
-                header("Дата/время")
-                align(Alignment.Center)
-                cell { item, _ ->
-                    DateTimeRow(
-                        date = item.reminderDateTime,
-                        isChangeDialogVisible = { onOpenDateTimeDialog(item.composeId) }
-                    )
-                }
-                sortable()
-            }
+
         }
     return columns
 }

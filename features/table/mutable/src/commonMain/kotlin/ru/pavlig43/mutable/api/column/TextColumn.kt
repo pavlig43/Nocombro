@@ -2,7 +2,6 @@ package ru.pavlig43.mutable.api.column
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -32,6 +31,7 @@ fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.writeTextColumn(
             singleLine = singleLine,
             onValueChange = onChangeItem
         )
+        sortable()
     }
 }
 
@@ -49,6 +49,7 @@ fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.readTextColumn(
             filter(it)
         }
         readTextCell(valueOf = valueOf)
+        sortable()
     }
 }
 
