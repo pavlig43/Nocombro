@@ -8,7 +8,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import ru.pavlig43.tablecore.model.ITableUi
+import ru.pavlig43.tablecore.model.IMultiLineTableUi
 import ua.wwind.table.EditableColumnBuilder
 import ua.wwind.table.EditableTableColumnsBuilder
 import ua.wwind.table.component.TableCellTextFieldWithTooltipError
@@ -17,7 +17,7 @@ import kotlin.math.pow
 
 
 @Suppress("LongParameterList")
-fun <T : ITableUi, C, E> EditableTableColumnsBuilder<T, C, E>.decimalColumn(
+fun <T : IMultiLineTableUi, C, E> EditableTableColumnsBuilder<T, C, E>.decimalColumn(
     key: C,
     getValue: (T) -> Int,
     headerText: String,
@@ -48,7 +48,7 @@ fun <T : ITableUi, C, E> EditableTableColumnsBuilder<T, C, E>.decimalColumn(
     }
 }
 
-fun <T : ITableUi, C, E> EditableTableColumnsBuilder<T, C, E>.readDecimalColumn(
+fun <T : IMultiLineTableUi, C, E> EditableTableColumnsBuilder<T, C, E>.readDecimalColumn(
     key: C,
     getValue: (T) -> Int,
     headerText: String,
@@ -74,7 +74,7 @@ sealed interface DecimalFormat {
     }
 }
 
-private fun <T : ITableUi, C, E> EditableColumnBuilder<T, C, E>.readNumberCell(
+private fun <T : IMultiLineTableUi, C, E> EditableColumnBuilder<T, C, E>.readNumberCell(
     format: DecimalFormat,
     getCount: (T) -> Int,
 ) {
@@ -83,7 +83,7 @@ private fun <T : ITableUi, C, E> EditableColumnBuilder<T, C, E>.readNumberCell(
     }
 }
 
-private fun <T : ITableUi, C, E> EditableColumnBuilder<T, C, E>.cellForDecimalFormat(
+private fun <T : IMultiLineTableUi, C, E> EditableColumnBuilder<T, C, E>.cellForDecimalFormat(
     format: DecimalFormat,
     getCount: (T) -> Int,
     saveInModel: (T, Int) -> Unit,

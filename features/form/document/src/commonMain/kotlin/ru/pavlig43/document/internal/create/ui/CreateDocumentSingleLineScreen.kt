@@ -1,4 +1,4 @@
-package ru.pavlig43.document.internal.ui
+package ru.pavlig43.document.internal.create.ui
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -9,7 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import ru.pavlig43.coreui.DatePickerDialog
-import ru.pavlig43.document.internal.component.CreateDocumentSingleLineComponent
+import ru.pavlig43.document.internal.create.component.CreateDocumentSingleLineComponent
 import ru.pavlig43.mutable.api.singleLine.ui.CreateSingleItemScreen
 
 /**

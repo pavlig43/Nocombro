@@ -8,19 +8,19 @@ import ru.pavlig43.database.data.transaction.Transaction
 import ru.pavlig43.transaction.internal.model.TransactionEssentialsUi
 import ru.pavlig43.transaction.internal.model.toDto
 import ru.pavlig43.update.component.UpdateEssentialsComponent
-import ru.pavlig43.update.data.UpdateEssentialsRepository
+import ru.pavlig43.update.data.UpdateSingleLineRepository
 
 internal class TransactionEssentialComponent(
     componentContext: ComponentContext,
     id: Int,
-    updateRepository: UpdateEssentialsRepository<Transaction>,
+    updateRepository: UpdateSingleLineRepository<Transaction>,
     componentFactory: EssentialComponentFactory<Transaction, TransactionEssentialsUi>,
     onSuccessInitData:(TransactionEssentialsUi)-> Unit,
     observeOnEssentials:(TransactionEssentialsUi)-> Unit,
 ) : UpdateEssentialsComponent<Transaction, TransactionEssentialsUi>(
     componentContext = componentContext,
     id = id,
-    updateEssentialsRepository = updateRepository,
+    updateSingleLineRepository = updateRepository,
     componentFactory = componentFactory,
     mapperToDTO = { toDto() },
     observeOnEssentials = observeOnEssentials,

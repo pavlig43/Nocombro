@@ -3,7 +3,7 @@ package ru.pavlig43.update.data
 import ru.pavlig43.core.model.ChangeSet
 import ru.pavlig43.core.model.SingleItem
 
-class UpdateEssentialsRepository<I : SingleItem>(
+class UpdateSingleLineRepository<I : SingleItem>(
     private val isCanSave: suspend (I) -> Result<Unit>,
     private val loadItem: suspend (Int) -> I,
     private val updateItem: suspend (I) -> Unit,

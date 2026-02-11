@@ -8,7 +8,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import ru.pavlig43.core.model.SingleItem
 import ru.pavlig43.create.data.CreateSingleItemRepository
-import ru.pavlig43.tablecore.model.ITableUi
+import ru.pavlig43.tablecore.model.IMultiLineTableUi
+import ru.pavlig43.tablecore.model.ISingleLineTableUi
 
 /**
  * Абстрактный компонент для создания новых сущностей через таблицу с одной строкой.
@@ -37,7 +38,7 @@ import ru.pavlig43.tablecore.model.ITableUi
  *    - При ошибке: состояние ошибки доступно в UI для показа пользователю
  * @see SingleLineComponent Базовый компонент для работы с формами
  */
-abstract class CreateSingleLineComponent<I : SingleItem, UI : ITableUi, C>(
+abstract class CreateSingleLineComponent<I : SingleItem, UI : ISingleLineTableUi, C>(
     componentContext: ComponentContext,
     val onSuccessCreate: (Int) -> Unit,
     componentFactory: SingleLineComponentFactory<I, UI>,

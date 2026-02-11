@@ -17,7 +17,7 @@ import ru.pavlig43.loadinitdata.api.component.LoadInitDataComponent
 import ru.pavlig43.tablecore.manger.FilterManager
 import ru.pavlig43.tablecore.manger.SelectionManager
 import ru.pavlig43.tablecore.manger.SortManager
-import ru.pavlig43.tablecore.model.ITableUi
+import ru.pavlig43.tablecore.model.IMultiLineTableUi
 import ru.pavlig43.tablecore.model.TableData
 import ru.pavlig43.tablecore.utils.FilterMatcher
 import ru.pavlig43.tablecore.utils.SortMatcher
@@ -27,7 +27,7 @@ import ua.wwind.table.filter.data.TableFilterState
 import ua.wwind.table.state.SortState
 
 
-abstract class MutableTableComponent<BDOut: CollectionObject,BDIn:CollectionObject, UI : ITableUi, C>(
+abstract class MutableTableComponent<BDOut: CollectionObject,BDIn:CollectionObject, UI : IMultiLineTableUi, C>(
     componentContext: ComponentContext,
     parentId: Int,
     override val title: String,

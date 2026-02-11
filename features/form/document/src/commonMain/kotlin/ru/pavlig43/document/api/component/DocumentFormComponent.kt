@@ -13,14 +13,13 @@ import kotlinx.coroutines.flow.update
 import kotlinx.serialization.Serializable
 import org.koin.core.scope.Scope
 import ru.pavlig43.core.MainTabComponent
-import ru.pavlig43.core.component.EssentialComponentFactory
 import ru.pavlig43.corekoin.ComponentKoinContext
 import ru.pavlig43.database.data.document.Document
 import ru.pavlig43.document.api.DocumentFormDependencies
-import ru.pavlig43.document.internal.component.CreateDocumentSingleLineComponent
-import ru.pavlig43.document.internal.component.tabs.DocumentFormTabsComponent
-import ru.pavlig43.document.internal.data.DocumentEssentialsUi
-import ru.pavlig43.document.internal.data.toUi
+import ru.pavlig43.document.internal.create.component.CreateDocumentSingleLineComponent
+import ru.pavlig43.document.internal.update.DocumentFormTabsComponent
+import ru.pavlig43.document.internal.model.DocumentEssentialsUi
+import ru.pavlig43.document.internal.model.toUi
 import ru.pavlig43.document.internal.di.createDocumentFormModule
 import ru.pavlig43.mutable.api.singleLine.component.SingleLineComponentFactory
 
@@ -45,12 +44,6 @@ class DocumentFormComponent(
     private val stackNavigation = StackNavigation<Config>()
 
 
-    private val essentialFactory = EssentialComponentFactory<Document, DocumentEssentialsUi>(
-        initItem = DocumentEssentialsUi(),
-        isValidFieldsFactory = { displayName.isNotBlank() && type != null },
-        mapperToUi = { toUi() },
-        produceInfoForTabName = { d -> onChangeValueForMainTab("*Документ ${d.displayName}") }
-    )
     private val essentialsComponentFactory = SingleLineComponentFactory<Document, DocumentEssentialsUi>(
         initItem = DocumentEssentialsUi(),
         errorFactory = {item: DocumentEssentialsUi->
@@ -86,10 +79,10 @@ class DocumentFormComponent(
             is Config.Update -> Child.Update(
                 DocumentFormTabsComponent(
                     componentContext = componentContext,
-                    essentialFactory = essentialFactory,
                     scope = scope,
                     documentId = config.id,
-                    closeFormScreen = closeTab
+                    closeFormScreen = closeTab,
+                    componentFactory = essentialsComponentFactory
                 )
             )
         }

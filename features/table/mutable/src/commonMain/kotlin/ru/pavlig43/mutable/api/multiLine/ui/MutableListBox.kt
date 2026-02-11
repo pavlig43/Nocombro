@@ -17,7 +17,7 @@ import ru.pavlig43.loadinitdata.api.ui.LoadInitDataScreen
 import ru.pavlig43.mutable.api.multiLine.component.MutableTableComponent
 import ru.pavlig43.mutable.api.multiLine.component.MutableUiEvent
 import ru.pavlig43.tablecore.manger.SelectionUiEvent
-import ru.pavlig43.tablecore.model.ITableUi
+import ru.pavlig43.tablecore.model.IMultiLineTableUi
 import ru.pavlig43.tablecore.model.TableData
 import ru.pavlig43.tablecore.ui.TableBox
 import ua.wwind.table.ColumnSpec
@@ -31,7 +31,7 @@ import ua.wwind.table.strings.StringProvider
 
 @OptIn(ExperimentalTableApi::class)
 @Composable
-fun <I : ITableUi, C> MutableTableBox(
+fun <I : IMultiLineTableUi, C> MutableTableBox(
     component: MutableTableComponent<*, *, I, C>,
     tableSettingsModify:(TableSettings)-> TableSettings = {it},
     modifier: Modifier = Modifier
@@ -75,7 +75,7 @@ fun <I : ITableUi, C> MutableTableBox(
 @Suppress("LongParameterList", "LongMethod")
 @OptIn(ExperimentalTableApi::class)
 @Composable
-private fun <I : ITableUi, C, E : TableData<I>> BoxScope.MutableTable(
+private fun <I : IMultiLineTableUi, C, E : TableData<I>> BoxScope.MutableTable(
     columns: ImmutableList<ColumnSpec<I, C, E>>,
     tableState: TableState<C>,
     stringProvider: StringProvider,

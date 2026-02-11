@@ -3,16 +3,15 @@ package ru.pavlig43.mutable.api.column
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.input.KeyboardType
-import ru.pavlig43.tablecore.model.ITableUi
+import ru.pavlig43.tablecore.model.IMultiLineTableUi
 import ua.wwind.table.EditableColumnBuilder
 import ua.wwind.table.EditableTableColumnsBuilder
 import ua.wwind.table.component.TableCellTextField
 import ua.wwind.table.filter.data.TableFilterType
 
-fun <T : ITableUi, C, E> EditableTableColumnsBuilder<T, C, E>.intColumn(
+fun <T : IMultiLineTableUi, C, E> EditableTableColumnsBuilder<T, C, E>.intColumn(
     key: C,
     getValue: (T) -> Int,
     headerText: String,
@@ -35,7 +34,7 @@ fun <T : ITableUi, C, E> EditableTableColumnsBuilder<T, C, E>.intColumn(
     }
 }
 
-fun <T : ITableUi, C, E> EditableTableColumnsBuilder<T, C, E>.readIntColumn(
+fun <T : IMultiLineTableUi, C, E> EditableTableColumnsBuilder<T, C, E>.readIntColumn(
     key: C,
     getValue: (T) -> Int,
     headerText: String,
@@ -48,7 +47,7 @@ fun <T : ITableUi, C, E> EditableTableColumnsBuilder<T, C, E>.readIntColumn(
     }
 }
 
-private fun <T : ITableUi, C, E> EditableColumnBuilder<T, C, E>.readIntCell(
+private fun <T : IMultiLineTableUi, C, E> EditableColumnBuilder<T, C, E>.readIntCell(
     getValue: (T) -> Int,
 ) {
     cell { item, _ ->
@@ -56,7 +55,7 @@ private fun <T : ITableUi, C, E> EditableColumnBuilder<T, C, E>.readIntCell(
     }
 }
 
-private fun <T : ITableUi, C, E> EditableColumnBuilder<T, C, E>.cellForInt(
+private fun <T : IMultiLineTableUi, C, E> EditableColumnBuilder<T, C, E>.cellForInt(
     getValue: (T) -> Int,
     saveInModel: (T, Int) -> Unit,
 ) {

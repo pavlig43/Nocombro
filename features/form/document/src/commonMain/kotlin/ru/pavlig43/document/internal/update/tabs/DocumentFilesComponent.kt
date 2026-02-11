@@ -1,4 +1,4 @@
-package ru.pavlig43.document.internal.component.tabs.component
+package ru.pavlig43.document.internal.update.tabs
 
 import com.arkivanov.decompose.ComponentContext
 import kotlinx.coroutines.flow.Flow

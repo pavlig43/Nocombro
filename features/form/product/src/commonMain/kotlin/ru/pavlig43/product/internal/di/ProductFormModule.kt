@@ -14,7 +14,7 @@ import ru.pavlig43.files.api.FilesDependencies
 import ru.pavlig43.immutable.api.ImmutableTableDependencies
 import ru.pavlig43.product.api.ProductFormDependencies
 import ru.pavlig43.update.data.UpdateCollectionRepository
-import ru.pavlig43.update.data.UpdateEssentialsRepository
+import ru.pavlig43.update.data.UpdateSingleLineRepository
 
 internal fun createProductFormModule(dependencies: ProductFormDependencies) = listOf(
     module {
@@ -23,7 +23,7 @@ internal fun createProductFormModule(dependencies: ProductFormDependencies) = li
         single<FilesDependencies> {dependencies.filesDependencies  }
         single<ImmutableTableDependencies> { dependencies.immutableTableDependencies }
         single<CreateSingleItemRepository<Product>> { getCreateRepository(get()) }
-        single<UpdateEssentialsRepository<Product>> { getUpdateRepository(get()) }
+        single<UpdateSingleLineRepository<Product>> { getUpdateRepository(get()) }
 
 
         single<UpdateCollectionRepository<ProductDeclarationOut, ProductDeclarationIn>>(
@@ -53,9 +53,9 @@ private fun getCreateRepository(
 
 private fun getUpdateRepository(
     db: NocombroDatabase
-): UpdateEssentialsRepository<Product> {
+): UpdateSingleLineRepository<Product> {
     val dao = db.productDao
-    return UpdateEssentialsRepository(
+    return UpdateSingleLineRepository(
         isCanSave = dao::isCanSave,
         loadItem = dao::getProduct,
         updateItem = dao::updateProduct

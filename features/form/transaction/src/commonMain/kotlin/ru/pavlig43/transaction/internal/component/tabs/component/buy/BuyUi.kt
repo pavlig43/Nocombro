@@ -2,7 +2,7 @@ package ru.pavlig43.transaction.internal.component.tabs.component.buy
 
 import kotlinx.datetime.LocalDate
 import ru.pavlig43.core.emptyDate
-import ru.pavlig43.tablecore.model.ITableUi
+import ru.pavlig43.tablecore.model.IMultiLineTableUi
 
 data class BuyUi(
     override val composeId: Int,
@@ -16,4 +16,4 @@ data class BuyUi(
     val dateBorn: LocalDate = emptyDate,
     val price: Int = 0,
     val comment: String = "",
-) : ITableUi
+) : IMultiLineTableUi

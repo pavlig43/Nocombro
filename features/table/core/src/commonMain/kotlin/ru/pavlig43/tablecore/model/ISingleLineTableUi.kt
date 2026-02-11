@@ -1,2 +1,3 @@
-package ru.pavlig43.tablecore.model 
+package ru.pavlig43.tablecore.model
 
+interface ISingleLineTableUi

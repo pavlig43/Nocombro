@@ -7,7 +7,7 @@ import ru.pavlig43.core.component.EssentialsComponent
 import ru.pavlig43.core.model.ChangeSet
 import ru.pavlig43.core.model.SingleItem
 import ru.pavlig43.core.model.ItemEssentialsUi
-import ru.pavlig43.update.data.UpdateEssentialsRepository
+import ru.pavlig43.update.data.UpdateSingleLineRepository
 
 /**
  * Абстрактный компонент для создания новых обязательных полей.
@@ -18,14 +18,14 @@ abstract class UpdateEssentialsComponent<I : SingleItem, T : ItemEssentialsUi>(
     componentContext: ComponentContext,
     componentFactory: EssentialComponentFactory<I, T>,
     id: Int,
-    private val updateEssentialsRepository: UpdateEssentialsRepository<I>,
+    private val updateSingleLineRepository: UpdateSingleLineRepository<I>,
     private val mapperToDTO: T.() -> I,
     observeOnEssentials:(T)-> Unit = {},
     onSuccessInitData:(T)-> Unit = {}
 ) : EssentialsComponent<I, T>(
     componentContext = componentContext,
     componentFactory = componentFactory,
-    getInitData = { updateEssentialsRepository.getInit(id) },
+    getInitData = { updateSingleLineRepository.getInit(id) },
     observeOnEssentials = observeOnEssentials,
     onSuccessInitData = onSuccessInitData
 ), FormTabComponent {
@@ -34,7 +34,7 @@ abstract class UpdateEssentialsComponent<I : SingleItem, T : ItemEssentialsUi>(
     override suspend fun onUpdate(): Result<Unit> {
         val old = initDataComponent.firstData.value?.mapperToDTO()
         val new = itemFields.value.mapperToDTO()
-        return updateEssentialsRepository.update(ChangeSet(old, new))
+        return updateSingleLineRepository.update(ChangeSet(old, new))
     }
 
 }

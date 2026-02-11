@@ -7,7 +7,7 @@ import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.document.Document
 import ru.pavlig43.document.api.DocumentFormDependencies
 import ru.pavlig43.files.api.FilesDependencies
-import ru.pavlig43.update.data.UpdateEssentialsRepository
+import ru.pavlig43.update.data.UpdateSingleLineRepository
 
 internal fun createDocumentFormModule(dependencies: DocumentFormDependencies) = listOf(
     module {
@@ -15,7 +15,7 @@ internal fun createDocumentFormModule(dependencies: DocumentFormDependencies) = 
         single<TransactionExecutor> { dependencies.transaction }
         single<FilesDependencies> {dependencies.filesDependencies  }
         single<CreateSingleItemRepository<Document>> { getCreateRepository(get()) }
-        single<UpdateEssentialsRepository<Document>> { getUpdateRepository(get()) }
+        single<UpdateSingleLineRepository<Document>> { getUpdateRepository(get()) }
     }
 )
 
@@ -30,9 +30,9 @@ private fun getCreateRepository(
 }
 private fun getUpdateRepository(
     db: NocombroDatabase
-): UpdateEssentialsRepository<Document>{
+): UpdateSingleLineRepository<Document>{
     val dao = db.documentDao
-    return UpdateEssentialsRepository(
+    return UpdateSingleLineRepository(
         isCanSave = dao::isCanSave,
         loadItem = dao::getDocument,
         updateItem = dao::updateDocument

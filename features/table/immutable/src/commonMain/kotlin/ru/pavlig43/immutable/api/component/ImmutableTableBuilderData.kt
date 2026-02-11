@@ -4,11 +4,11 @@ import ru.pavlig43.database.data.document.DocumentType
 import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.database.data.transaction.TransactionType
 import ru.pavlig43.immutable.internal.component.items.productDeclaration.ProductDeclarationTableUi
-import ru.pavlig43.tablecore.model.ITableUi
+import ru.pavlig43.tablecore.model.IMultiLineTableUi
 
 
 ///////////////////
-sealed interface ImmutableTableBuilderData<I: ITableUi>{
+sealed interface ImmutableTableBuilderData<I: IMultiLineTableUi>{
     val tabTitle: String
     val withCheckbox: Boolean
 

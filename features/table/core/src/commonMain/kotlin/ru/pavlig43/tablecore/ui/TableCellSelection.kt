@@ -8,14 +8,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import ru.pavlig43.tablecore.manger.SelectionUiEvent
-import ru.pavlig43.tablecore.model.ITableUi
+import ru.pavlig43.tablecore.model.IMultiLineTableUi
 import ru.pavlig43.tablecore.model.TableData
 import ua.wwind.table.EditableTableColumnsBuilder
 import ua.wwind.table.ReadonlyColumnBuilder
 import ua.wwind.table.ReadonlyTableColumnsBuilder
 
 
-fun <T : ITableUi, C, E : TableData<T>> ReadonlyTableColumnsBuilder<T, C, E>.coreIdWithSelection(
+fun <T : IMultiLineTableUi, C, E : TableData<T>> ReadonlyTableColumnsBuilder<T, C, E>.coreIdWithSelection(
     selectionKey: C,
     idKey: C,
     onCreate: () -> Unit,
@@ -36,7 +36,7 @@ fun <T : ITableUi, C, E : TableData<T>> ReadonlyTableColumnsBuilder<T, C, E>.cor
     }
 }
 
-fun <T : ITableUi, C, E : TableData<T>> EditableTableColumnsBuilder<T, C, E>.coreIdWithSelection(
+fun <T : IMultiLineTableUi, C, E : TableData<T>> EditableTableColumnsBuilder<T, C, E>.coreIdWithSelection(
     selectionKey: C,
     idKey: C,
     onCreate: () -> Unit,
@@ -55,7 +55,7 @@ fun <T : ITableUi, C, E : TableData<T>> EditableTableColumnsBuilder<T, C, E>.cor
     }
 }
 
-private fun <T : ITableUi, C, E : TableData<T>> ReadonlyColumnBuilder<T, C, E>.coreSelectionCell(
+private fun <T : IMultiLineTableUi, C, E : TableData<T>> ReadonlyColumnBuilder<T, C, E>.coreSelectionCell(
     onCreate: () -> Unit,
     onSelectionUiEvent: (SelectionUiEvent) -> Unit
 ) {

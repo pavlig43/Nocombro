@@ -2,7 +2,7 @@ package ru.pavlig43.transaction.internal.component.tabs.component.expenses
 
 import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.database.data.transaction.expense.ExpenseType
-import ru.pavlig43.tablecore.model.ITableUi
+import ru.pavlig43.tablecore.model.IMultiLineTableUi
 
 internal data class ExpensesUi(
     override val composeId: Int,
@@ -12,7 +12,7 @@ internal data class ExpensesUi(
     val amount: Int, // в копейках
     val expenseDateTime: LocalDateTime,
     val comment: String
-) : ITableUi
+) : IMultiLineTableUi
 
 internal enum class ExpensesField {
     SELECTION,

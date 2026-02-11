@@ -11,19 +11,19 @@ import ru.pavlig43.declaration.internal.data.DeclarationEssentialsUi
 import ru.pavlig43.declaration.internal.data.toDto
 import ru.pavlig43.immutable.api.ImmutableTableDependencies
 import ru.pavlig43.update.component.UpdateEssentialsComponent
-import ru.pavlig43.update.data.UpdateEssentialsRepository
+import ru.pavlig43.update.data.UpdateSingleLineRepository
 
 internal class DeclarationEssentialComponent(
     componentContext: ComponentContext,
     declarationId: Int,
     dependencies: ImmutableTableDependencies,
     tabOpener: TabOpener,
-    updateRepository: UpdateEssentialsRepository<Declaration>,
+    updateRepository: UpdateSingleLineRepository<Declaration>,
     componentFactory: EssentialComponentFactory<Declaration, DeclarationEssentialsUi>,
 ) : UpdateEssentialsComponent<Declaration, DeclarationEssentialsUi>(
     componentContext = componentContext,
     id = declarationId,
-    updateEssentialsRepository = updateRepository,
+    updateSingleLineRepository = updateRepository,
     componentFactory = componentFactory,
     mapperToDTO = {toDto()}
 ){

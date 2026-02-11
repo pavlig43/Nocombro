@@ -1,11 +1,10 @@
-package ru.pavlig43.document.internal.create.component
+package ru.pavlig43.document.internal.update.tabs.essential
 
 import kotlinx.collections.immutable.ImmutableList
-import ru.pavlig43.database.data.document.DocumentType
 import ru.pavlig43.document.internal.DocumentField
-import ru.pavlig43.document.internal.data.DocumentEssentialsUi
+import ru.pavlig43.document.internal.model.DocumentEssentialsUi
+import ru.pavlig43.mutable.api.column.readItemTypeColumn
 import ru.pavlig43.mutable.api.column.writeDateColumn
-import ru.pavlig43.mutable.api.column.writeItemTypeColumn
 import ru.pavlig43.mutable.api.column.writeTextColumn
 import ua.wwind.table.ColumnSpec
 import ua.wwind.table.editableTableColumns
@@ -17,7 +16,7 @@ import ua.wwind.table.editableTableColumns
  * @param onChangeItem Callback для обновления данных документа
  */
 @Suppress("LongMethod")
-internal fun createDocumentColumns0(
+internal fun createDocumentColumns1(
     onOpenDateDialog: () -> Unit,
     onChangeItem: (DocumentEssentialsUi) -> Unit
 ): ImmutableList<ColumnSpec<DocumentEssentialsUi, DocumentField, Unit>> {
@@ -33,13 +32,12 @@ internal fun createDocumentColumns0(
                     onChangeItem(item.copy(displayName = newValue))
                 },
             )
-            writeItemTypeColumn(
+            readItemTypeColumn(
                 headerText = "Тип",
                 column = DocumentField.TYPE,
                 valueOf = { it.type },
-                options = DocumentType.entries,
-                onTypeSelected = { item, type -> onChangeItem(item.copy(type = type)) }
             )
+
 
             // Дата создания
             writeDateColumn(

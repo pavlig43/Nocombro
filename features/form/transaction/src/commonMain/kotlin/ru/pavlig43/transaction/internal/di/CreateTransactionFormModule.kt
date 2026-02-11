@@ -13,7 +13,7 @@ import ru.pavlig43.files.api.FilesDependencies
 import ru.pavlig43.immutable.api.ImmutableTableDependencies
 import ru.pavlig43.transaction.api.TransactionFormDependencies
 import ru.pavlig43.update.data.UpdateCollectionRepository
-import ru.pavlig43.update.data.UpdateEssentialsRepository
+import ru.pavlig43.update.data.UpdateSingleLineRepository
 
 internal fun createTransactionFormModule(dependencies: TransactionFormDependencies) = listOf(
     module {
@@ -22,7 +22,7 @@ internal fun createTransactionFormModule(dependencies: TransactionFormDependenci
         single<FilesDependencies> { dependencies.filesDependencies }
         single<ImmutableTableDependencies> { dependencies.immutableTableDependencies }
         single<CreateSingleItemRepository<Transaction>> { getCreateRepository(get()) }
-        single<UpdateEssentialsRepository<Transaction>> { getUpdateRepository(get()) }
+        single<UpdateSingleLineRepository<Transaction>> { getUpdateRepository(get()) }
         single<UpdateCollectionRepository<BuyBD, BuyBD>>(UpdateCollectionRepositoryType.BUY.qualifier) {
             createUpdateBuyRepository()
         }
@@ -51,9 +51,9 @@ private fun getCreateRepository(
 
 private fun getUpdateRepository(
     db: NocombroDatabase
-): UpdateEssentialsRepository<Transaction> {
+): UpdateSingleLineRepository<Transaction> {
     val dao = db.transactionDao
-    return UpdateEssentialsRepository(
+    return UpdateSingleLineRepository(
         isCanSave = dao::isCanSave,
         loadItem = dao::getTransaction,
         updateItem = dao::updateTransaction

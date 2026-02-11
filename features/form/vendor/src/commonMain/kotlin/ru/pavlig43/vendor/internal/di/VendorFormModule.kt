@@ -6,7 +6,7 @@ import ru.pavlig43.create.data.CreateSingleItemRepository
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.vendor.Vendor
 import ru.pavlig43.files.api.FilesDependencies
-import ru.pavlig43.update.data.UpdateEssentialsRepository
+import ru.pavlig43.update.data.UpdateSingleLineRepository
 import ru.pavlig43.vendor.api.VendorFormDependencies
 
 internal fun createVendorFormModule(dependencies: VendorFormDependencies) = listOf(
@@ -15,7 +15,7 @@ internal fun createVendorFormModule(dependencies: VendorFormDependencies) = list
         single<TransactionExecutor> { dependencies.transaction }
         single<FilesDependencies> {dependencies.filesDependencies  }
         single<CreateSingleItemRepository<Vendor>> { getCreateRepository(get()) }
-        single<UpdateEssentialsRepository<Vendor>> { getUpdateRepository(get()) }
+        single<UpdateSingleLineRepository<Vendor>> { getUpdateRepository(get()) }
 
     }
 )
@@ -32,9 +32,9 @@ private fun getCreateRepository(
 
 private fun getUpdateRepository(
     db: NocombroDatabase
-): UpdateEssentialsRepository<Vendor> {
+): UpdateSingleLineRepository<Vendor> {
     val dao = db.vendorDao
-    return UpdateEssentialsRepository(
+    return UpdateSingleLineRepository(
         isCanSave = dao::isCanSave,
         loadItem = dao::getVendor,
         updateItem = dao::updateVendor

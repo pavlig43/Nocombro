@@ -8,18 +8,18 @@ import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.product.internal.data.ProductEssentialsUi
 import ru.pavlig43.product.internal.data.toDto
 import ru.pavlig43.update.component.UpdateEssentialsComponent
-import ru.pavlig43.update.data.UpdateEssentialsRepository
+import ru.pavlig43.update.data.UpdateSingleLineRepository
 
 internal class ProductEssentialsComponent(
     componentContext: ComponentContext,
     productId: Int,
-    updateRepository: UpdateEssentialsRepository<Product>,
+    updateRepository: UpdateSingleLineRepository<Product>,
     componentFactory: EssentialComponentFactory<Product, ProductEssentialsUi>,
     onSuccessInitData:(ProductEssentialsUi)-> Unit
 ) : UpdateEssentialsComponent<Product, ProductEssentialsUi>(
     componentContext = componentContext,
     id = productId,
-    updateEssentialsRepository = updateRepository,
+    updateSingleLineRepository = updateRepository,
     componentFactory = componentFactory,
     mapperToDTO = {toDto()},
     onSuccessInitData = onSuccessInitData

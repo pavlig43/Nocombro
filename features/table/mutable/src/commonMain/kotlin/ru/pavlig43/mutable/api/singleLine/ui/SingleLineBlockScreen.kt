@@ -10,7 +10,8 @@ import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.toImmutableList
 import ru.pavlig43.loadinitdata.api.ui.LoadInitDataScreen
 import ru.pavlig43.mutable.api.singleLine.component.SingleLineComponent
-import ru.pavlig43.tablecore.model.ITableUi
+import ru.pavlig43.tablecore.model.IMultiLineTableUi
+import ru.pavlig43.tablecore.model.ISingleLineTableUi
 import ua.wwind.table.EditableTable
 import ua.wwind.table.ExperimentalTableApi
 import ua.wwind.table.config.RowHeightMode
@@ -19,7 +20,7 @@ import ua.wwind.table.state.rememberTableState
 
 @OptIn(ExperimentalTableApi::class)
 @Composable
-fun <I : ITableUi, C> SingleLineBlockScreen(
+fun <I : ISingleLineTableUi, C> SingleLineBlockScreen(
     component: SingleLineComponent<*, I, C>,
     modifier: Modifier = Modifier,
 ) {

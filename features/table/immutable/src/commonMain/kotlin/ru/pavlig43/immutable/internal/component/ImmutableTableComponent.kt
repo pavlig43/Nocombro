@@ -14,7 +14,7 @@ import ru.pavlig43.immutable.internal.data.ImmutableListRepository
 import ru.pavlig43.tablecore.manger.FilterManager
 import ru.pavlig43.tablecore.manger.SelectionManager
 import ru.pavlig43.tablecore.manger.SortManager
-import ru.pavlig43.tablecore.model.ITableUi
+import ru.pavlig43.tablecore.model.IMultiLineTableUi
 import ru.pavlig43.tablecore.model.TableData
 import ru.pavlig43.tablecore.utils.FilterMatcher
 import ru.pavlig43.tablecore.utils.SortMatcher
@@ -30,7 +30,7 @@ internal sealed interface ItemListState<out O> {
 
 
 @Suppress("LongParameterList")
-internal abstract class ImmutableTableComponent<BD, UI : ITableUi, Column>(
+internal abstract class ImmutableTableComponent<BD, UI : IMultiLineTableUi, Column>(
     componentContext: ComponentContext,
     tableBuilder: ImmutableTableBuilderData<UI>,
     val onCreate: () -> Unit,

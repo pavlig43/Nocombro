@@ -3,7 +3,7 @@ package ru.pavlig43.immutable.internal.component.items.transaction
 import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.core.emptyLocalDateTime
 import ru.pavlig43.database.data.transaction.TransactionType
-import ru.pavlig43.tablecore.model.ITableUi
+import ru.pavlig43.tablecore.model.IMultiLineTableUi
 
 data class TransactionTableUi(
 
@@ -18,4 +18,4 @@ data class TransactionTableUi(
     override val composeId: Int = 0,
 
 
-    ) : ITableUi
+    ) : IMultiLineTableUi
