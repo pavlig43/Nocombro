@@ -50,6 +50,7 @@ internal class VendorFormTabsComponent(
                             vendorId = vendorId,
                             updateRepository = scope.get(),
                             observeOnItem = observeOnVendor,
+                            onSuccessInitData = observeOnVendor,
                             componentFactory = componentFactory
                         )
                     )

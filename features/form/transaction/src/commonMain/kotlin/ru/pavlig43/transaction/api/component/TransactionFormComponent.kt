@@ -13,16 +13,17 @@ import kotlinx.coroutines.flow.update
 import kotlinx.serialization.Serializable
 import org.koin.core.scope.Scope
 import ru.pavlig43.core.MainTabComponent
-import ru.pavlig43.core.component.EssentialComponentFactory
+import ru.pavlig43.core.emptyDate
 import ru.pavlig43.core.tabs.TabOpener
 import ru.pavlig43.corekoin.ComponentKoinContext
 import ru.pavlig43.database.data.transaction.Transaction
+import ru.pavlig43.mutable.api.singleLine.component.SingleLineComponentFactory
 import ru.pavlig43.transaction.api.TransactionFormDependencies
-import ru.pavlig43.transaction.internal.component.CreateTransactionComponent
-import ru.pavlig43.transaction.internal.component.tabs.TransactionFormTabsComponent
+import ru.pavlig43.transaction.internal.create.component.CreateTransactionSingleLineComponent
 import ru.pavlig43.transaction.internal.di.createTransactionFormModule
 import ru.pavlig43.transaction.internal.model.TransactionEssentialsUi
 import ru.pavlig43.transaction.internal.model.toUi
+import ru.pavlig43.transaction.internal.update.TransactionFormTabsComponent
 
 class TransactionFormComponent(
     transactionId: Int,
@@ -35,32 +36,29 @@ class TransactionFormComponent(
     private val koinContext = instanceKeeper.getOrCreate {
         ComponentKoinContext()
     }
+
     private val scope: Scope =
         koinContext.getOrCreateKoinScope(createTransactionFormModule(dependencies))
-
 
     private val _model = MutableStateFlow(MainTabComponent.NavTabState(""))
     override val model = _model.asStateFlow()
 
     private val stackNavigation = StackNavigation<Config>()
 
-
-
-    private val essentialFactory =
-        EssentialComponentFactory<Transaction, TransactionEssentialsUi>(
-            initItem = TransactionEssentialsUi(),
-            isValidFieldsFactory = { transactionType != null },
-            mapperToUi = { toUi() },
-            produceInfoForTabName = { transaction: TransactionEssentialsUi ->
-                onChangeValueForMainTab(
-                    transaction.transactionType?.displayName ?: "* Транзакция"
-                )
+    private val componentFactory = SingleLineComponentFactory<Transaction, TransactionEssentialsUi>(
+        initItem = TransactionEssentialsUi(),
+        errorFactory = { item: TransactionEssentialsUi ->
+            buildList {
+                if (item.transactionType == null) add("Тип транзакции обязателен")
+                if (item.createdAt == emptyDate) add("Дата/время обязательна")
             }
-        )
-    private fun onChangeValueForMainTab(title: String) {
+        },
+        mapperToUi = { toUi() }
+    )
 
-        val navTabState = MainTabComponent.NavTabState(title)
-        _model.update { navTabState }
+    private fun onChangeValueForMainTab(transaction: TransactionEssentialsUi) {
+        val title = "*Транзакция ${transaction.transactionType?.displayName ?: ""}"
+        _model.update { MainTabComponent.NavTabState(title) }
     }
 
     private fun createChild(
@@ -69,23 +67,24 @@ class TransactionFormComponent(
     ): Child {
         return when (config) {
             is Config.Create -> Child.Create(
-                CreateTransactionComponent(
+                CreateTransactionSingleLineComponent(
                     componentContext = componentContext,
                     onSuccessCreate = { stackNavigation.replaceAll(Config.Update(it)) },
-                    createRepository = scope.get(),
-                    componentFactory = essentialFactory
+                    observeOnItem = { transaction -> onChangeValueForMainTab(transaction) },
+                    componentFactory = componentFactory,
+                    createRepository = scope.get()
                 )
-
             )
 
             is Config.Update -> Child.Update(
                 TransactionFormTabsComponent(
                     componentContext = componentContext,
-                    essentialFactory = essentialFactory,
                     scope = scope,
                     transactionId = config.id,
                     closeFormScreen = closeTab,
-                    tabOpener = tabOpener
+                    componentFactory = componentFactory,
+                    tabOpener = tabOpener,
+                    observeOnItem = ::onChangeValueForMainTab
                 )
             )
         }
@@ -111,7 +110,7 @@ class TransactionFormComponent(
     }
 
     internal sealed class Child {
-        class Create(val component: CreateTransactionComponent) : Child()
+        class Create(val component: CreateTransactionSingleLineComponent) : Child()
         class Update(val component: TransactionFormTabsComponent) : Child()
     }
 }

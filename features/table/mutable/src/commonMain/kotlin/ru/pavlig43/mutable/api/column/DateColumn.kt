@@ -99,4 +99,3 @@ private fun WriteDateRow(
         Text(date.format(dateFormat), textDecoration = TextDecoration.Underline)
     }
 }
-

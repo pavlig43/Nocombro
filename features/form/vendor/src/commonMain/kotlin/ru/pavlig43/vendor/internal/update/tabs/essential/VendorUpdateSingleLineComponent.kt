@@ -18,12 +18,14 @@ internal class VendorUpdateSingleLineComponent(
     updateRepository: UpdateSingleLineRepository<Vendor>,
     componentFactory: SingleLineComponentFactory<Vendor, VendorEssentialsUi>,
     observeOnItem: (VendorEssentialsUi) -> Unit,
+    onSuccessInitData: (VendorEssentialsUi) -> Unit,
 ) : UpdateSingleLineComponent<Vendor, VendorEssentialsUi, VendorField>(
     componentContext = componentContext,
     id = vendorId,
     updateSingleLineRepository = updateRepository,
     componentFactory = componentFactory,
     observeOnItem = observeOnItem,
+    onSuccessInitData = onSuccessInitData,
     mapperToDTO = { toDto() }
 ) {
     override val columns: ImmutableList<ColumnSpec<VendorEssentialsUi, VendorField, Unit>> =

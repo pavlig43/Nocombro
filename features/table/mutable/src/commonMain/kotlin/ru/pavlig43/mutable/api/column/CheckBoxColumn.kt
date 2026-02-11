@@ -16,7 +16,7 @@ fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.writeCheckBoxColumn(
     column: C,
     valueOf: (T) -> Boolean,
     onChangeChecked: (T, Boolean) -> Unit,
-    filterType: TableFilterType<*>? = null,
+    filterType: TableFilterType.BooleanTableFilter? = null,
     alignment: Alignment = Alignment.Center
 ) {
     column(column, valueOf = valueOf) {
@@ -41,7 +41,6 @@ private fun <T : Any, C, E> EditableColumnBuilder<T, C, E>.writeCheckBoxCell(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(valueOf(item).toString())
             Checkbox(
                 checked = valueOf(item),
                 onCheckedChange = { newValue -> onCheckedChange(item, newValue) }

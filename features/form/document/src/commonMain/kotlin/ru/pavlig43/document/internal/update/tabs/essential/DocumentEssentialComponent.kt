@@ -25,12 +25,14 @@ internal class DocumentUpdateSingleLineComponent(
     updateRepository: UpdateSingleLineRepository<Document>,
     componentFactory: SingleLineComponentFactory<Document, DocumentEssentialsUi>,
     observeOnItem: (DocumentEssentialsUi) -> Unit,
+    onSuccessInitData: (DocumentEssentialsUi) -> Unit,
 ) : UpdateSingleLineComponent<Document, DocumentEssentialsUi, DocumentField>(
     componentContext = componentContext,
     id = documentId,
     updateSingleLineRepository = updateRepository,
     componentFactory = componentFactory,
     observeOnItem = observeOnItem,
+    onSuccessInitData = onSuccessInitData,
     mapperToDTO = { toDto() }
 ) {
     private val dialogNavigation = SlotNavigation<UpdateDatePickerDialogConfig>()

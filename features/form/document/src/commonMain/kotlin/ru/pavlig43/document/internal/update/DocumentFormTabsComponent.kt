@@ -53,6 +53,7 @@ internal class DocumentFormTabsComponent(
                             documentId = documentId,
                             updateRepository = scope.get(),
                             observeOnItem = observeOnDocument,
+                            onSuccessInitData = observeOnDocument,
                             componentFactory = componentFactory
                         )
                     )

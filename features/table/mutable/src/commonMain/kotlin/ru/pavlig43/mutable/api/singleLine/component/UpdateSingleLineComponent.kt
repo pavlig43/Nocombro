@@ -20,7 +20,8 @@ abstract class UpdateSingleLineComponent<I : SingleItem, T : ISingleLineTableUi,
     componentContext = componentContext,
     componentFactory = componentFactory,
     getInitData = { updateSingleLineRepository.getInit(id) },
-    observeOnItem = observeOnItem
+    observeOnItem = observeOnItem,
+    onSuccessInitData = onSuccessInitData
 ), FormTabComponent {
     override val title: String = "Основная информация"
 

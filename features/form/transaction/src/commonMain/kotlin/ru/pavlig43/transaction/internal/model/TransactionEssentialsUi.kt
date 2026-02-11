@@ -5,6 +5,7 @@ import ru.pavlig43.core.getCurrentLocalDateTime
 import ru.pavlig43.core.model.ItemEssentialsUi
 import ru.pavlig43.database.data.transaction.Transaction
 import ru.pavlig43.database.data.transaction.TransactionType
+import ru.pavlig43.tablecore.model.ISingleLineTableUi
 import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalTime::class)
@@ -19,7 +20,7 @@ internal data class TransactionEssentialsUi(
 
     override val id: Int = 0,
 
-    ) : ItemEssentialsUi
+    ) : ItemEssentialsUi, ISingleLineTableUi
 
 
 internal fun Transaction.toUi(): TransactionEssentialsUi {

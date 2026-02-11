@@ -30,7 +30,7 @@ internal class ProductFormTabsComponent(
     tabOpener: TabOpener,
     scope: Scope,
     productId: Int,
-    observeOnProduct: (ProductEssentialsUi) -> Unit,
+    private val observeOnProduct: (ProductEssentialsUi) -> Unit,
 ) : ComponentContext by componentContext,
     IItemFormTabsComponent<ProductTab, ProductTabChild> {
 
@@ -55,10 +55,8 @@ internal class ProductFormTabsComponent(
                             productId = productId,
                             updateRepository = scope.get(),
                             componentFactory = componentFactory,
-                            observeOnItem = { product ->
-                                observeOnProduct(product)
-                                addCompositionTab(product)
-                            }
+                            observeOnItem = observeOnProduct,
+                            onSuccessInitData = ::onSuccessInitData
                         )
                     )
 
@@ -93,12 +91,13 @@ internal class ProductFormTabsComponent(
 
             },
         )
-    private fun addCompositionTab(product: ProductEssentialsUi){
+    private fun onSuccessInitData(product: ProductEssentialsUi){
+        observeOnProduct(product)
         coroutineScope.launch {
             if (product.productType == ProductType.FOOD_PF){
                 tabNavigationComponent.addTab(ProductTab.Composition)
-                tabNavigationComponent.onSelectTab(0)
             }
+            tabNavigationComponent.onSelectTab(0)
         }
 
     }

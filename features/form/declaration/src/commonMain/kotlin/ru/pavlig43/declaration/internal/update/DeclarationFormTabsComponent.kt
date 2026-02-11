@@ -55,6 +55,7 @@ internal class DeclarationFormTabsComponent(
                             declarationId = declarationId,
                             updateRepository = scope.get(),
                             observeOnItem = observeOnDeclaration,
+                            onSuccessInitData = observeOnDeclaration,
                             componentFactory = componentFactory,
                             immutableDependencies = scope.get(),
                             tabOpener = tabOpener

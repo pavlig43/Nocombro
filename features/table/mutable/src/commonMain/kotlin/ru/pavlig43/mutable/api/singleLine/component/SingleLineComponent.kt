@@ -26,7 +26,8 @@ abstract class SingleLineComponent<I : SingleItem, UI : ISingleLineTableUi, C>(
     componentContext: ComponentContext,
     private val componentFactory: SingleLineComponentFactory<I, UI>,
     getInitData: (suspend () -> Result<I>)?,
-    private val observeOnItem: (UI) -> Unit = {}
+    private val observeOnItem: (UI) -> Unit,
+    onSuccessInitData: (UI) -> Unit = {},
 ) : ComponentContext by componentContext {
     protected val coroutineScope = componentCoroutineScope()
 
@@ -44,7 +45,7 @@ abstract class SingleLineComponent<I : SingleItem, UI : ISingleLineTableUi, C>(
 
         },
         onSuccessGetInitData = { item ->
-            observeOnItem(item)
+            onSuccessInitData(item)
             _itemFields.update { listOf(item) }
         }
     )

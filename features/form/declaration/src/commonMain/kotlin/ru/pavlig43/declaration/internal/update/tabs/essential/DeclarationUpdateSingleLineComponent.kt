@@ -31,6 +31,7 @@ internal class DeclarationUpdateSingleLineComponent(
     updateRepository: UpdateSingleLineRepository<Declaration>,
     componentFactory: SingleLineComponentFactory<Declaration, DeclarationEssentialsUi>,
     observeOnItem: (DeclarationEssentialsUi) -> Unit,
+    onSuccessInitData:(DeclarationEssentialsUi)-> Unit,
     private val immutableDependencies: ImmutableTableDependencies,
     private val tabOpener: TabOpener,
 ) : UpdateSingleLineComponent<Declaration, DeclarationEssentialsUi, DeclarationField>(
@@ -39,6 +40,7 @@ internal class DeclarationUpdateSingleLineComponent(
     updateSingleLineRepository = updateRepository,
     componentFactory = componentFactory,
     observeOnItem = observeOnItem,
+    onSuccessInitData = onSuccessInitData,
     mapperToDTO = { toDto() }
 ) {
 
