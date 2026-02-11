@@ -44,7 +44,7 @@ import ru.pavlig43.rootnocombro.internal.navigation.drawer.component.DrawerDesti
 import ru.pavlig43.sampletable.api.component.SampleTableComponentMain
 import ru.pavlig43.tablecore.model.IMultiLineTableUi
 import ru.pavlig43.transaction.api.component.TransactionFormComponent
-import ru.pavlig43.vendor.component.VendorFormComponent
+import ru.pavlig43.vendor.api.component.VendorFormComponent
 
 internal class MainTabNavigationComponent(
     componentContext: ComponentContext,

@@ -43,10 +43,12 @@ abstract class CreateSingleLineComponent<I : SingleItem, UI : ISingleLineTableUi
     val onSuccessCreate: (Int) -> Unit,
     componentFactory: SingleLineComponentFactory<I, UI>,
     private val createSingleItemRepository: CreateSingleItemRepository<I>,
+    observeOnItem:(UI)-> Unit,
     private val mapperToDTO: UI.() -> I,
 ) : SingleLineComponent<I, UI, C>(
     componentContext = componentContext,
     componentFactory = componentFactory,
+    observeOnItem = observeOnItem,
     getInitData = null,
 ) {
     private val _createState: MutableStateFlow<CreateState> = MutableStateFlow(CreateState.Init)

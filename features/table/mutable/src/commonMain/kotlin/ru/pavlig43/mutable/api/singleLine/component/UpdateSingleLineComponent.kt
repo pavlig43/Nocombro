@@ -14,14 +14,13 @@ abstract class UpdateSingleLineComponent<I : SingleItem, T : ISingleLineTableUi,
     id: Int,
     private val updateSingleLineRepository: UpdateSingleLineRepository<I>,
     private val mapperToDTO: T.() -> I,
-    observeOnEssentials: (T) -> Unit = {},
+    observeOnItem: (T) -> Unit = {},
     onSuccessInitData: (T) -> Unit = {}
 ) : SingleLineComponent<I, T, C>(
     componentContext = componentContext,
     componentFactory = componentFactory,
     getInitData = { updateSingleLineRepository.getInit(id) },
-    observeOnEssentials = observeOnEssentials,
-    onSuccessInitData = onSuccessInitData
+    observeOnItem = observeOnItem
 ), FormTabComponent {
     override val title: String = "Основная информация"
 

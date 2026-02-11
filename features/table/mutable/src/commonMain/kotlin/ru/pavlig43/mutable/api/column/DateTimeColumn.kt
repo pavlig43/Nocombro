@@ -18,17 +18,22 @@ import ru.pavlig43.theme.Res
 import ru.pavlig43.theme.clock
 import ua.wwind.table.EditableColumnBuilder
 import ua.wwind.table.EditableTableColumnsBuilder
+import ua.wwind.table.filter.data.TableFilterType
 
 fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.writeDateTimeColumn(
     headerText: String,
     column: C,
     valueOf: (T) -> LocalDateTime,
     onOpenDateTimeDialog: () -> Unit,
+    filterType: TableFilterType.DateTableFilter? = null,
     alignment: Alignment = Alignment.Center
 ) {
     column(column, valueOf = valueOf) {
         header(headerText)
         align(alignment)
+        filterType?.let {
+            filter(it)
+        }
         writeDateTimeCell(
             valueOf = valueOf,
             onOpenDateTimeDialog = onOpenDateTimeDialog
@@ -40,11 +45,15 @@ fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.readDateTimeColumn(
     headerText: String,
     column: C,
     valueOf: (T) -> LocalDateTime,
+    filterType: TableFilterType<*>? = null,
     alignment: Alignment = Alignment.Center
 ) {
     column(column, valueOf = valueOf) {
         header(headerText)
         align(alignment)
+        filterType?.let {
+            filter(it)
+        }
         readDateTimeCell(valueOf = valueOf)
     }
 }

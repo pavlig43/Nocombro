@@ -4,8 +4,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -13,13 +11,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
-import ru.pavlig43.core.ui.EssentialBlockScreen
-import ru.pavlig43.declaration.internal.component.tabs.DeclarationTabChild
-import ru.pavlig43.declaration.internal.component.tabs.component.DeclarationEssentialComponent
-import ru.pavlig43.declaration.internal.ui.CreateDeclarationScreen
-import ru.pavlig43.declaration.internal.ui.DeclarationFields
+import ru.pavlig43.declaration.internal.create.ui.CreateDeclarationSingleLineScreen
+import ru.pavlig43.declaration.internal.update.DeclarationTabChild
+import ru.pavlig43.declaration.internal.update.tabs.essential.UpdateDeclarationSingleLineScreen
 import ru.pavlig43.files.api.ui.FilesScreen
-import ru.pavlig43.immutable.api.ui.MBSImmutableTable
 import ru.pavlig43.update.ui.FormTabsUi
 
 @Composable
@@ -43,7 +38,7 @@ fun DeclarationFormScreen(
             when (val instance = child.instance) {
 
 
-                is DeclarationFormComponent.Child.Create -> CreateDeclarationScreen(instance.component)
+                is DeclarationFormComponent.Child.Create -> CreateDeclarationSingleLineScreen(instance.component)
                 is DeclarationFormComponent.Child.Update -> FormTabsUi(
                     component = instance.component,
                     tabChildFactory = { slotForm: DeclarationTabChild? ->
@@ -61,31 +56,8 @@ private fun DeclarationSlotScreen(
     declarationTabChild: DeclarationTabChild?,
 ) {
     when (declarationTabChild) {
-        is DeclarationTabChild.Essential -> UpdateEssentialsBlock(declarationTabChild.component)
+        is DeclarationTabChild.Essential -> UpdateDeclarationSingleLineScreen(declarationTabChild.component)
         is DeclarationTabChild.File -> FilesScreen(declarationTabChild.component)
-        null -> Box(Modifier)
+        null -> Box {}
     }
-}
-
-@Composable
-private fun UpdateEssentialsBlock(
-    declarationTabSlot: DeclarationEssentialComponent,
-    modifier: Modifier = Modifier
-) {
-    val dialog by declarationTabSlot.vendorDialogComponent.dialog.subscribeAsState()
-
-    Column(modifier.verticalScroll(rememberScrollState())) {
-        EssentialBlockScreen(declarationTabSlot) { item, onItemChange ->
-            DeclarationFields(
-                declaration = item,
-                updateDeclaration = onItemChange,
-                onOpenVendorDialog = {
-                    declarationTabSlot.vendorDialogComponent.showDialog() }
-            )
-        }
-        dialog.child?.instance?.also {
-            MBSImmutableTable(it)
-        }
-    }
-
 }

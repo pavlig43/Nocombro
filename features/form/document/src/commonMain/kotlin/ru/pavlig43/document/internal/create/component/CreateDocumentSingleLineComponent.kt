@@ -32,6 +32,7 @@ import ua.wwind.table.ColumnSpec
 internal class CreateDocumentSingleLineComponent(
     componentContext: ComponentContext,
     onSuccessCreate: (Int) -> Unit,
+    observeOnItem:(DocumentEssentialsUi)-> Unit,
     componentFactory: SingleLineComponentFactory<Document, DocumentEssentialsUi>,
     createDocumentRepository: CreateSingleItemRepository<Document>,
 ) : CreateSingleLineComponent<Document, DocumentEssentialsUi, DocumentField>(
@@ -40,6 +41,7 @@ internal class CreateDocumentSingleLineComponent(
     componentFactory = componentFactory,
     createSingleItemRepository = createDocumentRepository,
     mapperToDTO = DocumentEssentialsUi::toDto,
+    observeOnItem = observeOnItem
 ) {
     // Навигация для диалогов
     private val dialogNavigation = SlotNavigation<CreateDatePickerDialogConfig>()

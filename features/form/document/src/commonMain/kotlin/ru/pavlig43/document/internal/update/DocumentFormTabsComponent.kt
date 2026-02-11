@@ -19,11 +19,13 @@ internal class DocumentFormTabsComponent(
     componentFactory: SingleLineComponentFactory<Document, DocumentEssentialsUi>,
     closeFormScreen: () -> Unit,
     scope: Scope,
-    documentId: Int
+    documentId: Int,
+    observeOnDocument:(DocumentEssentialsUi)-> Unit,
 ) : ComponentContext by componentContext,
     IItemFormTabsComponent<DocumentTab, DocumentTabChild> {
 
     override val transactionExecutor: TransactionExecutor = scope.get()
+
 
 
     override val tabNavigationComponent: TabNavigationComponent<DocumentTab, DocumentTabChild> =
@@ -36,9 +38,6 @@ internal class DocumentFormTabsComponent(
             serializer = DocumentTab.serializer(),
             tabChildFactory = { context, tabConfig: DocumentTab, _: () -> Unit ->
                 when (tabConfig) {
-
-
-
 
                     DocumentTab.Files -> Files(
                         DocumentFilesComponent(
@@ -53,6 +52,7 @@ internal class DocumentFormTabsComponent(
                             componentContext = context,
                             documentId = documentId,
                             updateRepository = scope.get(),
+                            observeOnItem = observeOnDocument,
                             componentFactory = componentFactory
                         )
                     )

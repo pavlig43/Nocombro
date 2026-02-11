@@ -13,16 +13,16 @@ import kotlinx.coroutines.flow.update
 import kotlinx.serialization.Serializable
 import org.koin.core.scope.Scope
 import ru.pavlig43.core.MainTabComponent
-import ru.pavlig43.core.component.EssentialComponentFactory
 import ru.pavlig43.core.tabs.TabOpener
 import ru.pavlig43.corekoin.ComponentKoinContext
 import ru.pavlig43.database.data.product.Product
+import ru.pavlig43.mutable.api.singleLine.component.SingleLineComponentFactory
 import ru.pavlig43.product.api.ProductFormDependencies
-import ru.pavlig43.product.internal.component.CreateProductComponent
-import ru.pavlig43.product.internal.component.tabs.ProductFormTabsComponent
-import ru.pavlig43.product.internal.data.ProductEssentialsUi
-import ru.pavlig43.product.internal.data.toUi
+import ru.pavlig43.product.internal.create.component.CreateProductSingleLineComponent
 import ru.pavlig43.product.internal.di.createProductFormModule
+import ru.pavlig43.product.internal.model.ProductEssentialsUi
+import ru.pavlig43.product.internal.model.toUi
+import ru.pavlig43.product.internal.update.ProductFormTabsComponent
 
 class ProductFormComponent(
     productId: Int,
@@ -44,12 +44,15 @@ class ProductFormComponent(
 
     private val stackNavigation = StackNavigation<Config>()
 
-
-    private val essentialsFactory = EssentialComponentFactory<Product, ProductEssentialsUi>(
+    private val essentialsComponentFactory = SingleLineComponentFactory<Product, ProductEssentialsUi>(
         initItem = ProductEssentialsUi(),
-        isValidFieldsFactory = {displayName.isNotBlank() && productType != null},
-        mapperToUi = {toUi()},
-        produceInfoForTabName = { p-> onChangeValueForMainTab("Продукт ${p.displayName}")}
+        errorFactory = { item ->
+            buildList {
+                if (item.displayName.isBlank()) add("Название продукта обязательно")
+                if (item.productType == null) add("Тип продукта обязателен")
+            }
+        },
+        mapperToUi = { toUi() }
     )
 
 
@@ -59,11 +62,12 @@ class ProductFormComponent(
     ): Child {
         return when (config) {
             is Config.Create -> Child.Create(
-                CreateProductComponent(
+                CreateProductSingleLineComponent(
                     componentContext = componentContext,
-                    onSuccessCreate = {stackNavigation.replaceAll(Config.Update(it))},
-                    createRepository = scope.get(),
-                    componentFactory = essentialsFactory
+                    onSuccessCreate = { stackNavigation.replaceAll(Config.Update(it)) },
+                    observeOnItem = { product -> onChangeValueForMainTab(product) },
+                    componentFactory = essentialsComponentFactory,
+                    createProductRepository = scope.get()
                 )
 
             )
@@ -71,19 +75,24 @@ class ProductFormComponent(
             is Config.Update -> Child.Update(
                 ProductFormTabsComponent(
                     componentContext = componentContext,
-                    scope = scope,
-                    productId = config.id,
+                    componentFactory = essentialsComponentFactory,
                     closeFormScreen = closeTab,
                     tabOpener = tabOpener,
-                    componentFactory = essentialsFactory,
+                    scope = scope,
+                    productId = config.id,
+                    observeOnProduct = ::onChangeValueForMainTab
                 )
             )
         }
     }
 
 
-    private fun onChangeValueForMainTab(title: String) {
-
+    private fun onChangeValueForMainTab(product: ProductEssentialsUi) {
+        val title = if (product.id == 0) {
+            "* ${product.displayName}"
+        } else {
+            " ${product.displayName}"
+        }
         val navTabState = MainTabComponent.NavTabState(title)
         _model.update { navTabState }
     }
@@ -107,7 +116,7 @@ class ProductFormComponent(
     }
 
     internal sealed class Child {
-        class Create(val component: CreateProductComponent) : Child()
+        class Create(val component: CreateProductSingleLineComponent) : Child()
         class Update(val component: ProductFormTabsComponent) : Child()
     }
 }

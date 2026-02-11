@@ -10,18 +10,23 @@ import androidx.compose.ui.unit.dp
 import ua.wwind.table.EditableColumnBuilder
 import ua.wwind.table.EditableTableColumnsBuilder
 import ua.wwind.table.component.TableCellTextField
+import ua.wwind.table.filter.data.TableFilterType
 
 fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.writeTextColumn(
     headerText: String,
     column: C,
     valueOf: (T) -> String,
     onChangeItem: (T, String) -> Unit,
+    filterType: TableFilterType.TextTableFilter? = null,
     singleLine: Boolean = true,
     alignment: Alignment = Alignment.Center
 ) {
     column(column, valueOf = valueOf) {
         header(headerText)
         align(alignment)
+        filterType?.let {
+            filter(it)
+        }
         writeTextCell(
             valueOf = valueOf,
             singleLine = singleLine,
@@ -34,11 +39,15 @@ fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.readTextColumn(
     headerText: String,
     column: C,
     valueOf: (T) -> String,
+    filterType: TableFilterType<*>? = null,
     alignment: Alignment = Alignment.Center
 ) {
     column(column, valueOf = valueOf) {
         header(headerText)
         align(alignment)
+        filterType?.let {
+            filter(it)
+        }
         readTextCell(valueOf = valueOf)
     }
 }

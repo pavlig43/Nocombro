@@ -29,6 +29,7 @@ import ru.pavlig43.theme.arrow_downward
 import ru.pavlig43.theme.lock
 import ua.wwind.table.EditableColumnBuilder
 import ua.wwind.table.EditableTableColumnsBuilder
+import ua.wwind.table.filter.data.TableFilterType
 
 fun <T : Any, C, E, Type : ItemType> EditableTableColumnsBuilder<T, C, E>.writeItemTypeColumn(
     headerText: String,
@@ -36,11 +37,15 @@ fun <T : Any, C, E, Type : ItemType> EditableTableColumnsBuilder<T, C, E>.writeI
     valueOf: (T) -> Type?,
     options: List<Type>,
     onTypeSelected: (T, Type) -> Unit,
+    filterType: TableFilterType<*>? = null,
     alignment: Alignment = Alignment.Center
 ) {
     column(column, valueOf = valueOf) {
         header(headerText)
         align(alignment)
+        filterType?.let {
+            filter(it)
+        }
         writeItemTypeCell(
             valueOf = valueOf,
             options = options,
@@ -53,11 +58,15 @@ fun <T : Any, C, E, Type : ItemType> EditableTableColumnsBuilder<T, C, E>.readIt
     headerText: String,
     column: C,
     valueOf: (T) -> Type?,
+    filterType: TableFilterType<*>? = null,
     alignment: Alignment = Alignment.Center
 ) {
     column(column, valueOf = valueOf) {
         header(headerText)
         align(alignment)
+        filterType?.let {
+            filter(it)
+        }
         readItemTypeCell(valueOf = valueOf)
     }
 }

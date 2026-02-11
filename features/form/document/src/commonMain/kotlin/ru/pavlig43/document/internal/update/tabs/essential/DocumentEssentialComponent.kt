@@ -24,11 +24,13 @@ internal class DocumentUpdateSingleLineComponent(
     documentId: Int,
     updateRepository: UpdateSingleLineRepository<Document>,
     componentFactory: SingleLineComponentFactory<Document, DocumentEssentialsUi>,
+    observeOnItem: (DocumentEssentialsUi) -> Unit,
 ) : UpdateSingleLineComponent<Document, DocumentEssentialsUi, DocumentField>(
     componentContext = componentContext,
     id = documentId,
     updateSingleLineRepository = updateRepository,
     componentFactory = componentFactory,
+    observeOnItem = observeOnItem,
     mapperToDTO = { toDto() }
 ) {
     private val dialogNavigation = SlotNavigation<UpdateDatePickerDialogConfig>()
@@ -69,6 +71,7 @@ internal class DocumentUpdateSingleLineComponent(
             }
         )
     }
+
     override val errorMessages: Flow<List<String>> = errorTableMessages
 
     /**

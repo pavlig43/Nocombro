@@ -20,15 +20,13 @@ data class SingleLineComponentFactory<I : SingleItem, T : ISingleLineTableUi>(
     val initItem: T,
     val errorFactory: (T) -> List<String>,
     val mapperToUi: I.() -> T,
-    val produceInfoForTabName: (T) -> Unit,
 )
 
 abstract class SingleLineComponent<I : SingleItem, UI : ISingleLineTableUi, C>(
     componentContext: ComponentContext,
     private val componentFactory: SingleLineComponentFactory<I, UI>,
     getInitData: (suspend () -> Result<I>)?,
-    private val observeOnEssentials: (UI) -> Unit = {},
-    onSuccessInitData: (UI) -> Unit = {}
+    private val observeOnItem: (UI) -> Unit = {}
 ) : ComponentContext by componentContext {
     protected val coroutineScope = componentCoroutineScope()
 
@@ -42,21 +40,19 @@ abstract class SingleLineComponent<I : SingleItem, UI : ISingleLineTableUi, C>(
         getInitData = {
             getInitData?.invoke()?.map { item ->
                 componentFactory.mapperToUi(item)
-                    .also { componentFactory.produceInfoForTabName(it) }
             } ?: Result.success(componentFactory.initItem)
 
         },
         onSuccessGetInitData = { item ->
-            onSuccessInitData(item)
+            observeOnItem(item)
             _itemFields.update { listOf(item) }
         }
     )
 
 
     fun onChangeItem(item: UI) {
-        componentFactory.produceInfoForTabName(item)
         _itemFields.update { listOf(item) }
-        observeOnEssentials(item)
+        observeOnItem(item)
 
     }
 

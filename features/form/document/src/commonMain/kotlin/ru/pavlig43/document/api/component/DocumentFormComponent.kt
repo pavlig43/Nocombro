@@ -52,12 +52,11 @@ class DocumentFormComponent(
                 if (item.type == null) add("Тип документа обязателен")
             }
         },
-        mapperToUi = {toUi()},
-        produceInfoForTabName = { d -> onChangeValueForMainTab("*Документ ${d.displayName}") }
+        mapperToUi = {toUi()}
     )
 
-    private fun onChangeValueForMainTab(title: String) {
-
+    private fun onChangeValueForMainTab(document: DocumentEssentialsUi) {
+        val title = "*Документ ${document.displayName}"
         val navTabState = MainTabComponent.NavTabState(title)
         _model.update { navTabState }
     }
@@ -71,7 +70,8 @@ class DocumentFormComponent(
                     componentContext = componentContext,
                     onSuccessCreate = { stackNavigation.replaceAll(Config.Update(it)) },
                     componentFactory = essentialsComponentFactory,
-                    createDocumentRepository = scope.get()
+                    createDocumentRepository = scope.get(),
+                    observeOnItem = {document -> onChangeValueForMainTab(document)}
                 )
 
             )
@@ -82,7 +82,8 @@ class DocumentFormComponent(
                     scope = scope,
                     documentId = config.id,
                     closeFormScreen = closeTab,
-                    componentFactory = essentialsComponentFactory
+                    componentFactory = essentialsComponentFactory,
+                    observeOnDocument = ::onChangeValueForMainTab
                 )
             )
         }
