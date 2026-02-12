@@ -18,7 +18,7 @@ internal object DeclarationFilterMatcher: FilterMatcher<DeclarationTableUi, Decl
                 DeclarationField.NAME -> matchesTextField(item.displayName, stateAny)
                 DeclarationField.VENDOR_NAME -> matchesTextField(item.vendorName, stateAny)
                 DeclarationField.BEST_BEFORE -> matchesDateField(item.bestBefore, stateAny)
-                DeclarationField.CREATED_AT -> matchesDateField(item.createdAt, stateAny)
+                DeclarationField.IS_ACTUAL -> matchesBooleanField(item.isActual,stateAny)
             }
         return matches
             }

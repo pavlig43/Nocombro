@@ -17,7 +17,6 @@ internal object DeclarationSorter: SortMatcher<DeclarationTableUi, DeclarationFi
             when (sort.column) {
                 DeclarationField.ID -> items.sortedBy { it.composeId }
                 DeclarationField.NAME -> items.sortedBy { it.displayName.lowercase() }
-                DeclarationField.CREATED_AT -> items.sortedBy { it.createdAt }
 
                 DeclarationField.VENDOR_NAME -> items.sortedBy { it.vendorName.lowercase() }
                 DeclarationField.BEST_BEFORE -> items.sortedBy { it.bestBefore }

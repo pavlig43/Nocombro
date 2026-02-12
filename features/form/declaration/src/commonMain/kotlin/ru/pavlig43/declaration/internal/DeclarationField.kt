@@ -7,5 +7,4 @@ internal enum class DeclarationField {
     BORN_DATE,
     BEST_BEFORE,
     IS_OBSERVE,
-    CREATED_AT,
 }

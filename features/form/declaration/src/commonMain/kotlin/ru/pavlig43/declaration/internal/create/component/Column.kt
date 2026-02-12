@@ -4,7 +4,6 @@ package ru.pavlig43.declaration.internal.create.component
 import kotlinx.collections.immutable.ImmutableList
 import ru.pavlig43.declaration.internal.DeclarationField
 import ru.pavlig43.declaration.internal.model.DeclarationEssentialsUi
-import ru.pavlig43.mutable.api.column.readDateColumn
 import ru.pavlig43.mutable.api.column.textWithSearchIconColumn
 import ru.pavlig43.mutable.api.column.writeCheckBoxColumn
 import ru.pavlig43.mutable.api.column.writeDateColumn
@@ -39,14 +38,14 @@ internal fun createDeclarationColumns0(
                 headerText = "Создана",
                 column = DeclarationField.BORN_DATE,
                 valueOf = { it.bornDate },
-                onOpenDateDialog = onOpenBornDateDialog,
+                onOpenDateDialog = {onOpenBornDateDialog()},
             )
 
             writeDateColumn(
                 headerText = "Истекает",
                 column = DeclarationField.BEST_BEFORE,
                 valueOf = { it.bestBefore },
-                onOpenDateDialog = onOpenBestBeforeDialog,
+                onOpenDateDialog = {onOpenBestBeforeDialog()},
             )
 
             writeCheckBoxColumn(
@@ -56,11 +55,7 @@ internal fun createDeclarationColumns0(
                 onChangeChecked = { item, checked -> onChangeItem(item.copy(isObserveFromNotification = checked)) },
             )
 
-            readDateColumn(
-                headerText = "Дата создания",
-                column = DeclarationField.CREATED_AT,
-                valueOf = { it.createdAt },
-            )
+
         }
     return columns
 }
