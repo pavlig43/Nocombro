@@ -7,7 +7,8 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.datetime.format
 import ru.pavlig43.core.dateFormat
 import ru.pavlig43.immutable.internal.component.ImmutableTableUiEvent
-import ru.pavlig43.immutable.internal.ui.idWithSelection
+import ru.pavlig43.immutable.internal.column.idWithSelection
+import ru.pavlig43.immutable.internal.column.readIsActualColumn
 import ru.pavlig43.tablecore.model.TableData
 import ua.wwind.table.ColumnSpec
 import ua.wwind.table.filter.data.TableFilterType
@@ -21,7 +22,7 @@ internal enum class DeclarationField {
     NAME,
     VENDOR_NAME,
     BEST_BEFORE,
-    CREATED_AT
+    IS_ACTUAL
 }
 
 @Suppress("LongMethod")
@@ -52,28 +53,24 @@ internal fun createDeclarationColumn(
                 sortable()
             }
 
-            column(DeclarationField.CREATED_AT, valueOf = { it.createdAt }) {
-                header("Создан")
-                align(Alignment.Center)
-                filter(TableFilterType.DateTableFilter())
-                cell { declaration, _ ->
-                    Text(
-                        declaration.createdAt.format(dateFormat)
-                    )
-                }
-                sortable()
-            }
+
             column(DeclarationField.BEST_BEFORE, valueOf = { it.bestBefore }) {
                 header("Годна до")
                 align(Alignment.Center)
                 filter(TableFilterType.DateTableFilter())
                 cell { declaration, _ ->
                     Text(
-                        declaration.createdAt.format(dateFormat)
+                        declaration.bestBefore.format(dateFormat)
                     )
                 }
                 sortable()
             }
+            readIsActualColumn(
+                headerText = "Актуальность",
+                column = DeclarationField.IS_ACTUAL,
+                valueOf = {it.isActual}
+            )
+
         }
     return columns
 

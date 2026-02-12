@@ -6,7 +6,7 @@ import androidx.compose.runtime.Immutable
  * Класс для библиотеки, работающей с таблицами
  */
 @Immutable
-data class TableData<I: ITableUi>(
+data class TableData<I: IMultiLineTableUi>(
 
     val displayedItems: List<I> = emptyList(),
     /** IDs of selected  */

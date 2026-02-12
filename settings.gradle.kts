@@ -63,7 +63,7 @@ include(
 )
 
 include(
-    ":features:manageitem:upsert",
+    ":features:manageitem:update",
     ":features:manageitem:loadinitdata",
 )
 include(

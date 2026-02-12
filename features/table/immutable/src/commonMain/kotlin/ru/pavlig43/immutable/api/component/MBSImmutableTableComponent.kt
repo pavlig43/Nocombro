@@ -3,11 +3,11 @@ package ru.pavlig43.immutable.api.component
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
 import ru.pavlig43.immutable.api.ImmutableTableDependencies
-import ru.pavlig43.tablecore.model.ITableUi
+import ru.pavlig43.tablecore.model.IMultiLineTableUi
 
 
 @Suppress("UNCHECKED_CAST")
-class MBSImmutableTableComponent<I: ITableUi>(
+class MBSImmutableTableComponent<I: IMultiLineTableUi>(
     componentContext: ComponentContext,
     immutableTableBuilderData: ImmutableTableBuilderData<I>,
     onItemClick: (I) -> Unit,
@@ -21,7 +21,7 @@ class MBSImmutableTableComponent<I: ITableUi>(
         dependencies = dependencies,
         immutableTableBuilderData = immutableTableBuilderData,
         onCreate = onCreate,
-        onItemClick = { ui: ITableUi -> onItemClick(ui as I) },
+        onItemClick = { ui: IMultiLineTableUi -> onItemClick(ui as I) },
     )
 
 

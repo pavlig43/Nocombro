@@ -42,9 +42,9 @@ import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.NotificationCo
 import ru.pavlig43.rootnocombro.internal.navigation.drawer.component.DrawerComponent
 import ru.pavlig43.rootnocombro.internal.navigation.drawer.component.DrawerDestination
 import ru.pavlig43.sampletable.api.component.SampleTableComponentMain
-import ru.pavlig43.tablecore.model.ITableUi
+import ru.pavlig43.tablecore.model.IMultiLineTableUi
 import ru.pavlig43.transaction.api.component.TransactionFormComponent
-import ru.pavlig43.vendor.component.VendorFormComponent
+import ru.pavlig43.vendor.api.component.VendorFormComponent
 
 internal class MainTabNavigationComponent(
     componentContext: ComponentContext,
@@ -149,7 +149,7 @@ internal class MainTabNavigationComponent(
         context: ComponentContext
     ): ImmutableTableChild {
 
-        val immutableTableBuilderData: ImmutableTableBuilderData<out ITableUi> = when (tabConfig) {
+        val immutableTableBuilderData: ImmutableTableBuilderData<out IMultiLineTableUi> = when (tabConfig) {
             is DeclarationListConfig -> DeclarationImmutableTableBuilder(withCheckbox = true)
             is DocumentListConfig -> DocumentImmutableTableBuilder(
                 fullListDocumentTypes = DocumentType.entries,

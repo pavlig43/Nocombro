@@ -1,10 +1,19 @@
 name: Claude Code
 
 on:
-  pull_request:
-    types: [opened, synchronize, reopened]
+  # Ручной запуск из GitHub UI
+  workflow_dispatch:
+    inputs:
+      task:
+        description: 'Задача для Claude (опционально)'
+        required: false
+        type: string
+
+  # Запуск только при упоминании @claude в комментариях PR
   issue_comment:
     types: [created]
+  pull_request:
+    types: [opened, synchronize, reopened]
 
 permissions:
   contents: write
@@ -14,6 +23,11 @@ permissions:
 
 jobs:
   claude:
+    # Проверяем есть ли упоминание @claude
+    if: |
+      (github.event_name == 'workflow_dispatch') ||
+      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
+      (github.event_name == 'pull_request' && contains(github.event.pull_request.body, '@claude'))
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -21,7 +35,22 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Run Claude Code with GLM
+      - name: Extract task from comment/PR
+        id: extract_task
+        run: |
+          if [ "${{ github.event_name }}" = "issue_comment" ]; then
+            echo "task<<EOF" >> $GITHUB_OUTPUT
+            echo "${{ github.event.comment.body }}" | sed 's/@claude//' >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "task<<EOF" >> $GITHUB_OUTPUT
+            echo "${{ github.event.pull_request.body }}" | sed 's/@claude//' >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          else
+            echo "task=${{ github.event.inputs.task }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run Claude Code
         id: claude
         uses: anthropics/claude-code-action@v1
         env:
@@ -38,12 +67,16 @@ jobs:
             - SQLDelight/Room for database
             - Feature-based modular architecture
 
+            IMPORTANT: Follow all rules from .claude/rules/ directory!
+
+            Current task:
+            ${{ steps.extract_task.outputs.task }}
+
             Your tasks:
-            1. When reviewing PR: Analyze code quality, bugs, performance, security. Use Russian for comments.
-            2. When asked in issues/PRs: Implement requested features, fixes, refactoring. Create PR with changes.
-            3. Auto-fix issues: If you find bugs, create PR with fixes.
-            4. Follow Kotlin conventions, Compose best practices, and project architecture.
+            1. Analyze the request and implement what's needed
+            2. If reviewing code: check for bugs, security, performance, architecture violations
+            3. If implementing feature: create PR with your changes
+            4. Follow Kotlin conventions, Compose best practices
+            5. Use Russian for all comments and messages
 
-            Be proactive: don't just suggest, ACT. Create pull requests with your implementations.
-
-            Language: Use Russian for all comments and messages.
+            Be proactive: create PRs with implementations, don't just suggest.

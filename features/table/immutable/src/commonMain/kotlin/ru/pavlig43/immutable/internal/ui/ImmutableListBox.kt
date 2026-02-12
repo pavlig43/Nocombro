@@ -18,7 +18,7 @@ import ru.pavlig43.immutable.internal.component.ImmutableTableComponent
 import ru.pavlig43.immutable.internal.component.ImmutableTableUiEvent
 import ru.pavlig43.immutable.internal.component.ItemListState
 import ru.pavlig43.tablecore.manger.SelectionUiEvent
-import ru.pavlig43.tablecore.model.ITableUi
+import ru.pavlig43.tablecore.model.IMultiLineTableUi
 import ru.pavlig43.tablecore.model.TableData
 import ru.pavlig43.tablecore.ui.TableBox
 import ua.wwind.table.ColumnSpec
@@ -30,7 +30,7 @@ import ua.wwind.table.strings.StringProvider
 
 @OptIn(ExperimentalTableApi::class)
 @Composable
-internal fun <I : ITableUi, C> ImmutableTableBox(
+internal fun <I : IMultiLineTableUi, C> ImmutableTableBox(
     component: ImmutableTableComponent<*, I, C>,
     modifier: Modifier = Modifier
 ) {
@@ -74,7 +74,7 @@ internal fun <I : ITableUi, C> ImmutableTableBox(
 @Suppress("LongParameterList", "LongMethod")
 @OptIn(ExperimentalTableApi::class)
 @Composable
-private fun <I : ITableUi, C, E : TableData<I>> BoxScope.ImmutableTable(
+private fun <I : IMultiLineTableUi, C, E : TableData<I>> BoxScope.ImmutableTable(
     columns: ImmutableList<ColumnSpec<I, C, E>>,
     tableState: TableState<C>,
     stringProvider: StringProvider,

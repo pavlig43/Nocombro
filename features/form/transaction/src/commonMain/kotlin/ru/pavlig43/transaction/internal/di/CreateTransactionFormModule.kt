@@ -3,17 +3,17 @@ package ru.pavlig43.transaction.internal.di
 import org.koin.core.qualifier.qualifier
 import org.koin.dsl.module
 import ru.pavlig43.core.TransactionExecutor
-import ru.pavlig43.create.data.CreateEssentialsRepository
 import ru.pavlig43.database.NocombroDatabase
-import ru.pavlig43.database.data.transaction.Transact
-import ru.pavlig43.database.data.transaction.buy.BuyBDOut
+import ru.pavlig43.database.data.transaction.Transaction
+import ru.pavlig43.database.data.transaction.buy.BuyBD
 import ru.pavlig43.database.data.transaction.expense.ExpenseBD
 import ru.pavlig43.database.data.transaction.reminder.ReminderBD
 import ru.pavlig43.files.api.FilesDependencies
 import ru.pavlig43.immutable.api.ImmutableTableDependencies
+import ru.pavlig43.mutable.api.singleLine.data.CreateSingleItemRepository
+import ru.pavlig43.mutable.api.singleLine.data.UpdateCollectionRepository
+import ru.pavlig43.mutable.api.singleLine.data.UpdateSingleLineRepository
 import ru.pavlig43.transaction.api.TransactionFormDependencies
-import ru.pavlig43.update.data.UpdateCollectionRepository
-import ru.pavlig43.update.data.UpdateEssentialsRepository
 
 internal fun createTransactionFormModule(dependencies: TransactionFormDependencies) = listOf(
     module {
@@ -21,10 +21,10 @@ internal fun createTransactionFormModule(dependencies: TransactionFormDependenci
         single<TransactionExecutor> { dependencies.dbTransaction }
         single<FilesDependencies> { dependencies.filesDependencies }
         single<ImmutableTableDependencies> { dependencies.immutableTableDependencies }
-        single<CreateEssentialsRepository<Transact>> { getCreateRepository(get()) }
-        single<UpdateEssentialsRepository<Transact>> { getUpdateRepository(get()) }
-        single<UpdateCollectionRepository<BuyBDOut, BuyBDOut>>(UpdateCollectionRepositoryType.BUY.qualifier) {
-            createUpdateBuyRepository(get())
+        single<CreateSingleItemRepository<Transaction>> { getCreateRepository(get()) }
+        single<UpdateSingleLineRepository<Transaction>> { getUpdateRepository(get()) }
+        single<UpdateCollectionRepository<BuyBD, BuyBD>>(UpdateCollectionRepositoryType.BUY.qualifier) {
+            createUpdateBuyRepository()
         }
         single<UpdateCollectionRepository<ReminderBD, ReminderBD>>(UpdateCollectionRepositoryType.REMINDERS.qualifier) {
             createUpdateRemindersRepository(get())
@@ -41,9 +41,9 @@ internal fun createTransactionFormModule(dependencies: TransactionFormDependenci
 
 private fun getCreateRepository(
     db: NocombroDatabase
-): CreateEssentialsRepository<Transact> {
+): CreateSingleItemRepository<Transaction> {
     val dao = db.transactionDao
-    return CreateEssentialsRepository(
+    return CreateSingleItemRepository(
         create = dao::create,
         isCanSave = dao::isCanSave
     )
@@ -51,9 +51,9 @@ private fun getCreateRepository(
 
 private fun getUpdateRepository(
     db: NocombroDatabase
-): UpdateEssentialsRepository<Transact> {
+): UpdateSingleLineRepository<Transaction> {
     val dao = db.transactionDao
-    return UpdateEssentialsRepository(
+    return UpdateSingleLineRepository(
         isCanSave = dao::isCanSave,
         loadItem = dao::getTransaction,
         updateItem = dao::updateTransaction
@@ -69,10 +69,8 @@ internal enum class UpdateCollectionRepositoryType {
 }
 
 private fun createUpdateBuyRepository(
-    db: NocombroDatabase
-): UpdateCollectionRepository<BuyBDOut, BuyBDOut> {
-    val buyDao = db.buyDao
-//    val batchDao = db.ba
+//    db: NocombroDatabase
+): UpdateCollectionRepository<BuyBD, BuyBD> {
     return UpdateCollectionRepository(
         loadCollection = { emptyList() },
         deleteCollection = {},

@@ -26,14 +26,14 @@ import ru.pavlig43.immutable.internal.component.items.vendor.VendorTableComponen
 import ru.pavlig43.immutable.internal.data.ImmutableListRepository
 import ru.pavlig43.immutable.internal.di.ImmutableTableRepositoryType
 import ru.pavlig43.immutable.internal.di.moduleFactory
-import ru.pavlig43.tablecore.model.ITableUi
+import ru.pavlig43.tablecore.model.IMultiLineTableUi
 
 class ImmutableTableComponentFactoryMain(
     componentContext: ComponentContext,
     dependencies: ImmutableTableDependencies,
-    private val immutableTableBuilderData: ImmutableTableBuilderData<out ITableUi>,
+    private val immutableTableBuilderData: ImmutableTableBuilderData<out IMultiLineTableUi>,
     private val onCreate: () -> Unit,
-    private val onItemClick: (ITableUi) -> Unit,
+    private val onItemClick: (IMultiLineTableUi) -> Unit,
 ) : ComponentContext by componentContext, MainTabComponent {
     private val koinComponent = instanceKeeper.getOrCreate { ComponentKoinContext() }
     private val scope = koinComponent.getOrCreateKoinScope(
@@ -44,10 +44,10 @@ class ImmutableTableComponentFactoryMain(
     private val _model = MutableStateFlow(MainTabComponent.NavTabState(immutableTableBuilderData.tabTitle))
     override val model: StateFlow<MainTabComponent.NavTabState> = _model.asStateFlow()
 
-    internal val tableComponent = build<ITableUi>(context = childContext("table"))
+    internal val tableComponent = build<IMultiLineTableUi>(context = childContext("table"))
 
     @Suppress("UNCHECKED_CAST")
-    private fun <I : ITableUi> build(
+    private fun <I : IMultiLineTableUi> build(
         context: ComponentContext,
     ): ImmutableTableComponent<*, I, *> {
         return when (immutableTableBuilderData) {

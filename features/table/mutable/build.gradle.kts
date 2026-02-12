@@ -10,7 +10,7 @@ kotlin {
     commonMainDependencies {
         implementation(projects.database)
         implementation(projects.features.manageitem.loadinitdata)
-        implementation(projects.features.manageitem.upsert)
+        implementation(projects.features.manageitem.update)
         api(projects.features.table.core)
 
     }

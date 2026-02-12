@@ -4,7 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import kotlinx.datetime.LocalDateTime
-import ru.pavlig43.core.model.GenericItem
+import ru.pavlig43.core.model.SingleItem
 
 internal const val TRANSACTION_TABLE_NAME = "transact"
 @Entity(
@@ -27,5 +27,5 @@ data class Transact(
     @PrimaryKey(autoGenerate = true)
     override val id: Int = 0,
 
-    ):GenericItem
+    ):SingleItem
 

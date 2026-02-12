@@ -8,7 +8,7 @@ import ru.pavlig43.notification.api.component.NotificationComponent
 import ru.pavlig43.product.api.component.ProductFormComponent
 import ru.pavlig43.sampletable.api.component.SampleTableComponent
 import ru.pavlig43.transaction.api.component.TransactionFormComponent
-import ru.pavlig43.vendor.component.VendorFormComponent
+import ru.pavlig43.vendor.api.component.VendorFormComponent
 
 internal sealed interface MainTabChild {
     val component: MainTabComponent

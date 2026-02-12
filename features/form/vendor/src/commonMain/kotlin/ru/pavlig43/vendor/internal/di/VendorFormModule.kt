@@ -2,11 +2,11 @@ package ru.pavlig43.vendor.internal.di
 
 import org.koin.dsl.module
 import ru.pavlig43.core.TransactionExecutor
-import ru.pavlig43.create.data.CreateEssentialsRepository
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.vendor.Vendor
 import ru.pavlig43.files.api.FilesDependencies
-import ru.pavlig43.update.data.UpdateEssentialsRepository
+import ru.pavlig43.mutable.api.singleLine.data.CreateSingleItemRepository
+import ru.pavlig43.mutable.api.singleLine.data.UpdateSingleLineRepository
 import ru.pavlig43.vendor.api.VendorFormDependencies
 
 internal fun createVendorFormModule(dependencies: VendorFormDependencies) = listOf(
@@ -14,17 +14,17 @@ internal fun createVendorFormModule(dependencies: VendorFormDependencies) = list
         single<NocombroDatabase> { dependencies.db }
         single<TransactionExecutor> { dependencies.transaction }
         single<FilesDependencies> {dependencies.filesDependencies  }
-        single<CreateEssentialsRepository<Vendor>> { getCreateRepository(get()) }
-        single<UpdateEssentialsRepository<Vendor>> { getUpdateRepository(get()) }
+        single<CreateSingleItemRepository<Vendor>> { getCreateRepository(get()) }
+        single<UpdateSingleLineRepository<Vendor>> { getUpdateRepository(get()) }
 
     }
 )
 
 private fun getCreateRepository(
     db: NocombroDatabase
-): CreateEssentialsRepository<Vendor> {
+): CreateSingleItemRepository<Vendor> {
     val dao = db.vendorDao
-    return CreateEssentialsRepository(
+    return CreateSingleItemRepository(
         create = dao::create,
         isCanSave = dao::isCanSave
     )
@@ -32,9 +32,9 @@ private fun getCreateRepository(
 
 private fun getUpdateRepository(
     db: NocombroDatabase
-): UpdateEssentialsRepository<Vendor> {
+): UpdateSingleLineRepository<Vendor> {
     val dao = db.vendorDao
-    return UpdateEssentialsRepository(
+    return UpdateSingleLineRepository(
         isCanSave = dao::isCanSave,
         loadItem = dao::getVendor,
         updateItem = dao::updateVendor

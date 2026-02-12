@@ -7,7 +7,7 @@ import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import kotlinx.datetime.LocalDate
 import ru.pavlig43.core.getCurrentLocalDate
-import ru.pavlig43.core.model.GenericItem
+import ru.pavlig43.core.model.SingleItem
 import ru.pavlig43.database.data.vendor.Vendor
 
 const val DECLARATIONS_TABLE_NAME = "declaration"
@@ -50,7 +50,7 @@ data class Declaration(
     @PrimaryKey(autoGenerate = true)
     override val id: Int = 0,
 
-    ) : GenericItem {
+    ) : SingleItem {
     @Ignore
     val isActual = bestBefore > getCurrentLocalDate()
 }

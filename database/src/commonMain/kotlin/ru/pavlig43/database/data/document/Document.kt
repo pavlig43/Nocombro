@@ -4,7 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import kotlinx.datetime.LocalDate
-import ru.pavlig43.core.model.GenericItem
+import ru.pavlig43.core.model.SingleItem
 
 
 const val DOCUMENT_TABLE_NAME = "document"
@@ -24,7 +24,7 @@ data class Document(
     @PrimaryKey(autoGenerate = true)
     override val id: Int = 0,
 
-    ) : GenericItem
+    ) : SingleItem
 
 
 

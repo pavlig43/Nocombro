@@ -3,7 +3,6 @@ package ru.pavlig43.product.internal.di
 import org.koin.core.qualifier.qualifier
 import org.koin.dsl.module
 import ru.pavlig43.core.TransactionExecutor
-import ru.pavlig43.create.data.CreateEssentialsRepository
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.product.CompositionIn
 import ru.pavlig43.database.data.product.CompositionOut
@@ -12,9 +11,10 @@ import ru.pavlig43.database.data.product.ProductDeclarationIn
 import ru.pavlig43.database.data.product.ProductDeclarationOut
 import ru.pavlig43.files.api.FilesDependencies
 import ru.pavlig43.immutable.api.ImmutableTableDependencies
+import ru.pavlig43.mutable.api.singleLine.data.CreateSingleItemRepository
+import ru.pavlig43.mutable.api.singleLine.data.UpdateCollectionRepository
+import ru.pavlig43.mutable.api.singleLine.data.UpdateSingleLineRepository
 import ru.pavlig43.product.api.ProductFormDependencies
-import ru.pavlig43.update.data.UpdateCollectionRepository
-import ru.pavlig43.update.data.UpdateEssentialsRepository
 
 internal fun createProductFormModule(dependencies: ProductFormDependencies) = listOf(
     module {
@@ -22,8 +22,8 @@ internal fun createProductFormModule(dependencies: ProductFormDependencies) = li
         single<TransactionExecutor> { dependencies.transaction }
         single<FilesDependencies> {dependencies.filesDependencies  }
         single<ImmutableTableDependencies> { dependencies.immutableTableDependencies }
-        single<CreateEssentialsRepository<Product>> { getCreateRepository(get()) }
-        single<UpdateEssentialsRepository<Product>> { getUpdateRepository(get()) }
+        single<CreateSingleItemRepository<Product>> { getCreateRepository(get()) }
+        single<UpdateSingleLineRepository<Product>> { getUpdateRepository(get()) }
 
 
         single<UpdateCollectionRepository<ProductDeclarationOut, ProductDeclarationIn>>(
@@ -43,9 +43,9 @@ internal fun createProductFormModule(dependencies: ProductFormDependencies) = li
 
 private fun getCreateRepository(
     db: NocombroDatabase
-): CreateEssentialsRepository<Product> {
+): CreateSingleItemRepository<Product> {
     val dao = db.productDao
-    return CreateEssentialsRepository(
+    return CreateSingleItemRepository(
         create = dao::create,
         isCanSave = dao::isCanSave
     )
@@ -53,9 +53,9 @@ private fun getCreateRepository(
 
 private fun getUpdateRepository(
     db: NocombroDatabase
-): UpdateEssentialsRepository<Product> {
+): UpdateSingleLineRepository<Product> {
     val dao = db.productDao
-    return UpdateEssentialsRepository(
+    return UpdateSingleLineRepository(
         isCanSave = dao::isCanSave,
         loadItem = dao::getProduct,
         updateItem = dao::updateProduct
