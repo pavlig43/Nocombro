@@ -7,7 +7,7 @@ import ru.pavlig43.database.data.document.DocumentType
 import ru.pavlig43.database.data.files.OwnerType
 import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.database.data.product.ProductUnit
-import ru.pavlig43.database.data.transact.MovementType
+import ru.pavlig43.database.data.batch.MovementType
 import ru.pavlig43.database.data.transact.TransactionType
 import ru.pavlig43.database.data.transact.expense.ExpenseType
 import kotlin.time.ExperimentalTime

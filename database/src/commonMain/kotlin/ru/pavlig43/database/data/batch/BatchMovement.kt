@@ -1,4 +1,4 @@
-package ru.pavlig43.database.data.transact
+package ru.pavlig43.database.data.batch
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
@@ -7,13 +7,13 @@ import androidx.room.ForeignKey.Companion.CASCADE
 import androidx.room.ForeignKey.Companion.RESTRICT
 import androidx.room.PrimaryKey
 import ru.pavlig43.core.model.CollectionObject
-import ru.pavlig43.database.data.batch.Batch
+import ru.pavlig43.database.data.transact.Transact
 
 @Entity(
     tableName = "batch_movement",
     foreignKeys = [
         ForeignKey(
-            entity = Batch::class,
+            entity = BatchBD::class,
             parentColumns = ["id"],
             childColumns = ["batch_id"],
             onDelete = RESTRICT
@@ -27,7 +27,7 @@ import ru.pavlig43.database.data.batch.Batch
     ]
 )
 data class BatchMovement(
-    @ColumnInfo("batch_id")
+    @ColumnInfo("batch_id", index = true)
     val batchId: Int,
 
     @ColumnInfo("movement_type")
@@ -36,7 +36,7 @@ data class BatchMovement(
     @ColumnInfo("count")
     val count: Int,
 
-    @ColumnInfo("transaction_id")
+    @ColumnInfo("transaction_id", index = true)
     val transactionId: Int,
 
     @PrimaryKey(autoGenerate = true)

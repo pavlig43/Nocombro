@@ -2,6 +2,7 @@ package ru.pavlig43.document.internal.di
 
 import org.koin.dsl.module
 import ru.pavlig43.core.TransactionExecutor
+import ru.pavlig43.core.model.ChangeSet
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.document.Document
 import ru.pavlig43.document.api.DocumentFormDependencies
@@ -28,15 +29,31 @@ private fun getCreateRepository(
         isCanSave = documentDao::isCanSave
     )
 }
+private class DocumentUpdateRepository(
+    private val db: NocombroDatabase
+) : UpdateSingleLineRepository<Document> {
+
+    private val dao = db.documentDao
+
+    override suspend fun getInit(id: Int): Result<Document> {
+        return runCatching {
+            dao.getDocument(id)
+        }
+    }
+
+    override suspend fun update(changeSet: ChangeSet<Document>): Result<Unit> {
+        if (changeSet.old == changeSet.new) return Result.success(Unit)
+        return runCatching {
+            dao.isCanSave(changeSet.new).getOrThrow()
+            dao.updateDocument(changeSet.new)
+        }
+    }
+}
+
 private fun getUpdateRepository(
     db: NocombroDatabase
-): UpdateSingleLineRepository<Document>{
-    val dao = db.documentDao
-    return UpdateSingleLineRepository(
-        isCanSave = dao::isCanSave,
-        loadItem = dao::getDocument,
-        updateItem = dao::updateDocument
-    )
+): UpdateSingleLineRepository<Document> {
+    return DocumentUpdateRepository(db)
 }
 
 

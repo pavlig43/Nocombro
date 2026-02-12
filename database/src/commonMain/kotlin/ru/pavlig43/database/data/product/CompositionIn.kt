@@ -27,7 +27,7 @@ data class CompositionIn(
     val parentId: Int,
 
 
-    @ColumnInfo("product_id")
+    @ColumnInfo("product_id", index = true)
     val productId: Int,
 
     val count: Int,

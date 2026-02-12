@@ -2,6 +2,7 @@ package ru.pavlig43.declaration.internal.di
 
 import org.koin.dsl.module
 import ru.pavlig43.core.TransactionExecutor
+import ru.pavlig43.core.model.ChangeSet
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.declaration.api.DeclarationFormDependencies
@@ -32,14 +33,30 @@ private fun getCreateRepository(
         isCanSave = dao::isCanSave
     )
 }
+private class DeclarationUpdateRepository(
+    private val db: NocombroDatabase
+) : UpdateSingleLineRepository<Declaration> {
+
+    private val dao = db.declarationDao
+
+    override suspend fun getInit(id: Int): Result<Declaration> {
+        return runCatching {
+            dao.getDeclaration(id)
+        }
+    }
+
+    override suspend fun update(changeSet: ChangeSet<Declaration>): Result<Unit> {
+        if (changeSet.old == changeSet.new) return Result.success(Unit)
+        return runCatching {
+            dao.isCanSave(changeSet.new).getOrThrow()
+            dao.updateDeclaration(changeSet.new)
+        }
+    }
+}
+
 private fun getUpdateRepository(
     db: NocombroDatabase
-): UpdateSingleLineRepository<Declaration>{
-    val dao = db.declarationDao
-    return UpdateSingleLineRepository(
-        isCanSave = dao::isCanSave,
-        loadItem = dao::getDeclaration,
-        updateItem = dao::updateDeclaration
-    )
+): UpdateSingleLineRepository<Declaration> {
+    return DeclarationUpdateRepository(db)
 }
 

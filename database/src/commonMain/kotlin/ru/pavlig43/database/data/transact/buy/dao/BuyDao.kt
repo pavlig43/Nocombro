@@ -6,7 +6,6 @@ import androidx.room.Query
 import androidx.room.Relation
 import androidx.room.Transaction
 import androidx.room.Upsert
-import kotlinx.coroutines.flow.Flow
 import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.transact.Transact
@@ -18,18 +17,17 @@ import ru.pavlig43.database.data.transact.buy.BuyBDOut
 abstract class BuyDao {
 
     @Transaction
-    @Query("SELECT * FROM $BUY_TABLE_NAME ORDER BY id DESC")
-    internal abstract suspend fun getAllBuysWithRelations(): List<InternalBuy>
-
-    suspend fun getAllBuysWithDetails(): List<BuyBDOut> {
-        return getAllBuysWithRelations().map(InternalBuy::toBuyBDOut)
-    }
-
     @Query("SELECT * FROM $BUY_TABLE_NAME WHERE transaction_id = :transactionId ORDER BY id DESC")
-    abstract fun observeByTransactionId(transactionId: Int): Flow<List<BuyBDIn>>
+    internal abstract suspend fun getAllBuysWithRelations(transactionId: Int): List<InternalBuy>
+
+    suspend fun getAllBuysWithDetails(transactionId: Int): List<BuyBDOut> {
+        return getAllBuysWithRelations(transactionId).map(InternalBuy::toBuyBDOut)
+    }
+    @Query("SELECT * FROM $BUY_TABLE_NAME WHERE id = :id")
+    abstract suspend fun getById(id: Int): BuyBDIn?
 
     @Upsert
-    abstract suspend fun upsert(buy: BuyBDIn)
+    abstract suspend fun upsertBuyBd(buys: List<BuyBDIn>)
 
     @Query("DELETE FROM $BUY_TABLE_NAME WHERE id IN (:ids)")
     abstract suspend fun deleteByIds(ids: List<Int>)
@@ -60,6 +58,7 @@ internal data class InternalBuy(
 
 private fun InternalBuy.toBuyBDOut(): BuyBDOut {
     return BuyBDOut(
+        transactionId = transaction.id,
         productName = product.displayName,
         dateBorn = buy.dateBorn,
         count = buy.count,

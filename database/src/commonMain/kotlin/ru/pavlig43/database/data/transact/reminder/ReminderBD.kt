@@ -22,7 +22,7 @@ internal const val REMINDER_TABLE_NAME = "reminder"
     ]
 )
 data class ReminderBD(
-    @ColumnInfo("transaction_id")
+    @ColumnInfo("transaction_id", index = true)
     val transactionId: Int,
 
     @ColumnInfo("text")

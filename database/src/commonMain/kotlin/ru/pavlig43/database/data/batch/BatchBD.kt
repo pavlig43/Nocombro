@@ -26,15 +26,15 @@ import ru.pavlig43.database.data.product.Product
 
     ]
 )
-data class Batch(
+data class BatchBD(
     @PrimaryKey
     val id: Int,
-    @ColumnInfo("product_id")
+    @ColumnInfo("product_id", index = true)
     val productId: Int,
 
     @ColumnInfo("date_born")
     val dateBorn: LocalDate,
 
-    @ColumnInfo("declaration_id")
+    @ColumnInfo("declaration_id", index = true)
     val declarationId: Int,
 )

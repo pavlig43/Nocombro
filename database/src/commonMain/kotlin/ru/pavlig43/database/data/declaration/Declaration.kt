@@ -22,7 +22,6 @@ const val DECLARATIONS_TABLE_NAME = "declaration"
             onDelete = ForeignKey.CASCADE
         ),
     ]
-
 )
 data class Declaration(
 
@@ -32,7 +31,7 @@ data class Declaration(
     @ColumnInfo("created_at")
     val createdAt: LocalDate,
 
-    @ColumnInfo("vendor_id")
+    @ColumnInfo("vendor_id", index = true)
     val vendorId: Int,
 
     @ColumnInfo("vendor_name")

@@ -212,5 +212,4 @@ pavlig43-table ={id="pavlig43.table"}
 pavlig43-testing = { id = "pavlig43.testing" }
 
 android-kotlin-multiplatform-library = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 

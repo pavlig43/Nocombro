@@ -2,12 +2,14 @@ package ru.pavlig43.vendor.internal.di
 
 import org.koin.dsl.module
 import ru.pavlig43.core.TransactionExecutor
+import ru.pavlig43.core.model.ChangeSet
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.vendor.Vendor
 import ru.pavlig43.files.api.FilesDependencies
 import ru.pavlig43.mutable.api.singleLine.data.CreateSingleItemRepository
 import ru.pavlig43.mutable.api.singleLine.data.UpdateSingleLineRepository
 import ru.pavlig43.vendor.api.VendorFormDependencies
+import ru.pavlig43.vendor.data.Vendor
 
 internal fun createVendorFormModule(dependencies: VendorFormDependencies) = listOf(
     module {
@@ -30,15 +32,31 @@ private fun getCreateRepository(
     )
 }
 
+private class VendorUpdateRepository(
+    private val db: NocombroDatabase
+) : UpdateSingleLineRepository<Vendor> {
+
+    private val dao = db.vendorDao
+
+    override suspend fun getInit(id: Int): Result<Vendor> {
+        return runCatching {
+            dao.getVendor(id)
+        }
+    }
+
+    override suspend fun update(changeSet: ChangeSet<Vendor>): Result<Unit> {
+        if (changeSet.old == changeSet.new) return Result.success(Unit)
+        return runCatching {
+            dao.isCanSave(changeSet.new).getOrThrow()
+            dao.updateVendor(changeSet.new)
+        }
+    }
+}
+
 private fun getUpdateRepository(
     db: NocombroDatabase
 ): UpdateSingleLineRepository<Vendor> {
-    val dao = db.vendorDao
-    return UpdateSingleLineRepository(
-        isCanSave = dao::isCanSave,
-        loadItem = dao::getVendor,
-        updateItem = dao::updateVendor
-    )
+    return VendorUpdateRepository(db)
 }
 
 

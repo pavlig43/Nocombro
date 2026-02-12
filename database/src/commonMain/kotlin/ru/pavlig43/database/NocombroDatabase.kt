@@ -1,6 +1,5 @@
 package ru.pavlig43.database
 
-import androidx.room.AutoMigration
 import androidx.room.ConstructedBy
 import androidx.room.Database
 import androidx.room.RoomDatabase
@@ -15,7 +14,7 @@ import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 import ru.pavlig43.core.TransactionExecutor
 import ru.pavlig43.core.emptyDate
-import ru.pavlig43.database.data.batch.Batch
+import ru.pavlig43.database.data.batch.BatchBD
 import ru.pavlig43.database.data.common.Converters
 import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.database.data.declaration.dao.DeclarationDao
@@ -30,9 +29,10 @@ import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.database.data.product.dao.CompositionDao
 import ru.pavlig43.database.data.product.dao.ProductDao
 import ru.pavlig43.database.data.product.dao.ProductDeclarationDao
-import ru.pavlig43.database.data.transact.BatchMovement
+import ru.pavlig43.database.data.batch.BatchMovement
+import ru.pavlig43.database.data.batch.dao.BatchDao
+import ru.pavlig43.database.data.batch.dao.BatchMovementDao
 import ru.pavlig43.database.data.transact.Transact
-import ru.pavlig43.database.data.transact.TransactionProductBDIn
 import ru.pavlig43.database.data.transact.dao.TransactionDao
 import ru.pavlig43.database.data.transact.expense.ExpenseBD
 import ru.pavlig43.database.data.transact.expense.dao.ExpenseDao
@@ -58,23 +58,20 @@ import kotlin.time.ExperimentalTime
         CompositionIn::class,
         ProductDeclarationIn::class,
 
-        Batch::class,
+        BatchBD::class,
+
+        BatchMovement::class,
 
         Transact::class,
-        BatchMovement::class,
-        TransactionProductBDIn::class,
+
         BuyBDIn::class,
 
         ReminderBD::class,
 
         ExpenseBD::class,
     ],
-    version = 4,
-    autoMigrations = [
-        AutoMigration(from = 1, to = 2),
-        AutoMigration(from = 2, to = 3),
-        AutoMigration(from = 3, to = 4)
-    ]
+    version = 1,
+
 
 )
 @TypeConverters(Converters::class)
@@ -93,6 +90,9 @@ abstract class NocombroDatabase : RoomDatabase() {
     abstract val compositionDao: CompositionDao
 
     abstract val transactionDao: TransactionDao
+    abstract val batchDao: BatchDao
+
+    abstract val batchMovementDao: BatchMovementDao
     abstract val buyDao: BuyDao
     abstract val reminderDao: ReminderDao
     abstract val expenseDao: ExpenseDao

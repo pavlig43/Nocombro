@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 4,
-    "identityHash": "ead4fc0ccf208dbca8a4722ddc38ab2e",
+    "identityHash": "24c563423e58138f8d9c2e314470df9a",
     "entities": [
       {
         "tableName": "file",
@@ -171,6 +171,17 @@
             "id"
           ]
         },
+        "indices": [
+          {
+            "name": "index_declaration_vendor_id",
+            "unique": false,
+            "columnNames": [
+              "vendor_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_declaration_vendor_id` ON `${TABLE_NAME}` (`vendor_id`)"
+          }
+        ],
         "foreignKeys": [
           {
             "table": "vendor",
@@ -262,6 +273,17 @@
             "id"
           ]
         },
+        "indices": [
+          {
+            "name": "index_composition_product_id",
+            "unique": false,
+            "columnNames": [
+              "product_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_composition_product_id` ON `${TABLE_NAME}` (`product_id`)"
+          }
+        ],
         "foreignKeys": [
           {
             "table": "product",
@@ -305,6 +327,26 @@
             "id"
           ]
         },
+        "indices": [
+          {
+            "name": "index_product_declaration_product_id",
+            "unique": false,
+            "columnNames": [
+              "product_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_product_declaration_product_id` ON `${TABLE_NAME}` (`product_id`)"
+          },
+          {
+            "name": "index_product_declaration_declaration_id",
+            "unique": false,
+            "columnNames": [
+              "declaration_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_product_declaration_declaration_id` ON `${TABLE_NAME}` (`declaration_id`)"
+          }
+        ],
         "foreignKeys": [
           {
             "table": "product",
@@ -365,6 +407,26 @@
             "id"
           ]
         },
+        "indices": [
+          {
+            "name": "index_batch_product_id",
+            "unique": false,
+            "columnNames": [
+              "product_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_batch_product_id` ON `${TABLE_NAME}` (`product_id`)"
+          },
+          {
+            "name": "index_batch_declaration_id",
+            "unique": false,
+            "columnNames": [
+              "declaration_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_batch_declaration_id` ON `${TABLE_NAME}` (`declaration_id`)"
+          }
+        ],
         "foreignKeys": [
           {
             "table": "product",
@@ -473,6 +535,26 @@
             "id"
           ]
         },
+        "indices": [
+          {
+            "name": "index_batch_movement_batch_id",
+            "unique": false,
+            "columnNames": [
+              "batch_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_batch_movement_batch_id` ON `${TABLE_NAME}` (`batch_id`)"
+          },
+          {
+            "name": "index_batch_movement_transaction_id",
+            "unique": false,
+            "columnNames": [
+              "transaction_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_batch_movement_transaction_id` ON `${TABLE_NAME}` (`transaction_id`)"
+          }
+        ],
         "foreignKeys": [
           {
             "table": "batch",
@@ -551,6 +633,35 @@
             "id"
           ]
         },
+        "indices": [
+          {
+            "name": "index_transaction_product_product_id",
+            "unique": false,
+            "columnNames": [
+              "product_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_transaction_product_product_id` ON `${TABLE_NAME}` (`product_id`)"
+          },
+          {
+            "name": "index_transaction_product_declaration_id",
+            "unique": false,
+            "columnNames": [
+              "declaration_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_transaction_product_declaration_id` ON `${TABLE_NAME}` (`declaration_id`)"
+          },
+          {
+            "name": "index_transaction_product_transaction_id",
+            "unique": false,
+            "columnNames": [
+              "transaction_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_transaction_product_transaction_id` ON `${TABLE_NAME}` (`transaction_id`)"
+          }
+        ],
         "foreignKeys": [
           {
             "table": "product",
@@ -646,6 +757,35 @@
             "id"
           ]
         },
+        "indices": [
+          {
+            "name": "index_buy_transaction_id",
+            "unique": false,
+            "columnNames": [
+              "transaction_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_buy_transaction_id` ON `${TABLE_NAME}` (`transaction_id`)"
+          },
+          {
+            "name": "index_buy_product_id",
+            "unique": false,
+            "columnNames": [
+              "product_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_buy_product_id` ON `${TABLE_NAME}` (`product_id`)"
+          },
+          {
+            "name": "index_buy_declaration_id",
+            "unique": false,
+            "columnNames": [
+              "declaration_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_buy_declaration_id` ON `${TABLE_NAME}` (`declaration_id`)"
+          }
+        ],
         "foreignKeys": [
           {
             "table": "transact",
@@ -717,6 +857,17 @@
             "id"
           ]
         },
+        "indices": [
+          {
+            "name": "index_reminder_transaction_id",
+            "unique": false,
+            "columnNames": [
+              "transaction_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_reminder_transaction_id` ON `${TABLE_NAME}` (`transaction_id`)"
+          }
+        ],
         "foreignKeys": [
           {
             "table": "transact",
@@ -781,7 +932,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'ead4fc0ccf208dbca8a4722ddc38ab2e')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '24c563423e58138f8d9c2e314470df9a')"
     ]
   }
 }

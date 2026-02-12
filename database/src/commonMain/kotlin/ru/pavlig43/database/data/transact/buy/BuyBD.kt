@@ -36,13 +36,13 @@ const val BUY_TABLE_NAME = "buy"
     ]
 )
 data class BuyBDIn(
-    @ColumnInfo("transaction_id")
+    @ColumnInfo("transaction_id", index = true)
     val transactionId: Int,
 
-    @ColumnInfo("product_id")
+    @ColumnInfo("product_id", index = true)
     val productId: Int,
 
-    @ColumnInfo("declaration_id")
+    @ColumnInfo("declaration_id", index = true)
     val declarationId: Int,
 
     @ColumnInfo("date_born")
@@ -67,6 +67,7 @@ data class BuyBDIn(
 
 
 data class BuyBDOut(
+    val transactionId: Int,
     val productName: String,
     val count: Int,
     val declarationName: String,
