@@ -7,33 +7,33 @@ import androidx.room.Query
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 import ru.pavlig43.database.data.transaction.TRANSACTION_TABLE_NAME
-import ru.pavlig43.database.data.transaction.Transact
+import ru.pavlig43.database.data.transaction.Transaction
 
 @Dao
 interface TransactionDao {
 
 
 @Insert(onConflict = OnConflictStrategy.REPLACE)
-suspend fun create(transaction: Transact): Long
+suspend fun create(transaction: Transaction): Long
 
     @Update
-    suspend fun updateTransaction(transaction: Transact)
+    suspend fun updateTransaction(transaction: Transaction)
 
     @Query("DELETE FROM $TRANSACTION_TABLE_NAME WHERE id IN (:ids)")
     suspend fun deleteTransactionsByIds(ids: Set<Int>)
 
     @Query("SELECT * FROM  $TRANSACTION_TABLE_NAME WHERE id = :id")
-    suspend fun getTransaction(id: Int): Transact
+    suspend fun getTransaction(id: Int): Transaction
 
     @Query("""
     SELECT * FROM $TRANSACTION_TABLE_NAME
     ORDER BY created_at DESC
 """)
-    fun observeOnProductTransactions(): Flow<List<Transact>>
+    fun observeOnProductTransactions(): Flow<List<Transaction>>
 
 
     //TODO сделать проверку транзакций
-    suspend fun isCanSave(transaction: Transact): Result<Unit> {
+    suspend fun isCanSave(transaction: Transaction): Result<Unit> {
         return Result.success(Unit)
     }
 

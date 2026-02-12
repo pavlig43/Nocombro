@@ -15,6 +15,7 @@ import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 import ru.pavlig43.core.TransactionExecutor
 import ru.pavlig43.core.emptyDate
+import ru.pavlig43.database.data.batch.Batch
 import ru.pavlig43.database.data.common.Converters
 import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.database.data.declaration.dao.DeclarationDao
@@ -27,11 +28,10 @@ import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductDeclarationIn
 import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.database.data.product.dao.CompositionDao
-import ru.pavlig43.database.data.batch.Batch
 import ru.pavlig43.database.data.product.dao.ProductDao
 import ru.pavlig43.database.data.product.dao.ProductDeclarationDao
 import ru.pavlig43.database.data.transaction.BatchMovement
-import ru.pavlig43.database.data.transaction.Transact
+import ru.pavlig43.database.data.transaction.Transaction
 import ru.pavlig43.database.data.transaction.TransactionProductBDIn
 import ru.pavlig43.database.data.transaction.dao.TransactionDao
 import ru.pavlig43.database.data.transaction.expense.ExpenseBD
@@ -60,7 +60,7 @@ import kotlin.time.ExperimentalTime
 
         Batch::class,
 
-        Transact::class,
+        Transaction::class,
         BatchMovement::class,
         TransactionProductBDIn::class,
         BuyBDIn::class,
@@ -94,7 +94,6 @@ abstract class NocombroDatabase : RoomDatabase() {
 
     abstract val transactionDao: TransactionDao
     abstract val buyDao: BuyDao
-    abstract val batchDao: Batch
     abstract val reminderDao: ReminderDao
     abstract val expenseDao: ExpenseDao
 }

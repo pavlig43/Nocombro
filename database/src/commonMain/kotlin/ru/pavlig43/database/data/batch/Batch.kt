@@ -1,5 +1,6 @@
 package ru.pavlig43.database.data.batch
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
@@ -14,7 +15,7 @@ import ru.pavlig43.database.data.product.Product
             entity = Product::class,
             parentColumns = ["id"],
             childColumns = ["product_id"],
-            onDelete = ForeignKey.Companion.RESTRICT
+            onDelete = ForeignKey.RESTRICT
         ),
         ForeignKey(
             entity = Declaration::class,
@@ -26,8 +27,14 @@ import ru.pavlig43.database.data.product.Product
     ]
 )
 data class Batch(
-    @PrimaryKey val id: Int,
+    @PrimaryKey
+    val id: Int,
+    @ColumnInfo("product_id")
     val productId: Int,
+
+    @ColumnInfo("date_born")
     val dateBorn: LocalDate,
+
+    @ColumnInfo("declaration_id")
     val declarationId: Int,
 )

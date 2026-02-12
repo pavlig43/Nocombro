@@ -8,7 +8,7 @@ import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
 import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.database.data.product.Product
-import ru.pavlig43.database.data.transaction.Transact
+import ru.pavlig43.database.data.transaction.Transaction
 import ru.pavlig43.database.data.transaction.buy.BUY_TABLE_NAME
 import ru.pavlig43.database.data.transaction.buy.BuyBDIn
 import ru.pavlig43.database.data.transaction.buy.BuyBDOut
@@ -37,11 +37,11 @@ internal data class InternalBuy(
     @Embedded
     val buy: BuyBDIn,
     @Relation(
-        entity = Transact::class,
+        entity = Transaction::class,
         parentColumn = "transaction_id",
         entityColumn = "id"
     )
-    val transaction: Transact,
+    val transaction: Transaction,
     @Relation(
         entity = Product::class,
         parentColumn = "product_id",

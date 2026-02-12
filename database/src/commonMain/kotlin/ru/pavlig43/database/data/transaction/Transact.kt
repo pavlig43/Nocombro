@@ -10,7 +10,7 @@ internal const val TRANSACTION_TABLE_NAME = "transact"
 @Entity(
     tableName = TRANSACTION_TABLE_NAME
 )
-data class Transact(
+data class Transaction(
 
     @ColumnInfo("transaction_type")
     val transactionType: TransactionType,

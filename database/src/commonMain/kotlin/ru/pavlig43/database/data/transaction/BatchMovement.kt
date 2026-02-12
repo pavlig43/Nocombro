@@ -19,7 +19,7 @@ import ru.pavlig43.database.data.batch.Batch
             onDelete = RESTRICT
         ),
         ForeignKey(
-            entity = Transact::class,
+            entity = Transaction::class,
             parentColumns = ["id"],
             childColumns = ["transaction_id"],
             onDelete = CASCADE

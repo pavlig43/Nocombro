@@ -2,7 +2,7 @@ package ru.pavlig43.immutable.internal.component.items.transaction
 
 import com.arkivanov.decompose.ComponentContext
 import kotlinx.collections.immutable.ImmutableList
-import ru.pavlig43.database.data.transaction.Transact
+import ru.pavlig43.database.data.transaction.Transaction
 import ru.pavlig43.immutable.api.component.TransactionImmutableTableBuilder
 import ru.pavlig43.immutable.internal.component.ImmutableTableComponent
 import ru.pavlig43.immutable.internal.data.ImmutableListRepository
@@ -15,8 +15,8 @@ internal class TransactionTableComponent(
     tableBuilder: TransactionImmutableTableBuilder,
     onCreate: () -> Unit,
     onItemClick: (TransactionTableUi) -> Unit,
-    repository: ImmutableListRepository<Transact>,
-) : ImmutableTableComponent<Transact, TransactionTableUi, TransactionField>(
+    repository: ImmutableListRepository<Transaction>,
+) : ImmutableTableComponent<Transaction, TransactionTableUi, TransactionField>(
     componentContext = componentContext,
     tableBuilder = tableBuilder,
     onCreate = onCreate,
@@ -35,7 +35,7 @@ internal class TransactionTableComponent(
 
 }
 
-private fun Transact.toUi(): TransactionTableUi {
+private fun Transaction.toUi(): TransactionTableUi {
     return TransactionTableUi(
         composeId = id,
         createdAt = createdAt,

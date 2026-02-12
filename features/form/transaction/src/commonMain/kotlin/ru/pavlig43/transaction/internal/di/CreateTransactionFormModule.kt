@@ -5,7 +5,8 @@ import org.koin.dsl.module
 import ru.pavlig43.core.TransactionExecutor
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.transaction.Transaction
-import ru.pavlig43.database.data.transaction.buy.BuyBD
+import ru.pavlig43.database.data.transaction.buy.BuyBDIn
+import ru.pavlig43.database.data.transaction.buy.BuyBDOut
 import ru.pavlig43.database.data.transaction.expense.ExpenseBD
 import ru.pavlig43.database.data.transaction.reminder.ReminderBD
 import ru.pavlig43.files.api.FilesDependencies
@@ -23,7 +24,7 @@ internal fun createTransactionFormModule(dependencies: TransactionFormDependenci
         single<ImmutableTableDependencies> { dependencies.immutableTableDependencies }
         single<CreateSingleItemRepository<Transaction>> { getCreateRepository(get()) }
         single<UpdateSingleLineRepository<Transaction>> { getUpdateRepository(get()) }
-        single<UpdateCollectionRepository<BuyBD, BuyBD>>(UpdateCollectionRepositoryType.BUY.qualifier) {
+        single<UpdateCollectionRepository<BuyBDOut, BuyBDIn>>(UpdateCollectionRepositoryType.BUY.qualifier) {
             createUpdateBuyRepository()
         }
         single<UpdateCollectionRepository<ReminderBD, ReminderBD>>(UpdateCollectionRepositoryType.REMINDERS.qualifier) {
@@ -70,7 +71,7 @@ internal enum class UpdateCollectionRepositoryType {
 
 private fun createUpdateBuyRepository(
 //    db: NocombroDatabase
-): UpdateCollectionRepository<BuyBD, BuyBD> {
+): UpdateCollectionRepository<BuyBDOut, BuyBDIn> {
     return UpdateCollectionRepository(
         loadCollection = { emptyList() },
         deleteCollection = {},
