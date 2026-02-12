@@ -1,4 +1,4 @@
-package ru.pavlig43.database.data.transaction.reminder.dao
+package ru.pavlig43.database.data.transact.reminder.dao
 
 import androidx.room.Dao
 import androidx.room.Insert
@@ -8,8 +8,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import ru.pavlig43.core.getCurrentLocalDate
 import ru.pavlig43.database.data.common.NotificationDTO
-import ru.pavlig43.database.data.transaction.reminder.REMINDER_TABLE_NAME
-import ru.pavlig43.database.data.transaction.reminder.ReminderBD
+import ru.pavlig43.database.data.transact.reminder.REMINDER_TABLE_NAME
+import ru.pavlig43.database.data.transact.reminder.ReminderBD
 
 @Dao
 interface ReminderDao {

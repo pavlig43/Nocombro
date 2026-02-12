@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.serialization.Serializable
 import ru.pavlig43.core.DateTimeComponent
 import ru.pavlig43.core.emptyLocalDateTime
-import ru.pavlig43.database.data.transaction.reminder.ReminderBD
+import ru.pavlig43.database.data.transact.reminder.ReminderBD
 import ru.pavlig43.mutable.api.multiLine.component.MutableTableComponent
 import ru.pavlig43.mutable.api.multiLine.component.MutableUiEvent.UpdateItem
 import ru.pavlig43.mutable.api.singleLine.data.UpdateCollectionRepository

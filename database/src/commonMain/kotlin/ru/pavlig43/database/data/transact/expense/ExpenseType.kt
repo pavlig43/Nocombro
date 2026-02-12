@@ -1,4 +1,4 @@
-package ru.pavlig43.database.data.transaction.expense
+package ru.pavlig43.database.data.transact.expense
 
 import ru.pavlig43.core.model.ItemType
 

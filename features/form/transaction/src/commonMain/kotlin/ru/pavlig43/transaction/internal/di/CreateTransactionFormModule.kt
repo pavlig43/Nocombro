@@ -4,11 +4,11 @@ import org.koin.core.qualifier.qualifier
 import org.koin.dsl.module
 import ru.pavlig43.core.TransactionExecutor
 import ru.pavlig43.database.NocombroDatabase
-import ru.pavlig43.database.data.transaction.Transaction
-import ru.pavlig43.database.data.transaction.buy.BuyBDIn
-import ru.pavlig43.database.data.transaction.buy.BuyBDOut
-import ru.pavlig43.database.data.transaction.expense.ExpenseBD
-import ru.pavlig43.database.data.transaction.reminder.ReminderBD
+import ru.pavlig43.database.data.transact.Transact
+import ru.pavlig43.database.data.transact.buy.BuyBDIn
+import ru.pavlig43.database.data.transact.buy.BuyBDOut
+import ru.pavlig43.database.data.transact.expense.ExpenseBD
+import ru.pavlig43.database.data.transact.reminder.ReminderBD
 import ru.pavlig43.files.api.FilesDependencies
 import ru.pavlig43.immutable.api.ImmutableTableDependencies
 import ru.pavlig43.mutable.api.singleLine.data.CreateSingleItemRepository
@@ -22,8 +22,8 @@ internal fun createTransactionFormModule(dependencies: TransactionFormDependenci
         single<TransactionExecutor> { dependencies.dbTransaction }
         single<FilesDependencies> { dependencies.filesDependencies }
         single<ImmutableTableDependencies> { dependencies.immutableTableDependencies }
-        single<CreateSingleItemRepository<Transaction>> { getCreateRepository(get()) }
-        single<UpdateSingleLineRepository<Transaction>> { getUpdateRepository(get()) }
+        single<CreateSingleItemRepository<Transact>> { getCreateRepository(get()) }
+        single<UpdateSingleLineRepository<Transact>> { getUpdateRepository(get()) }
         single<UpdateCollectionRepository<BuyBDOut, BuyBDIn>>(UpdateCollectionRepositoryType.BUY.qualifier) {
             createUpdateBuyRepository()
         }
@@ -42,7 +42,7 @@ internal fun createTransactionFormModule(dependencies: TransactionFormDependenci
 
 private fun getCreateRepository(
     db: NocombroDatabase
-): CreateSingleItemRepository<Transaction> {
+): CreateSingleItemRepository<Transact> {
     val dao = db.transactionDao
     return CreateSingleItemRepository(
         create = dao::create,
@@ -52,7 +52,7 @@ private fun getCreateRepository(
 
 private fun getUpdateRepository(
     db: NocombroDatabase
-): UpdateSingleLineRepository<Transaction> {
+): UpdateSingleLineRepository<Transact> {
     val dao = db.transactionDao
     return UpdateSingleLineRepository(
         isCanSave = dao::isCanSave,

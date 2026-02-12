@@ -2,7 +2,7 @@
 package ru.pavlig43.transaction.internal.create.component
 
 import kotlinx.collections.immutable.ImmutableList
-import ru.pavlig43.database.data.transaction.TransactionType
+import ru.pavlig43.database.data.transact.TransactionType
 import ru.pavlig43.mutable.api.column.writeCheckBoxColumn
 import ru.pavlig43.mutable.api.column.writeDateTimeColumn
 import ru.pavlig43.mutable.api.column.writeItemTypeColumn

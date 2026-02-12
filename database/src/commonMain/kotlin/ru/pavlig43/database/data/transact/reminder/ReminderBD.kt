@@ -1,4 +1,4 @@
-package ru.pavlig43.database.data.transaction.reminder
+package ru.pavlig43.database.data.transact.reminder
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
@@ -6,7 +6,7 @@ import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.core.model.CollectionObject
-import ru.pavlig43.database.data.transaction.Transaction
+import ru.pavlig43.database.data.transact.Transact
 
 internal const val REMINDER_TABLE_NAME = "reminder"
 
@@ -14,7 +14,7 @@ internal const val REMINDER_TABLE_NAME = "reminder"
     tableName = REMINDER_TABLE_NAME,
     foreignKeys = [
         ForeignKey(
-            entity = Transaction::class,
+            entity = Transact::class,
             parentColumns = ["id"],
             childColumns = ["transaction_id"],
             onDelete = ForeignKey.CASCADE

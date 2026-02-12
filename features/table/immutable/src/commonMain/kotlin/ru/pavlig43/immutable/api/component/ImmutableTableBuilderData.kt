@@ -2,7 +2,7 @@ package ru.pavlig43.immutable.api.component
 
 import ru.pavlig43.database.data.document.DocumentType
 import ru.pavlig43.database.data.product.ProductType
-import ru.pavlig43.database.data.transaction.TransactionType
+import ru.pavlig43.database.data.transact.TransactionType
 import ru.pavlig43.immutable.internal.component.items.productDeclaration.ProductDeclarationTableUi
 import ru.pavlig43.tablecore.model.IMultiLineTableUi
 

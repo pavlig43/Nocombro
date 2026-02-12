@@ -1,4 +1,4 @@
-package ru.pavlig43.database.data.transaction.expense
+package ru.pavlig43.database.data.transact.expense
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity

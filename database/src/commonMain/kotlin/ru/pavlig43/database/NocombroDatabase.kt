@@ -30,16 +30,16 @@ import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.database.data.product.dao.CompositionDao
 import ru.pavlig43.database.data.product.dao.ProductDao
 import ru.pavlig43.database.data.product.dao.ProductDeclarationDao
-import ru.pavlig43.database.data.transaction.BatchMovement
-import ru.pavlig43.database.data.transaction.Transaction
-import ru.pavlig43.database.data.transaction.TransactionProductBDIn
-import ru.pavlig43.database.data.transaction.dao.TransactionDao
-import ru.pavlig43.database.data.transaction.expense.ExpenseBD
-import ru.pavlig43.database.data.transaction.expense.dao.ExpenseDao
-import ru.pavlig43.database.data.transaction.buy.BuyBDIn
-import ru.pavlig43.database.data.transaction.buy.dao.BuyDao
-import ru.pavlig43.database.data.transaction.reminder.ReminderBD
-import ru.pavlig43.database.data.transaction.reminder.dao.ReminderDao
+import ru.pavlig43.database.data.transact.BatchMovement
+import ru.pavlig43.database.data.transact.Transact
+import ru.pavlig43.database.data.transact.TransactionProductBDIn
+import ru.pavlig43.database.data.transact.dao.TransactionDao
+import ru.pavlig43.database.data.transact.expense.ExpenseBD
+import ru.pavlig43.database.data.transact.expense.dao.ExpenseDao
+import ru.pavlig43.database.data.transact.buy.BuyBDIn
+import ru.pavlig43.database.data.transact.buy.dao.BuyDao
+import ru.pavlig43.database.data.transact.reminder.ReminderBD
+import ru.pavlig43.database.data.transact.reminder.dao.ReminderDao
 import ru.pavlig43.database.data.vendor.Vendor
 import ru.pavlig43.database.data.vendor.dao.VendorDao
 import kotlin.time.ExperimentalTime
@@ -60,7 +60,7 @@ import kotlin.time.ExperimentalTime
 
         Batch::class,
 
-        Transaction::class,
+        Transact::class,
         BatchMovement::class,
         TransactionProductBDIn::class,
         BuyBDIn::class,

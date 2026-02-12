@@ -11,7 +11,7 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.Serializable
 import ru.pavlig43.core.DateTimeComponent
-import ru.pavlig43.database.data.transaction.Transaction
+import ru.pavlig43.database.data.transact.Transact
 import ru.pavlig43.mutable.api.singleLine.component.SingleLineComponentFactory
 import ru.pavlig43.mutable.api.singleLine.component.UpdateSingleLineComponent
 import ru.pavlig43.mutable.api.singleLine.data.UpdateSingleLineRepository
@@ -23,11 +23,11 @@ import ua.wwind.table.ColumnSpec
 internal class TransactionUpdateSingleLineComponent(
     componentContext: ComponentContext,
     transactionId: Int,
-    updateRepository: UpdateSingleLineRepository<Transaction>,
-    componentFactory: SingleLineComponentFactory<Transaction, TransactionEssentialsUi>,
+    updateRepository: UpdateSingleLineRepository<Transact>,
+    componentFactory: SingleLineComponentFactory<Transact, TransactionEssentialsUi>,
     observeOnItem: (TransactionEssentialsUi) -> Unit,
     onSuccessInitData: (TransactionEssentialsUi) -> Unit,
-) : UpdateSingleLineComponent<Transaction, TransactionEssentialsUi, TransactionField>(
+) : UpdateSingleLineComponent<Transact, TransactionEssentialsUi, TransactionField>(
     componentContext = componentContext,
     id = transactionId,
     updateSingleLineRepository = updateRepository,

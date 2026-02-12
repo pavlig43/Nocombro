@@ -12,7 +12,7 @@ import kotlinx.collections.immutable.toImmutableList
 import kotlinx.datetime.format
 import org.jetbrains.compose.resources.painterResource
 import ru.pavlig43.core.dateTimeFormat
-import ru.pavlig43.database.data.transaction.TransactionType
+import ru.pavlig43.database.data.transact.TransactionType
 import ru.pavlig43.immutable.internal.component.ImmutableTableUiEvent
 import ru.pavlig43.immutable.internal.column.idWithSelection
 import ru.pavlig43.tablecore.model.TableData

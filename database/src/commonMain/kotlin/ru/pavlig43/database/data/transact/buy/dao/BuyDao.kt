@@ -1,21 +1,23 @@
-package ru.pavlig43.database.data.transaction.buy.dao
+package ru.pavlig43.database.data.transact.buy.dao
 
 import androidx.room.Dao
 import androidx.room.Embedded
 import androidx.room.Query
 import androidx.room.Relation
+import androidx.room.Transaction
 import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
 import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.database.data.product.Product
-import ru.pavlig43.database.data.transaction.Transaction
-import ru.pavlig43.database.data.transaction.buy.BUY_TABLE_NAME
-import ru.pavlig43.database.data.transaction.buy.BuyBDIn
-import ru.pavlig43.database.data.transaction.buy.BuyBDOut
+import ru.pavlig43.database.data.transact.Transact
+import ru.pavlig43.database.data.transact.buy.BUY_TABLE_NAME
+import ru.pavlig43.database.data.transact.buy.BuyBDIn
+import ru.pavlig43.database.data.transact.buy.BuyBDOut
 
 @Dao
 abstract class BuyDao {
 
+    @Transaction
     @Query("SELECT * FROM $BUY_TABLE_NAME ORDER BY id DESC")
     internal abstract suspend fun getAllBuysWithRelations(): List<InternalBuy>
 
@@ -37,11 +39,11 @@ internal data class InternalBuy(
     @Embedded
     val buy: BuyBDIn,
     @Relation(
-        entity = Transaction::class,
+        entity = Transact::class,
         parentColumn = "transaction_id",
         entityColumn = "id"
     )
-    val transaction: Transaction,
+    val transaction: Transact,
     @Relation(
         entity = Product::class,
         parentColumn = "product_id",

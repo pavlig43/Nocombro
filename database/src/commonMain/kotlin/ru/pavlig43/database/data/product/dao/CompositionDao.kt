@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Embedded
 import androidx.room.Query
 import androidx.room.Relation
+import androidx.room.Transaction
 import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -16,6 +17,7 @@ import ru.pavlig43.database.data.product.ProductType
 @Dao
 abstract class CompositionDao {
 
+    @Transaction
     @Query("SELECT * FROM composition WHERE parent_id = :parentId")
     internal abstract suspend fun getComposition(parentId: Int): List<InternalComposition>
 

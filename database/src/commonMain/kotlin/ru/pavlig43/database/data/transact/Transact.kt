@@ -1,4 +1,4 @@
-package ru.pavlig43.database.data.transaction
+package ru.pavlig43.database.data.transact
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
@@ -10,7 +10,7 @@ internal const val TRANSACTION_TABLE_NAME = "transact"
 @Entity(
     tableName = TRANSACTION_TABLE_NAME
 )
-data class Transaction(
+data class Transact(
 
     @ColumnInfo("transaction_type")
     val transactionType: TransactionType,

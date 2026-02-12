@@ -1,4 +1,4 @@
-package ru.pavlig43.database.data.transaction.buy
+package ru.pavlig43.database.data.transact.buy
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
@@ -8,7 +8,7 @@ import kotlinx.datetime.LocalDate
 import ru.pavlig43.core.model.CollectionObject
 import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.database.data.product.Product
-import ru.pavlig43.database.data.transaction.Transaction
+import ru.pavlig43.database.data.transact.Transact
 
 const val BUY_TABLE_NAME = "buy"
 
@@ -16,7 +16,7 @@ const val BUY_TABLE_NAME = "buy"
     tableName = BUY_TABLE_NAME,
     foreignKeys = [
         ForeignKey(
-            entity = Transaction::class,
+            entity = Transact::class,
             parentColumns = ["id"],
             childColumns = ["transaction_id"],
             onDelete = ForeignKey.CASCADE

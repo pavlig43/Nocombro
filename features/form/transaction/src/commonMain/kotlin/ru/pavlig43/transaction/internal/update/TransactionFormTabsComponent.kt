@@ -12,8 +12,8 @@ import ru.pavlig43.core.TransactionExecutor
 import ru.pavlig43.core.componentCoroutineScope
 import ru.pavlig43.core.tabs.TabNavigationComponent
 import ru.pavlig43.core.tabs.TabOpener
-import ru.pavlig43.database.data.transaction.Transaction
-import ru.pavlig43.database.data.transaction.TransactionType
+import ru.pavlig43.database.data.transact.Transact
+import ru.pavlig43.database.data.transact.TransactionType
 import ru.pavlig43.mutable.api.singleLine.component.SingleLineComponentFactory
 import ru.pavlig43.transaction.internal.di.UpdateCollectionRepositoryType
 import ru.pavlig43.transaction.internal.model.TransactionEssentialsUi
@@ -28,7 +28,7 @@ import ru.pavlig43.update.component.getDefaultUpdateComponent
 @Suppress("LongParameterList")
 internal class TransactionFormTabsComponent(
     componentContext: ComponentContext,
-    componentFactory: SingleLineComponentFactory<Transaction, TransactionEssentialsUi>,
+    componentFactory: SingleLineComponentFactory<Transact, TransactionEssentialsUi>,
     closeFormScreen: () -> Unit,
     scope: Scope,
     transactionId: Int,

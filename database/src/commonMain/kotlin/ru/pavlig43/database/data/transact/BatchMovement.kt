@@ -1,4 +1,4 @@
-package ru.pavlig43.database.data.transaction
+package ru.pavlig43.database.data.transact
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
@@ -19,7 +19,7 @@ import ru.pavlig43.database.data.batch.Batch
             onDelete = RESTRICT
         ),
         ForeignKey(
-            entity = Transaction::class,
+            entity = Transact::class,
             parentColumns = ["id"],
             childColumns = ["transaction_id"],
             onDelete = CASCADE

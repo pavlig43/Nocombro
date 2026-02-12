@@ -13,8 +13,8 @@ import ru.pavlig43.core.DateComponent
 import ru.pavlig43.core.emptyDate
 import ru.pavlig43.core.tabs.TabOpener
 import ru.pavlig43.database.data.product.ProductType
-import ru.pavlig43.database.data.transaction.buy.BuyBDIn
-import ru.pavlig43.database.data.transaction.buy.BuyBDOut
+import ru.pavlig43.database.data.transact.buy.BuyBDIn
+import ru.pavlig43.database.data.transact.buy.BuyBDOut
 import ru.pavlig43.immutable.api.ImmutableTableDependencies
 import ru.pavlig43.immutable.api.component.MBSImmutableTableComponent
 import ru.pavlig43.immutable.api.component.ProductDeclarationImmutableTableBuilder
