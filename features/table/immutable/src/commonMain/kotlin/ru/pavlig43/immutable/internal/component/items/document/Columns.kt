@@ -9,7 +9,7 @@ import kotlinx.datetime.format
 import ru.pavlig43.core.dateFormat
 import ru.pavlig43.database.data.document.DocumentType
 import ru.pavlig43.immutable.internal.component.ImmutableTableUiEvent
-import ru.pavlig43.immutable.internal.ui.idWithSelection
+import ru.pavlig43.immutable.internal.column.idWithSelection
 import ru.pavlig43.tablecore.model.TableData
 import ua.wwind.table.ColumnSpec
 import ua.wwind.table.filter.data.TableFilterType

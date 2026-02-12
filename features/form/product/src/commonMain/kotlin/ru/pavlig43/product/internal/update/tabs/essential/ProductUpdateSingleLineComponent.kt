@@ -12,10 +12,10 @@ import ru.pavlig43.core.DateComponent
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.mutable.api.singleLine.component.SingleLineComponentFactory
 import ru.pavlig43.mutable.api.singleLine.component.UpdateSingleLineComponent
+import ru.pavlig43.mutable.api.singleLine.data.UpdateSingleLineRepository
 import ru.pavlig43.product.internal.ProductField
 import ru.pavlig43.product.internal.model.ProductEssentialsUi
 import ru.pavlig43.product.internal.model.toDto
-import ru.pavlig43.mutable.api.singleLine.data.UpdateSingleLineRepository
 import ua.wwind.table.ColumnSpec
 
 /**

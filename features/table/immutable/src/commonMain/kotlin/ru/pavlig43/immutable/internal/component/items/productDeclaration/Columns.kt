@@ -9,7 +9,7 @@ import kotlinx.collections.immutable.ImmutableList
 import org.jetbrains.compose.resources.painterResource
 import ru.pavlig43.coreui.tooltip.ToolTipProject
 import ru.pavlig43.immutable.internal.component.ImmutableTableUiEvent
-import ru.pavlig43.immutable.internal.ui.idWithSelection
+import ru.pavlig43.immutable.internal.column.idWithSelection
 import ru.pavlig43.tablecore.model.TableData
 import ru.pavlig43.theme.Res
 import ru.pavlig43.theme.check

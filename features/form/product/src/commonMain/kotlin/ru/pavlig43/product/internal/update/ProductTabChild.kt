@@ -1,8 +1,8 @@
 package ru.pavlig43.product.internal.update
 
 import ru.pavlig43.core.FormTabChild
-import ru.pavlig43.product.internal.update.tabs.ProductFilesComponent
 import ru.pavlig43.product.internal.update.tabs.ProductDeclarationComponent
+import ru.pavlig43.product.internal.update.tabs.ProductFilesComponent
 import ru.pavlig43.product.internal.update.tabs.composition.CompositionComponent
 import ru.pavlig43.product.internal.update.tabs.essential.ProductUpdateSingleLineComponent
 

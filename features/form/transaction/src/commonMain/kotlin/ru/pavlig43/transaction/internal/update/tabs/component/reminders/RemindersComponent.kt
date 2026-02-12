@@ -14,8 +14,8 @@ import ru.pavlig43.core.emptyLocalDateTime
 import ru.pavlig43.database.data.transaction.reminder.ReminderBD
 import ru.pavlig43.mutable.api.multiLine.component.MutableTableComponent
 import ru.pavlig43.mutable.api.multiLine.component.MutableUiEvent.UpdateItem
-import ru.pavlig43.tablecore.model.TableData
 import ru.pavlig43.mutable.api.singleLine.data.UpdateCollectionRepository
+import ru.pavlig43.tablecore.model.TableData
 import ua.wwind.table.ColumnSpec
 
 internal class RemindersComponent(

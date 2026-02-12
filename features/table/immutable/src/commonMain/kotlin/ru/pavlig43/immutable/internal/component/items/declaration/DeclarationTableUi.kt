@@ -19,7 +19,4 @@ data class DeclarationTableUi(
     val isActual: Boolean,
 
     override val composeId: Int = 0,
-): IMultiLineTableUi{
-//    val isActual: Boolean
-//        get() = bestBefore > getCurrentLocalDate()
-}
+): IMultiLineTableUi

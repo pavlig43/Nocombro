@@ -3,12 +3,14 @@ package ru.pavlig43.transaction.internal.create.component
 
 import kotlinx.collections.immutable.ImmutableList
 import ru.pavlig43.database.data.transaction.TransactionType
-import ru.pavlig43.mutable.api.column.*
+import ru.pavlig43.mutable.api.column.writeCheckBoxColumn
+import ru.pavlig43.mutable.api.column.writeDateTimeColumn
+import ru.pavlig43.mutable.api.column.writeItemTypeColumn
+import ru.pavlig43.mutable.api.column.writeTextColumn
 import ru.pavlig43.transaction.internal.TransactionField
 import ru.pavlig43.transaction.internal.model.TransactionEssentialsUi
 import ua.wwind.table.ColumnSpec
 import ua.wwind.table.editableTableColumns
-import ua.wwind.table.filter.data.TableFilterType
 
 internal fun createTransactionColumns0(
     onOpenCreatedAtDialog: () -> Unit,
@@ -29,7 +31,7 @@ internal fun createTransactionColumns0(
                 headerText = "Дата/время",
                 column = TransactionField.CREATED_AT,
                 valueOf = { it.createdAt },
-                onOpenDateTimeDialog = onOpenCreatedAtDialog,
+                onOpenDateTimeDialog = {onOpenCreatedAtDialog()},
             )
 
             writeCheckBoxColumn(

@@ -21,7 +21,6 @@ internal object BuyFilterMatcher: FilterMatcher<BuyUi, BuyField>() {
             BuyField.PRICE -> matchesIntField(item.price,stateAny)
             BuyField.COMMENT -> matchesTextField(item.comment,stateAny)
             BuyField.COUNT -> matchesIntField(item.count,stateAny)
-            else -> true
         }
         return matches
         }

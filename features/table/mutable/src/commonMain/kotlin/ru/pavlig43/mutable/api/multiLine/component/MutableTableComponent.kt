@@ -14,6 +14,7 @@ import ru.pavlig43.core.componentCoroutineScope
 import ru.pavlig43.core.model.ChangeSet
 import ru.pavlig43.core.model.CollectionObject
 import ru.pavlig43.loadinitdata.api.component.LoadInitDataComponent
+import ru.pavlig43.mutable.api.singleLine.data.UpdateCollectionRepository
 import ru.pavlig43.tablecore.manger.FilterManager
 import ru.pavlig43.tablecore.manger.SelectionManager
 import ru.pavlig43.tablecore.manger.SortManager
@@ -21,7 +22,6 @@ import ru.pavlig43.tablecore.model.IMultiLineTableUi
 import ru.pavlig43.tablecore.model.TableData
 import ru.pavlig43.tablecore.utils.FilterMatcher
 import ru.pavlig43.tablecore.utils.SortMatcher
-import ru.pavlig43.mutable.api.singleLine.data.UpdateCollectionRepository
 import ua.wwind.table.ColumnSpec
 import ua.wwind.table.filter.data.TableFilterState
 import ua.wwind.table.state.SortState

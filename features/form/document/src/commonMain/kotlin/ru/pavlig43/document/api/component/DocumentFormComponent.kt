@@ -17,10 +17,10 @@ import ru.pavlig43.corekoin.ComponentKoinContext
 import ru.pavlig43.database.data.document.Document
 import ru.pavlig43.document.api.DocumentFormDependencies
 import ru.pavlig43.document.internal.create.component.CreateDocumentSingleLineComponent
-import ru.pavlig43.document.internal.update.DocumentFormTabsComponent
+import ru.pavlig43.document.internal.di.createDocumentFormModule
 import ru.pavlig43.document.internal.model.DocumentEssentialsUi
 import ru.pavlig43.document.internal.model.toUi
-import ru.pavlig43.document.internal.di.createDocumentFormModule
+import ru.pavlig43.document.internal.update.DocumentFormTabsComponent
 import ru.pavlig43.mutable.api.singleLine.component.SingleLineComponentFactory
 
 

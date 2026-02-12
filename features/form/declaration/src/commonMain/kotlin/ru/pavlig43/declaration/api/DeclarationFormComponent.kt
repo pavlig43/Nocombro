@@ -16,13 +16,13 @@ import ru.pavlig43.core.MainTabComponent
 import ru.pavlig43.core.emptyDate
 import ru.pavlig43.core.tabs.TabOpener
 import ru.pavlig43.corekoin.ComponentKoinContext
-import ru.pavlig43.mutable.api.singleLine.component.SingleLineComponentFactory
 import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.declaration.internal.create.component.CreateDeclarationSingleLineComponent
+import ru.pavlig43.declaration.internal.di.createDeclarationFormModule
 import ru.pavlig43.declaration.internal.model.DeclarationEssentialsUi
 import ru.pavlig43.declaration.internal.model.toUi
 import ru.pavlig43.declaration.internal.update.DeclarationFormTabsComponent
-import ru.pavlig43.declaration.internal.di.createDeclarationFormModule
+import ru.pavlig43.mutable.api.singleLine.component.SingleLineComponentFactory
 
 class DeclarationFormComponent(
     declarationId: Int,

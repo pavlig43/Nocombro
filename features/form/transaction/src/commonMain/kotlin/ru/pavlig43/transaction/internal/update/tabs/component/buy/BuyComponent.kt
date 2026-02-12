@@ -22,8 +22,8 @@ import ru.pavlig43.immutable.internal.component.items.product.ProductTableUi
 import ru.pavlig43.immutable.internal.component.items.productDeclaration.ProductDeclarationTableUi
 import ru.pavlig43.mutable.api.multiLine.component.MutableTableComponent
 import ru.pavlig43.mutable.api.multiLine.component.MutableUiEvent.UpdateItem
-import ru.pavlig43.tablecore.model.TableData
 import ru.pavlig43.mutable.api.singleLine.data.UpdateCollectionRepository
+import ru.pavlig43.tablecore.model.TableData
 import ua.wwind.table.ColumnSpec
 
 internal class BuyComponent(
@@ -119,7 +119,6 @@ internal class BuyComponent(
 
     override val columns: ImmutableList<ColumnSpec<BuyUi, BuyField, TableData<BuyUi>>> =
         createBuyColumn(
-            isChangeVisibleDialog = { dialogNavigation.activate(BuyDialog.DateBorn(it)) },
             onOpenProductDialog = { dialogNavigation.activate(BuyDialog.Product(it)) },
             onOpenDeclarationDialog = { composeId, productId ->
                 dialogNavigation.activate(
@@ -128,6 +127,7 @@ internal class BuyComponent(
                     )
                 )
             },
+            onOpenDateDialog = {dialogNavigation.activate(BuyDialog.DateBorn(it))},
             onEvent = ::onEvent
         )
 

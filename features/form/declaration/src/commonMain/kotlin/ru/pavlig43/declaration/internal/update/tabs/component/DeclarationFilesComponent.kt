@@ -4,7 +4,6 @@ import com.arkivanov.decompose.ComponentContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import ru.pavlig43.database.data.files.OwnerType
-import ru.pavlig43.declaration.internal.update.tabs.component.DeclarationFilesComponent
 import ru.pavlig43.files.api.FilesDependencies
 import ru.pavlig43.files.api.component.FilesComponent
 

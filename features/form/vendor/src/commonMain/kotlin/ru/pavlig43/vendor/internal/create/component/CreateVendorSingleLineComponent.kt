@@ -2,10 +2,10 @@ package ru.pavlig43.vendor.internal.create.component
 
 import com.arkivanov.decompose.ComponentContext
 import kotlinx.collections.immutable.ImmutableList
-import ru.pavlig43.mutable.api.singleLine.data.CreateSingleItemRepository
 import ru.pavlig43.database.data.vendor.Vendor
 import ru.pavlig43.mutable.api.singleLine.component.CreateSingleLineComponent
 import ru.pavlig43.mutable.api.singleLine.component.SingleLineComponentFactory
+import ru.pavlig43.mutable.api.singleLine.data.CreateSingleItemRepository
 import ru.pavlig43.vendor.internal.VendorField
 import ru.pavlig43.vendor.internal.model.VendorEssentialsUi
 import ru.pavlig43.vendor.internal.model.toDto

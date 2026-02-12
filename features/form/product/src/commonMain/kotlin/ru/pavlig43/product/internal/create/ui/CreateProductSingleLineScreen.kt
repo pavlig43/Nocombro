@@ -9,8 +9,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import ru.pavlig43.coreui.DatePickerDialog
-import ru.pavlig43.product.internal.create.component.CreateProductSingleLineComponent
 import ru.pavlig43.mutable.api.singleLine.ui.CreateSingleItemScreen
+import ru.pavlig43.product.internal.create.component.CreateProductSingleLineComponent
 
 /**
  * UI экран для создания продукта через таблицу с одной строкой

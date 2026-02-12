@@ -6,9 +6,10 @@ import org.koin.core.scope.Scope
 import ru.pavlig43.core.TransactionExecutor
 import ru.pavlig43.core.tabs.TabNavigationComponent
 import ru.pavlig43.database.data.document.Document
-import ru.pavlig43.document.internal.update.tabs.DocumentFilesComponent
 import ru.pavlig43.document.internal.model.DocumentEssentialsUi
-import ru.pavlig43.document.internal.update.DocumentTabChild.*
+import ru.pavlig43.document.internal.update.DocumentTabChild.Essential
+import ru.pavlig43.document.internal.update.DocumentTabChild.Files
+import ru.pavlig43.document.internal.update.tabs.DocumentFilesComponent
 import ru.pavlig43.document.internal.update.tabs.essential.DocumentUpdateSingleLineComponent
 import ru.pavlig43.mutable.api.singleLine.component.SingleLineComponentFactory
 import ru.pavlig43.update.component.IItemFormTabsComponent

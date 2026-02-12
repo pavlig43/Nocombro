@@ -51,6 +51,7 @@ fun <T : Any, C, E, Type : ItemType> EditableTableColumnsBuilder<T, C, E>.writeI
             options = options,
             onTypeSelected = onTypeSelected
         )
+        sortable()
     }
 }
 
@@ -68,6 +69,7 @@ fun <T : Any, C, E, Type : ItemType> EditableTableColumnsBuilder<T, C, E>.readIt
             filter(it)
         }
         readItemTypeCell(valueOf = valueOf)
+        sortable()
     }
 }
 

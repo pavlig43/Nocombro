@@ -58,6 +58,7 @@ fun <T : IMultiLineTableUi, C, E> EditableTableColumnsBuilder<T, C, E>.readDecim
         header(headerText)
         align(Alignment.Center)
         readNumberCell(format = decimalFormat, getCount = { getValue(it) })
+        sortable()
     }
 }
 

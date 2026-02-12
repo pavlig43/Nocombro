@@ -11,7 +11,6 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.serialization.Serializable
 import ru.pavlig43.core.DateComponent
 import ru.pavlig43.core.tabs.TabOpener
-import ru.pavlig43.mutable.api.singleLine.data.CreateSingleItemRepository
 import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.declaration.internal.DeclarationField
 import ru.pavlig43.declaration.internal.model.DeclarationEssentialsUi
@@ -22,6 +21,7 @@ import ru.pavlig43.immutable.api.component.VendorImmutableTableBuilder
 import ru.pavlig43.immutable.internal.component.items.vendor.VendorTableUi
 import ru.pavlig43.mutable.api.singleLine.component.CreateSingleLineComponent
 import ru.pavlig43.mutable.api.singleLine.component.SingleLineComponentFactory
+import ru.pavlig43.mutable.api.singleLine.data.CreateSingleItemRepository
 import ua.wwind.table.ColumnSpec
 
 internal class CreateDeclarationSingleLineComponent(
@@ -30,7 +30,7 @@ internal class CreateDeclarationSingleLineComponent(
     observeOnItem: (DeclarationEssentialsUi) -> Unit,
     componentFactory: SingleLineComponentFactory<Declaration, DeclarationEssentialsUi>,
     createDeclarationRepository: CreateSingleItemRepository<Declaration>,
-   private val immutableDependencies: ImmutableTableDependencies,
+    private val immutableDependencies: ImmutableTableDependencies,
     private val tabOpener: TabOpener,
 ) : CreateSingleLineComponent<Declaration, DeclarationEssentialsUi, DeclarationField>(
     componentContext = componentContext,
@@ -49,47 +49,50 @@ internal class CreateDeclarationSingleLineComponent(
         handleBackButton = true,
         childFactory = ::dialogChild
     )
-    private fun dialogChild(config: DialogConfig,context: ComponentContext): DialogChild {
-        return when(config){
+
+    private fun dialogChild(config: DialogConfig, context: ComponentContext): DialogChild {
+        return when (config) {
             DialogConfig.BestBefore -> {
                 val item = itemFields.value[0]
                 DialogChild.Date(
-                DateComponent(
-                    componentContext = context,
-                    initDate = item.bestBefore,
-                    onChangeDate = {newDate->onChangeItem(item.copy(bestBefore = newDate))},
-                    onDismissRequest = {dialogNavigation.dismiss()}
+                    DateComponent(
+                        componentContext = context,
+                        initDate = item.bestBefore,
+                        onChangeDate = { newDate -> onChangeItem(item.copy(bestBefore = newDate)) },
+                        onDismissRequest = { dialogNavigation.dismiss() }
+                    )
                 )
-            )
             }
+
             DialogConfig.Born -> {
                 val item = itemFields.value[0]
                 DialogChild.Date(
                     DateComponent(
                         componentContext = context,
                         initDate = item.bornDate,
-                        onChangeDate = {newDate->onChangeItem(item.copy(bornDate = newDate))},
-                        onDismissRequest = {dialogNavigation.dismiss()}
+                        onChangeDate = { newDate -> onChangeItem(item.copy(bornDate = newDate)) },
+                        onDismissRequest = { dialogNavigation.dismiss() }
                     )
                 )
             }
+
             DialogConfig.Vendor -> DialogChild.Vendor(
                 MBSImmutableTableComponent<VendorTableUi>(
                     componentContext = context,
                     immutableTableBuilderData = VendorImmutableTableBuilder(false),
-                    onItemClick = {vendor->
+                    onItemClick = { vendor ->
                         val item = itemFields.value[0]
-                        onChangeItem(item.copy(vendorId = vendor.composeId, vendorName = vendor.displayName))
+                        onChangeItem(
+                            item.copy(vendorId = vendor.composeId, vendorName = vendor.displayName))
+                        dialogNavigation.dismiss()
                     },
-                    onCreate = {tabOpener.openVendorTab(0)},
+                    onCreate = { tabOpener.openVendorTab(0) },
                     dependencies = immutableDependencies,
-                    onDismissed = {dialogNavigation.dismiss()}
+                    onDismissed = { dialogNavigation.dismiss() }
                 )
             )
         }
     }
-
-
 
 
     override val columns: ImmutableList<ColumnSpec<DeclarationEssentialsUi, DeclarationField, Unit>> =
@@ -102,18 +105,21 @@ internal class CreateDeclarationSingleLineComponent(
 
 
 }
+
 @Serializable
 internal sealed interface DialogConfig {
 
     @Serializable
-    data object Vendor: DialogConfig
+    data object Vendor : DialogConfig
+
     @Serializable
     data object Born : DialogConfig
 
     @Serializable
     data object BestBefore : DialogConfig
 }
-internal sealed interface DialogChild{
-    class Date(val component: DateComponent): DialogChild
-    class Vendor(val component: MBSImmutableTableComponent<VendorTableUi>): DialogChild
+
+internal sealed interface DialogChild {
+    class Date(val component: DateComponent) : DialogChild
+    class Vendor(val component: MBSImmutableTableComponent<VendorTableUi>) : DialogChild
 }

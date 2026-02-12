@@ -1,11 +1,8 @@
 package ru.pavlig43.product.internal.update.tabs.essential
 
 import kotlinx.collections.immutable.ImmutableList
-import ru.pavlig43.database.data.product.ProductType
-import ru.pavlig43.mutable.api.column.readDateColumn
 import ru.pavlig43.mutable.api.column.readItemTypeColumn
 import ru.pavlig43.mutable.api.column.writeDateColumn
-import ru.pavlig43.mutable.api.column.writeItemTypeColumn
 import ru.pavlig43.mutable.api.column.writeTextColumn
 import ru.pavlig43.product.internal.ProductField
 import ru.pavlig43.product.internal.model.ProductEssentialsUi

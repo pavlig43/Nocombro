@@ -5,7 +5,7 @@ import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import kotlinx.collections.immutable.ImmutableList
 import ru.pavlig43.immutable.internal.component.ImmutableTableUiEvent
-import ru.pavlig43.immutable.internal.ui.idWithSelection
+import ru.pavlig43.immutable.internal.column.idWithSelection
 import ru.pavlig43.tablecore.model.TableData
 import ua.wwind.table.ColumnSpec
 import ua.wwind.table.filter.data.TableFilterType
