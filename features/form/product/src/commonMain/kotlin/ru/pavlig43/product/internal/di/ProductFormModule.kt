@@ -17,6 +17,11 @@ import ru.pavlig43.mutable.api.singleLine.data.CreateSingleItemRepository
 import ru.pavlig43.mutable.api.singleLine.data.UpdateCollectionRepository
 import ru.pavlig43.mutable.api.singleLine.data.UpdateSingleLineRepository
 import ru.pavlig43.product.api.ProductFormDependencies
+import ru.pavlig43.product.data.Product
+import ru.pavlig43.product.data.CompositionIn
+import ru.pavlig43.product.data.CompositionOut
+import ru.pavlig43.product.data.ProductDeclarationIn
+import ru.pavlig43.product.data.ProductDeclarationOut
 
 internal fun createProductFormModule(dependencies: ProductFormDependencies) = listOf(
     module {
@@ -25,18 +30,18 @@ internal fun createProductFormModule(dependencies: ProductFormDependencies) = li
         single<FilesDependencies> {dependencies.filesDependencies  }
         single<ImmutableTableDependencies> { dependencies.immutableTableDependencies }
         single<CreateSingleItemRepository<Product>> { getCreateRepository(get()) }
-        single<UpdateSingleLineRepository<Product>> { getUpdateRepository(get()) }
+        single<UpdateSingleLineRepository<Product>> { ProductUpdateRepository(get()) }
 
 
         single<UpdateCollectionRepository<ProductDeclarationOut, ProductDeclarationIn>>(
             UpdateCollectionRepositoryType.Declaration.qualifier
-        ) { getUpdateDeclarationRepository(get()) }
+        ) { ProductDeclarationCollectionRepository(get()) }
 
 
 
         single<UpdateCollectionRepository<CompositionOut, CompositionIn>>(
             UpdateCollectionRepositoryType.Composition.qualifier
-        ) { createUpdateCompositionRepository(get()) }
+        ) { CompositionCollectionRepository(get()) }
 
     }
 
@@ -74,11 +79,6 @@ private class ProductUpdateRepository(
     }
 }
 
-private fun getUpdateRepository(
-    db: NocombroDatabase
-): UpdateSingleLineRepository<Product> {
-    return ProductUpdateRepository(db)
-}
 
 private class CompositionCollectionRepository(
     private val db: NocombroDatabase
@@ -107,11 +107,6 @@ internal enum class UpdateCollectionRepositoryType {
     Composition,
 
 }
-private fun createUpdateCompositionRepository(
-    db: NocombroDatabase
-): UpdateCollectionRepository<CompositionOut, CompositionIn>{
-    return CompositionCollectionRepository(db)
-}
 
 
 private class ProductDeclarationCollectionRepository(
@@ -135,10 +130,5 @@ private class ProductDeclarationCollectionRepository(
     }
 }
 
-private fun getUpdateDeclarationRepository(
-    db: NocombroDatabase
-): UpdateCollectionRepository<ProductDeclarationOut, ProductDeclarationIn> {
-    return ProductDeclarationCollectionRepository(db)
-}
 
 

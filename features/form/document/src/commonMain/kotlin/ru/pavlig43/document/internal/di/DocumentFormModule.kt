@@ -16,7 +16,7 @@ internal fun createDocumentFormModule(dependencies: DocumentFormDependencies) = 
         single<TransactionExecutor> { dependencies.transaction }
         single<FilesDependencies> {dependencies.filesDependencies  }
         single<CreateSingleItemRepository<Document>> { getCreateRepository(get()) }
-        single<UpdateSingleLineRepository<Document>> { getUpdateRepository(get()) }
+        single<UpdateSingleLineRepository<Document>> { DocumentUpdateRepository(get()) }
     }
 )
 
@@ -50,11 +50,6 @@ private class DocumentUpdateRepository(
     }
 }
 
-private fun getUpdateRepository(
-    db: NocombroDatabase
-): UpdateSingleLineRepository<Document> {
-    return DocumentUpdateRepository(db)
-}
 
 
 

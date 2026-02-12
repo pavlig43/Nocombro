@@ -31,7 +31,7 @@ internal fun createTransactionFormModule(dependencies: TransactionFormDependenci
         single<FilesDependencies> { dependencies.filesDependencies }
         single<ImmutableTableDependencies> { dependencies.immutableTableDependencies }
         single<CreateSingleItemRepository<Transact>> { getCreateRepository(get()) }
-        single<UpdateSingleLineRepository<Transact>> { getUpdateRepository(get()) }
+        single<UpdateSingleLineRepository<Transact>> { TransactionUpdateRepository(get()) }
         single<UpdateCollectionRepository<BuyBDOut, BuyBDIn>>(UpdateCollectionRepositoryType.BUY.qualifier) {
             createUpdateBuyRepository(get())
         }
@@ -79,11 +79,6 @@ private class TransactionUpdateRepository(
     }
 }
 
-private fun getUpdateRepository(
-    db: NocombroDatabase
-): UpdateSingleLineRepository<Transact> {
-    return TransactionUpdateRepository(db)
-}
 
 private class BuyCollectionRepository(
     db: NocombroDatabase
@@ -164,11 +159,6 @@ internal enum class UpdateCollectionRepositoryType {
 
 }
 
-private fun createUpdateBuyRepository(
-    db: NocombroDatabase
-): UpdateCollectionRepository<BuyBDOut, BuyBDIn> {
-    return BuyCollectionRepository(db)
-}
 
 private class RemindersCollectionRepository(
     private val db: NocombroDatabase
@@ -191,11 +181,6 @@ private class RemindersCollectionRepository(
     }
 }
 
-private fun createUpdateRemindersRepository(
-    db: NocombroDatabase
-): UpdateCollectionRepository<ReminderBD, ReminderBD> {
-    return RemindersCollectionRepository(db)
-}
 
 private class ExpensesCollectionRepository(
     private val db: NocombroDatabase
@@ -218,10 +203,5 @@ private class ExpensesCollectionRepository(
     }
 }
 
-private fun createUpdateExpensesRepository(
-    db: NocombroDatabase
-): UpdateCollectionRepository<ExpenseBD, ExpenseBD> {
-    return ExpensesCollectionRepository(db)
-}
 
 

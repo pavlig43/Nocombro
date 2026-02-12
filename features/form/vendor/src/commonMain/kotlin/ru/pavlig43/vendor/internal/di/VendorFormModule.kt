@@ -9,7 +9,6 @@ import ru.pavlig43.files.api.FilesDependencies
 import ru.pavlig43.mutable.api.singleLine.data.CreateSingleItemRepository
 import ru.pavlig43.mutable.api.singleLine.data.UpdateSingleLineRepository
 import ru.pavlig43.vendor.api.VendorFormDependencies
-import ru.pavlig43.vendor.data.Vendor
 
 internal fun createVendorFormModule(dependencies: VendorFormDependencies) = listOf(
     module {
@@ -17,7 +16,7 @@ internal fun createVendorFormModule(dependencies: VendorFormDependencies) = list
         single<TransactionExecutor> { dependencies.transaction }
         single<FilesDependencies> {dependencies.filesDependencies  }
         single<CreateSingleItemRepository<Vendor>> { getCreateRepository(get()) }
-        single<UpdateSingleLineRepository<Vendor>> { getUpdateRepository(get()) }
+        single<UpdateSingleLineRepository<Vendor>> { VendorUpdateRepository(get()) }
 
     }
 )
@@ -53,11 +52,6 @@ private class VendorUpdateRepository(
     }
 }
 
-private fun getUpdateRepository(
-    db: NocombroDatabase
-): UpdateSingleLineRepository<Vendor> {
-    return VendorUpdateRepository(db)
-}
 
 
 

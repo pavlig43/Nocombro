@@ -18,7 +18,7 @@ internal fun createDeclarationFormModule(dependencies: DeclarationFormDependenci
         single<ImmutableTableDependencies> {dependencies.immutableTableDependencies  }
         single<FilesDependencies> {dependencies.filesDependencies  }
         single<CreateSingleItemRepository<Declaration>> {  getCreateRepository(get())}
-        single<UpdateSingleLineRepository<Declaration>> {  getUpdateRepository(get())}
+        single<UpdateSingleLineRepository<Declaration>> {  DeclarationUpdateRepository(get())}
 
     }
 
@@ -54,9 +54,4 @@ private class DeclarationUpdateRepository(
     }
 }
 
-private fun getUpdateRepository(
-    db: NocombroDatabase
-): UpdateSingleLineRepository<Declaration> {
-    return DeclarationUpdateRepository(db)
-}
 
