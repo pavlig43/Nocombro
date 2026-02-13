@@ -1,15 +1,29 @@
-package ru.pavlig43.database.data.transact.expense
+package ru.pavlig43.database.data.expense
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.ForeignKey
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.core.model.CollectionObject
+import ru.pavlig43.database.data.transact.Transact
 
 internal const val EXPENSE_TABLE_NAME = "expense"
 
 @Entity(
-    tableName = EXPENSE_TABLE_NAME
+    tableName = EXPENSE_TABLE_NAME,
+    foreignKeys = [
+        ForeignKey(
+            entity = Transact::class,
+            parentColumns = ["id"],
+            childColumns = ["transaction_id"],
+            onDelete = ForeignKey.RESTRICT
+        )
+    ],
+    indices = [
+        Index(value = ["transaction_id"])
+    ]
 )
 data class ExpenseBD(
     /**
