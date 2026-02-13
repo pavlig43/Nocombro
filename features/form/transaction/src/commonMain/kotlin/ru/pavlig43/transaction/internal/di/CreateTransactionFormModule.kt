@@ -19,8 +19,8 @@ import ru.pavlig43.database.data.transact.expense.ExpenseBD
 import ru.pavlig43.database.data.transact.reminder.ReminderBD
 import ru.pavlig43.files.api.FilesDependencies
 import ru.pavlig43.immutable.api.ImmutableTableDependencies
+import ru.pavlig43.mutable.api.multiLine.data.UpdateCollectionRepository
 import ru.pavlig43.mutable.api.singleLine.data.CreateSingleItemRepository
-import ru.pavlig43.mutable.api.singleLine.data.UpdateCollectionRepository
 import ru.pavlig43.mutable.api.singleLine.data.UpdateSingleLineRepository
 import ru.pavlig43.transaction.api.TransactionFormDependencies
 
@@ -30,16 +30,16 @@ internal fun createTransactionFormModule(dependencies: TransactionFormDependenci
         single<TransactionExecutor> { dependencies.dbTransaction }
         single<FilesDependencies> { dependencies.filesDependencies }
         single<ImmutableTableDependencies> { dependencies.immutableTableDependencies }
-        single<CreateSingleItemRepository<Transact>> { getCreateRepository(get()) }
+        single<CreateSingleItemRepository<Transact>> { TransactionCreateRepository(get()) }
         single<UpdateSingleLineRepository<Transact>> { TransactionUpdateRepository(get()) }
         single<UpdateCollectionRepository<BuyBDOut, BuyBDIn>>(UpdateCollectionRepositoryType.BUY.qualifier) {
-            createUpdateBuyRepository(get())
+            BuyCollectionRepository(get())
         }
         single<UpdateCollectionRepository<ReminderBD, ReminderBD>>(UpdateCollectionRepositoryType.REMINDERS.qualifier) {
-            createUpdateRemindersRepository(get())
+            RemindersCollectionRepository(get())
         }
         single<UpdateCollectionRepository<ExpenseBD, ExpenseBD>>(UpdateCollectionRepositoryType.EXPENSES.qualifier) {
-            createUpdateExpensesRepository(get())
+            ExpensesCollectionRepository(get())
         }
 
 
@@ -48,14 +48,15 @@ internal fun createTransactionFormModule(dependencies: TransactionFormDependenci
 )
 
 
-private fun getCreateRepository(
-    db: NocombroDatabase
-): CreateSingleItemRepository<Transact> {
-    val dao = db.transactionDao
-    return CreateSingleItemRepository(
-        create = dao::create,
-        isCanSave = dao::isCanSave
-    )
+private class TransactionCreateRepository(db: NocombroDatabase) : CreateSingleItemRepository<Transact> {
+    private val dao = db.transactionDao
+
+    override suspend fun createEssential(item: Transact): Result<Int> {
+        return runCatching {
+            dao.isCanSave(item).getOrThrow()
+            dao.create(item).toInt()
+        }
+    }
 }
 
 private class TransactionUpdateRepository(

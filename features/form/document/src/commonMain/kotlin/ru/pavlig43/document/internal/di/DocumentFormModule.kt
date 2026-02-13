@@ -15,20 +15,22 @@ internal fun createDocumentFormModule(dependencies: DocumentFormDependencies) = 
         single<NocombroDatabase> { dependencies.db }
         single<TransactionExecutor> { dependencies.transaction }
         single<FilesDependencies> {dependencies.filesDependencies  }
-        single<CreateSingleItemRepository<Document>> { getCreateRepository(get()) }
+        single<CreateSingleItemRepository<Document>> { DocumentCreateRepository(get()) }
         single<UpdateSingleLineRepository<Document>> { DocumentUpdateRepository(get()) }
     }
 )
 
-private fun getCreateRepository(
-    db: NocombroDatabase
-): CreateSingleItemRepository<Document> {
-    val documentDao = db.documentDao
-    return CreateSingleItemRepository(
-        create = documentDao::create,
-        isCanSave = documentDao::isCanSave
-    )
+private class DocumentCreateRepository(db: NocombroDatabase) : CreateSingleItemRepository<Document> {
+    private val dao = db.documentDao
+
+    override suspend fun createEssential(item: Document): Result<Int> {
+        return runCatching {
+            dao.isCanSave(item).getOrThrow()
+            dao.create(item).toInt()
+        }
+    }
 }
+
 private class DocumentUpdateRepository(
     private val db: NocombroDatabase
 ) : UpdateSingleLineRepository<Document> {

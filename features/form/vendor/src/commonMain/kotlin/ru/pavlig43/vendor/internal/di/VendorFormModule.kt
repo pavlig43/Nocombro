@@ -15,20 +15,21 @@ internal fun createVendorFormModule(dependencies: VendorFormDependencies) = list
         single<NocombroDatabase> { dependencies.db }
         single<TransactionExecutor> { dependencies.transaction }
         single<FilesDependencies> {dependencies.filesDependencies  }
-        single<CreateSingleItemRepository<Vendor>> { getCreateRepository(get()) }
+        single<CreateSingleItemRepository<Vendor>> { VendorCreateRepository(get()) }
         single<UpdateSingleLineRepository<Vendor>> { VendorUpdateRepository(get()) }
 
     }
 )
 
-private fun getCreateRepository(
-    db: NocombroDatabase
-): CreateSingleItemRepository<Vendor> {
-    val dao = db.vendorDao
-    return CreateSingleItemRepository(
-        create = dao::create,
-        isCanSave = dao::isCanSave
-    )
+private class VendorCreateRepository(db: NocombroDatabase) : CreateSingleItemRepository<Vendor> {
+    private val dao = db.vendorDao
+
+    override suspend fun createEssential(item: Vendor): Result<Int> {
+        return runCatching {
+            dao.isCanSave(item).getOrThrow()
+            dao.create(item).toInt()
+        }
+    }
 }
 
 private class VendorUpdateRepository(

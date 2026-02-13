@@ -17,24 +17,25 @@ internal fun createDeclarationFormModule(dependencies: DeclarationFormDependenci
         single<TransactionExecutor> { dependencies.transaction }
         single<ImmutableTableDependencies> {dependencies.immutableTableDependencies  }
         single<FilesDependencies> {dependencies.filesDependencies  }
-        single<CreateSingleItemRepository<Declaration>> {  getCreateRepository(get())}
+        single<CreateSingleItemRepository<Declaration>> { CreateDeclarationRepository(get()) }
         single<UpdateSingleLineRepository<Declaration>> {  DeclarationUpdateRepository(get())}
 
     }
 
 )
 
-private fun getCreateRepository(
-    db: NocombroDatabase
-): CreateSingleItemRepository<Declaration> {
-    val dao = db.declarationDao
-    return CreateSingleItemRepository(
-        create = dao::create,
-        isCanSave = dao::isCanSave
-    )
+private class CreateDeclarationRepository(db: NocombroDatabase) : CreateSingleItemRepository<Declaration> {
+    private val dao = db.declarationDao
+    override suspend fun createEssential(item: Declaration): Result<Int> {
+        return runCatching {
+            dao.isCanSave(item).getOrThrow()
+            dao.create(item).toInt()
+        }
+
+    }
 }
 private class DeclarationUpdateRepository(
-    private val db: NocombroDatabase
+    db: NocombroDatabase
 ) : UpdateSingleLineRepository<Declaration> {
 
     private val dao = db.declarationDao

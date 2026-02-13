@@ -6,22 +6,13 @@ import ru.pavlig43.core.TransactionExecutor
 import ru.pavlig43.core.model.ChangeSet
 import ru.pavlig43.core.model.UpsertListChangeSet
 import ru.pavlig43.database.NocombroDatabase
-import ru.pavlig43.database.data.product.CompositionIn
-import ru.pavlig43.database.data.product.CompositionOut
-import ru.pavlig43.database.data.product.Product
-import ru.pavlig43.database.data.product.ProductDeclarationIn
-import ru.pavlig43.database.data.product.ProductDeclarationOut
+import ru.pavlig43.database.data.product.*
 import ru.pavlig43.files.api.FilesDependencies
 import ru.pavlig43.immutable.api.ImmutableTableDependencies
+import ru.pavlig43.mutable.api.multiLine.data.UpdateCollectionRepository
 import ru.pavlig43.mutable.api.singleLine.data.CreateSingleItemRepository
-import ru.pavlig43.mutable.api.singleLine.data.UpdateCollectionRepository
 import ru.pavlig43.mutable.api.singleLine.data.UpdateSingleLineRepository
 import ru.pavlig43.product.api.ProductFormDependencies
-import ru.pavlig43.product.data.Product
-import ru.pavlig43.product.data.CompositionIn
-import ru.pavlig43.product.data.CompositionOut
-import ru.pavlig43.product.data.ProductDeclarationIn
-import ru.pavlig43.product.data.ProductDeclarationOut
 
 internal fun createProductFormModule(dependencies: ProductFormDependencies) = listOf(
     module {
@@ -29,7 +20,7 @@ internal fun createProductFormModule(dependencies: ProductFormDependencies) = li
         single<TransactionExecutor> { dependencies.transaction }
         single<FilesDependencies> {dependencies.filesDependencies  }
         single<ImmutableTableDependencies> { dependencies.immutableTableDependencies }
-        single<CreateSingleItemRepository<Product>> { getCreateRepository(get()) }
+        single<CreateSingleItemRepository<Product>> { ProductCreateRepository(get()) }
         single<UpdateSingleLineRepository<Product>> { ProductUpdateRepository(get()) }
 
 
@@ -48,14 +39,15 @@ internal fun createProductFormModule(dependencies: ProductFormDependencies) = li
 )
 
 
-private fun getCreateRepository(
-    db: NocombroDatabase
-): CreateSingleItemRepository<Product> {
-    val dao = db.productDao
-    return CreateSingleItemRepository(
-        create = dao::create,
-        isCanSave = dao::isCanSave
-    )
+private class ProductCreateRepository(db: NocombroDatabase) : CreateSingleItemRepository<Product> {
+    private val dao = db.productDao
+
+    override suspend fun createEssential(item: Product): Result<Int> {
+        return runCatching {
+            dao.isCanSave(item).getOrThrow()
+            dao.create(item).toInt()
+        }
+    }
 }
 
 private class ProductUpdateRepository(
