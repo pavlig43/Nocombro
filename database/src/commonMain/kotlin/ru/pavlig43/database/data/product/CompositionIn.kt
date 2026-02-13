@@ -15,17 +15,21 @@ import ru.pavlig43.core.model.CollectionObject
             parentColumns = ["id"],
             childColumns = ["product_id"],
             onDelete = ForeignKey.CASCADE,
+        ),
+        ForeignKey(
+            entity = Product::class,
+            parentColumns = ["id"],
+            childColumns = ["parent_id"],
+            onDelete = ForeignKey.RESTRICT,
         )
     ]
-
 )
 data class CompositionIn(
     @PrimaryKey(autoGenerate = true)
     override val id: Int,
 
-    @ColumnInfo("parent_id")
+    @ColumnInfo("parent_id", index = true)
     val parentId: Int,
-
 
     @ColumnInfo("product_id", index = true)
     val productId: Int,

@@ -9,7 +9,7 @@ import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.database.data.product.ProductUnit
 import ru.pavlig43.database.data.batch.MovementType
 import ru.pavlig43.database.data.transact.TransactionType
-import ru.pavlig43.database.data.transact.expense.ExpenseType
+import ru.pavlig43.database.data.expense.ExpenseType
 import kotlin.time.ExperimentalTime
 
 @Suppress("TooManyFunctions")

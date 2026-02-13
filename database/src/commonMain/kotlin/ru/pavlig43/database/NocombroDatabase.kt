@@ -34,8 +34,8 @@ import ru.pavlig43.database.data.batch.dao.BatchDao
 import ru.pavlig43.database.data.batch.dao.BatchMovementDao
 import ru.pavlig43.database.data.transact.Transact
 import ru.pavlig43.database.data.transact.dao.TransactionDao
-import ru.pavlig43.database.data.transact.expense.ExpenseBD
-import ru.pavlig43.database.data.transact.expense.dao.ExpenseDao
+import ru.pavlig43.database.data.expense.ExpenseBD
+import ru.pavlig43.database.data.expense.dao.ExpenseDao
 import ru.pavlig43.database.data.transact.buy.BuyBDIn
 import ru.pavlig43.database.data.transact.buy.dao.BuyDao
 import ru.pavlig43.database.data.transact.reminder.ReminderBD

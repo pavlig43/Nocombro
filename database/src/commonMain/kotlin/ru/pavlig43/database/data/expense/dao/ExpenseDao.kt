@@ -1,12 +1,12 @@
-package ru.pavlig43.database.data.transact.expense.dao
+package ru.pavlig43.database.data.expense.dao
 
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
-import ru.pavlig43.database.data.transact.expense.EXPENSE_TABLE_NAME
-import ru.pavlig43.database.data.transact.expense.ExpenseBD
+import ru.pavlig43.database.data.expense.EXPENSE_TABLE_NAME
+import ru.pavlig43.database.data.expense.ExpenseBD
 
 @Dao
 interface ExpenseDao {

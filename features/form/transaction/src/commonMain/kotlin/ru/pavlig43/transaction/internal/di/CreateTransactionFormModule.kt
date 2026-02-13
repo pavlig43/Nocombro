@@ -15,7 +15,7 @@ import ru.pavlig43.database.data.transact.Transact
 import ru.pavlig43.database.data.transact.buy.BuyBDIn
 import ru.pavlig43.database.data.transact.buy.BuyBDOut
 import ru.pavlig43.database.data.transact.buy.dao.BuyDao
-import ru.pavlig43.database.data.transact.expense.ExpenseBD
+import ru.pavlig43.database.data.expense.ExpenseBD
 import ru.pavlig43.database.data.transact.reminder.ReminderBD
 import ru.pavlig43.files.api.FilesDependencies
 import ru.pavlig43.immutable.api.ImmutableTableDependencies
