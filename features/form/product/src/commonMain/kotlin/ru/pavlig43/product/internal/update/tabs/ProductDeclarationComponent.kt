@@ -22,7 +22,7 @@ import ru.pavlig43.immutable.api.component.DeclarationImmutableTableBuilder
 import ru.pavlig43.immutable.api.component.MBSImmutableTableComponent
 import ru.pavlig43.immutable.internal.component.items.declaration.DeclarationTableUi
 import ru.pavlig43.loadinitdata.api.component.LoadInitDataComponent
-import ru.pavlig43.mutable.api.singleLine.data.UpdateCollectionRepository
+import ru.pavlig43.mutable.api.multiLine.data.UpdateCollectionRepository
 import kotlin.time.ExperimentalTime
 
 
