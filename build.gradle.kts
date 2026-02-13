@@ -16,6 +16,8 @@ plugins {
     alias(libs.plugins.detekt) apply false
     alias(libs.plugins.dokka)
 
+    id("jp.ntsk.room-schema-docs") version "1.4.0" apply false
+
 
     //    build-logic
     alias(libs.plugins.pavlig43.kmplibrary) apply false
