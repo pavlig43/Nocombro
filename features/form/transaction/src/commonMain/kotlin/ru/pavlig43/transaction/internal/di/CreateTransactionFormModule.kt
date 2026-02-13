@@ -6,10 +6,6 @@ import ru.pavlig43.core.TransactionExecutor
 import ru.pavlig43.core.model.ChangeSet
 import ru.pavlig43.core.model.UpsertListChangeSet
 import ru.pavlig43.database.NocombroDatabase
-import ru.pavlig43.database.data.batch.BatchBD
-import ru.pavlig43.database.data.batch.BatchMovement
-import ru.pavlig43.database.data.batch.MovementType
-import ru.pavlig43.database.data.batch.dao.BatchDao
 import ru.pavlig43.database.data.batch.dao.BatchMovementDao
 import ru.pavlig43.database.data.transact.Transact
 import ru.pavlig43.database.data.transact.buy.BuyBDIn
@@ -99,42 +95,8 @@ private class BuyCollectionRepository(
         return UpsertListChangeSet.update(
             changeSet = changeSet,
             delete = { ids -> deleteBuysWithMovements(ids, buyDao, movementDao) },
-            upsert = { buys -> upsertBuysWithBatches(buys, buyDao, batchDao, movementDao) }
+            upsert = {  }
         )
-    }
-
-    private suspend fun upsertBuysWithBatches(
-        buys: List<BuyBDIn>,
-        buyDao: BuyDao,
-        batchDao: BatchDao,
-        movementDao: BatchMovementDao
-    ) {
-        buyDao.upsertBuyBd(buys)
-
-        for (buy in buys) {
-            val batchId = batchDao.getBatchIdByProductDeclarationAndDate(
-                productId = buy.productId,
-                declarationId = buy.declarationId,
-                dateBorn = buy.dateBorn
-            ) ?: run {
-                val newBatch = BatchBD(
-                    id = 0,
-                    productId = buy.productId,
-                    declarationId = buy.declarationId,
-                    dateBorn = buy.dateBorn
-                )
-                batchDao.createBatch(newBatch).toInt()
-            }
-
-            val movement = BatchMovement(
-                batchId = batchId,
-                movementType = MovementType.INCOMING,
-                count = buy.count,
-                transactionId = buy.transactionId,
-                id = 0
-            )
-            movementDao.insertMovement(movement)
-        }
     }
 
     private suspend fun deleteBuysWithMovements(

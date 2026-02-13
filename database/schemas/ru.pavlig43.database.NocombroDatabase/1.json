@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "2e72fdf61d71a117d38b55dae4e256ea",
+    "identityHash": "f91725eef9acf2b681a16251e148d891",
     "entities": [
       {
         "tableName": "file",
@@ -602,7 +602,7 @@
       },
       {
         "tableName": "buy",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`transaction_id` INTEGER NOT NULL, `product_id` INTEGER NOT NULL, `declaration_id` INTEGER NOT NULL, `date_born` TEXT NOT NULL, `price` INTEGER NOT NULL, `count` INTEGER NOT NULL, `comment` TEXT NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, FOREIGN KEY(`transaction_id`) REFERENCES `transact`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`product_id`) REFERENCES `product`(`id`) ON UPDATE NO ACTION ON DELETE RESTRICT , FOREIGN KEY(`declaration_id`) REFERENCES `declaration`(`id`) ON UPDATE NO ACTION ON DELETE RESTRICT )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`transaction_id` INTEGER NOT NULL, `batch_id` INTEGER NOT NULL, `price` INTEGER NOT NULL, `count` INTEGER NOT NULL, `comment` TEXT NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, FOREIGN KEY(`transaction_id`) REFERENCES `transact`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "transactionId",
@@ -611,21 +611,9 @@
             "notNull": true
           },
           {
-            "fieldPath": "productId",
-            "columnName": "product_id",
+            "fieldPath": "batchId",
+            "columnName": "batch_id",
             "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "declarationId",
-            "columnName": "declaration_id",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "dateBorn",
-            "columnName": "date_born",
-            "affinity": "TEXT",
             "notNull": true
           },
           {
@@ -668,24 +656,6 @@
             ],
             "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_buy_transaction_id` ON `${TABLE_NAME}` (`transaction_id`)"
-          },
-          {
-            "name": "index_buy_product_id",
-            "unique": false,
-            "columnNames": [
-              "product_id"
-            ],
-            "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_buy_product_id` ON `${TABLE_NAME}` (`product_id`)"
-          },
-          {
-            "name": "index_buy_declaration_id",
-            "unique": false,
-            "columnNames": [
-              "declaration_id"
-            ],
-            "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_buy_declaration_id` ON `${TABLE_NAME}` (`declaration_id`)"
           }
         ],
         "foreignKeys": [
@@ -695,28 +665,6 @@
             "onUpdate": "NO ACTION",
             "columns": [
               "transaction_id"
-            ],
-            "referencedColumns": [
-              "id"
-            ]
-          },
-          {
-            "table": "product",
-            "onDelete": "RESTRICT",
-            "onUpdate": "NO ACTION",
-            "columns": [
-              "product_id"
-            ],
-            "referencedColumns": [
-              "id"
-            ]
-          },
-          {
-            "table": "declaration",
-            "onDelete": "RESTRICT",
-            "onUpdate": "NO ACTION",
-            "columns": [
-              "declaration_id"
             ],
             "referencedColumns": [
               "id"
@@ -858,7 +806,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '2e72fdf61d71a117d38b55dae4e256ea')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'f91725eef9acf2b681a16251e148d891')"
     ]
   }
 }

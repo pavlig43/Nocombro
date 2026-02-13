@@ -32,9 +32,9 @@ internal class BuyComponent(
     private val transactionId: Int,
     private val tabOpener: TabOpener,
     private val immutableTableDependencies: ImmutableTableDependencies,
-    repository: UpdateCollectionRepository<BuyBDOut, BuyBDIn>,
+    repository: UpdateCollectionRepository<BuyBDOut, BuyBDOut>,
 
-    ) : MutableTableComponent<BuyBDOut, BuyBDIn, BuyUi, BuyField>(
+    ) : MutableTableComponent<BuyBDOut, BuyBDOut, BuyUi, BuyField>(
     componentContext = componentComponent,
     parentId = transactionId,
     title = "Покупка",
@@ -153,8 +153,8 @@ internal class BuyComponent(
         )
     }
 
-    override fun BuyUi.toBDIn(): BuyBDIn {
-        return BuyBDIn(
+    override fun BuyUi.toBDIn(): BuyBDOut {
+        return BuyBDOut(
             count = count,
             transactionId = transactionId,
             dateBorn = dateBorn,
@@ -162,7 +162,11 @@ internal class BuyComponent(
             comment = comment,
             id = id,
             productId = productId,
-            declarationId = declarationId
+            declarationId = declarationId,
+            batchId = batchId,
+            productName = productName,
+            declarationName = declarationName,
+            vendorName = vendorName
         )
     }
 

@@ -21,32 +21,15 @@ const val BUY_TABLE_NAME = "buy"
             childColumns = ["transaction_id"],
             onDelete = ForeignKey.CASCADE
         ),
-        ForeignKey(
-            entity = Product::class,
-            parentColumns = ["id"],
-            childColumns = ["product_id"],
-            onDelete = ForeignKey.RESTRICT
-        ),
-        ForeignKey(
-            entity = Declaration::class,
-            parentColumns = ["id"],
-            childColumns = ["declaration_id"],
-            onDelete = ForeignKey.RESTRICT
-        )
+
     ]
 )
 data class BuyBDIn(
     @ColumnInfo("transaction_id", index = true)
     val transactionId: Int,
 
-    @ColumnInfo("product_id", index = true)
-    val productId: Int,
-
-    @ColumnInfo("declaration_id", index = true)
-    val declarationId: Int,
-
-    @ColumnInfo("date_born")
-    val dateBorn: LocalDate, // Дата производства партии
+    @ColumnInfo("batch_id")
+    val batchId: Int,
 
     @ColumnInfo("price")
     val price: Int, // Цена в копейках
@@ -68,8 +51,11 @@ data class BuyBDIn(
 
 data class BuyBDOut(
     val transactionId: Int,
-    val productName: String,
     val count: Int,
+    val batchId: Int,
+    val productId: Int,
+    val productName: String,
+    val declarationId: Int,
     val declarationName: String,
     val vendorName: String,
     val dateBorn: LocalDate,
