@@ -24,14 +24,14 @@ abstract class BuyDao {
         return getBuysWithRelations(transactionId).map(InternalBuy::toBuyBDOut)
     }
 
-    @Query("SELECT * FROM $BUY_TABLE_NAME WHERE transaction_id = :transactionId ORDER BY id DESC")
-    abstract suspend fun getBuyBD(transactionId: Int): List<BuyBDIn>
-
     @Upsert
     abstract suspend fun upsertBuyBd(buy: BuyBDIn)
 
     @Query("DELETE FROM $BUY_TABLE_NAME WHERE id IN (:ids)")
     abstract suspend fun deleteByIds(ids: List<Int>)
+
+    @Query("SELECT movement_id FROM $BUY_TABLE_NAME WHERE id IN (:ids)")
+    abstract suspend fun getMovementIdsByBuyIds(ids: List<Int>): List<Int>
 }
 
 internal data class InternalBuy(
@@ -46,7 +46,7 @@ internal data class InternalBuy(
     @Relation(
         entity = BatchMovement::class,
         parentColumn = "movement_id",
-        entityColumn = "id"
+        entityColumn = "id",
     )
     val movementOut: MovementOut
 

@@ -25,7 +25,6 @@ const val BUY_TABLE_NAME = "buy"
             entity = BatchMovement::class,
             parentColumns = ["id"],
             childColumns = ["movement_id"],
-            onDelete = ForeignKey.RESTRICT
         )
 
     ]

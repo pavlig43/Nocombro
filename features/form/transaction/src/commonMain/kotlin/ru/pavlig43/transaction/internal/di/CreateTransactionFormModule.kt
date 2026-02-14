@@ -90,24 +90,23 @@ private class BuyCollectionRepository(
     override suspend fun getInit(id: Int): Result<List<BuyBDOut>> {
         return runCatching {
 
-            buyDao.getBuysWithDetails(id).also { println("bdOut $it") }
+            buyDao.getBuysWithDetails(id)
         }
-    }
-    private suspend fun getBuyBDOut(transactionId: Int){
-        val buy = buyDao.getBuyBD(transactionId)
-        val movement = movementDao.getByTransactionId(transactionId)
-
     }
 
     override suspend fun update(changeSet: ChangeSet<List<BuyBDOut>>): Result<Unit> {
         return UpsertListChangeSet.update(
             changeSet = changeSet,
-            delete = { ids -> buyDao.deleteByIds(ids) },
+            delete = ::deleteBuysWithMovement,
             upsert = ::upsertAllEntity
         )
     }
-
-    suspend fun upsertAllEntity(buys: List<BuyBDOut>) {
+    private suspend fun deleteBuysWithMovement(buyIds:List<Int>){
+        val movementIds = buyDao.getMovementIdsByBuyIds(buyIds)
+        buyDao.deleteByIds(buyIds)
+        movementDao.deleteByIds(movementIds)
+    }
+    private suspend fun upsertAllEntity(buys: List<BuyBDOut>) {
         buys.forEach {buy->
             val batch = BatchBD(
                 id = buy.batchId,
@@ -119,7 +118,6 @@ private class BuyCollectionRepository(
                 batchDao.createBatch(batch).toInt()
             }
             else{
-                println("newBatch $batch")
                 batchDao.updateBatch(batch)
                 batch.id
             }

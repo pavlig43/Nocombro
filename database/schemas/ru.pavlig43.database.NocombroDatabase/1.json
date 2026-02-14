@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "bdb0043c855a187faa99d4e4cb78170b",
+    "identityHash": "bab1bfde27d361ad3954c6253781fcb6",
     "entities": [
       {
         "tableName": "file",
@@ -474,7 +474,7 @@
       },
       {
         "tableName": "batch_movement",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`batch_id` INTEGER NOT NULL, `movement_type` TEXT NOT NULL, `count` INTEGER NOT NULL, `transaction_id` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, FOREIGN KEY(`batch_id`) REFERENCES `batch`(`id`) ON UPDATE NO ACTION ON DELETE RESTRICT , FOREIGN KEY(`transaction_id`) REFERENCES `transact`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`batch_id` INTEGER NOT NULL, `movement_type` TEXT NOT NULL, `count` INTEGER NOT NULL, `transaction_id` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, FOREIGN KEY(`batch_id`) REFERENCES `batch`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION , FOREIGN KEY(`transaction_id`) REFERENCES `transact`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "batchId",
@@ -536,7 +536,7 @@
         "foreignKeys": [
           {
             "table": "batch",
-            "onDelete": "RESTRICT",
+            "onDelete": "NO ACTION",
             "onUpdate": "NO ACTION",
             "columns": [
               "batch_id"
@@ -602,7 +602,7 @@
       },
       {
         "tableName": "buy",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`transaction_id` INTEGER NOT NULL, `movement_id` INTEGER NOT NULL, `price` INTEGER NOT NULL, `comment` TEXT NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, FOREIGN KEY(`transaction_id`) REFERENCES `transact`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`movement_id`) REFERENCES `batch_movement`(`id`) ON UPDATE NO ACTION ON DELETE RESTRICT )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`transaction_id` INTEGER NOT NULL, `movement_id` INTEGER NOT NULL, `price` INTEGER NOT NULL, `comment` TEXT NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, FOREIGN KEY(`transaction_id`) REFERENCES `transact`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`movement_id`) REFERENCES `batch_movement`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
         "fields": [
           {
             "fieldPath": "transactionId",
@@ -666,7 +666,7 @@
           },
           {
             "table": "batch_movement",
-            "onDelete": "RESTRICT",
+            "onDelete": "NO ACTION",
             "onUpdate": "NO ACTION",
             "columns": [
               "movement_id"
@@ -811,7 +811,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'bdb0043c855a187faa99d4e4cb78170b')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'bab1bfde27d361ad3954c6253781fcb6')"
     ]
   }
 }
