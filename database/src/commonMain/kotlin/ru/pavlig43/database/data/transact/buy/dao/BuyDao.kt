@@ -6,9 +6,8 @@ import androidx.room.Query
 import androidx.room.Relation
 import androidx.room.Transaction
 import androidx.room.Upsert
-import ru.pavlig43.database.data.batch.BatchBD
-import ru.pavlig43.database.data.declaration.Declaration
-import ru.pavlig43.database.data.product.Product
+import ru.pavlig43.database.data.batch.BatchMovement
+import ru.pavlig43.database.data.batch.dao.MovementOut
 import ru.pavlig43.database.data.transact.Transact
 import ru.pavlig43.database.data.transact.buy.BUY_TABLE_NAME
 import ru.pavlig43.database.data.transact.buy.BuyBDIn
@@ -19,16 +18,17 @@ abstract class BuyDao {
 
     @Transaction
     @Query("SELECT * FROM $BUY_TABLE_NAME WHERE transaction_id = :transactionId ORDER BY id DESC")
-    internal abstract suspend fun getAllBuysWithRelations(transactionId: Int): List<InternalBuy>
+    internal abstract suspend fun getBuysWithRelations(transactionId: Int): List<InternalBuy>
 
-    suspend fun getAllBuysWithDetails(transactionId: Int): List<BuyBDOut> {
-        return getAllBuysWithRelations(transactionId).map(InternalBuy::toBuyBDOut)
+    suspend fun getBuysWithDetails(transactionId: Int): List<BuyBDOut> {
+        return getBuysWithRelations(transactionId).map(InternalBuy::toBuyBDOut)
     }
-    @Query("SELECT * FROM $BUY_TABLE_NAME WHERE id = :id")
-    abstract suspend fun getById(id: Int): BuyBDIn?
+
+    @Query("SELECT * FROM $BUY_TABLE_NAME WHERE transaction_id = :transactionId ORDER BY id DESC")
+    abstract suspend fun getBuyBD(transactionId: Int): List<BuyBDIn>
 
     @Upsert
-    abstract suspend fun upsertBuyBd(buys: List<BuyBDIn>)
+    abstract suspend fun upsertBuyBd(buy: BuyBDIn)
 
     @Query("DELETE FROM $BUY_TABLE_NAME WHERE id IN (:ids)")
     abstract suspend fun deleteByIds(ids: List<Int>)
@@ -44,31 +44,17 @@ internal data class InternalBuy(
     )
     val transaction: Transact,
     @Relation(
-        entity = BatchBD::class,
-        parentColumn = "batch_id",
+        entity = BatchMovement::class,
+        parentColumn = "movement_id",
         entityColumn = "id"
     )
-    val batchOut: BatchOut
+    val movementOut: MovementOut
 
 )
-internal data class BatchOut(
-    @Embedded
-    val batch: BatchBD,
-    @Relation(
-        entity = Product::class,
-        parentColumn = "product_id",
-        entityColumn = "id"
-    )
-    val product: Product,
-    @Relation(
-        entity = Declaration::class,
-        parentColumn = "declaration_id",
-        entityColumn = "id"
-    )
-    val declaration: Declaration
-)
+
 
 private fun InternalBuy.toBuyBDOut(): BuyBDOut {
+    val batchOut = movementOut.batchOut
 
     return BuyBDOut(
         transactionId = transaction.id,
@@ -76,12 +62,13 @@ private fun InternalBuy.toBuyBDOut(): BuyBDOut {
         declarationId = batchOut.declaration.id,
         productName = batchOut.product.displayName,
         dateBorn = batchOut.batch.dateBorn,
-        count = buy.count,
+        count = movementOut.movement.count,
         batchId = batchOut.batch.id,
         declarationName = batchOut.declaration.displayName,
         vendorName = batchOut.declaration.vendorName,
         price = buy.price,
         comment = buy.comment,
-        id = buy.id
+        id = buy.id,
+        movementId = movementOut.movement.id
     )
 }

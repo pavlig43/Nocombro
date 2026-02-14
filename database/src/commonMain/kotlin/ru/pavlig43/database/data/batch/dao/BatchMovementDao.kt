@@ -1,23 +1,46 @@
 package ru.pavlig43.database.data.batch.dao
 
 import androidx.room.Dao
+import androidx.room.Embedded
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Relation
+import androidx.room.Update
+import androidx.room.Upsert
+import ru.pavlig43.database.data.batch.BatchBD
 import ru.pavlig43.database.data.batch.BatchMovement
+import ru.pavlig43.database.data.batch.BatchOut
 
 @Dao
-interface BatchMovementDao {
+abstract class BatchMovementDao {
 
     @Insert
-    suspend fun insertMovement(batchMovement: BatchMovement): Long
+    abstract suspend fun createMovement(batchMovement: BatchMovement): Long
+
+    @Update
+    abstract suspend fun updateMovement(movement: BatchMovement)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertMovements(movements: List<BatchMovement>)
+    abstract suspend fun insertMovements(movements: List<BatchMovement>)
+
+    @Upsert
+    abstract suspend fun upsertMovement(movement: BatchMovement)
 
     @Query("DELETE FROM batch_movement WHERE transaction_id = :transactionId")
-    suspend fun deleteByTransactionId(transactionId: Int)
+    abstract suspend fun deleteByTransactionId(transactionId: Int)
 
     @Query("SELECT * FROM batch_movement WHERE transaction_id = :transactionId")
-    suspend fun getByTransactionId(transactionId: Int): List<BatchMovement>
+    abstract suspend fun getByTransactionId(transactionId: Int): List<MovementOut>
 }
+data class MovementOut(
+    @Embedded
+    val movement: BatchMovement,
+
+    @Relation(
+        entity = BatchBD::class,
+        parentColumn = "batch_id",
+        entityColumn = "id"
+    )
+    val batchOut: BatchOut
+)

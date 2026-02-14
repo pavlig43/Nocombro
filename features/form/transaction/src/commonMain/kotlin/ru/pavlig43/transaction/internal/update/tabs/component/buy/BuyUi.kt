@@ -18,4 +18,5 @@ data class BuyUi(
     val price: Int = 0,
     val comment: String = "",
     val batchId: Int = 0,
+    val movementId: Int = 0
 ) : IMultiLineTableUi

@@ -6,12 +6,13 @@ import ru.pavlig43.core.TransactionExecutor
 import ru.pavlig43.core.model.ChangeSet
 import ru.pavlig43.core.model.UpsertListChangeSet
 import ru.pavlig43.database.NocombroDatabase
-import ru.pavlig43.database.data.batch.dao.BatchMovementDao
+import ru.pavlig43.database.data.batch.BatchBD
+import ru.pavlig43.database.data.batch.BatchMovement
+import ru.pavlig43.database.data.batch.MovementType
 import ru.pavlig43.database.data.transact.Transact
-import ru.pavlig43.database.data.transact.buy.BuyBDIn
 import ru.pavlig43.database.data.transact.buy.BuyBDOut
-import ru.pavlig43.database.data.transact.buy.dao.BuyDao
 import ru.pavlig43.database.data.expense.ExpenseBD
+import ru.pavlig43.database.data.transact.buy.BuyBDIn
 import ru.pavlig43.database.data.transact.reminder.ReminderBD
 import ru.pavlig43.files.api.FilesDependencies
 import ru.pavlig43.immutable.api.ImmutableTableDependencies
@@ -28,7 +29,7 @@ internal fun createTransactionFormModule(dependencies: TransactionFormDependenci
         single<ImmutableTableDependencies> { dependencies.immutableTableDependencies }
         single<CreateSingleItemRepository<Transact>> { TransactionCreateRepository(get()) }
         single<UpdateSingleLineRepository<Transact>> { TransactionUpdateRepository(get()) }
-        single<UpdateCollectionRepository<BuyBDOut, BuyBDIn>>(UpdateCollectionRepositoryType.BUY.qualifier) {
+        single<UpdateCollectionRepository<BuyBDOut, BuyBDOut>>(UpdateCollectionRepositoryType.BUY.qualifier) {
             BuyCollectionRepository(get())
         }
         single<UpdateCollectionRepository<ReminderBD, ReminderBD>>(UpdateCollectionRepositoryType.REMINDERS.qualifier) {
@@ -44,7 +45,8 @@ internal fun createTransactionFormModule(dependencies: TransactionFormDependenci
 )
 
 
-private class TransactionCreateRepository(db: NocombroDatabase) : CreateSingleItemRepository<Transact> {
+private class TransactionCreateRepository(db: NocombroDatabase) :
+    CreateSingleItemRepository<Transact> {
     private val dao = db.transactionDao
 
     override suspend fun createEssential(item: Transact): Result<Int> {
@@ -79,7 +81,7 @@ private class TransactionUpdateRepository(
 
 private class BuyCollectionRepository(
     db: NocombroDatabase
-) : UpdateCollectionRepository<BuyBDOut, BuyBDIn> {
+) : UpdateCollectionRepository<BuyBDOut, BuyBDOut> {
 
     private val buyDao = db.buyDao
     private val batchDao = db.batchDao
@@ -87,30 +89,61 @@ private class BuyCollectionRepository(
 
     override suspend fun getInit(id: Int): Result<List<BuyBDOut>> {
         return runCatching {
-            buyDao.getAllBuysWithDetails(id)
+            buyDao.getBuysWithDetails(id)
         }
     }
+    private suspend fun getBuyBDOut(transactionId: Int){
+        val buy = buyDao.getBuyBD(transactionId)
+        val movement = movementDao.getByTransactionId(transactionId)
 
-    override suspend fun update(changeSet: ChangeSet<List<BuyBDIn>>): Result<Unit> {
+    }
+
+    override suspend fun update(changeSet: ChangeSet<List<BuyBDOut>>): Result<Unit> {
         return UpsertListChangeSet.update(
             changeSet = changeSet,
-            delete = { ids -> deleteBuysWithMovements(ids, buyDao, movementDao) },
-            upsert = {  }
+            delete = { ids -> buyDao.deleteByIds(ids) },
+            upsert = ::upsertAllEntity
         )
     }
 
-    private suspend fun deleteBuysWithMovements(
-        buyIds: List<Int>,
-        buyDao: BuyDao,
-        movementDao: BatchMovementDao
-    ) {
-        if (buyIds.isEmpty()) return
-
-        val firstBuy = buyDao.getById(buyIds.first()) ?: return
-        val transactionId = firstBuy.transactionId
-
-        movementDao.deleteByTransactionId(transactionId)
-        buyDao.deleteByIds(buyIds)
+    suspend fun upsertAllEntity(buys: List<BuyBDOut>) {
+        buys.forEach {buy->
+            val batch = BatchBD(
+                id = buy.batchId,
+                productId = buy.productId,
+                dateBorn = buy.dateBorn,
+                declarationId = buy.declarationId
+            )
+            val batchId = if (batch.id == 0){
+                batchDao.createBatch(batch).toInt()
+            }
+            else{
+                batchDao.updateBatch(batch)
+                batch.id
+            }
+            val movement = BatchMovement(
+                batchId = batchId,
+                movementType = MovementType.INCOMING,
+                count = buy.count,
+                transactionId = buy.transactionId,
+                id = buy.movementId
+            )
+            val movementId = if (movement.id == 0){
+                movementDao.createMovement(movement).toInt()
+            }
+            else{
+                movementDao.upsertMovement(movement)
+                movement.id
+            }
+            val buyBdIn = BuyBDIn(
+                transactionId = buy.transactionId,
+                movementId = movementId,
+                price = buy.price,
+                comment = buy.comment,
+                id = buy.id
+            )
+            buyDao.upsertBuyBd(buyBdIn)
+        }
     }
 }
 

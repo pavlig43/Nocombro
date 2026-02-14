@@ -1,9 +1,11 @@
 package ru.pavlig43.database.data.batch
 
 import androidx.room.ColumnInfo
+import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
+import androidx.room.Relation
 import kotlinx.datetime.LocalDate
 import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.database.data.product.Product
@@ -37,4 +39,20 @@ data class BatchBD(
 
     @ColumnInfo("declaration_id", index = true)
     val declarationId: Int,
+)
+data class BatchOut(
+    @Embedded
+    val batch: BatchBD,
+    @Relation(
+        entity = Product::class,
+        parentColumn = "product_id",
+        entityColumn = "id"
+    )
+    val product: Product,
+    @Relation(
+        entity = Declaration::class,
+        parentColumn = "declaration_id",
+        entityColumn = "id"
+    )
+    val declaration: Declaration
 )

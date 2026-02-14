@@ -142,6 +142,8 @@ internal class BuyComponent(
     override fun BuyBDOut.toUi(composeId: Int): BuyUi {
         return BuyUi(
             composeId = composeId,
+            movementId = movementId,
+            batchId = batchId,
             productName = productName,
             count = count,
             declarationName = declarationName,
@@ -166,7 +168,8 @@ internal class BuyComponent(
             batchId = batchId,
             productName = productName,
             declarationName = declarationName,
-            vendorName = vendorName
+            vendorName = vendorName,
+            movementId = movementId
         )
     }
 
