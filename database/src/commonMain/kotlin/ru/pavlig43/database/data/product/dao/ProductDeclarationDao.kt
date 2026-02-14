@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Embedded
 import androidx.room.Query
 import androidx.room.Relation
+import androidx.room.Transaction
 import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -24,6 +25,7 @@ abstract class ProductDeclarationDao {
     @Query("DELETE FROM product_declaration WHERE id in(:ids)")
     abstract suspend fun deleteDeclarations(ids: List<Int>)
 
+    @Transaction
     @Query(
         """
         SELECT * FROM product_declaration
@@ -36,6 +38,7 @@ abstract class ProductDeclarationDao {
         return getProductDeclaration(productId).map(InternalProductDeclaration::toProductDeclarationOut)
     }
 
+    @Transaction
     @Query(
         """
         SELECT * FROM product_declaration

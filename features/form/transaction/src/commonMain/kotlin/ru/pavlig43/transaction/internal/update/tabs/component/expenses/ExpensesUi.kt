@@ -1,7 +1,7 @@
 package ru.pavlig43.transaction.internal.update.tabs.component.expenses
 
 import kotlinx.datetime.LocalDateTime
-import ru.pavlig43.database.data.transaction.expense.ExpenseType
+import ru.pavlig43.database.data.expense.ExpenseType
 import ru.pavlig43.tablecore.model.IMultiLineTableUi
 
 internal data class ExpensesUi(

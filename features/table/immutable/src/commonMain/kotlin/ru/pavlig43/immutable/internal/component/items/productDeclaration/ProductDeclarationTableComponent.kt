@@ -39,6 +39,7 @@ internal class ProductDeclarationTableComponent(
 private fun ProductDeclarationOut.toUi(): ProductDeclarationTableUi {
     return ProductDeclarationTableUi(
         composeId = id,
+        declarationId = declarationId,
         productId = productId,
         vendorName = vendorName,
         displayName = declarationName,

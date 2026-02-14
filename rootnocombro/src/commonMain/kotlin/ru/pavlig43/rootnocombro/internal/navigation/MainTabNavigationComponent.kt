@@ -7,7 +7,7 @@ import ru.pavlig43.core.tabs.TabNavigationComponent
 import ru.pavlig43.core.tabs.TabOpener
 import ru.pavlig43.database.data.document.DocumentType
 import ru.pavlig43.database.data.product.ProductType
-import ru.pavlig43.database.data.transaction.TransactionType
+import ru.pavlig43.database.data.transact.TransactionType
 import ru.pavlig43.declaration.api.DeclarationFormComponent
 import ru.pavlig43.document.api.component.DocumentFormComponent
 import ru.pavlig43.immutable.api.component.DeclarationImmutableTableBuilder

@@ -20,6 +20,8 @@ enum class BuyField {
     SELECTION,
     COMPOSE_ID,
     COUNT,
+
+    BATCH_ID,
     PRODUCT_NAME,
     DECLARATION_NAME,
     VENDOR_NAME,
@@ -70,6 +72,12 @@ internal fun createBuyColumn(
                 updateItem = { item, price -> onEvent(MutableUiEvent.UpdateItem(item.copy(price = price))) },
                 footerValue = { tableData -> tableData.displayedItems.sumOf { it.price } }
             )
+           readTextColumn(
+               headerText = "Партия",
+               column = BuyField.BATCH_ID,
+               valueOf = { it.batchId.toString() },
+               filterType = TableFilterType.TextTableFilter()
+           )
 
             textWithSearchIconColumn(
                 headerText = "Декларация",

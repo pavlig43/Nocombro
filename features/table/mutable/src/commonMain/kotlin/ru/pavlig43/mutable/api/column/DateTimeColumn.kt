@@ -25,7 +25,7 @@ fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.writeDateTimeColumn(
     valueOf: (T) -> LocalDateTime,
     onOpenDateTimeDialog: (T) -> Unit,
     filterType: TableFilterType.DateTableFilter? = null,
-    alignment: Alignment = Alignment.Center
+    alignment: Alignment = Alignment.CenterStart
 ) {
     column(column, valueOf = valueOf) {
         header(headerText)
@@ -46,7 +46,7 @@ fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.readDateTimeColumn(
     column: C,
     valueOf: (T) -> LocalDateTime,
     filterType: TableFilterType<*>? = null,
-    alignment: Alignment = Alignment.Center
+    alignment: Alignment = Alignment.CenterStart
 ) {
     column(column, valueOf = valueOf) {
         header(headerText)

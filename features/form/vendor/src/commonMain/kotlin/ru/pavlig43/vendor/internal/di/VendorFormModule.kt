@@ -2,6 +2,7 @@ package ru.pavlig43.vendor.internal.di
 
 import org.koin.dsl.module
 import ru.pavlig43.core.TransactionExecutor
+import ru.pavlig43.core.model.ChangeSet
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.vendor.Vendor
 import ru.pavlig43.files.api.FilesDependencies
@@ -14,32 +15,44 @@ internal fun createVendorFormModule(dependencies: VendorFormDependencies) = list
         single<NocombroDatabase> { dependencies.db }
         single<TransactionExecutor> { dependencies.transaction }
         single<FilesDependencies> {dependencies.filesDependencies  }
-        single<CreateSingleItemRepository<Vendor>> { getCreateRepository(get()) }
-        single<UpdateSingleLineRepository<Vendor>> { getUpdateRepository(get()) }
+        single<CreateSingleItemRepository<Vendor>> { VendorCreateRepository(get()) }
+        single<UpdateSingleLineRepository<Vendor>> { VendorUpdateRepository(get()) }
 
     }
 )
 
-private fun getCreateRepository(
-    db: NocombroDatabase
-): CreateSingleItemRepository<Vendor> {
-    val dao = db.vendorDao
-    return CreateSingleItemRepository(
-        create = dao::create,
-        isCanSave = dao::isCanSave
-    )
+private class VendorCreateRepository(db: NocombroDatabase) : CreateSingleItemRepository<Vendor> {
+    private val dao = db.vendorDao
+
+    override suspend fun createEssential(item: Vendor): Result<Int> {
+        return runCatching {
+            dao.isCanSave(item).getOrThrow()
+            dao.create(item).toInt()
+        }
+    }
 }
 
-private fun getUpdateRepository(
-    db: NocombroDatabase
-): UpdateSingleLineRepository<Vendor> {
-    val dao = db.vendorDao
-    return UpdateSingleLineRepository(
-        isCanSave = dao::isCanSave,
-        loadItem = dao::getVendor,
-        updateItem = dao::updateVendor
-    )
+private class VendorUpdateRepository(
+    private val db: NocombroDatabase
+) : UpdateSingleLineRepository<Vendor> {
+
+    private val dao = db.vendorDao
+
+    override suspend fun getInit(id: Int): Result<Vendor> {
+        return runCatching {
+            dao.getVendor(id)
+        }
+    }
+
+    override suspend fun update(changeSet: ChangeSet<Vendor>): Result<Unit> {
+        if (changeSet.old == changeSet.new) return Result.success(Unit)
+        return runCatching {
+            dao.isCanSave(changeSet.new).getOrThrow()
+            dao.updateVendor(changeSet.new)
+        }
+    }
 }
+
 
 
 

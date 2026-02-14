@@ -3,13 +3,13 @@ package ru.pavlig43.database.data.common
 import androidx.room.TypeConverter
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
+import ru.pavlig43.database.data.batch.MovementType
 import ru.pavlig43.database.data.document.DocumentType
+import ru.pavlig43.database.data.expense.ExpenseType
 import ru.pavlig43.database.data.files.OwnerType
 import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.database.data.product.ProductUnit
-import ru.pavlig43.database.data.transaction.MovementType
-import ru.pavlig43.database.data.transaction.TransactionType
-import ru.pavlig43.database.data.transaction.expense.ExpenseType
+import ru.pavlig43.database.data.transact.TransactionType
 import kotlin.time.ExperimentalTime
 
 @Suppress("TooManyFunctions")

@@ -2,18 +2,6 @@ package ru.pavlig43.mutable.api.singleLine.data
 
 import ru.pavlig43.core.model.SingleItem
 
-class CreateSingleItemRepository<I : SingleItem>(
-    private val isCanSave: suspend (I) -> Result<Unit>,
-    private val create: suspend (I) -> Long,
-) {
-
-
-    suspend fun createEssential(item: I): Result<Int> {
-        return runCatching {
-            isCanSave(item).getOrThrow()
-            create(item).toInt()
-        }
-
-    }
-
+interface CreateSingleItemRepository<I : SingleItem> {
+    suspend fun createEssential(item: I): Result<Int>
 }

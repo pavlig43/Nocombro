@@ -27,10 +27,10 @@ import ru.pavlig43.database.data.declaration.Declaration
 )
 data class ProductDeclarationIn(
 
-    @ColumnInfo("product_id")
+    @ColumnInfo("product_id", index = true)
      val productId: Int,
 
-    @ColumnInfo("declaration_id")
+    @ColumnInfo("declaration_id", index = true)
      val declarationId: Int,
 
     @PrimaryKey(autoGenerate = true)

@@ -13,7 +13,7 @@ import ru.pavlig43.core.DateComponent
 import ru.pavlig43.core.emptyDate
 import ru.pavlig43.core.tabs.TabOpener
 import ru.pavlig43.database.data.product.ProductType
-import ru.pavlig43.database.data.transaction.buy.BuyBD
+import ru.pavlig43.database.data.transact.buy.BuyBDOut
 import ru.pavlig43.immutable.api.ImmutableTableDependencies
 import ru.pavlig43.immutable.api.component.MBSImmutableTableComponent
 import ru.pavlig43.immutable.api.component.ProductDeclarationImmutableTableBuilder
@@ -22,18 +22,18 @@ import ru.pavlig43.immutable.internal.component.items.product.ProductTableUi
 import ru.pavlig43.immutable.internal.component.items.productDeclaration.ProductDeclarationTableUi
 import ru.pavlig43.mutable.api.multiLine.component.MutableTableComponent
 import ru.pavlig43.mutable.api.multiLine.component.MutableUiEvent.UpdateItem
-import ru.pavlig43.mutable.api.singleLine.data.UpdateCollectionRepository
+import ru.pavlig43.mutable.api.multiLine.data.UpdateCollectionRepository
 import ru.pavlig43.tablecore.model.TableData
 import ua.wwind.table.ColumnSpec
 
 internal class BuyComponent(
     componentComponent: ComponentContext,
-    transactionId: Int,
+    private val transactionId: Int,
     private val tabOpener: TabOpener,
     private val immutableTableDependencies: ImmutableTableDependencies,
-    repository: UpdateCollectionRepository<BuyBD, BuyBD>,
+    repository: UpdateCollectionRepository<BuyBDOut, BuyBDOut>,
 
-    ) : MutableTableComponent<BuyBD, BuyBD, BuyUi, BuyField>(
+    ) : MutableTableComponent<BuyBDOut, BuyBDOut, BuyUi, BuyField>(
     componentContext = componentComponent,
     parentId = transactionId,
     title = "Покупка",
@@ -79,7 +79,7 @@ internal class BuyComponent(
                         onEvent(
                             UpdateItem(
                                 buyUi.copy(
-                                    declarationId = declaration.composeId,
+                                    declarationId = declaration.declarationId,
                                     declarationName = declaration.displayName,
                                     vendorName = declaration.vendorName
                                 )
@@ -138,11 +138,15 @@ internal class BuyComponent(
         )
     }
 
-    override fun BuyBD.toUi(composeId: Int): BuyUi {
+    override fun BuyBDOut.toUi(composeId: Int): BuyUi {
         return BuyUi(
             composeId = composeId,
+            movementId = movementId,
+            batchId = batchId,
+            productId = productId,
             productName = productName,
             count = count,
+            declarationId = declarationId,
             declarationName = declarationName,
             vendorName = vendorName,
             dateBorn = dateBorn,
@@ -152,16 +156,21 @@ internal class BuyComponent(
         )
     }
 
-    override fun BuyUi.toBDIn(): BuyBD {
-        return BuyBD(
-            productName = productName,
+    override fun BuyUi.toBDIn(): BuyBDOut {
+        return BuyBDOut(
             count = count,
-            declarationName = declarationName,
-            vendorName = vendorName,
+            transactionId = transactionId,
             dateBorn = dateBorn,
             price = price,
             comment = comment,
-            id = id
+            id = id,
+            productId = productId,
+            declarationId = declarationId,
+            batchId = batchId,
+            productName = productName,
+            declarationName = declarationName,
+            vendorName = vendorName,
+            movementId = movementId
         )
     }
 

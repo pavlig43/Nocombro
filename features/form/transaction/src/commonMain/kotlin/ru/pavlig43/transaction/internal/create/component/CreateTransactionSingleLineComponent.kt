@@ -10,7 +10,7 @@ import com.arkivanov.decompose.value.Value
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.serialization.Serializable
 import ru.pavlig43.core.DateTimeComponent
-import ru.pavlig43.database.data.transaction.Transaction
+import ru.pavlig43.database.data.transact.Transact
 import ru.pavlig43.mutable.api.singleLine.component.CreateSingleLineComponent
 import ru.pavlig43.mutable.api.singleLine.component.SingleLineComponentFactory
 import ru.pavlig43.mutable.api.singleLine.data.CreateSingleItemRepository
@@ -23,9 +23,9 @@ internal class CreateTransactionSingleLineComponent(
     componentContext: ComponentContext,
     onSuccessCreate: (Int) -> Unit,
     observeOnItem: (TransactionEssentialsUi) -> Unit,
-    componentFactory: SingleLineComponentFactory<Transaction, TransactionEssentialsUi>,
-    createRepository: CreateSingleItemRepository<Transaction>,
-) : CreateSingleLineComponent<Transaction, TransactionEssentialsUi, TransactionField>(
+    componentFactory: SingleLineComponentFactory<Transact, TransactionEssentialsUi>,
+    createRepository: CreateSingleItemRepository<Transact>,
+) : CreateSingleLineComponent<Transact, TransactionEssentialsUi, TransactionField>(
     componentContext = componentContext,
     onSuccessCreate = onSuccessCreate,
     componentFactory = componentFactory,
