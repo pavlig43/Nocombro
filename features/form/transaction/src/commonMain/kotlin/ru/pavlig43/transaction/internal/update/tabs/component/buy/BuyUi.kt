@@ -1,7 +1,6 @@
 package ru.pavlig43.transaction.internal.update.tabs.component.buy
 
 import kotlinx.datetime.LocalDate
-import ru.pavlig43.core.emptyDate
 import ru.pavlig43.core.getCurrentLocalDate
 import ru.pavlig43.tablecore.model.IMultiLineTableUi
 

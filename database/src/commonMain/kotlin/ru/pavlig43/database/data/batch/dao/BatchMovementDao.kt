@@ -32,6 +32,11 @@ abstract class BatchMovementDao {
 
     @Query("SELECT * FROM batch_movement WHERE transaction_id = :transactionId")
     abstract suspend fun getByTransactionId(transactionId: Int): List<MovementOut>
+
+    @Query("DELETE FROM batch_movement WHERE id in (:ids)")
+    abstract suspend fun deleteByIds(ids:List<Int>)
+
+
 }
 data class MovementOut(
     @Embedded

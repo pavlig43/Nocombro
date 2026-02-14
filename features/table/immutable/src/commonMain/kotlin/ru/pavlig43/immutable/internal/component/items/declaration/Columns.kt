@@ -6,9 +6,9 @@ import androidx.compose.ui.Alignment
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.datetime.format
 import ru.pavlig43.core.dateFormat
-import ru.pavlig43.immutable.internal.component.ImmutableTableUiEvent
 import ru.pavlig43.immutable.internal.column.idWithSelection
 import ru.pavlig43.immutable.internal.column.readIsActualColumn
+import ru.pavlig43.immutable.internal.component.ImmutableTableUiEvent
 import ru.pavlig43.tablecore.model.TableData
 import ua.wwind.table.ColumnSpec
 import ua.wwind.table.filter.data.TableFilterType

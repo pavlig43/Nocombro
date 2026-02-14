@@ -6,7 +6,6 @@ import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 import kotlinx.datetime.LocalDate
 import ru.pavlig43.core.model.CollectionObject
-import ru.pavlig43.database.data.batch.BatchBD
 import ru.pavlig43.database.data.batch.BatchMovement
 import ru.pavlig43.database.data.transact.Transact
 

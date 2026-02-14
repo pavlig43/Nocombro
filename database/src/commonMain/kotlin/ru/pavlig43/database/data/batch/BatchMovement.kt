@@ -4,7 +4,6 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.ForeignKey.Companion.CASCADE
-import androidx.room.ForeignKey.Companion.RESTRICT
 import androidx.room.PrimaryKey
 import ru.pavlig43.core.model.CollectionObject
 import ru.pavlig43.database.data.transact.Transact
@@ -16,7 +15,6 @@ import ru.pavlig43.database.data.transact.Transact
             entity = BatchBD::class,
             parentColumns = ["id"],
             childColumns = ["batch_id"],
-            onDelete = RESTRICT
         ),
         ForeignKey(
             entity = Transact::class,

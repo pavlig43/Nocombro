@@ -18,7 +18,7 @@ fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.writeTextColumn(
     onChangeItem: (T, String) -> Unit,
     filterType: TableFilterType.TextTableFilter? = null,
     singleLine: Boolean = true,
-    alignment: Alignment = Alignment.Center
+    alignment: Alignment = Alignment.CenterStart
 ) {
     column(column, valueOf = valueOf) {
         header(headerText)
@@ -40,7 +40,7 @@ fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.readTextColumn(
     column: C,
     valueOf: (T) -> String,
     filterType: TableFilterType<*>? = null,
-    alignment: Alignment = Alignment.Center
+    alignment: Alignment = Alignment.CenterStart
 ) {
     column(column, valueOf = valueOf) {
         header(headerText)
@@ -57,6 +57,7 @@ private fun <T : Any, C, E> EditableColumnBuilder<T, C, E>.readTextCell(
     valueOf: (T) -> String,
 ) {
     cell { item, _ ->
+
         LockText(text = valueOf(item))
     }
 }

@@ -3,7 +3,12 @@ package ru.pavlig43.mutable.api.multiLine.component
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
 import kotlinx.collections.immutable.ImmutableList
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import ru.pavlig43.core.FormTabComponent
 import ru.pavlig43.core.componentCoroutineScope
 import ru.pavlig43.core.model.ChangeSet

@@ -6,7 +6,11 @@ import ru.pavlig43.core.TransactionExecutor
 import ru.pavlig43.core.model.ChangeSet
 import ru.pavlig43.core.model.UpsertListChangeSet
 import ru.pavlig43.database.NocombroDatabase
-import ru.pavlig43.database.data.product.*
+import ru.pavlig43.database.data.product.CompositionIn
+import ru.pavlig43.database.data.product.CompositionOut
+import ru.pavlig43.database.data.product.Product
+import ru.pavlig43.database.data.product.ProductDeclarationIn
+import ru.pavlig43.database.data.product.ProductDeclarationOut
 import ru.pavlig43.files.api.FilesDependencies
 import ru.pavlig43.immutable.api.ImmutableTableDependencies
 import ru.pavlig43.mutable.api.multiLine.data.UpdateCollectionRepository
