@@ -11,7 +11,6 @@ import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.datetime.LocalDate
 import ru.pavlig43.core.TransactionExecutor
 import ru.pavlig43.core.emptyDate
 import ru.pavlig43.database.data.batch.BatchBD
@@ -110,7 +109,7 @@ fun getNocombroDatabase(builder: RoomDatabase.Builder<NocombroDatabase>): Nocomb
         .setQueryCoroutineContext(Dispatchers.IO)
         .build()
     CoroutineScope(Dispatchers.IO).launch {
-        initData(database)
+        seedDatabase(database)
     }
     return database
 }
@@ -135,123 +134,6 @@ class NocombroTransactionExecutor(
             }
         }
     }
-
-
-
-@OptIn(ExperimentalTime::class)
-@Suppress("LongMethod", "TooGenericExceptionCaught", "SwallowedException")
-suspend fun initData(db: NocombroDatabase) {
-    try {
-        db.productDao.getProduct(1)
-    } catch (_: Exception) {
-        val products = listOf(
-            Product(
-                type = ProductType.FOOD_BASE,
-                displayName = "Соль",
-                createdAt = LocalDate.fromEpochDays(0),
-                comment = "",
-                id = 1
-            ),
-            Product(
-                type = ProductType.FOOD_PF,
-                displayName = "БАварские",
-                createdAt = LocalDate.fromEpochDays(0),
-                comment = "",
-                id = 2
-            ),
-            Product(
-                type = ProductType.FOOD_BASE,
-                displayName = "Декстроза",
-                createdAt = LocalDate.fromEpochDays(0),
-                comment = "",
-                id = 3
-            )
-        )
-        val vendors = listOf(
-            Vendor(
-                displayName = "Ингре",
-                comment = "",
-                id = 1
-            ),
-            Vendor(
-                displayName = "Стоинг",
-                comment = "",
-                id = 2
-            ),
-            Vendor(
-                displayName = "Рустарк",
-                comment = "",
-                id = 3
-            ),
-        )
-        val declaration = listOf(
-            Declaration(
-                displayName = "Декларация ингре",
-                createdAt = LocalDate.fromEpochDays(0),
-                vendorId = 1,
-                vendorName = "Ингре",
-                bestBefore = LocalDate.fromEpochDays(0),
-                id = 1,
-                observeFromNotification = true,
-                bornDate = emptyDate
-            ),
-            Declaration(
-                displayName = "Декларация стоинг",
-                createdAt = LocalDate.fromEpochDays(0),
-                vendorId = 2,
-                vendorName = "Стоинг",
-                bestBefore = LocalDate.fromEpochDays(0),
-                id = 2,
-                observeFromNotification = true,
-                bornDate = emptyDate
-            ),
-            Declaration(
-                displayName = "Декларация рустарк",
-                createdAt = LocalDate.fromEpochDays(0),
-                vendorId = 3,
-                vendorName = "Рустарк",
-                bestBefore = LocalDate.fromEpochDays(0),
-                id = 3,
-                observeFromNotification = true,
-                bornDate = emptyDate
-            )
-        )
-        val productDeclarationDeps = listOf(
-            ProductDeclarationIn(
-                productId = 2,
-                declarationId = 1,
-                id = 1
-            ),
-            ProductDeclarationIn(
-                productId = 2,
-                declarationId = 2,
-                id = 2
-            ),
-            ProductDeclarationIn(
-                productId = 2,
-                declarationId = 3,
-                id = 3
-            ),
-
-            )
-        products.forEach {
-            db.productDao.create(it)
-        }
-        vendors.forEach {
-            db.vendorDao.create(it)
-        }
-        declaration.forEach {
-            db.declarationDao.create(it)
-        }
-
-        db.productDeclarationDao.upsertProductDeclarations(productDeclarationDeps)
-
-    }
-
-
-}
-
-
 
 
 
