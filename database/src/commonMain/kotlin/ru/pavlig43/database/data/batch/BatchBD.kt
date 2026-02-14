@@ -29,7 +29,7 @@ import ru.pavlig43.database.data.product.Product
     ]
 )
 data class BatchBD(
-    @PrimaryKey
+    @PrimaryKey(autoGenerate = true)
     val id: Int,
     @ColumnInfo("product_id", index = true)
     val productId: Int,

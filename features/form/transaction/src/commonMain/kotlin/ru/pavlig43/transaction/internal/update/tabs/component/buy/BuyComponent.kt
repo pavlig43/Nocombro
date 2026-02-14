@@ -80,7 +80,7 @@ internal class BuyComponent(
                         onEvent(
                             UpdateItem(
                                 buyUi.copy(
-                                    declarationId = declaration.composeId,
+                                    declarationId = declaration.declarationId,
                                     declarationName = declaration.displayName,
                                     vendorName = declaration.vendorName
                                 )
@@ -144,8 +144,10 @@ internal class BuyComponent(
             composeId = composeId,
             movementId = movementId,
             batchId = batchId,
+            productId = productId,
             productName = productName,
             count = count,
+            declarationId = declarationId,
             declarationName = declarationName,
             vendorName = vendorName,
             dateBorn = dateBorn,

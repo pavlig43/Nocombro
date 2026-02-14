@@ -89,7 +89,8 @@ private class BuyCollectionRepository(
 
     override suspend fun getInit(id: Int): Result<List<BuyBDOut>> {
         return runCatching {
-            buyDao.getBuysWithDetails(id)
+
+            buyDao.getBuysWithDetails(id).also { println("bdOut $it") }
         }
     }
     private suspend fun getBuyBDOut(transactionId: Int){
@@ -118,6 +119,7 @@ private class BuyCollectionRepository(
                 batchDao.createBatch(batch).toInt()
             }
             else{
+                println("newBatch $batch")
                 batchDao.updateBatch(batch)
                 batch.id
             }

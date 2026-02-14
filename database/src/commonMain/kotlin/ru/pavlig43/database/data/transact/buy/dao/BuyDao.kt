@@ -63,7 +63,7 @@ private fun InternalBuy.toBuyBDOut(): BuyBDOut {
         productName = batchOut.product.displayName,
         dateBorn = batchOut.batch.dateBorn,
         count = movementOut.movement.count,
-        batchId = batchOut.batch.id,
+        batchId = movementOut.movement.batchId,
         declarationName = batchOut.declaration.displayName,
         vendorName = batchOut.declaration.vendorName,
         price = buy.price,

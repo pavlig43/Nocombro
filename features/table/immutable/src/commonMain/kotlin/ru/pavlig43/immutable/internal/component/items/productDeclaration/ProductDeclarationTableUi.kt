@@ -5,6 +5,7 @@ import ru.pavlig43.tablecore.model.IMultiLineTableUi
 
 data class ProductDeclarationTableUi(
     override val composeId: Int,
+    val declarationId: Int,
     val productId: Int,
     val displayName: String,
     val vendorName: String,
