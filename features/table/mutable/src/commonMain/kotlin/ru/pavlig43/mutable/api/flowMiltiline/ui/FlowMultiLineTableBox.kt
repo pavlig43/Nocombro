@@ -1,4 +1,4 @@
-package ru.pavlig43.immutable.internal.ui
+package ru.pavlig43.mutable.api.flowMiltiline.ui
 
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Box
@@ -14,9 +14,10 @@ import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.ImmutableList
 import ru.pavlig43.coreui.ErrorScreen
 import ru.pavlig43.coreui.LoadingUi
-import ru.pavlig43.immutable.internal.component.ImmutableTableComponent
-import ru.pavlig43.immutable.internal.component.ImmutableTableUiEvent
-import ru.pavlig43.immutable.internal.component.ItemListState
+import ru.pavlig43.mutable.api.flowMiltiline.component.FlowMultiLineEvent
+import ru.pavlig43.mutable.api.flowMiltiline.component.FlowMultilineComponent
+import ru.pavlig43.mutable.api.flowMiltiline.component.ItemListState
+import ru.pavlig43.mutable.api.multiLine.ui.SelectionActionBar
 import ru.pavlig43.tablecore.manger.SelectionUiEvent
 import ru.pavlig43.tablecore.model.IMultiLineTableUi
 import ru.pavlig43.tablecore.model.TableData
@@ -30,8 +31,8 @@ import ua.wwind.table.strings.StringProvider
 
 @OptIn(ExperimentalTableApi::class)
 @Composable
-internal fun <I : IMultiLineTableUi, C> ImmutableTableBox(
-    component: ImmutableTableComponent<*, I, C>,
+fun <I : IMultiLineTableUi, C> FlowMultiLineTableBox(
+    component: FlowMultilineComponent<*, I, C>,
     modifier: Modifier = Modifier
 ) {
     val itemListState by component.itemListState.collectAsState()
@@ -50,7 +51,7 @@ internal fun <I : IMultiLineTableUi, C> ImmutableTableBox(
                     onFiltersChanged = component::updateFilters,
                     onSortChanged = component::updateSort,
                 ) { verticalState, horizontalState, tableState, stringProvider, modifier ->
-                    ImmutableTable(
+                    FlowMultiLineTable(
                         columns = component.columns,
                         tableState = tableState,
                         stringProvider = stringProvider,
@@ -58,7 +59,6 @@ internal fun <I : IMultiLineTableUi, C> ImmutableTableBox(
                         horizontalState = horizontalState,
                         items = tableData.displayedItems,
                         onEvent = component::onEvent,
-                        onRowClick = { component.onItemClick(it) },
                         tableData = tableData,
                         modifier = modifier
                     )
@@ -74,15 +74,14 @@ internal fun <I : IMultiLineTableUi, C> ImmutableTableBox(
 @Suppress("LongParameterList", "LongMethod")
 @OptIn(ExperimentalTableApi::class)
 @Composable
-private fun <I : IMultiLineTableUi, C, E : TableData<I>> BoxScope.ImmutableTable(
+private fun <I : IMultiLineTableUi, C, E : TableData<I>> BoxScope.FlowMultiLineTable(
     columns: ImmutableList<ColumnSpec<I, C, E>>,
     tableState: TableState<C>,
     stringProvider: StringProvider,
     verticalState: LazyListState,
     horizontalState: ScrollState,
     items: List<I>,
-    onEvent: (ImmutableTableUiEvent) -> Unit,
-    onRowClick: (I) -> Unit,
+    onEvent: (FlowMultiLineEvent) -> Unit,
     tableData: E,
     modifier: Modifier
 ) {
@@ -97,16 +96,15 @@ private fun <I : IMultiLineTableUi, C, E : TableData<I>> BoxScope.ImmutableTable
         columns = columns,
         verticalState = verticalState,
         horizontalState = horizontalState,
-        onRowClick = onRowClick,
         modifier = modifier
     )
     SelectionActionBar(
         selectedCount = tableData.selectedIds.size,
         onDeleteClick = {
-            onEvent(ImmutableTableUiEvent.DeleteSelected)
+            onEvent(FlowMultiLineEvent.DeleteSelected)
         },
         onClearSelection = {
-            onEvent(ImmutableTableUiEvent.Selection(SelectionUiEvent.ClearSelection))
+            onEvent(FlowMultiLineEvent.Selection(SelectionUiEvent.ClearSelection))
         },
 //                                liquidState = liquidState,
         modifier = Modifier
