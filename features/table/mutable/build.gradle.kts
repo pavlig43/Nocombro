@@ -12,6 +12,7 @@ kotlin {
         implementation(projects.features.manageitem.loadinitdata)
         implementation(projects.features.manageitem.update)
         api(projects.features.table.core)
+        implementation(projects.features.table.immutable)
 
     }
 }

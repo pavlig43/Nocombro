@@ -24,3 +24,10 @@ internal class ImmutableListRepository<I>(
 
     }
 }
+
+internal interface ImmutableListRepository1<I> {
+
+    suspend fun deleteByIds(ids: Set<Int>): Result<Unit>
+
+    fun observeOnItems(): Flow<Result<List<I>>>
+}

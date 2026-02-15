@@ -11,5 +11,6 @@ kotlin{
         implementation(projects.database)
         api(projects.features.table.core)
 
+
     }
 }
