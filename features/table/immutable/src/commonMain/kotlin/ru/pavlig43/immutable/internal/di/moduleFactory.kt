@@ -1,6 +1,5 @@
 package ru.pavlig43.immutable.internal.di
 
-import jdk.jfr.internal.OldObjectSample.emit
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
@@ -15,7 +14,6 @@ import ru.pavlig43.database.data.transact.Transact
 import ru.pavlig43.database.data.vendor.Vendor
 import ru.pavlig43.immutable.api.ImmutableTableDependencies
 import ru.pavlig43.immutable.internal.data.ImmutableListRepository
-import ru.pavlig43.immutable.internal.data.ImmutableListRepository1
 
 
 internal fun moduleFactory(dependencies: ImmutableTableDependencies) = listOf(
@@ -38,15 +36,15 @@ private fun createImmutableRepository(
     db: NocombroDatabase,
     type: ImmutableTableRepositoryType
 ): ImmutableListRepository<*> = when (type) {
-    ImmutableTableRepositoryType.DOCUMENT -> createDocumentRepository(db)
-    ImmutableTableRepositoryType.DECLARATION -> createDeclarationRepository(db)
-    ImmutableTableRepositoryType.PRODUCT -> createProductRepository(db)
-    ImmutableTableRepositoryType.VENDOR -> createVendorRepository(db)
-    ImmutableTableRepositoryType.TRANSACTION -> createTransactionRepository(db)
-    ImmutableTableRepositoryType.PRODUCT_DECLARATION -> createProductDeclarationRepository(db)
+    ImmutableTableRepositoryType.DOCUMENT -> DocumentRepository(db)
+    ImmutableTableRepositoryType.DECLARATION -> DeclarationRepository(db)
+    ImmutableTableRepositoryType.PRODUCT -> ProductRepository(db)
+    ImmutableTableRepositoryType.VENDOR -> VendorRepository(db)
+    ImmutableTableRepositoryType.TRANSACTION -> TransactionRepository(db)
+    ImmutableTableRepositoryType.PRODUCT_DECLARATION -> ProductDeclarationRepository(db)
 }
 
-private class DocumentRepository(db: NocombroDatabase): ImmutableListRepository1<Document> {
+private class DocumentRepository(db: NocombroDatabase): ImmutableListRepository<Document> {
     private val dao = db.documentDao
     override suspend fun deleteByIds(ids: Set<Int>): Result<Unit> {
         return runCatching { dao.deleteDocumentsByIds(ids) }
@@ -56,50 +54,64 @@ private class DocumentRepository(db: NocombroDatabase): ImmutableListRepository1
         return dao.observeOnDocuments().map { Result.success(it) }
             .catch { emit(Result.failure(it)) }
     }
-
-}
-private fun createDocumentRepository(db: NocombroDatabase): ImmutableListRepository<Document> {
-    val dao = db.documentDao
-    return ImmutableListRepository(
-        delete = dao::deleteDocumentsByIds,
-        observe = dao::observeOnDocuments,
-    )
-}
-private fun createDeclarationRepository(db: NocombroDatabase): ImmutableListRepository<Declaration> {
-    val dao = db.declarationDao
-    return ImmutableListRepository(
-        delete = dao::deleteDeclarationsByIds,
-        observe = dao::observeOnItems,
-    )
 }
 
-private fun createProductRepository(db: NocombroDatabase): ImmutableListRepository<Product> {
-    val dao = db.productDao
-    return ImmutableListRepository(
-        delete = dao::deleteProductsByIds,
-        observe = dao::observeOnProducts,
-    )
+private class DeclarationRepository(db: NocombroDatabase): ImmutableListRepository<Declaration> {
+    private val dao = db.declarationDao
+    override suspend fun deleteByIds(ids: Set<Int>): Result<Unit> {
+        return runCatching { dao.deleteDeclarationsByIds(ids) }
+    }
+
+    override fun observeOnItems(): Flow<Result<List<Declaration>>> {
+        return dao.observeOnItems().map { Result.success(it) }
+            .catch { emit(Result.failure(it)) }
+    }
 }
 
-private fun createVendorRepository(db: NocombroDatabase): ImmutableListRepository<Vendor> {
-    val dao = db.vendorDao
-    return ImmutableListRepository(
-        delete = dao::deleteVendorsByIds,
-        observe = dao::observeOnVendors,
-    )
+private class ProductRepository(db: NocombroDatabase): ImmutableListRepository<Product> {
+    private val dao = db.productDao
+    override suspend fun deleteByIds(ids: Set<Int>): Result<Unit> {
+        return runCatching { dao.deleteProductsByIds(ids) }
+    }
+
+    override fun observeOnItems(): Flow<Result<List<Product>>> {
+        return dao.observeOnProducts().map { Result.success(it) }
+            .catch { emit(Result.failure(it)) }
+    }
 }
 
-private fun createTransactionRepository(db: NocombroDatabase): ImmutableListRepository<Transact> {
-    val dao = db.transactionDao
-    return ImmutableListRepository(
-        delete = dao::deleteTransactionsByIds,
-        observe = dao::observeOnProductTransactions,
-    )
+private class VendorRepository(db: NocombroDatabase): ImmutableListRepository<Vendor> {
+    private val dao = db.vendorDao
+    override suspend fun deleteByIds(ids: Set<Int>): Result<Unit> {
+        return runCatching { dao.deleteVendorsByIds(ids) }
+    }
+
+    override fun observeOnItems(): Flow<Result<List<Vendor>>> {
+        return dao.observeOnVendors().map { Result.success(it) }
+            .catch { emit(Result.failure(it)) }
+    }
 }
-private fun createProductDeclarationRepository(db: NocombroDatabase): ImmutableListRepository<ProductDeclarationOut>{
-    val dao = db.productDeclarationDao
-    return ImmutableListRepository(
-        delete = {},
-        observe = dao::observeOnProductDeclarationOut
-    )
+
+private class TransactionRepository(db: NocombroDatabase): ImmutableListRepository<Transact> {
+    private val dao = db.transactionDao
+    override suspend fun deleteByIds(ids: Set<Int>): Result<Unit> {
+        return runCatching { dao.deleteTransactionsByIds(ids) }
+    }
+
+    override fun observeOnItems(): Flow<Result<List<Transact>>> {
+        return dao.observeOnProductTransactions().map { Result.success(it) }
+            .catch { emit(Result.failure(it)) }
+    }
+}
+
+private class ProductDeclarationRepository(db: NocombroDatabase): ImmutableListRepository<ProductDeclarationOut> {
+    private val dao = db.productDeclarationDao
+    override suspend fun deleteByIds(ids: Set<Int>): Result<Unit> {
+        return Result.success(Unit)
+    }
+
+    override fun observeOnItems(): Flow<Result<List<ProductDeclarationOut>>> {
+        return dao.observeOnProductDeclarationOut().map { Result.success(it) }
+            .catch { emit(Result.failure(it)) }
+    }
 }
