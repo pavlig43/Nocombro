@@ -38,6 +38,9 @@ abstract class ProductDeclarationDao {
         return getProductDeclaration(productId).map(InternalProductDeclaration::toProductDeclarationOut)
     }
 
+    @Query("SELECT * FROM product_declaration WHERE product_id = :productId")
+    abstract suspend fun getProductDeclarationIn(productId: Int): List<ProductDeclarationIn>
+
 
 
     @Transaction
@@ -50,8 +53,8 @@ abstract class ProductDeclarationDao {
 
 
 
-    @Query("SELECT declaration_id FROM product_declaration WHERE product_id = :productId")
-    abstract suspend fun getDeclarationIdsByProductId(productId: Int): List<Int>
+    @Query("SELECT * FROM product_declaration WHERE product_id = :productId")
+    abstract suspend fun getDeclarationIdsByProductId(productId: Int): List<ProductDeclarationIn>
     @Query("SELECT * FROM product_declaration WHERE product_id = :productId")
     internal abstract fun observeOnProductDeclarationByProductId(productId: Int): Flow<List<InternalProductDeclaration>>
 
@@ -61,6 +64,12 @@ abstract class ProductDeclarationDao {
         )
     }
 
+    @Query("SELECT * FROM product_declaration WHERE id IN (:ids)")
+    internal abstract fun observeOnProductDeclarationByIds(ids: List<Int>): Flow<List<InternalProductDeclaration>>
+
+    fun observeOnProductDeclarationOutByIds(ids: List<Int>): Flow<List<ProductDeclarationOut>> {
+        return observeOnProductDeclarationByIds(ids).mapValues(InternalProductDeclaration::toProductDeclarationOut)
+    }
     fun observeOnProductDeclarationOut(): Flow<List<ProductDeclarationOut>> {
         return observeOnProductDeclaration().mapValues(InternalProductDeclaration::toProductDeclarationOut)
     }

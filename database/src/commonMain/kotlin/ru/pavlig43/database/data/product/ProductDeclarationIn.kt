@@ -41,7 +41,6 @@ data class ProductDeclarationIn(
 data class ProductDeclarationOut(
     override val id: Int,
     val productId: Int,
-    val displayName: String,
     val declarationId: Int,
     val declarationName: String,
     val vendorName: String,

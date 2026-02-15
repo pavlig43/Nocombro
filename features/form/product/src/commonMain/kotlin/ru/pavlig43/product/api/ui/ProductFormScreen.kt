@@ -17,6 +17,7 @@ import ru.pavlig43.product.internal.create.ui.CreateProductSingleLineScreen
 import ru.pavlig43.product.internal.update.ProductTabChild
 import ru.pavlig43.product.internal.update.tabs.DeclarationScreen
 import ru.pavlig43.product.internal.update.tabs.composition.CompositionScreen
+import ru.pavlig43.product.internal.update.tabs.declaration.DeclarationScreen
 import ru.pavlig43.product.internal.update.tabs.essential.UpdateProductSingleLineScreen
 import ru.pavlig43.update.ui.FormTabsUi
 
@@ -58,6 +59,8 @@ private fun ProductSlotScreen(productTabChild: ProductTabChild?) {
         is ProductTabChild.Declaration -> DeclarationScreen(productTabChild.component)
         is ProductTabChild.Essentials -> UpdateProductSingleLineScreen(productTabChild.component)
         is ProductTabChild.Files -> FilesScreen(productTabChild.component)
+        is ProductTabChild.Declaration1 -> DeclarationScreen(productTabChild.component)
         null -> Box(Modifier)
+
     }
 }

@@ -21,6 +21,7 @@ import ru.pavlig43.product.internal.update.ProductTabChild.Files
 import ru.pavlig43.product.internal.update.tabs.ProductDeclarationComponent
 import ru.pavlig43.product.internal.update.tabs.ProductFilesComponent
 import ru.pavlig43.product.internal.update.tabs.composition.CompositionComponent
+import ru.pavlig43.product.internal.update.tabs.declaration.ProductDeclarationComponent1
 import ru.pavlig43.product.internal.update.tabs.essential.ProductUpdateSingleLineComponent
 import ru.pavlig43.update.component.IItemFormTabsComponent
 import ru.pavlig43.update.component.getDefaultUpdateComponent
@@ -47,6 +48,7 @@ internal class ProductFormTabsComponent(
                 ProductTab.Essentials,
                 ProductTab.Files,
                 ProductTab.Declaration,
+                ProductTab.Declaration1,
             ),
             serializer = ProductTab.serializer(),
             tabChildFactory = { context, tabConfig: ProductTab, _: () -> Unit ->
@@ -90,6 +92,15 @@ internal class ProductFormTabsComponent(
                             tabOpener = tabOpener
                         )
                     )
+
+                    ProductTab.Declaration1 -> ProductTabChild.Declaration1(
+                        ProductDeclarationComponent1(
+                        componentContext = context,
+                        productId = productId,
+                        observableRepository = scope.get(),
+                        tabOpener = tabOpener,
+                        immutableTableDependencies = scope.get()
+                    ))
                 }
 
             },

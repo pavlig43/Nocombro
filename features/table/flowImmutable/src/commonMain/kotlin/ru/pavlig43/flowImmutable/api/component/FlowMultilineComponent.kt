@@ -44,7 +44,7 @@ abstract class FlowMultilineComponent<BdOUT: CollectionObject,BdIN:CollectionObj
     mapper: BdOUT.(Int) -> UI,
     filterMatcher: FilterMatcher<UI, Column>,
     sortMatcher: SortMatcher<UI, Column>,
-    private val repository: FlowMultilineRepository<BdIN,BdOUT>,
+    private val repository: FlowMultilineRepository<BdOUT,BdIN>,
 
     ) : ComponentContext by componentContext {
 
@@ -88,10 +88,10 @@ abstract class FlowMultilineComponent<BdOUT: CollectionObject,BdIN:CollectionObj
     )
 
 
-    protected fun addParentBD(parentBD: BdIN){
+    protected fun addParentBD(bdIn:BdIN){
         _observableBDIn.update { lst ->
             val composeId = lst.maxOfOrNull { it.composeId }?.plus(1) ?: 0
-            lst + ObservableBDIn(composeId, parentBD)
+            lst + ObservableBDIn(composeId, bdIn)
         }
     }
 
@@ -137,7 +137,6 @@ abstract class FlowMultilineComponent<BdOUT: CollectionObject,BdIN:CollectionObj
                 }
             }
             is FlowMultiLineEvent.Selection -> {selectionManager.onEvent(event.selectionUiEvent)}
-            is FlowMultiLineEvent.Add<*> -> {addParentBD(event.bdIn as BdIN)}
         }
     }
 

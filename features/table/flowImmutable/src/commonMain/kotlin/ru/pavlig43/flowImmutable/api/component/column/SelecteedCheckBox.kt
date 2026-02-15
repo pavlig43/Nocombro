@@ -18,12 +18,13 @@ import ua.wwind.table.ReadonlyTableColumnsBuilder
 fun<T: IMultiLineTableUi,C,E: TableData<T>> ReadonlyTableColumnsBuilder<T, C, E>.idWithSelection(
     selectionKey:C,
     idKey:C,
+    onCallAddDialog:()->Unit,
     onEvent:(FlowMultiLineEvent)-> Unit,
 ){
     coreIdWithSelection(
         selectionKey = selectionKey,
         idKey = idKey,
-        onAdd = {onEvent(FlowMultiLineEvent.Add)},
+        onAdd = onCallAddDialog,
         onSelectionUiEvent = {selectionUiEvent -> onEvent(FlowMultiLineEvent.Selection(selectionUiEvent))}
     )
 }

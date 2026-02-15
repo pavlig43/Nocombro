@@ -7,11 +7,12 @@ import androidx.compose.ui.graphics.Color
 import kotlinx.collections.immutable.ImmutableList
 import org.jetbrains.compose.resources.painterResource
 import ru.pavlig43.coreui.tooltip.ToolTipProject
-
-import ru.pavlig43.immutable.internal.component.items.productDeclaration.ProductDeclarationTableUi
-import ru.pavlig43.mutable.api.flowMiltiline.component.FlowMultiLineEvent
-import ru.pavlig43.mutable.api.flowMiltiline.component.column.idWithSelection
+import ru.pavlig43.flowImmutable.api.component.FlowMultiLineEvent
+import ru.pavlig43.flowImmutable.api.component.column.idWithSelection
 import ru.pavlig43.tablecore.model.TableData
+import ru.pavlig43.theme.Res
+import ru.pavlig43.theme.check
+import ru.pavlig43.theme.close
 import ua.wwind.table.ColumnSpec
 import ua.wwind.table.filter.data.TableFilterType
 import ua.wwind.table.tableColumns
@@ -20,28 +21,30 @@ internal enum class ProductDeclarationField {
 
     SELECTION,
     ID,
-    DISPLAY_NAME,
+    DECLARATION_NAME,
     VENDOR_NAME,
     IS_ACTUAL
 }
 
 internal fun createProductDeclarationColumn(
     onEvent: (FlowMultiLineEvent) -> Unit,
-): ImmutableList<ColumnSpec<ProductDeclarationTableUi, ProductDeclarationField, TableData<ProductDeclarationTableUi>>> {
+    onCallAddDialog:()->Unit,
+): ImmutableList<ColumnSpec<FlowProductDeclarationTableUi, ProductDeclarationField, TableData<FlowProductDeclarationTableUi>>> {
     val columns =
-        tableColumns<ProductDeclarationTableUi, ProductDeclarationField, TableData<ProductDeclarationTableUi>> {
+        tableColumns<FlowProductDeclarationTableUi, ProductDeclarationField, TableData<FlowProductDeclarationTableUi>> {
 
 
             idWithSelection(
                 selectionKey = ProductDeclarationField.SELECTION,
                 idKey = ProductDeclarationField.ID,
+                onCallAddDialog = onCallAddDialog,
                 onEvent = onEvent
             )
 
-            column(ProductDeclarationField.DISPLAY_NAME, valueOf = { it.displayName }) {
+            column(ProductDeclarationField.DECLARATION_NAME, valueOf = { it.declarationName }) {
                 header("Декларация")
                 align(Alignment.Center)
-                cell { item, _ -> Text(item.displayName) }
+                cell { item, _ -> Text(item.declarationName) }
                 sortable()
             }
 
