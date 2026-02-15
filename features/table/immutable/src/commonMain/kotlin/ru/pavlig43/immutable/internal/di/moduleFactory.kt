@@ -1,5 +1,9 @@
 package ru.pavlig43.immutable.internal.di
 
+import jdk.jfr.internal.OldObjectSample.emit
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.map
 import org.koin.core.qualifier.qualifier
 import org.koin.dsl.module
 import ru.pavlig43.database.NocombroDatabase
@@ -11,6 +15,7 @@ import ru.pavlig43.database.data.transact.Transact
 import ru.pavlig43.database.data.vendor.Vendor
 import ru.pavlig43.immutable.api.ImmutableTableDependencies
 import ru.pavlig43.immutable.internal.data.ImmutableListRepository
+import ru.pavlig43.immutable.internal.data.ImmutableListRepository1
 
 
 internal fun moduleFactory(dependencies: ImmutableTableDependencies) = listOf(
@@ -41,6 +46,18 @@ private fun createImmutableRepository(
     ImmutableTableRepositoryType.PRODUCT_DECLARATION -> createProductDeclarationRepository(db)
 }
 
+private class DocumentRepository(db: NocombroDatabase): ImmutableListRepository1<Document> {
+    private val dao = db.documentDao
+    override suspend fun deleteByIds(ids: Set<Int>): Result<Unit> {
+        return runCatching { dao.deleteDocumentsByIds(ids) }
+    }
+
+    override fun observeOnItems(): Flow<Result<List<Document>>> {
+        return dao.observeOnDocuments().map { Result.success(it) }
+            .catch { emit(Result.failure(it)) }
+    }
+
+}
 private fun createDocumentRepository(db: NocombroDatabase): ImmutableListRepository<Document> {
     val dao = db.documentDao
     return ImmutableListRepository(
