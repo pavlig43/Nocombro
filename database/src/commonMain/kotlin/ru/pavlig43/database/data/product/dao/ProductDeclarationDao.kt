@@ -38,6 +38,8 @@ abstract class ProductDeclarationDao {
         return getProductDeclaration(productId).map(InternalProductDeclaration::toProductDeclarationOut)
     }
 
+
+
     @Transaction
     @Query(
         """
@@ -46,14 +48,27 @@ abstract class ProductDeclarationDao {
     )
     internal abstract fun observeOnProductDeclaration(): Flow<List<InternalProductDeclaration>>
 
+
+
+    @Query("SELECT declaration_id FROM product_declaration WHERE product_id = :productId")
+    abstract suspend fun getDeclarationIdsByProductId(productId: Int): List<Int>
+    @Query("SELECT * FROM product_declaration WHERE product_id = :productId")
+    internal abstract fun observeOnProductDeclarationByProductId(productId: Int): Flow<List<InternalProductDeclaration>>
+
+    fun observeOnProductDeclarationOutByProductId(productId: Int): Flow<List<ProductDeclarationOut>> {
+        return observeOnProductDeclarationByProductId(productId).mapValues(
+            InternalProductDeclaration::toProductDeclarationOut
+        )
+    }
+
     fun observeOnProductDeclarationOut(): Flow<List<ProductDeclarationOut>> {
         return observeOnProductDeclaration().mapValues(InternalProductDeclaration::toProductDeclarationOut)
     }
 
 
-
     fun observeOnProductDeclarationNotification(
-        observeOnAllProduct:()->Flow<List<Product>>): Flow<List<NotificationDTO>> {
+        observeOnAllProduct: () -> Flow<List<Product>>
+    ): Flow<List<NotificationDTO>> {
         return combine(
             observeOnAllProduct(),
             observeOnProductDeclaration()
@@ -74,7 +89,10 @@ abstract class ProductDeclarationDao {
                 }
                 .mapNotNull { (productId, _) ->
                     declarations.find { it.product.id == productId }?.let {
-                        NotificationDTO(it.product.id, "В продукте ${it.product.displayName} нет свежей декларации")
+                        NotificationDTO(
+                            it.product.id,
+                            "В продукте ${it.product.displayName} нет свежей декларации"
+                        )
                     }
                 }
 
@@ -83,7 +101,6 @@ abstract class ProductDeclarationDao {
         }
 
     }
-
 
 
 }

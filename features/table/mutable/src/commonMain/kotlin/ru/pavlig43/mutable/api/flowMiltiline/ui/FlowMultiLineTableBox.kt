@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.ImmutableList
 import ru.pavlig43.coreui.ErrorScreen
 import ru.pavlig43.coreui.LoadingUi
+import ru.pavlig43.loadinitdata.api.ui.LoadInitDataScreen
 import ru.pavlig43.mutable.api.flowMiltiline.component.FlowMultiLineEvent
 import ru.pavlig43.mutable.api.flowMiltiline.component.FlowMultilineComponent
 import ru.pavlig43.mutable.api.flowMiltiline.component.ItemListState
@@ -35,40 +36,45 @@ fun <I : IMultiLineTableUi, C> FlowMultiLineTableBox(
     component: FlowMultilineComponent<*, I, C>,
     modifier: Modifier = Modifier
 ) {
-    val itemListState by component.itemListState.collectAsState()
 
-    val tableData: TableData<I> by component.tableData.collectAsState()
+    LoadInitDataScreen(component.initDataComponent){
+        val itemListState by component.itemListState.collectAsState()
 
-    Box(modifier.padding(16.dp)) {
+        val tableData: TableData<I> by component.tableData.collectAsState()
 
-        when (val state = itemListState) {
+        Box(modifier.padding(16.dp)) {
 
-            is ItemListState.Error -> ErrorScreen(state.message)
-            is ItemListState.Loading -> LoadingUi()
-            is ItemListState.Success -> {
-                TableBox(
-                    columns = component.columns,
-                    onFiltersChanged = component::updateFilters,
-                    onSortChanged = component::updateSort,
-                ) { verticalState, horizontalState, tableState, stringProvider, modifier ->
-                    FlowMultiLineTable(
+            when (val state = itemListState) {
+
+                is ItemListState.Error -> ErrorScreen(state.message)
+                is ItemListState.Loading -> LoadingUi()
+                is ItemListState.Success -> {
+                    TableBox(
                         columns = component.columns,
-                        tableState = tableState,
-                        stringProvider = stringProvider,
-                        verticalState = verticalState,
-                        horizontalState = horizontalState,
-                        items = tableData.displayedItems,
-                        onEvent = component::onEvent,
-                        tableData = tableData,
-                        modifier = modifier
-                    )
+                        onFiltersChanged = component::updateFilters,
+                        onSortChanged = component::updateSort,
+                    ) { verticalState, horizontalState, tableState, stringProvider, modifier ->
+                        FlowMultiLineTable(
+                            columns = component.columns,
+                            tableState = tableState,
+                            stringProvider = stringProvider,
+                            verticalState = verticalState,
+                            horizontalState = horizontalState,
+                            items = tableData.displayedItems,
+                            onEvent = component::onEvent,
+                            tableData = tableData,
+                            modifier = modifier
+                        )
+
+                    }
 
                 }
 
             }
-
         }
     }
+
+
 }
 
 @Suppress("LongParameterList", "LongMethod")

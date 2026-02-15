@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import ru.pavlig43.core.FormTabComponent
 import ru.pavlig43.core.componentCoroutineScope
+import ru.pavlig43.loadinitdata.api.component.LoadInitDataComponent
 import ru.pavlig43.mutable.api.flowMiltiline.data.FlowMultilineRepository
 import ru.pavlig43.tablecore.manger.FilterManager
 import ru.pavlig43.tablecore.manger.SelectionManager
@@ -24,6 +25,7 @@ import ru.pavlig43.tablecore.utils.SortMatcher
 import ua.wwind.table.ColumnSpec
 import ua.wwind.table.filter.data.TableFilterState
 import ua.wwind.table.state.SortState
+import kotlin.map
 
 internal sealed interface ItemListState<out O> {
     data object Loading : ItemListState<Nothing>
@@ -34,6 +36,7 @@ internal sealed interface ItemListState<out O> {
 
 abstract class FlowMultilineComponent<BD, UI : IMultiLineTableUi, Column>(
     componentContext: ComponentContext,
+    parentId: Int,
     mapper: BD.() -> UI,
     filterMatcher: FilterMatcher<UI, Column>,
     sortMatcher: SortMatcher<UI, Column>,
@@ -54,7 +57,15 @@ abstract class FlowMultilineComponent<BD, UI : IMultiLineTableUi, Column>(
             childContext("selection")
         )
     private val observableIds = MutableStateFlow(emptyList<Int>())
-
+    val initDataComponent = LoadInitDataComponent<List<Int>>(
+        componentContext = childContext("init"),
+        getInitData = {
+            repository.getInit(parentId)
+        },
+        onSuccessGetInitData = { lst ->
+            observableIds.update { lst }
+        }
+    )
     @OptIn(ExperimentalCoroutinesApi::class)
     internal val itemListState = observableIds.flatMapLatest { ids ->
         repository.observeOnItemsByIds(ids)
