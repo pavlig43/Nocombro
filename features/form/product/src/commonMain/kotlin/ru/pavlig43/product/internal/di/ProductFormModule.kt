@@ -31,23 +31,13 @@ internal fun createProductFormModule(dependencies: ProductFormDependencies) = li
         single<CreateSingleItemRepository<Product>> { ProductCreateRepository(get()) }
         single<UpdateSingleLineRepository<Product>> { ProductUpdateRepository(get()) }
 
-
-        single<UpdateCollectionRepository<ProductDeclarationOut, ProductDeclarationIn>>(
-            UpdateCollectionRepositoryType.Declaration.qualifier
-        ) { ProductDeclarationCollectionRepository(get()) }
-
-
-
         single<UpdateCollectionRepository<CompositionOut, CompositionIn>>(
             UpdateCollectionRepositoryType.Composition.qualifier
         ) { CompositionCollectionRepository(get()) }
 
         single<FlowMultilineRepository<ProductDeclarationOut, ProductDeclarationIn>> { ProductDeclarationRepository(get()) }
-
     }
-
 )
-
 
 private class ProductCreateRepository(db: NocombroDatabase) : CreateSingleItemRepository<Product> {
     private val dao = db.productDao
@@ -61,7 +51,7 @@ private class ProductCreateRepository(db: NocombroDatabase) : CreateSingleItemRe
 }
 
 private class ProductUpdateRepository(
-    private val db: NocombroDatabase
+    db: NocombroDatabase
 ) : UpdateSingleLineRepository<Product> {
 
     private val dao = db.productDao
@@ -80,7 +70,6 @@ private class ProductUpdateRepository(
         }
     }
 }
-
 
 private class CompositionCollectionRepository(
     private val db: NocombroDatabase
@@ -104,17 +93,15 @@ private class CompositionCollectionRepository(
 }
 
 internal enum class UpdateCollectionRepositoryType {
-
-    Declaration,
-    Composition,
-
+    Composition
 }
 
 private class ProductDeclarationRepository(
-    private val db: NocombroDatabase
+    db: NocombroDatabase
 ) : FlowMultilineRepository<ProductDeclarationOut, ProductDeclarationIn> {
 
     private val productDeclarationDao = db.productDeclarationDao
+
     override suspend fun getInit(parentId: Int): Result<List<ProductDeclarationIn>> {
         return runCatching {
             productDeclarationDao.getProductDeclarationIn(parentId)
@@ -122,35 +109,16 @@ private class ProductDeclarationRepository(
     }
 
     override fun observeOnItemsByIds(ids: List<Int>): Flow<Result<List<ProductDeclarationOut>>> {
-
         return productDeclarationDao.observeOnProductDeclarationOutByIds(ids)
             .map { Result.success(it) }
             .catch { emit(Result.failure(it)) }
     }
 
-}
-
-
-private class ProductDeclarationCollectionRepository(
-    private val db: NocombroDatabase
-) : UpdateCollectionRepository<ProductDeclarationOut, ProductDeclarationIn> {
-
-    private val dao = db.productDeclarationDao
-
-    override suspend fun getInit(id: Int): Result<List<ProductDeclarationOut>> {
-        return runCatching {
-            dao.getProductDeclarationOut(id)
-        }
-    }
-
     override suspend fun update(changeSet: ChangeSet<List<ProductDeclarationIn>>): Result<Unit> {
         return UpsertListChangeSet.update(
             changeSet = changeSet,
-            delete = { ids -> dao.deleteDeclarations(ids) },
-            upsert = { items -> dao.upsertProductDeclarations(items) }
+            delete = productDeclarationDao::deleteProductDeclarations,
+            upsert = productDeclarationDao::upsertProductDeclarations
         )
     }
 }
-
-
-

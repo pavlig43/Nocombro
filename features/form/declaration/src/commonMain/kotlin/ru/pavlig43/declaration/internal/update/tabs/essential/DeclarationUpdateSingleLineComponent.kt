@@ -25,13 +25,14 @@ import ru.pavlig43.mutable.api.singleLine.component.UpdateSingleLineComponent
 import ru.pavlig43.mutable.api.singleLine.data.UpdateSingleLineRepository
 import ua.wwind.table.ColumnSpec
 
+@Suppress("LongParameterList")
 internal class DeclarationUpdateSingleLineComponent(
     componentContext: ComponentContext,
     declarationId: Int,
     updateRepository: UpdateSingleLineRepository<Declaration>,
     componentFactory: SingleLineComponentFactory<Declaration, DeclarationEssentialsUi>,
     observeOnItem: (DeclarationEssentialsUi) -> Unit,
-    onSuccessInitData:(DeclarationEssentialsUi)-> Unit,
+    onSuccessInitData: (DeclarationEssentialsUi) -> Unit,
     private val immutableDependencies: ImmutableTableDependencies,
     private val tabOpener: TabOpener,
 ) : UpdateSingleLineComponent<Declaration, DeclarationEssentialsUi, DeclarationField>(
@@ -51,6 +52,7 @@ internal class DeclarationUpdateSingleLineComponent(
             onOpenBestBeforeDialog = { dialogNavigation.activate(UpdateDialogConfig.BestBefore) },
             onChangeItem = { item -> onChangeItem(item) }
         )
+
     private val dialogNavigation = SlotNavigation<UpdateDialogConfig>()
 
     val dialog: Value<ChildSlot<UpdateDialogConfig, UpdateDialogChild>> = childSlot(
@@ -101,8 +103,6 @@ internal class DeclarationUpdateSingleLineComponent(
             )
         }
     }
-
-
 
     override val errorMessages: Flow<List<String>> = errorTableMessages
 }

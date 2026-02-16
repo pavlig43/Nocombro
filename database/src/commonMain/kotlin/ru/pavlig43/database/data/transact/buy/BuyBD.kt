@@ -23,16 +23,15 @@ const val BUY_TABLE_NAME = "buy"
         ForeignKey(
             entity = BatchMovement::class,
             parentColumns = ["id"],
-            childColumns = ["movement_id"],
+            childColumns = ["movement_id"]
         )
-
     ]
 )
 data class BuyBDIn(
     @ColumnInfo("transaction_id", index = true)
     val transactionId: Int,
 
-    @ColumnInfo("movement_id")
+    @ColumnInfo("movement_id", index = true)
     val movementId: Int,
 
     @ColumnInfo("price")
@@ -44,11 +43,6 @@ data class BuyBDIn(
     @PrimaryKey(autoGenerate = true)
     override val id: Int = 0
 ) : CollectionObject
-
-
-
-
-
 
 data class BuyBDOut(
     val transactionId: Int,

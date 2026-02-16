@@ -9,6 +9,7 @@ import ua.wwind.table.EditableColumnBuilder
 import ua.wwind.table.EditableTableColumnsBuilder
 import ua.wwind.table.filter.data.TableFilterType
 
+@Suppress("LongParameterList")
 fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.writeCheckBoxColumn(
     headerText: String,
     column: C,

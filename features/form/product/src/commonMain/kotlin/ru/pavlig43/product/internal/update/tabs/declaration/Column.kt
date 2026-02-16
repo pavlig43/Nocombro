@@ -1,3 +1,4 @@
+@file:Suppress("MatchingDeclarationName")
 package ru.pavlig43.product.internal.update.tabs.declaration
 
 import androidx.compose.material3.Icon
@@ -18,7 +19,6 @@ import ua.wwind.table.filter.data.TableFilterType
 import ua.wwind.table.tableColumns
 
 internal enum class ProductDeclarationField {
-
     SELECTION,
     ID,
     DECLARATION_NAME,
@@ -28,12 +28,10 @@ internal enum class ProductDeclarationField {
 
 internal fun createProductDeclarationColumn(
     onEvent: (FlowMultiLineEvent) -> Unit,
-    onCallAddDialog:()->Unit,
+    onCallAddDialog: () -> Unit,
 ): ImmutableList<ColumnSpec<FlowProductDeclarationTableUi, ProductDeclarationField, TableData<FlowProductDeclarationTableUi>>> {
     val columns =
         tableColumns<FlowProductDeclarationTableUi, ProductDeclarationField, TableData<FlowProductDeclarationTableUi>> {
-
-
             idWithSelection(
                 selectionKey = ProductDeclarationField.SELECTION,
                 idKey = ProductDeclarationField.ID,
@@ -54,6 +52,7 @@ internal fun createProductDeclarationColumn(
                 cell { item, _ -> Text(item.vendorName) }
                 sortable()
             }
+
             column(ProductDeclarationField.IS_ACTUAL, valueOf = { it.isActual }) {
                 header("Актуальность")
                 align(Alignment.Center)
@@ -68,7 +67,6 @@ internal fun createProductDeclarationColumn(
                                 tint = if (item.isActual) Color.Green else Color.Red
                             )
                         }
-
                     )
                 }
                 sortable()

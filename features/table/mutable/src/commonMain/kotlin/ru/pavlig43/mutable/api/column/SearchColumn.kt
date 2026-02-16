@@ -26,6 +26,8 @@ import ua.wwind.table.filter.data.TableFilterType
  * @param filterType Опциональный тип фильтра для колонки
  * @param alignment Выравнивание содержимого
  */
+
+@Suppress("LongParameterList")
 fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.textWithSearchIconColumn(
     headerText: String,
     column: C,
@@ -62,8 +64,8 @@ private fun <T : Any, C, E> EditableColumnBuilder<T, C, E>.textWithSearchIconCel
 @Composable
 private fun NameRowWithSearchIcon(
     text: String,
-    onOpenChooseDialog:()-> Unit
-){
+    onOpenChooseDialog: () -> Unit
+) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp)

@@ -16,6 +16,7 @@ import ru.pavlig43.mutable.api.singleLine.component.SingleLineComponentFactory
 import ru.pavlig43.update.component.IItemFormTabsComponent
 import ru.pavlig43.update.component.getDefaultUpdateComponent
 
+@Suppress("LongParameterList")
 internal class DeclarationFormTabsComponent(
     componentContext: ComponentContext,
     componentFactory: SingleLineComponentFactory<Declaration, DeclarationEssentialsUi>,
@@ -28,8 +29,6 @@ internal class DeclarationFormTabsComponent(
     IItemFormTabsComponent<DeclarationTab, DeclarationTabChild> {
 
     override val transactionExecutor: TransactionExecutor = scope.get()
-
-
 
     override val tabNavigationComponent: TabNavigationComponent<DeclarationTab, DeclarationTabChild> =
         TabNavigationComponent(
@@ -66,7 +65,6 @@ internal class DeclarationFormTabsComponent(
 
             },
         )
-
 
     override val updateComponent = getDefaultUpdateComponent(componentContext, closeFormScreen)
 

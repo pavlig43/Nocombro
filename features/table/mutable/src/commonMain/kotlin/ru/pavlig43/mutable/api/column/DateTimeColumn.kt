@@ -19,6 +19,7 @@ import ua.wwind.table.EditableColumnBuilder
 import ua.wwind.table.EditableTableColumnsBuilder
 import ua.wwind.table.filter.data.TableFilterType
 
+@Suppress("LongParameterList")
 fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.writeDateTimeColumn(
     headerText: String,
     column: C,
@@ -74,7 +75,7 @@ private fun <T : Any, C, E> EditableColumnBuilder<T, C, E>.writeDateTimeCell(
     cell { item, _ ->
         WriteDateTimeRow(
             dateTime = valueOf(item),
-            onOpenDateTimeDialog = {onOpenDateTimeDialog(item)}
+            onOpenDateTimeDialog = { onOpenDateTimeDialog(item) }
         )
     }
 }

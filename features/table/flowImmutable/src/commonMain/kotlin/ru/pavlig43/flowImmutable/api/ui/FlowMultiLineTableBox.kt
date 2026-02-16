@@ -1,4 +1,4 @@
-package ru.pavlig43.mutable.api.flowMiltiline.ui
+package ru.pavlig43.flowImmutable.api.ui
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
@@ -51,11 +51,11 @@ import ua.wwind.table.strings.StringProvider
 @OptIn(ExperimentalTableApi::class)
 @Composable
 fun <I : IMultiLineTableUi, C> FlowMultiLineTableBox(
-    component: FlowMultilineComponent<*,*, I, C>,
+    component: FlowMultilineComponent<*, *, I, C>,
     modifier: Modifier = Modifier
 ) {
 
-    LoadInitDataScreen(component.initDataComponent){
+    LoadInitDataScreen(component.initDataComponent) {
         val itemListState by component.itemListState.collectAsState()
 
         val tableData: TableData<I> by component.tableData.collectAsState()
@@ -91,8 +91,6 @@ fun <I : IMultiLineTableUi, C> FlowMultiLineTableBox(
             }
         }
     }
-
-
 }
 
 @Suppress("LongParameterList", "LongMethod")
@@ -115,6 +113,7 @@ private fun <I : IMultiLineTableUi, C, E : TableData<I>> BoxScope.FlowMultiLineT
         itemAt = { index -> items.getOrNull(index) },
         state = tableState,
         strings = stringProvider,
+        onRowClick = { onEvent(FlowMultiLineEvent.RowClick(it)) },
         customization = DefaultTableCustomization(),
         tableData = tableData,
         columns = columns,
@@ -135,10 +134,7 @@ private fun <I : IMultiLineTableUi, C, E : TableData<I>> BoxScope.FlowMultiLineT
             .align(Alignment.BottomCenter)
             .padding(16.dp),
     )
-
-
 }
-
 
 /**
  * Floating action bar shown at the bottom when items are selected.

@@ -12,10 +12,12 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import ru.pavlig43.core.FormTabComponent
 import ru.pavlig43.core.componentCoroutineScope
+import ru.pavlig43.core.model.ChangeSet
 import ru.pavlig43.core.model.CollectionObject
-import ru.pavlig43.loadinitdata.api.component.LoadInitDataComponent
 import ru.pavlig43.flowImmutable.api.data.FlowMultilineRepository
+import ru.pavlig43.loadinitdata.api.component.LoadInitDataComponent
 import ru.pavlig43.tablecore.manger.FilterManager
 import ru.pavlig43.tablecore.manger.SelectionManager
 import ru.pavlig43.tablecore.manger.SortManager
@@ -37,16 +39,18 @@ data class ObservableBDIn<BdIN:CollectionObject>(
     val bdIn: BdIN,
 )
 
+@Suppress("LongParameterList")
 abstract class FlowMultilineComponent<BdOUT: CollectionObject,BdIN:CollectionObject, UI : IMultiLineTableUi, Column>(
     componentContext: ComponentContext,
     parentId: Int,
     getObservableId: (BdIN) -> Int,
     mapper: BdOUT.(Int) -> UI,
+    private val onRowClick: (UI) -> Unit,
     filterMatcher: FilterMatcher<UI, Column>,
     sortMatcher: SortMatcher<UI, Column>,
     private val repository: FlowMultilineRepository<BdOUT,BdIN>,
 
-    ) : ComponentContext by componentContext {
+    ) : ComponentContext by componentContext, FormTabComponent {
 
 
     abstract val columns: ImmutableList<ColumnSpec<UI, Column, TableData<UI>>>
@@ -60,8 +64,9 @@ abstract class FlowMultilineComponent<BdOUT: CollectionObject,BdIN:CollectionObj
         SelectionManager(
             childContext("selection")
         )
-    private val _observableBDIn = MutableStateFlow<List<ObservableBDIn<BdIN>>>(emptyList())
-    private val observableBDIn = _observableBDIn.asStateFlow()
+    private val _uiList = MutableStateFlow<List<UI>>(emptyList())
+    protected val uiList = _uiList.asStateFlow()
+    private val observableBDIn = MutableStateFlow<List<ObservableBDIn<BdIN>>>(emptyList())
 
 
     val initDataComponent = LoadInitDataComponent<List<BdIN>>(
@@ -70,15 +75,15 @@ abstract class FlowMultilineComponent<BdOUT: CollectionObject,BdIN:CollectionObj
             repository.getInit(parentId)
         },
         onSuccessGetInitData = { lst ->
-            _observableBDIn.update { lst.mapIndexed { index, it -> ObservableBDIn(index, it) } }
+            observableBDIn.update { lst.mapIndexed { index, bdIN -> ObservableBDIn(index + 1, bdIN) } }
         }
     )
     @OptIn(ExperimentalCoroutinesApi::class)
-    internal val itemListState = _observableBDIn.flatMapLatest { bdINS ->
-        repository.observeOnItemsByIds(bdINS.map{getObservableId(it.bdIn)})
+    internal val itemListState = observableBDIn.flatMapLatest { bdINS ->
+        repository.observeOnItemsByIds(bdINS.map { getObservableId(it.bdIn) })
     }.map { result ->
         result.fold(
-            onSuccess = { ItemListState.Success(it.mapIndexed { index, oUT -> mapper(oUT,index) })},
+            onSuccess = { ItemListState.Success(it.mapIndexed { index, oUT -> mapper(oUT, index + 1) }) },
             onFailure = { ItemListState.Error(it.message ?: "unknown error") }
         )
     }.stateIn(
@@ -88,9 +93,9 @@ abstract class FlowMultilineComponent<BdOUT: CollectionObject,BdIN:CollectionObj
     )
 
 
-    protected fun addParentBD(bdIn:BdIN){
-        _observableBDIn.update { lst ->
-            val composeId = lst.maxOfOrNull { it.composeId }?.plus(1) ?: 0
+    protected fun addParentBD(bdIn: BdIN) {
+        observableBDIn.update { lst ->
+            val composeId = lst.maxOfOrNull { it.composeId }?.plus(1) ?: 1
             lst + ObservableBDIn(composeId, bdIn)
         }
     }
@@ -106,6 +111,7 @@ abstract class FlowMultilineComponent<BdOUT: CollectionObject,BdIN:CollectionObj
             is ItemListState.Loading -> TableData(isSelectionMode = true)
 
             is ItemListState.Success -> {
+                _uiList.update { state.data }
                 val filtered = state.data.filter { ui ->
                     filterMatcher.matchesItem(ui, filters)
                 }
@@ -129,18 +135,21 @@ abstract class FlowMultilineComponent<BdOUT: CollectionObject,BdIN:CollectionObj
         when (event) {
 
             is FlowMultiLineEvent.DeleteSelected -> {
-                _observableBDIn.update { lst ->
-
+                observableBDIn.update { lst ->
                     val updatedList = lst - lst.filter { it.composeId in selectionManager.selectedIds }.toSet()
                     selectionManager.clearSelected()
                     updatedList
                 }
             }
-            is FlowMultiLineEvent.Selection -> {selectionManager.onEvent(event.selectionUiEvent)}
+            is FlowMultiLineEvent.Selection -> { selectionManager.onEvent(event.selectionUiEvent) }
+            is FlowMultiLineEvent.RowClick<*> -> { onRowClick(event.item as UI) }
         }
     }
-
-
+    override suspend fun onUpdate(): Result<Unit> {
+        val old = initDataComponent.firstData.value
+        val new = observableBDIn.value.map { it.bdIn }
+        return repository.update(ChangeSet(old, new))
+    }
 
     fun updateFilters(filters: Map<Column, TableFilterState<*>>) {
         filterManager.update(filters)

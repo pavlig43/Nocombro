@@ -4,11 +4,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import ru.pavlig43.immutable.api.ui.MBSImmutableTable
-import ru.pavlig43.mutable.api.flowMiltiline.ui.FlowMultiLineTableBox
+import ru.pavlig43.flowImmutable.api.ui.FlowMultiLineTableBox
 
 @Composable
 internal fun DeclarationScreen(
-    component: ProductDeclarationComponent1
+    component: ProductDeclarationComponent
 ) {
     val dialog by component.dialog.subscribeAsState()
     FlowMultiLineTableBox(component)

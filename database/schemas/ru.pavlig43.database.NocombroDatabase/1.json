@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "bab1bfde27d361ad3954c6253781fcb6",
+    "identityHash": "23ff40f3f83df9bf289bd540e44cb7ef",
     "entities": [
       {
         "tableName": "file",
@@ -320,7 +320,7 @@
       },
       {
         "tableName": "product_declaration",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`product_id` INTEGER NOT NULL, `declaration_id` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, FOREIGN KEY(`product_id`) REFERENCES `product`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`declaration_id`) REFERENCES `declaration`(`id`) ON UPDATE NO ACTION ON DELETE RESTRICT )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`product_id` INTEGER NOT NULL, `declaration_id` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, FOREIGN KEY(`product_id`) REFERENCES `product`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`declaration_id`) REFERENCES `declaration`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "productId",
@@ -381,7 +381,7 @@
           },
           {
             "table": "declaration",
-            "onDelete": "RESTRICT",
+            "onDelete": "CASCADE",
             "onUpdate": "NO ACTION",
             "columns": [
               "declaration_id"
@@ -650,6 +650,15 @@
             ],
             "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_buy_transaction_id` ON `${TABLE_NAME}` (`transaction_id`)"
+          },
+          {
+            "name": "index_buy_movement_id",
+            "unique": false,
+            "columnNames": [
+              "movement_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_buy_movement_id` ON `${TABLE_NAME}` (`movement_id`)"
           }
         ],
         "foreignKeys": [
@@ -811,7 +820,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'bab1bfde27d361ad3954c6253781fcb6')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '23ff40f3f83df9bf289bd540e44cb7ef')"
     ]
   }
 }

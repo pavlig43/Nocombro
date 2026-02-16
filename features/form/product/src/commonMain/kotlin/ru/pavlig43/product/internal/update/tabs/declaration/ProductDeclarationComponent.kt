@@ -7,9 +7,8 @@ import com.arkivanov.decompose.router.slot.childSlot
 import com.arkivanov.decompose.router.slot.dismiss
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.serialization.Serializable
-import ru.pavlig43.core.FormTabComponent
 import ru.pavlig43.core.tabs.TabOpener
 import ru.pavlig43.database.data.product.ProductDeclarationIn
 import ru.pavlig43.database.data.product.ProductDeclarationOut
@@ -19,15 +18,14 @@ import ru.pavlig43.immutable.api.ImmutableTableDependencies
 import ru.pavlig43.immutable.api.component.DeclarationImmutableTableBuilder
 import ru.pavlig43.immutable.api.component.MBSImmutableTableComponent
 import ru.pavlig43.immutable.internal.component.items.declaration.DeclarationTableUi
-import ru.pavlig43.product.internal.update.tabs.DeclarationDialogConfig
 import ru.pavlig43.tablecore.model.TableData
 import ua.wwind.table.ColumnSpec
 import kotlin.time.ExperimentalTime
 
-internal class ProductDeclarationComponent1(
+internal class ProductDeclarationComponent(
     componentContext: ComponentContext,
     productId: Int,
-    observableRepository: FlowMultilineRepository< ProductDeclarationOut,ProductDeclarationIn>,
+    observableRepository: FlowMultilineRepository<ProductDeclarationOut, ProductDeclarationIn>,
     tabOpener: TabOpener,
     immutableTableDependencies: ImmutableTableDependencies,
 ): FlowMultilineComponent<ProductDeclarationOut, ProductDeclarationIn, FlowProductDeclarationTableUi, ProductDeclarationField>(
@@ -38,8 +36,9 @@ internal class ProductDeclarationComponent1(
     repository = observableRepository,
     filterMatcher = ProductDeclarationFilterMatcher,
     sortMatcher = ProductDeclarationSorter,
-), FormTabComponent {
-
+    onRowClick = { tabOpener.openDeclarationTab(it.declarationId) },
+) {
+    override val title: String = "Декларации"
     private val dialogNavigation = SlotNavigation<DeclarationDialogConfig>()
 
     internal val dialog = childSlot(
@@ -73,19 +72,19 @@ internal class ProductDeclarationComponent1(
     }
 
     override val columns: ImmutableList<ColumnSpec<FlowProductDeclarationTableUi, ProductDeclarationField, TableData<FlowProductDeclarationTableUi>>> =
-        createProductDeclarationColumn(::onEvent,::showDialog)
-    override val title: String = "Декларации"
+        createProductDeclarationColumn(::onEvent, ::showDialog)
 
-    override suspend fun onUpdate(): Result<Unit> {
-        return Result.success(Unit)
+    override val errorMessages: Flow<List<String>> = uiList.map { lst: List<FlowProductDeclarationTableUi> ->
+        buildList {
+            if (lst.isEmpty()) add("Добавьте хотя бы одну декларацию")
+            if (lst.none { it.isActual }) add("Хотя бы одна декларация должна быть актуальной")
+        }
     }
-
-    override val errorMessages: Flow<List<String>> = flowOf(emptyList())
-
 }
 
 @Serializable
 internal data object DeclarationDialogConfig
+
 @OptIn(ExperimentalTime::class)
 private fun ProductDeclarationOut.toUi(composeKey: Int): FlowProductDeclarationTableUi {
     return FlowProductDeclarationTableUi(
@@ -94,15 +93,6 @@ private fun ProductDeclarationOut.toUi(composeKey: Int): FlowProductDeclarationT
         isActual = isActual,
         composeId = composeKey,
         declarationName = declarationName,
-        vendorName = vendorName,
-
-    )
-}
-
-private fun FlowProductDeclarationTableUi.mapper(productId: Int): ProductDeclarationIn {
-    return ProductDeclarationIn(
-        productId = productId,
-        declarationId = declarationId,
-        id = id
+        vendorName = vendorName
     )
 }

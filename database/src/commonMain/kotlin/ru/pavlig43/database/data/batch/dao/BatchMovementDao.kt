@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Relation
+import androidx.room.Transaction
 import androidx.room.Update
 import androidx.room.Upsert
 import ru.pavlig43.database.data.batch.BatchBD
@@ -31,17 +32,16 @@ abstract class BatchMovementDao {
     abstract suspend fun deleteByTransactionId(transactionId: Int)
 
     @Query("SELECT * FROM batch_movement WHERE transaction_id = :transactionId")
+    @Transaction
     abstract suspend fun getByTransactionId(transactionId: Int): List<MovementOut>
 
     @Query("DELETE FROM batch_movement WHERE id in (:ids)")
-    abstract suspend fun deleteByIds(ids:List<Int>)
-
-
+    abstract suspend fun deleteByIds(ids: List<Int>)
 }
+
 data class MovementOut(
     @Embedded
     val movement: BatchMovement,
-
     @Relation(
         entity = BatchBD::class,
         parentColumn = "batch_id",

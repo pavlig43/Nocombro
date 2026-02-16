@@ -22,58 +22,31 @@ abstract class ProductDeclarationDao {
     @Upsert
     abstract suspend fun upsertProductDeclarations(declaration: List<ProductDeclarationIn>)
 
-    @Query("DELETE FROM product_declaration WHERE id in(:ids)")
-    abstract suspend fun deleteDeclarations(ids: List<Int>)
-
-    @Transaction
-    @Query(
-        """
-        SELECT * FROM product_declaration
-        WHERE product_id = :productId
-    """
-    )
-    internal abstract suspend fun getProductDeclaration(productId: Int): List<InternalProductDeclaration>
-
-    suspend fun getProductDeclarationOut(productId: Int): List<ProductDeclarationOut> {
-        return getProductDeclaration(productId).map(InternalProductDeclaration::toProductDeclarationOut)
-    }
-
     @Query("SELECT * FROM product_declaration WHERE product_id = :productId")
     abstract suspend fun getProductDeclarationIn(productId: Int): List<ProductDeclarationIn>
 
-
-
-    @Transaction
     @Query(
         """
         SELECT * FROM product_declaration
     """
     )
+    @Transaction
     internal abstract fun observeOnProductDeclaration(): Flow<List<InternalProductDeclaration>>
 
-
-
-    @Query("SELECT * FROM product_declaration WHERE product_id = :productId")
-    abstract suspend fun getDeclarationIdsByProductId(productId: Int): List<ProductDeclarationIn>
-    @Query("SELECT * FROM product_declaration WHERE product_id = :productId")
-    internal abstract fun observeOnProductDeclarationByProductId(productId: Int): Flow<List<InternalProductDeclaration>>
-
-    fun observeOnProductDeclarationOutByProductId(productId: Int): Flow<List<ProductDeclarationOut>> {
-        return observeOnProductDeclarationByProductId(productId).mapValues(
-            InternalProductDeclaration::toProductDeclarationOut
-        )
-    }
-
     @Query("SELECT * FROM product_declaration WHERE id IN (:ids)")
+    @Transaction
     internal abstract fun observeOnProductDeclarationByIds(ids: List<Int>): Flow<List<InternalProductDeclaration>>
 
     fun observeOnProductDeclarationOutByIds(ids: List<Int>): Flow<List<ProductDeclarationOut>> {
         return observeOnProductDeclarationByIds(ids).mapValues(InternalProductDeclaration::toProductDeclarationOut)
     }
+
     fun observeOnProductDeclarationOut(): Flow<List<ProductDeclarationOut>> {
         return observeOnProductDeclaration().mapValues(InternalProductDeclaration::toProductDeclarationOut)
     }
 
+    @Query("DELETE FROM product_declaration WHERE id IN (:ids)")
+    abstract suspend fun deleteProductDeclarations(ids: List<Int>)
 
     fun observeOnProductDeclarationNotification(
         observeOnAllProduct: () -> Flow<List<Product>>
@@ -108,10 +81,7 @@ abstract class ProductDeclarationDao {
             // 4. ОБЪЕДИНЯЕМ ВСЕ
             withoutDeclarations + allExpired
         }
-
     }
-
-
 }
 
 internal data class InternalProductDeclaration(

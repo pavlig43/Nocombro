@@ -11,11 +11,8 @@ internal sealed interface ProductTab {
     data object Files : ProductTab
 
     @Serializable
-    data object Declaration : ProductTab
-
-    @Serializable
     data object Composition : ProductTab
 
     @Serializable
-    data object Declaration1 : ProductTab
+    data object Declaration : ProductTab
 }

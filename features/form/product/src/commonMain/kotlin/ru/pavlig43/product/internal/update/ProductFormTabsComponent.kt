@@ -15,13 +15,11 @@ import ru.pavlig43.mutable.api.singleLine.component.SingleLineComponentFactory
 import ru.pavlig43.product.internal.di.UpdateCollectionRepositoryType
 import ru.pavlig43.product.internal.model.ProductEssentialsUi
 import ru.pavlig43.product.internal.update.ProductTabChild.Composition
-import ru.pavlig43.product.internal.update.ProductTabChild.Declaration
 import ru.pavlig43.product.internal.update.ProductTabChild.Essentials
 import ru.pavlig43.product.internal.update.ProductTabChild.Files
-import ru.pavlig43.product.internal.update.tabs.ProductDeclarationComponent
 import ru.pavlig43.product.internal.update.tabs.ProductFilesComponent
 import ru.pavlig43.product.internal.update.tabs.composition.CompositionComponent
-import ru.pavlig43.product.internal.update.tabs.declaration.ProductDeclarationComponent1
+import ru.pavlig43.product.internal.update.tabs.declaration.ProductDeclarationComponent
 import ru.pavlig43.product.internal.update.tabs.essential.ProductUpdateSingleLineComponent
 import ru.pavlig43.update.component.IItemFormTabsComponent
 import ru.pavlig43.update.component.getDefaultUpdateComponent
@@ -47,13 +45,11 @@ internal class ProductFormTabsComponent(
             startConfigurations = listOf(
                 ProductTab.Essentials,
                 ProductTab.Files,
-                ProductTab.Declaration,
-                ProductTab.Declaration1,
+                ProductTab.Declaration
             ),
             serializer = ProductTab.serializer(),
             tabChildFactory = { context, tabConfig: ProductTab, _: () -> Unit ->
                 when (tabConfig) {
-
                     is ProductTab.Essentials -> Essentials(
                         ProductUpdateSingleLineComponent(
                             componentContext = context,
@@ -73,16 +69,6 @@ internal class ProductFormTabsComponent(
                         )
                     )
 
-                    is ProductTab.Declaration -> Declaration(
-                        ProductDeclarationComponent(
-                            componentContext = context,
-                            productId = productId,
-                            updateRepository = scope.get(UpdateCollectionRepositoryType.Declaration.qualifier),
-                            tabOpener = tabOpener,
-                            dependencies = scope.get()
-                        )
-                    )
-
                     ProductTab.Composition -> Composition(
                         CompositionComponent(
                             componentContext = context,
@@ -93,27 +79,27 @@ internal class ProductFormTabsComponent(
                         )
                     )
 
-                    ProductTab.Declaration1 -> ProductTabChild.Declaration1(
-                        ProductDeclarationComponent1(
-                        componentContext = context,
-                        productId = productId,
-                        observableRepository = scope.get(),
-                        tabOpener = tabOpener,
-                        immutableTableDependencies = scope.get()
-                    ))
+                    ProductTab.Declaration -> ProductTabChild.Declaration1(
+                        ProductDeclarationComponent(
+                            componentContext = context,
+                            productId = productId,
+                            observableRepository = scope.get(),
+                            tabOpener = tabOpener,
+                            immutableTableDependencies = scope.get()
+                        )
+                    )
                 }
-
             },
         )
-    private fun onSuccessInitData(product: ProductEssentialsUi){
+
+    private fun onSuccessInitData(product: ProductEssentialsUi) {
         observeOnProduct(product)
         coroutineScope.launch {
-            if (product.productType == ProductType.FOOD_PF){
+            if (product.productType == ProductType.FOOD_PF) {
                 tabNavigationComponent.addTab(ProductTab.Composition)
             }
             tabNavigationComponent.onSelectTab(0)
         }
-
     }
 
     override val updateComponent = getDefaultUpdateComponent(componentContext, closeFormScreen)
