@@ -72,7 +72,7 @@ internal class BuyComponent(
                     onCreate = { tabOpener.openDeclarationTab(0) },
                     dependencies = immutableTableDependencies,
                     immutableTableBuilderData = ProductDeclarationImmutableTableBuilder(
-                        productId = dialogConfig.productId,
+                        parentId = dialogConfig.productId,
                     ),
                     onItemClick = { declaration ->
                         val buyUi = itemList.value.first { it.composeId == dialogConfig.composeId }

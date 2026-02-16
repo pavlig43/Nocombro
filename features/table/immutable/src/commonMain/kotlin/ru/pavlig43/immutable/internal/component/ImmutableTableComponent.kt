@@ -40,7 +40,7 @@ internal abstract class ImmutableTableComponent<BD, UI : IMultiLineTableUi, Colu
     sortMatcher: SortMatcher<UI, Column>,
     val repository: ImmutableListRepository<BD>,
 
-) : ComponentContext by componentContext {
+    ) : ComponentContext by componentContext {
 
 
     abstract val columns: ImmutableList<ColumnSpec<UI, Column, TableData<UI>>>
@@ -61,7 +61,7 @@ internal abstract class ImmutableTableComponent<BD, UI : IMultiLineTableUi, Colu
     )
 
 
-    val itemListState = repository.observeOnItems().map { result ->
+    val itemListState = repository.observeOnItems(tableBuilder.parentId).map { result ->
         result.fold(
             onSuccess = { ItemListState.Success(it.map(mapper)) },
             onFailure = { ItemListState.Error(it.message ?: "unknown error") }
@@ -118,7 +118,6 @@ internal abstract class ImmutableTableComponent<BD, UI : IMultiLineTableUi, Colu
             }
         }
     }
-
 
 
     fun updateFilters(filters: Map<Column, TableFilterState<*>>) {

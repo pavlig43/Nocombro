@@ -52,13 +52,13 @@ abstract class ProductDeclarationDao {
      *
      * @return Flow со списком внутренних представлений связей
      */
-    @Query(
-        """
-        SELECT * FROM product_declaration
-    """
-    )
+    @Query("SELECT * FROM product_declaration")
     @Transaction
-    internal abstract fun observeOnProductDeclaration(): Flow<List<InternalProductDeclaration>>
+    internal abstract fun observeOnAllProductDeclaration(): Flow<List<InternalProductDeclaration>>
+
+    @Query("SELECT * FROM product_declaration WHERE product_id = :productId")
+    @Transaction
+    internal abstract fun observeOnProductDeclarationByProductId(productId: Int): Flow<List<InternalProductDeclaration>>
 
     /**
      * Создаёт Flow для отслеживания связей с указанными идентификаторами.
@@ -94,8 +94,8 @@ abstract class ProductDeclarationDao {
      *
      * @return Flow со списком всех выходных данных
      */
-    fun observeOnProductDeclarationOut(): Flow<List<ProductDeclarationOut>> {
-        return observeOnProductDeclaration().mapValues(InternalProductDeclaration::toProductDeclarationOut)
+    fun observeOnProductDeclarationOut(productId: Int): Flow<List<ProductDeclarationOut>> {
+        return observeOnProductDeclarationByProductId(productId).mapValues(InternalProductDeclaration::toProductDeclarationOut)
     }
 
     /**
@@ -121,7 +121,7 @@ abstract class ProductDeclarationDao {
     ): Flow<List<NotificationDTO>> {
         return combine(
             observeOnAllProduct(),
-            observeOnProductDeclaration()
+            observeOnAllProductDeclaration()
         ) { products, declarations ->
             // 1. ID продуктов С декларациями
             val productsWithDeclarations = declarations.map { it.product.id }.toSet()
