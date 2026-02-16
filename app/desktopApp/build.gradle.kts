@@ -17,6 +17,7 @@ kotlin{
         implementation(libs.koin.core)
         implementation(libs.decompose)
         implementation(libs.decompose.compose)
+        implementation(libs.kermit)
         implementation(projects.rootnocombro)
         implementation(compose.desktop.currentOs)
 

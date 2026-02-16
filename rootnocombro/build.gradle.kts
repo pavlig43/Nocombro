@@ -24,6 +24,5 @@ kotlin {
         implementation(projects.features.form.declaration)
         implementation(projects.features.form.transaction)
 
-
     }
 }
