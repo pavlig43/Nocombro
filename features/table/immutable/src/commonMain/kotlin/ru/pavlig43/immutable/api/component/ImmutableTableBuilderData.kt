@@ -12,6 +12,19 @@ sealed interface ImmutableTableBuilderData<I: IMultiLineTableUi>{
     val tabTitle: String
     val withCheckbox: Boolean
 
+    /**
+     * Родительский идентификатор для фильтрации связанных данных.
+     *
+     * Используется для таблиц с отношениями "один-ко-многим", когда нужно отобразить
+     * только элементы, связанные с определённой родительской сущностью.
+     *
+     * Например, для отображения деклараций конкретного продукта:
+     * - `parentId = productId` — только декларации этого продукта
+     * - `parentId = 0` — все декларации (без фильтрации)
+     */
+    val parentId: Int
+        get() = 0
+
 }
 data class DocumentImmutableTableBuilder(
     val fullListDocumentTypes: List<DocumentType>,
@@ -27,7 +40,7 @@ data class DeclarationImmutableTableBuilder(
     override val tabTitle: String = "Декларации"
 }
 data class ProductDeclarationImmutableTableBuilder(
-    val productId: Int
+    override val parentId: Int
 ): ImmutableTableBuilderData<ProductDeclarationTableUi> {
     override val tabTitle: String = "Декларации"
     override val withCheckbox: Boolean = false
