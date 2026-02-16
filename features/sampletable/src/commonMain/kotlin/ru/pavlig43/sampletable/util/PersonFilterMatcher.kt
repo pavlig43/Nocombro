@@ -57,7 +57,7 @@ object PersonFilterMatcher {
         }
         return true
     }
-
+@Suppress("UNCHECKED_CAST")
     private fun matchesTextField(
         value: String,
         state: TableFilterState<*>,
@@ -75,7 +75,7 @@ object PersonFilterMatcher {
             else -> true
         }
     }
-
+    @Suppress("UNCHECKED_CAST")
     private fun matchesIntField(
         value: Int,
         state: TableFilterState<*>,
@@ -99,7 +99,7 @@ object PersonFilterMatcher {
             else -> true
         }
     }
-
+    @Suppress("UNCHECKED_CAST")
     private fun matchesBooleanField(
         value: Boolean,
         state: TableFilterState<*>,
@@ -145,7 +145,7 @@ object PersonFilterMatcher {
         // Standard number filter
         return matchesIntField(value, state)
     }
-
+    @Suppress("UNCHECKED_CAST")
     private fun matchesDateField(
         value: LocalDate,
         state: TableFilterState<*>,
@@ -180,7 +180,7 @@ object PersonFilterMatcher {
                 age < 35 -> "25-34"
                 else -> "35+"
             }
-
+        @Suppress("UNCHECKED_CAST")
         val st = state as TableFilterState<String>
         val query = st.values?.firstOrNull().orEmpty()
         val constraint = st.constraint ?: return true

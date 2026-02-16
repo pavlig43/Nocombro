@@ -15,6 +15,21 @@ import ru.pavlig43.tablecore.ui.createButtonNew
 import ua.wwind.table.ReadonlyColumnBuilder
 import ua.wwind.table.ReadonlyTableColumnsBuilder
 
+/**
+ * Создаёт колонку с чекбоксами для выбора строк и колонку с ID.
+ *
+ * Добавляет в таблицу:
+ * - Колонку выбора с чекбоксами и кнопкой добавления в заголовке
+ * - Колонку с идентификаторами строк
+ *
+ * @param T Тип UI элемента таблицы
+ * @param C Тип ключей колонок
+ * @param E Тип данных таблицы
+ * @param selectionKey Ключ для колонки выбора
+ * @param idKey Ключ для колонки ID
+ * @param onCallAddDialog Callback при нажатии кнопки добавления
+ * @param onEvent Callback для отправки событий таблицы
+ */
 fun<T: IMultiLineTableUi,C,E: TableData<T>> ReadonlyTableColumnsBuilder<T, C, E>.idWithSelection(
     selectionKey:C,
     idKey:C,

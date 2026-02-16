@@ -48,6 +48,20 @@ import ua.wwind.table.config.DefaultTableCustomization
 import ua.wwind.table.state.TableState
 import ua.wwind.table.strings.StringProvider
 
+/**
+ * Композабл для отображения таблицы с многострочными данными.
+ *
+ * Обеспечивает:
+ * - Отображение загрузки, ошибки или данных
+ * - Интеграцию с [FlowMultilineComponent]
+ * - Фильтрацию и сортировку
+ * - Выборку строк с панелью действий
+ *
+ * @param I Тип UI элемента таблицы
+ * @param C Тип колонок таблицы
+ * @param component Компонент с логикой таблицы
+ * @param modifier Модификатор для размещения
+ */
 @OptIn(ExperimentalTableApi::class)
 @Composable
 fun <I : IMultiLineTableUi, C> FlowMultiLineTableBox(
@@ -93,6 +107,25 @@ fun <I : IMultiLineTableUi, C> FlowMultiLineTableBox(
     }
 }
 
+/**
+ * Отображает таблицу с многострочными данными и панелью действий.
+ *
+ * Создаёт таблицу с указанными колонками и элементами, а также панель действий
+ * для работы с выбранными строками.
+ *
+ * @param I Тип UI элемента таблицы
+ * @param C Тип колонок таблицы
+ * @param E Тип данных таблицы
+ * @param columns Колонки таблицы
+ * @param tableState Состояние таблицы
+ * @param stringProvider Провайдер строк для локализации
+ * @param verticalState Состояние вертикальной прокрутки
+ * @param horizontalState Состояние горизонтальной прокрутки
+ * @param items Элементы для отображения
+ * @param onEvent Callback для обработки событий
+ * @param tableData Данные таблицы
+ * @param modifier Модификатор для размещения
+ */
 @Suppress("LongParameterList", "LongMethod")
 @OptIn(ExperimentalTableApi::class)
 @Composable
@@ -137,14 +170,15 @@ private fun <I : IMultiLineTableUi, C, E : TableData<I>> BoxScope.FlowMultiLineT
 }
 
 /**
- * Floating action bar shown at the bottom when items are selected.
- * Displays the count of selected items and provides delete/clear actions.
- * Features a Liquid Glass effect powered by the Liquid library with GPU-accelerated shaders.
+ * Плавающая панель действий, отображаемая внизу при выборе элементов.
  *
- * @param selectedCount Number of selected items to display
- * @param onDeleteClick Callback when delete button is clicked
- * @param onClearSelection Callback when clear selection button is clicked
- * @param modifier Modifier for the composable
+ * Показывает количество выбранных элементов и предоставляет действия для удаления/очистки.
+ * Имеет эффект полупрозрачного фона с анимацией появления/скрытия.
+ *
+ * @param selectedCount Количество выбранных элементов для отображения
+ * @param onDeleteClick Callback при нажатии кнопки удаления
+ * @param onClearSelection Callback при нажатии кнопки очистки выбора
+ * @param modifier Модификатор для композабла
  */
 @Composable
 private fun SelectionActionBar(

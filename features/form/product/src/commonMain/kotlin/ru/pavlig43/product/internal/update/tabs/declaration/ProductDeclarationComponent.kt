@@ -22,6 +22,22 @@ import ru.pavlig43.tablecore.model.TableData
 import ua.wwind.table.ColumnSpec
 import kotlin.time.ExperimentalTime
 
+/**
+ * Компонент для управления декларациями продукта.
+ *
+ * Обеспечивает:
+ * - Отображение списка деклараций продукта
+ * - Добавление новых деклараций через диалог
+ * - Удаление выбранных деклараций
+ * - Переход на вкладку декларации при клике на строку
+ * - Валидацию наличия хотя бы одной актуальной декларации
+ *
+ * @param componentContext Контекст компонента Decompose
+ * @param productId Идентификатор продукта
+ * @param observableRepository Репозиторий для работы с декларациями продукта
+ * @param tabOpener Интерфейс для открытия вкладок
+ * @param immutableTableDependencies Зависимости для таблицы деклараций
+ */
 internal class ProductDeclarationComponent(
     componentContext: ComponentContext,
     productId: Int,
@@ -71,9 +87,28 @@ internal class ProductDeclarationComponent(
         dialogNavigation.activate(DeclarationDialogConfig)
     }
 
+    /**
+     * Колонки таблицы деклараций продукта.
+     *
+     * Включает:
+     * - Колонку выбора с чекбоксами
+     * - Колонку ID
+     * - Колонку названия декларации
+     * - Колонку названия поставщика
+     * - Колонку актуальности
+     */
     override val columns: ImmutableList<ColumnSpec<FlowProductDeclarationTableUi, ProductDeclarationField, TableData<FlowProductDeclarationTableUi>>> =
         createProductDeclarationColumn(::onEvent, ::showDialog)
 
+    /**
+     * Поток сообщений об ошибках валидации.
+     *
+     * Проверяет:
+     * - Наличие хотя бы одной декларации
+     * - Наличие хотя бы одной актуальной декларации
+     *
+     * @return Flow со списком сообщений об ошибках
+     */
     override val errorMessages: Flow<List<String>> = uiList.map { lst: List<FlowProductDeclarationTableUi> ->
         buildList {
             if (lst.isEmpty()) add("Добавьте хотя бы одну декларацию")

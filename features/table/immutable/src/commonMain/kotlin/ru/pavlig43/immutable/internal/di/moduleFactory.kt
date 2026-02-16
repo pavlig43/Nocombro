@@ -16,6 +16,14 @@ import ru.pavlig43.immutable.api.ImmutableTableDependencies
 import ru.pavlig43.immutable.internal.data.ImmutableListRepository
 
 
+/**
+ * Создаёт Koin модули для неизменяемых таблиц.
+ *
+ * Регистрирует [NocombroDatabase] и создаёт репозитории для каждого типа таблицы.
+ *
+ * @param dependencies Зависимости для неизменяемых таблиц
+ * @return Список Koin модулей
+ */
 internal fun moduleFactory(dependencies: ImmutableTableDependencies) = listOf(
     module {
         single<NocombroDatabase> { dependencies.db }
@@ -24,14 +32,34 @@ internal fun moduleFactory(dependencies: ImmutableTableDependencies) = listOf(
         }
     }
 )
+
+/**
+ * Типы таблиц для которых создаётся репозиторий.
+ *
+ * Каждый тип соответствует сущности в базе данных.
+ */
 internal enum class ImmutableTableRepositoryType{
+    /** Документы */
     DOCUMENT,
+    /** Декларации */
     DECLARATION,
+    /** Связи продуктов и деклараций */
     PRODUCT_DECLARATION,
+    /** Продукты */
     PRODUCT,
+    /** Поставщики */
     VENDOR,
+    /** Транзакции */
     TRANSACTION
 }
+
+/**
+ * Создаёт репозиторий для указанного типа таблицы.
+ *
+ * @param db База данных
+ * @param type Тип таблицы
+ * @return Репозиторий для указанного типа
+ */
 private fun createImmutableRepository(
     db: NocombroDatabase,
     type: ImmutableTableRepositoryType
@@ -44,6 +72,9 @@ private fun createImmutableRepository(
     ImmutableTableRepositoryType.PRODUCT_DECLARATION -> ProductDeclarationRepository(db)
 }
 
+/**
+ * Репозиторий для работы с документами.
+ */
 private class DocumentRepository(db: NocombroDatabase): ImmutableListRepository<Document> {
     private val dao = db.documentDao
     override suspend fun deleteByIds(ids: Set<Int>): Result<Unit> {
@@ -56,6 +87,9 @@ private class DocumentRepository(db: NocombroDatabase): ImmutableListRepository<
     }
 }
 
+/**
+ * Репозиторий для работы с декларациями.
+ */
 private class DeclarationRepository(db: NocombroDatabase): ImmutableListRepository<Declaration> {
     private val dao = db.declarationDao
     override suspend fun deleteByIds(ids: Set<Int>): Result<Unit> {
@@ -68,6 +102,9 @@ private class DeclarationRepository(db: NocombroDatabase): ImmutableListReposito
     }
 }
 
+/**
+ * Репозиторий для работы с продуктами.
+ */
 private class ProductRepository(db: NocombroDatabase): ImmutableListRepository<Product> {
     private val dao = db.productDao
     override suspend fun deleteByIds(ids: Set<Int>): Result<Unit> {
@@ -80,6 +117,9 @@ private class ProductRepository(db: NocombroDatabase): ImmutableListRepository<P
     }
 }
 
+/**
+ * Репозиторий для работы с поставщиками.
+ */
 private class VendorRepository(db: NocombroDatabase): ImmutableListRepository<Vendor> {
     private val dao = db.vendorDao
     override suspend fun deleteByIds(ids: Set<Int>): Result<Unit> {
@@ -92,6 +132,9 @@ private class VendorRepository(db: NocombroDatabase): ImmutableListRepository<Ve
     }
 }
 
+/**
+ * Репозиторий для работы с транзакциями.
+ */
 private class TransactionRepository(db: NocombroDatabase): ImmutableListRepository<Transact> {
     private val dao = db.transactionDao
     override suspend fun deleteByIds(ids: Set<Int>): Result<Unit> {
@@ -104,6 +147,11 @@ private class TransactionRepository(db: NocombroDatabase): ImmutableListReposito
     }
 }
 
+/**
+ * Репозиторий для работы со связями продуктов и деклараций.
+ *
+ * **Важно:** Удаление не поддерживается (возвращает success).
+ */
 private class ProductDeclarationRepository(db: NocombroDatabase): ImmutableListRepository<ProductDeclarationOut> {
     private val dao = db.productDeclarationDao
     override suspend fun deleteByIds(ids: Set<Int>): Result<Unit> {
