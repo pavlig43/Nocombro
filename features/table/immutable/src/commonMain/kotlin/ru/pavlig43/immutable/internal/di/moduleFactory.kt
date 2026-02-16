@@ -1,5 +1,8 @@
 package ru.pavlig43.immutable.internal.di
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.map
 import org.koin.core.qualifier.qualifier
 import org.koin.dsl.module
 import ru.pavlig43.database.NocombroDatabase
@@ -13,6 +16,14 @@ import ru.pavlig43.immutable.api.ImmutableTableDependencies
 import ru.pavlig43.immutable.internal.data.ImmutableListRepository
 
 
+/**
+ * Создаёт Koin модули для неизменяемых таблиц.
+ *
+ * Регистрирует [NocombroDatabase] и создаёт репозитории для каждого типа таблицы.
+ *
+ * @param dependencies Зависимости для неизменяемых таблиц
+ * @return Список Koin модулей
+ */
 internal fun moduleFactory(dependencies: ImmutableTableDependencies) = listOf(
     module {
         single<NocombroDatabase> { dependencies.db }
@@ -21,68 +32,134 @@ internal fun moduleFactory(dependencies: ImmutableTableDependencies) = listOf(
         }
     }
 )
+
+/**
+ * Типы таблиц для которых создаётся репозиторий.
+ *
+ * Каждый тип соответствует сущности в базе данных.
+ */
 internal enum class ImmutableTableRepositoryType{
+    /** Документы */
     DOCUMENT,
+    /** Декларации */
     DECLARATION,
+    /** Связи продуктов и деклараций */
     PRODUCT_DECLARATION,
+    /** Продукты */
     PRODUCT,
+    /** Поставщики */
     VENDOR,
+    /** Транзакции */
     TRANSACTION
 }
+
+/**
+ * Создаёт репозиторий для указанного типа таблицы.
+ *
+ * @param db База данных
+ * @param type Тип таблицы
+ * @return Репозиторий для указанного типа
+ */
 private fun createImmutableRepository(
     db: NocombroDatabase,
     type: ImmutableTableRepositoryType
 ): ImmutableListRepository<*> = when (type) {
-    ImmutableTableRepositoryType.DOCUMENT -> createDocumentRepository(db)
-    ImmutableTableRepositoryType.DECLARATION -> createDeclarationRepository(db)
-    ImmutableTableRepositoryType.PRODUCT -> createProductRepository(db)
-    ImmutableTableRepositoryType.VENDOR -> createVendorRepository(db)
-    ImmutableTableRepositoryType.TRANSACTION -> createTransactionRepository(db)
-    ImmutableTableRepositoryType.PRODUCT_DECLARATION -> createProductDeclarationRepository(db)
+    ImmutableTableRepositoryType.DOCUMENT -> DocumentRepository(db)
+    ImmutableTableRepositoryType.DECLARATION -> DeclarationRepository(db)
+    ImmutableTableRepositoryType.PRODUCT -> ProductRepository(db)
+    ImmutableTableRepositoryType.VENDOR -> VendorRepository(db)
+    ImmutableTableRepositoryType.TRANSACTION -> TransactionRepository(db)
+    ImmutableTableRepositoryType.PRODUCT_DECLARATION -> ProductDeclarationRepository(db)
 }
 
-private fun createDocumentRepository(db: NocombroDatabase): ImmutableListRepository<Document> {
-    val dao = db.documentDao
-    return ImmutableListRepository(
-        delete = dao::deleteDocumentsByIds,
-        observe = dao::observeOnDocuments,
-    )
-}
-private fun createDeclarationRepository(db: NocombroDatabase): ImmutableListRepository<Declaration> {
-    val dao = db.declarationDao
-    return ImmutableListRepository(
-        delete = dao::deleteDeclarationsByIds,
-        observe = dao::observeOnItems,
-    )
+/**
+ * Репозиторий для работы с документами.
+ */
+private class DocumentRepository(db: NocombroDatabase): ImmutableListRepository<Document> {
+    private val dao = db.documentDao
+    override suspend fun deleteByIds(ids: Set<Int>): Result<Unit> {
+        return runCatching { dao.deleteDocumentsByIds(ids) }
+    }
+
+    override fun observeOnItems(): Flow<Result<List<Document>>> {
+        return dao.observeOnDocuments().map { Result.success(it) }
+            .catch { emit(Result.failure(it)) }
+    }
 }
 
-private fun createProductRepository(db: NocombroDatabase): ImmutableListRepository<Product> {
-    val dao = db.productDao
-    return ImmutableListRepository(
-        delete = dao::deleteProductsByIds,
-        observe = dao::observeOnProducts,
-    )
+/**
+ * Репозиторий для работы с декларациями.
+ */
+private class DeclarationRepository(db: NocombroDatabase): ImmutableListRepository<Declaration> {
+    private val dao = db.declarationDao
+    override suspend fun deleteByIds(ids: Set<Int>): Result<Unit> {
+        return runCatching { dao.deleteDeclarationsByIds(ids) }
+    }
+
+    override fun observeOnItems(): Flow<Result<List<Declaration>>> {
+        return dao.observeOnItems().map { Result.success(it) }
+            .catch { emit(Result.failure(it)) }
+    }
 }
 
-private fun createVendorRepository(db: NocombroDatabase): ImmutableListRepository<Vendor> {
-    val dao = db.vendorDao
-    return ImmutableListRepository(
-        delete = dao::deleteVendorsByIds,
-        observe = dao::observeOnVendors,
-    )
+/**
+ * Репозиторий для работы с продуктами.
+ */
+private class ProductRepository(db: NocombroDatabase): ImmutableListRepository<Product> {
+    private val dao = db.productDao
+    override suspend fun deleteByIds(ids: Set<Int>): Result<Unit> {
+        return runCatching { dao.deleteProductsByIds(ids) }
+    }
+
+    override fun observeOnItems(): Flow<Result<List<Product>>> {
+        return dao.observeOnProducts().map { Result.success(it) }
+            .catch { emit(Result.failure(it)) }
+    }
 }
 
-private fun createTransactionRepository(db: NocombroDatabase): ImmutableListRepository<Transact> {
-    val dao = db.transactionDao
-    return ImmutableListRepository(
-        delete = dao::deleteTransactionsByIds,
-        observe = dao::observeOnProductTransactions,
-    )
+/**
+ * Репозиторий для работы с поставщиками.
+ */
+private class VendorRepository(db: NocombroDatabase): ImmutableListRepository<Vendor> {
+    private val dao = db.vendorDao
+    override suspend fun deleteByIds(ids: Set<Int>): Result<Unit> {
+        return runCatching { dao.deleteVendorsByIds(ids) }
+    }
+
+    override fun observeOnItems(): Flow<Result<List<Vendor>>> {
+        return dao.observeOnVendors().map { Result.success(it) }
+            .catch { emit(Result.failure(it)) }
+    }
 }
-private fun createProductDeclarationRepository(db: NocombroDatabase): ImmutableListRepository<ProductDeclarationOut>{
-    val dao = db.productDeclarationDao
-    return ImmutableListRepository(
-        delete = {},
-        observe = dao::observeOnProductDeclarationOut
-    )
+
+/**
+ * Репозиторий для работы с транзакциями.
+ */
+private class TransactionRepository(db: NocombroDatabase): ImmutableListRepository<Transact> {
+    private val dao = db.transactionDao
+    override suspend fun deleteByIds(ids: Set<Int>): Result<Unit> {
+        return runCatching { dao.deleteTransactionsByIds(ids) }
+    }
+
+    override fun observeOnItems(): Flow<Result<List<Transact>>> {
+        return dao.observeOnProductTransactions().map { Result.success(it) }
+            .catch { emit(Result.failure(it)) }
+    }
+}
+
+/**
+ * Репозиторий для работы со связями продуктов и деклараций.
+ *
+ * **Важно:** Удаление не поддерживается (возвращает success).
+ */
+private class ProductDeclarationRepository(db: NocombroDatabase): ImmutableListRepository<ProductDeclarationOut> {
+    private val dao = db.productDeclarationDao
+    override suspend fun deleteByIds(ids: Set<Int>): Result<Unit> {
+        return Result.success(Unit)
+    }
+
+    override fun observeOnItems(): Flow<Result<List<ProductDeclarationOut>>> {
+        return dao.observeOnProductDeclarationOut().map { Result.success(it) }
+            .catch { emit(Result.failure(it)) }
+    }
 }

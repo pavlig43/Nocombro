@@ -12,7 +12,7 @@ import ru.pavlig43.rootnocombro.api.RootDependencies
 
 fun initKoin(appDeclaration: KoinAppDeclaration = {}) {
     startKoin {
-        logger(PrintLogger(Level.DEBUG))
+//        logger(PrintLogger(Level.DEBUG))
         appDeclaration()
         modules(
             platformDataBaseModule() +

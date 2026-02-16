@@ -24,6 +24,7 @@ import ru.pavlig43.mutable.api.singleLine.component.SingleLineComponentFactory
 import ru.pavlig43.mutable.api.singleLine.data.CreateSingleItemRepository
 import ua.wwind.table.ColumnSpec
 
+@Suppress("LongParameterList")
 internal class CreateDeclarationSingleLineComponent(
     componentContext: ComponentContext,
     onSuccessCreate: (Int) -> Unit,
@@ -83,7 +84,8 @@ internal class CreateDeclarationSingleLineComponent(
                     onItemClick = { vendor ->
                         val item = itemFields.value[0]
                         onChangeItem(
-                            item.copy(vendorId = vendor.composeId, vendorName = vendor.displayName))
+                            item.copy(vendorId = vendor.composeId, vendorName = vendor.displayName)
+                        )
                         dialogNavigation.dismiss()
                     },
                     onCreate = { tabOpener.openVendorTab(0) },
@@ -94,16 +96,13 @@ internal class CreateDeclarationSingleLineComponent(
         }
     }
 
-
     override val columns: ImmutableList<ColumnSpec<DeclarationEssentialsUi, DeclarationField, Unit>> =
         createDeclarationColumns0(
             onOpenVendorDialog = { dialogNavigation.activate(DialogConfig.Vendor) },
             onOpenBornDateDialog = { dialogNavigation.activate(DialogConfig.Born) },
             onOpenBestBeforeDialog = { dialogNavigation.activate(DialogConfig.BestBefore) },
             onChangeItem = { item -> onChangeItem(item) }
-        )
-
-
+    )
 }
 
 @Serializable

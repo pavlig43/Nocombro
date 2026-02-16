@@ -11,6 +11,7 @@ import ua.wwind.table.EditableTableColumnsBuilder
 import ua.wwind.table.component.TableCellTextField
 import ua.wwind.table.filter.data.TableFilterType
 
+@Suppress("LongParameterList")
 fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.writeTextColumn(
     headerText: String,
     column: C,
@@ -57,7 +58,6 @@ private fun <T : Any, C, E> EditableColumnBuilder<T, C, E>.readTextCell(
     valueOf: (T) -> String,
 ) {
     cell { item, _ ->
-
         LockText(text = valueOf(item))
     }
 }

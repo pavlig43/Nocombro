@@ -50,6 +50,7 @@ include(
     ":features:table:core",
     ":features:table:immutable",
     ":features:table:mutable",
+    ":features:table:flowImmutable",
 )
 include("features:files")
 

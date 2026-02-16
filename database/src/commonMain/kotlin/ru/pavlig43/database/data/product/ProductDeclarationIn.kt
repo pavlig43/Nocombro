@@ -7,36 +7,33 @@ import androidx.room.PrimaryKey
 import ru.pavlig43.core.model.CollectionObject
 import ru.pavlig43.database.data.declaration.Declaration
 
-
 @Entity(
     tableName = "product_declaration",
-    foreignKeys = [ForeignKey(
-        entity = Product::class,
-        parentColumns = ["id"],
-        childColumns = ["product_id"],
-        onDelete = ForeignKey.CASCADE
-    ),
+    foreignKeys = [
+        ForeignKey(
+            entity = Product::class,
+            parentColumns = ["id"],
+            childColumns = ["product_id"],
+            onDelete = ForeignKey.CASCADE
+        ),
         ForeignKey(
             entity = Declaration::class,
             parentColumns = ["id"],
             childColumns = ["declaration_id"],
-            onDelete = ForeignKey.RESTRICT
+            onDelete = ForeignKey.CASCADE
         )
     ]
-
 )
 data class ProductDeclarationIn(
-
     @ColumnInfo("product_id", index = true)
-     val productId: Int,
+    val productId: Int,
 
     @ColumnInfo("declaration_id", index = true)
-     val declarationId: Int,
+    val declarationId: Int,
 
     @PrimaryKey(autoGenerate = true)
-    override val id: Int = 0,
-): CollectionObject
-
+    override val id: Int = 0
+) : CollectionObject
 
 data class ProductDeclarationOut(
     override val id: Int,
@@ -44,7 +41,5 @@ data class ProductDeclarationOut(
     val declarationId: Int,
     val declarationName: String,
     val vendorName: String,
-    val isActual: Boolean,
+    val isActual: Boolean
 ) : CollectionObject
-
-

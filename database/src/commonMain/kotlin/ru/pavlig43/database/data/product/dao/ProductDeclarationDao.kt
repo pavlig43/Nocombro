@@ -16,44 +16,109 @@ import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductDeclarationIn
 import ru.pavlig43.database.data.product.ProductDeclarationOut
 
+/**
+ * DAO для работы со связями продуктов и деклараций.
+ *
+ * Предоставляет методы для:
+ * - CRUD операций над связями Product-Declaration
+ * - Реактивного отслеживания изменений
+ * - Генерации уведомлений о просроченных декларациях
+ */
 @Dao
 abstract class ProductDeclarationDao {
 
+    /**
+     * Вставляет или обновляет список связей продуктов и деклараций.
+     *
+     * @param declaration Список связей для сохранения
+     */
     @Upsert
     abstract suspend fun upsertProductDeclarations(declaration: List<ProductDeclarationIn>)
 
-    @Query("DELETE FROM product_declaration WHERE id in(:ids)")
-    abstract suspend fun deleteDeclarations(ids: List<Int>)
+    /**
+     * Получает список связей для указанного продукта.
+     *
+     * @param productId Идентификатор продукта
+     * @return Список связей Product-Declaration
+     */
+    @Query("SELECT * FROM product_declaration WHERE product_id = :productId")
+    abstract suspend fun getProductDeclarationIn(productId: Int): List<ProductDeclarationIn>
 
-    @Transaction
+    /**
+     * Создаёт Flow для отслеживания всех связей продуктов и деклараций.
+     *
+     * Flow автоматически отправляет новые данные при изменениях в БД.
+     * Использует @Relation для загрузки связанных сущностей (Product и Declaration).
+     *
+     * @return Flow со списком внутренних представлений связей
+     */
     @Query(
         """
         SELECT * FROM product_declaration
-        WHERE product_id = :productId
     """
     )
-    internal abstract suspend fun getProductDeclaration(productId: Int): List<InternalProductDeclaration>
-
-    suspend fun getProductDeclarationOut(productId: Int): List<ProductDeclarationOut> {
-        return getProductDeclaration(productId).map(InternalProductDeclaration::toProductDeclarationOut)
-    }
-
     @Transaction
-    @Query(
-        """
-        SELECT * FROM product_declaration
-    """
-    )
     internal abstract fun observeOnProductDeclaration(): Flow<List<InternalProductDeclaration>>
 
+    /**
+     * Создаёт Flow для отслеживания связей с указанными идентификаторами.
+     *
+     * Flow автоматически отправляет новые данные при изменении
+     * любой из отслеживаемых связей в БД.
+     *
+     * @param ids Список идентификаторов связей для отслеживания
+     * @return Flow со списком внутренних представлений связей
+     */
+    @Query("SELECT * FROM product_declaration WHERE id IN (:ids)")
+    @Transaction
+    internal abstract fun observeOnProductDeclarationByIds(ids: List<Int>): Flow<List<InternalProductDeclaration>>
+
+    /**
+     * Создаёт Flow для отслеживания выходных данных связей по идентификаторам.
+     *
+     * Преобразует внутреннее представление в [ProductDeclarationOut]
+     * с вычислением флага актуальности.
+     *
+     * @param ids Список идентификаторов связей для отслеживания
+     * @return Flow со списком выходных данных
+     */
+    fun observeOnProductDeclarationOutByIds(ids: List<Int>): Flow<List<ProductDeclarationOut>> {
+        return observeOnProductDeclarationByIds(ids).mapValues(InternalProductDeclaration::toProductDeclarationOut)
+    }
+
+    /**
+     * Создаёт Flow для отслеживания всех выходных данных связей.
+     *
+     * Преобразует внутреннее представление в [ProductDeclarationOut]
+     * с вычислением флага актуальности.
+     *
+     * @return Flow со списком всех выходных данных
+     */
     fun observeOnProductDeclarationOut(): Flow<List<ProductDeclarationOut>> {
         return observeOnProductDeclaration().mapValues(InternalProductDeclaration::toProductDeclarationOut)
     }
 
+    /**
+     * Удаляет связи с указанными идентификаторами.
+     *
+     * @param ids Список идентификаторов связей для удаления
+     */
+    @Query("DELETE FROM product_declaration WHERE id IN (:ids)")
+    abstract suspend fun deleteProductDeclarations(ids: List<Int>)
 
-
+    /**
+     * Создаёт Flow для отслеживания уведомлений о проблемных декларациях.
+     *
+     * Генерирует уведомления для:
+     * - Продуктов без деклараций
+     * - Продуктов, где все декларации просрочены
+     *
+     * @param observeOnAllProduct Функция для получения Flow всех продуктов
+     * @return Flow со списком уведомлений
+     */
     fun observeOnProductDeclarationNotification(
-        observeOnAllProduct:()->Flow<List<Product>>): Flow<List<NotificationDTO>> {
+        observeOnAllProduct: () -> Flow<List<Product>>
+    ): Flow<List<NotificationDTO>> {
         return combine(
             observeOnAllProduct(),
             observeOnProductDeclaration()
@@ -74,20 +139,28 @@ abstract class ProductDeclarationDao {
                 }
                 .mapNotNull { (productId, _) ->
                     declarations.find { it.product.id == productId }?.let {
-                        NotificationDTO(it.product.id, "В продукте ${it.product.displayName} нет свежей декларации")
+                        NotificationDTO(
+                            it.product.id,
+                            "В продукте ${it.product.displayName} нет свежей декларации"
+                        )
                     }
                 }
 
             // 4. ОБЪЕДИНЯЕМ ВСЕ
             withoutDeclarations + allExpired
         }
-
     }
-
-
-
 }
 
+/**
+ * Внутреннее представление связи продукта и декларации с загруженными связанными сущностями.
+ *
+ * Использует @Relation для автоматической загрузки связанных Product и Declaration.
+ *
+ * @property productDeclaration Связь продукта и декларации
+ * @property declaration Связанная декларация
+ * @property product Связанный продукт
+ */
 internal data class InternalProductDeclaration(
     @Embedded
     val productDeclaration: ProductDeclarationIn,
@@ -104,6 +177,14 @@ internal data class InternalProductDeclaration(
     val product: Product
 )
 
+/**
+ * Преобразует внутреннее представление в выходное DTO.
+ *
+ * Вычисляет флаг [isActual] на основе сравнения даты срока годности
+ * с текущей локальной датой.
+ *
+ * @return [ProductDeclarationOut] с заполненными полями
+ */
 private fun InternalProductDeclaration.toProductDeclarationOut(): ProductDeclarationOut {
     return ProductDeclarationOut(
         id = productDeclaration.id,

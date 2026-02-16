@@ -1,5 +1,8 @@
 package ru.pavlig43.product.internal.di
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.map
 import org.koin.core.qualifier.qualifier
 import org.koin.dsl.module
 import ru.pavlig43.core.TransactionExecutor
@@ -12,6 +15,7 @@ import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductDeclarationIn
 import ru.pavlig43.database.data.product.ProductDeclarationOut
 import ru.pavlig43.files.api.FilesDependencies
+import ru.pavlig43.flowImmutable.api.data.FlowMultilineRepository
 import ru.pavlig43.immutable.api.ImmutableTableDependencies
 import ru.pavlig43.mutable.api.multiLine.data.UpdateCollectionRepository
 import ru.pavlig43.mutable.api.singleLine.data.CreateSingleItemRepository
@@ -22,26 +26,18 @@ internal fun createProductFormModule(dependencies: ProductFormDependencies) = li
     module {
         single<NocombroDatabase> { dependencies.db }
         single<TransactionExecutor> { dependencies.transaction }
-        single<FilesDependencies> {dependencies.filesDependencies  }
+        single<FilesDependencies> { dependencies.filesDependencies }
         single<ImmutableTableDependencies> { dependencies.immutableTableDependencies }
         single<CreateSingleItemRepository<Product>> { ProductCreateRepository(get()) }
         single<UpdateSingleLineRepository<Product>> { ProductUpdateRepository(get()) }
-
-
-        single<UpdateCollectionRepository<ProductDeclarationOut, ProductDeclarationIn>>(
-            UpdateCollectionRepositoryType.Declaration.qualifier
-        ) { ProductDeclarationCollectionRepository(get()) }
-
-
 
         single<UpdateCollectionRepository<CompositionOut, CompositionIn>>(
             UpdateCollectionRepositoryType.Composition.qualifier
         ) { CompositionCollectionRepository(get()) }
 
+        single<FlowMultilineRepository<ProductDeclarationOut, ProductDeclarationIn>> { ProductDeclarationRepository(get()) }
     }
-
 )
-
 
 private class ProductCreateRepository(db: NocombroDatabase) : CreateSingleItemRepository<Product> {
     private val dao = db.productDao
@@ -55,7 +51,7 @@ private class ProductCreateRepository(db: NocombroDatabase) : CreateSingleItemRe
 }
 
 private class ProductUpdateRepository(
-    private val db: NocombroDatabase
+    db: NocombroDatabase
 ) : UpdateSingleLineRepository<Product> {
 
     private val dao = db.productDao
@@ -74,7 +70,6 @@ private class ProductUpdateRepository(
         }
     }
 }
-
 
 private class CompositionCollectionRepository(
     private val db: NocombroDatabase
@@ -98,33 +93,32 @@ private class CompositionCollectionRepository(
 }
 
 internal enum class UpdateCollectionRepositoryType {
-
-    Declaration,
-    Composition,
-
+    Composition
 }
 
+private class ProductDeclarationRepository(
+    db: NocombroDatabase
+) : FlowMultilineRepository<ProductDeclarationOut, ProductDeclarationIn> {
 
-private class ProductDeclarationCollectionRepository(
-    private val db: NocombroDatabase
-) : UpdateCollectionRepository<ProductDeclarationOut, ProductDeclarationIn> {
+    private val productDeclarationDao = db.productDeclarationDao
 
-    private val dao = db.productDeclarationDao
-
-    override suspend fun getInit(id: Int): Result<List<ProductDeclarationOut>> {
+    override suspend fun getInit(parentId: Int): Result<List<ProductDeclarationIn>> {
         return runCatching {
-            dao.getProductDeclarationOut(id)
+            productDeclarationDao.getProductDeclarationIn(parentId)
         }
+    }
+
+    override fun observeOnItemsByIds(ids: List<Int>): Flow<Result<List<ProductDeclarationOut>>> {
+        return productDeclarationDao.observeOnProductDeclarationOutByIds(ids)
+            .map { Result.success(it) }
+            .catch { emit(Result.failure(it)) }
     }
 
     override suspend fun update(changeSet: ChangeSet<List<ProductDeclarationIn>>): Result<Unit> {
         return UpsertListChangeSet.update(
             changeSet = changeSet,
-            delete = { ids -> dao.deleteDeclarations(ids) },
-            upsert = { items -> dao.upsertProductDeclarations(items) }
+            delete = productDeclarationDao::deleteProductDeclarations,
+            upsert = productDeclarationDao::upsertProductDeclarations
         )
     }
 }
-
-
-

@@ -15,8 +15,8 @@ import ru.pavlig43.files.api.ui.FilesScreen
 import ru.pavlig43.product.api.component.ProductFormComponent
 import ru.pavlig43.product.internal.create.ui.CreateProductSingleLineScreen
 import ru.pavlig43.product.internal.update.ProductTabChild
-import ru.pavlig43.product.internal.update.tabs.DeclarationScreen
 import ru.pavlig43.product.internal.update.tabs.composition.CompositionScreen
+import ru.pavlig43.product.internal.update.tabs.declaration.DeclarationScreen
 import ru.pavlig43.product.internal.update.tabs.essential.UpdateProductSingleLineScreen
 import ru.pavlig43.update.ui.FormTabsUi
 
@@ -25,7 +25,6 @@ fun ProductFormScreen(
     component: ProductFormComponent,
     modifier: Modifier = Modifier,
 ) {
-
     Column(
         verticalArrangement = Arrangement.spacedBy(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -46,18 +45,16 @@ fun ProductFormScreen(
                     })
             }
         }
-
     }
-
 }
 
 @Composable
 private fun ProductSlotScreen(productTabChild: ProductTabChild?) {
     when (productTabChild) {
         is ProductTabChild.Composition -> CompositionScreen(productTabChild.component)
-        is ProductTabChild.Declaration -> DeclarationScreen(productTabChild.component)
         is ProductTabChild.Essentials -> UpdateProductSingleLineScreen(productTabChild.component)
         is ProductTabChild.Files -> FilesScreen(productTabChild.component)
+        is ProductTabChild.Declaration1 -> DeclarationScreen(productTabChild.component)
         null -> Box(Modifier)
     }
 }

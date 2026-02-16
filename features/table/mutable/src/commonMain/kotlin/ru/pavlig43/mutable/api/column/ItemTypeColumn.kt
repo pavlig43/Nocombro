@@ -31,6 +31,7 @@ import ua.wwind.table.EditableColumnBuilder
 import ua.wwind.table.EditableTableColumnsBuilder
 import ua.wwind.table.filter.data.TableFilterType
 
+@Suppress("LongParameterList")
 fun <T : Any, C, E, Type : ItemType> EditableTableColumnsBuilder<T, C, E>.writeItemTypeColumn(
     headerText: String,
     column: C,
@@ -134,7 +135,7 @@ fun <Type : ItemType> WriteItemType(
             modifier = Modifier
                 .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, true)
                 .background(
-                    color = MaterialTheme.colorScheme.surfaceVariant,
+                    color = MaterialTheme.colorScheme.surfaceVariant
                 )
                 .padding(horizontal = 12.dp, vertical = 8.dp)
         ) {

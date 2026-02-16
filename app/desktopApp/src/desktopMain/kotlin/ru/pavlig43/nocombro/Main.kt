@@ -4,6 +4,7 @@ import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
+import co.touchlab.kermit.Logger
 import com.arkivanov.decompose.DefaultComponentContext
 import com.arkivanov.decompose.extensions.compose.lifecycle.LifecycleController
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
@@ -14,9 +15,10 @@ import ru.pavlig43.rootnocombro.api.component.RootNocombroComponent
 import ru.pavlig43.rootnocombro.api.ui.App
 import ru.pavlig43.rootnocombro.internal.di.initKoin
 
-
 fun main() {
-    // Disable verbose logging from table library (Kermit logger)
+
+    Logger.setLogWriters(emptyList())
+
 
     val lifecycle = LifecycleRegistry()
     initKoin {}
@@ -53,6 +55,7 @@ fun main() {
         }
     }
 }
+
 
 
 

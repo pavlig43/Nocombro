@@ -51,7 +51,6 @@ internal fun Project.configureComposeKmp() {
                 setOf(
                     "androidx.compose.ui.ExperimentalComposeUiApi",
                     "androidx.compose.ui.text.ExperimentalTextApi",
-                    "androidx.compose.material.ExperimentalMaterialApi",
                     "androidx.compose.material3.ExperimentalMaterial3Api",
                     "androidx.compose.animation.ExperimentalAnimationApi",
                     "androidx.compose.foundation.ExperimentalFoundationApi",

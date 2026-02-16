@@ -15,6 +15,7 @@ import ru.pavlig43.theme.refresh
 import ua.wwind.table.EditableTableColumnsBuilder
 import ua.wwind.table.filter.data.TableFilterType
 
+@Suppress("LongParameterList")
 fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.vendorNameColumn(
     headerText: String,
     column: C,
@@ -57,7 +58,7 @@ private fun VendorNameRow(
         ToolTipIconButton(
             tooltipText = if (vendorName == null) "Добавить поставщика" else "Изменить поставщика",
             onClick = onOpenDialog,
-            icon = if (vendorName == null) Res.drawable.add_circle else Res.drawable.refresh,
+            icon = if (vendorName == null) Res.drawable.add_circle else Res.drawable.refresh
         )
     }
 }

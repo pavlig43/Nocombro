@@ -116,9 +116,3 @@ private fun <I : IMultiLineTableUi, C, E : TableData<I>> BoxScope.ImmutableTable
 
 
 }
-
-@Composable
-internal expect fun BoxScope.ScrollBar(
-    verticalState: LazyListState,
-    horizontalState: ScrollState
-)
