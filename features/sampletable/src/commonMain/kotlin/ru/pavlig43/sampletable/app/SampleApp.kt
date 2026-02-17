@@ -33,6 +33,8 @@ import com.arkivanov.decompose.ComponentContext
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch
 import ru.pavlig43.sampletable.app.components.SelectionActionBar
+import ru.pavlig43.sampletable.column.PersonColumn
+import ru.pavlig43.sampletable.model.Person
 import ru.pavlig43.sampletable.viewmodel.SampleUiEvent
 import ua.wwind.table.ExperimentalTableApi
 import ua.wwind.table.config.PinnedSide
@@ -107,7 +109,7 @@ fun SampleApp(context: ComponentContext,modifier: Modifier = Modifier,) {
 
     // Build customization based on rules + matching logic
     val customization =
-        rememberCustomization<ru.pavlig43.sampletable.model.Person, ru.pavlig43.sampletable.column.PersonColumn, Map<ru.pavlig43.sampletable.column.PersonColumn, TableFilterState<*>>>(
+        rememberCustomization<Person, PersonColumn, Map<PersonColumn, TableFilterState<*>>>(
             rules = viewModel.rules,
             key = viewModel.rules,
             matches = { person, ruleFilters ->
@@ -117,7 +119,7 @@ fun SampleApp(context: ComponentContext,modifier: Modifier = Modifier,) {
 
     val state =
         rememberTableState(
-            columns = ru.pavlig43.sampletable.column.PersonColumn.entries.toImmutableList(),
+            columns = PersonColumn.entries.toImmutableList(),
             settings = settings,
             dimensions =
                 remember(useCompactMode) {
@@ -141,10 +143,10 @@ fun SampleApp(context: ComponentContext,modifier: Modifier = Modifier,) {
             0.dp
         }
     LaunchedEffect(selectionColumnWidth) {
-        state.setColumnWidths(mapOf(ru.pavlig43.sampletable.column.PersonColumn.SELECTION to selectionColumnWidth))
+        state.setColumnWidths(mapOf(PersonColumn.SELECTION to selectionColumnWidth))
     }
 
-    ru.pavlig43.sampletable.app.SampleTheme(darkTheme = isDarkTheme) {
+    SampleTheme(darkTheme = isDarkTheme) {
         CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
             ModalNavigationDrawer(
                 drawerState = drawerState,

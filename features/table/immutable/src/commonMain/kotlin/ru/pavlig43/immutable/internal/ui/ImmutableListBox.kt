@@ -25,6 +25,7 @@ import ua.wwind.table.ColumnSpec
 import ua.wwind.table.ExperimentalTableApi
 import ua.wwind.table.Table
 import ua.wwind.table.config.DefaultTableCustomization
+import ua.wwind.table.config.TableCustomization
 import ua.wwind.table.state.TableState
 import ua.wwind.table.strings.StringProvider
 
@@ -84,6 +85,7 @@ private fun <I : IMultiLineTableUi, C, E : TableData<I>> BoxScope.ImmutableTable
     onEvent: (ImmutableTableUiEvent) -> Unit,
     onRowClick: (I) -> Unit,
     tableData: E,
+    customization: TableCustomization<I,C> = DefaultTableCustomization(),
     modifier: Modifier
 ) {
 
@@ -92,7 +94,7 @@ private fun <I : IMultiLineTableUi, C, E : TableData<I>> BoxScope.ImmutableTable
         itemAt = { index -> items.getOrNull(index) },
         state = tableState,
         strings = stringProvider,
-        customization = DefaultTableCustomization(),
+        customization = customization,
         tableData = tableData,
         columns = columns,
         verticalState = verticalState,
