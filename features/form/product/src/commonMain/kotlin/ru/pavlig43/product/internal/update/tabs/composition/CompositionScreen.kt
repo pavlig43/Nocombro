@@ -1,11 +1,13 @@
 package ru.pavlig43.product.internal.update.tabs.composition
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
-import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.immutable.api.ui.MBSImmutableTable
@@ -35,11 +37,14 @@ internal fun CompositionScreen(
         matches = { item, filter ->  item.productType in listOf(ProductType.FOOD_BASE, ProductType.FOOD_PF)},
         baseRowStyle = { row ->
             if (row.item.productType in listOf(ProductType.FOOD_BASE, ProductType.FOOD_PF)) {
-                TableRowStyle(containerColor = MaterialTheme.colorScheme.error.copy(alpha = 0.5f))
-            }
-            else TableRowStyle()
-
-
+                TableRowStyle(
+                    modifier = androidx.compose.ui.Modifier,
+                    contentColor = MaterialTheme.colorScheme.primaryContainer,
+                    elevation = 2.dp,
+                    shape = RoundedCornerShape(4.dp),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
+                )
+            } else TableRowStyle()
         }
     )
 
