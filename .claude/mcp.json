@@ -1,0 +1,56 @@
+{
+  "mcpServers": {
+    "deepwiki": {
+      "type": "http",
+      "url": "https://mcp.deepwiki.com/mcp",
+      "description": "DeepWiki MCP сервер для поиска по официальной документации Kotlin библиотек",
+      "documentation": "https://deepwiki.com/",
+      "status": "✓ Connected",
+      "capabilities": [
+        "Поиск по документации Kotlin",
+        "Compose Multiplatform",
+        "Ktor client",
+        "Decompose navigation",
+        "Kotlin Coroutines",
+        "Room Database",
+        "SQLDelight",
+        "Koin DI",
+        "Другие Kotlin библиотеки"
+      ],
+      "examples": [
+        "Как использовать StateFlow в Kotlin?",
+        "Объясни navigation в Decompose",
+        "Как настроить Ktor client?",
+        "Как работать с @Relation в Room?",
+        "Примеры использования LaunchedEffect в Compose"
+      ]
+    },
+    "github": {
+      "type": "stdio",
+      "command": "npx -y @modelcontextprotocol/server-github",
+      "description": "GitHub MCP server для работы с GitHub (issues, PRs, commits)",
+      "status": "✓ Connected",
+      "note": "Устаревший пакет, но продолжает работать. Активная учётная запись: pavlig43",
+      "capabilities": [
+        "Создание Pull Requests",
+        "Работа с Issues",
+        "Просмотр коммитов",
+        "Управление репозиториями"
+      ],
+      "examples": [
+        "Создай PR в pavlig43/Nocombro",
+        "Открой issue про баг",
+        "Покажи последние 5 коммитов",
+        "Список открытых PR"
+      ]
+    }
+  },
+  "gitSetup": {
+    "account": "pavlig43",
+    "authStatus": "✓ Logged in via keyring",
+    "tokenScopes": ["gist", "read:org", "repo"],
+    "githubTokenStatus": "✓ Removed (using keyring instead)",
+    "note": "GITHUB_TOKEN environment variable removed via setx"
+  },
+  "note": "Этот файл служит для документации. Реальная настройка MCP хранится в глобальных настройках Claude (~/.claude.json)."
+}
