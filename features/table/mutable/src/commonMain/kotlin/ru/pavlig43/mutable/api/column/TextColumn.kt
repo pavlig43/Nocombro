@@ -22,6 +22,7 @@ fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.writeTextColumn(
     alignment: Alignment = Alignment.CenterStart
 ) {
     column(column, valueOf = valueOf) {
+        autoWidth(300.dp)
         header(headerText)
         align(alignment)
         filterType?.let {
@@ -44,6 +45,7 @@ fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.readTextColumn(
     alignment: Alignment = Alignment.CenterStart
 ) {
     column(column, valueOf = valueOf) {
+        autoWidth(300.dp)
         header(headerText)
         align(alignment)
         filterType?.let {

@@ -28,6 +28,7 @@ fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.writeDateColumn(
     alignment: Alignment = Alignment.CenterStart
 ) {
     column(column, valueOf = valueOf) {
+        autoWidth(300.dp)
         header(headerText)
         align(alignment)
         filterType?.let {
@@ -49,6 +50,7 @@ fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.readDateColumn(
     alignment: Alignment = Alignment.CenterStart
 ) {
     column(column, valueOf = valueOf) {
+        autoWidth(300.dp)
         header(headerText)
         align(alignment)
         filterType?.let {

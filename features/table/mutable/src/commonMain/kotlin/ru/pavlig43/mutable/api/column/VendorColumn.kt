@@ -25,6 +25,7 @@ fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.vendorNameColumn(
     alignment: Alignment = Alignment.Center
 ) {
     column(column, valueOf = { it }) {
+        autoWidth(300.dp)
         header(headerText)
         align(alignment)
         filterType?.let {

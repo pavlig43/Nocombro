@@ -19,6 +19,7 @@ fun <T : Any, C, E, ENUM : Enum<ENUM>> ReadonlyTableColumnsBuilder<T, C, E>.read
     getTitle: (ENUM) -> String = { it.toString() }
 ) {
     column(column, valueOf = valueOf) {
+        autoWidth(300.dp)
         header(headerText)
         align(Alignment.CenterStart)
         filterType?.let {
@@ -36,7 +37,7 @@ private fun <T : Any, C, E, ENUM : Enum<ENUM>> ReadonlyColumnBuilder<T, C, E>.re
     cell { item, _ ->
         Text(
             text = getTitle(valueOf(item)),
-            modifier = Modifier.padding(start = 12.dp)
+            modifier = Modifier.padding(horizontal = 12.dp)
         )
     }
 }

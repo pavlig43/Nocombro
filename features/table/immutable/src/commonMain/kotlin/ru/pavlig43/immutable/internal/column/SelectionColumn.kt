@@ -2,6 +2,7 @@ package ru.pavlig43.immutable.internal.column
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
@@ -42,7 +43,12 @@ private fun <T : IMultiLineTableUi, C, E : TableData<T>> ReadonlyTableColumnsBui
     column(idKey, valueOf = { it.composeId }) {
         header("Ид")
         align(Alignment.Center)
-        cell { item, _ -> Text(item.composeId.toString()) }
+        cell { item, _ ->
+            Text(
+                text = item.composeId.toString(),
+                modifier = Modifier.padding(horizontal = 12.dp)
+            )
+        }
         autoWidth(max = 500.dp)
 
     }

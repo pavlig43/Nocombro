@@ -19,6 +19,7 @@ fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.writeCheckBoxColumn(
     alignment: Alignment = Alignment.Center
 ) {
     column(column, valueOf = valueOf) {
+        autoWidth(300.dp)
         header(headerText)
         align(alignment)
         filterType?.let {
