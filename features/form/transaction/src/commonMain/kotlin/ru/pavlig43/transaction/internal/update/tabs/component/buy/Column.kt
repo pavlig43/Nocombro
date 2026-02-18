@@ -61,7 +61,7 @@ internal fun createBuyColumn(
                 key = BuyField.COUNT,
                 getValue = { it.count },
                 headerText = "Количество",
-                decimalFormat = DecimalFormat.KG(),
+                decimalFormat = DecimalFormat.Decimal3(),
                 updateItem = { item, count -> onEvent(MutableUiEvent.UpdateItem(item.copy(count = count))) },
                 footerValue = { tableData -> tableData.displayedItems.sumOf { it.count } }
             )
@@ -70,7 +70,7 @@ internal fun createBuyColumn(
                 key = BuyField.PRICE,
                 getValue = { it.price },
                 headerText = "Цена",
-                decimalFormat = DecimalFormat.RUB(),
+                decimalFormat = DecimalFormat.Decimal2(),
                 updateItem = { item, price -> onEvent(MutableUiEvent.UpdateItem(item.copy(price = price))) }
             )
 
@@ -78,7 +78,7 @@ internal fun createBuyColumn(
                 key = BuyField.SUM,
                 getValue = { it.sum },
                 headerText = "Сумма",
-                decimalFormat = DecimalFormat.RUB(),
+                decimalFormat = DecimalFormat.Decimal2(),
                 footerValue = { tableData -> tableData.displayedItems.sumOf { it.sum } }
             )
            readTextColumn(

@@ -53,7 +53,7 @@ internal fun createExpensesColumns(
                 key = ExpensesField.AMOUNT,
                 getValue = { it.amount },
                 headerText = "Сумма (₽)",
-                decimalFormat = DecimalFormat.RUB(),
+                decimalFormat = DecimalFormat.Decimal2(),
                 updateItem = { item, amount -> onEvent(MutableUiEvent.UpdateItem(item.copy(amount = amount))) },
                 footerValue = { tableData -> tableData.displayedItems.sumOf { it.amount } }
             )

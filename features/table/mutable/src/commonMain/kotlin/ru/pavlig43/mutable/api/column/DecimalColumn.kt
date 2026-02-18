@@ -99,11 +99,11 @@ sealed interface DecimalFormat {
     val countDecimal: Int
 
     @Suppress("MagicNumber")
-    class KG : DecimalFormat {
+    class Decimal3 : DecimalFormat {
         override val countDecimal: Int = 3
     }
 
-    class RUB : DecimalFormat {
+    class Decimal2 : DecimalFormat {
         override val countDecimal: Int = 2
     }
 }
