@@ -1,0 +1,56 @@
+{
+  "description": "Nocombro project hooks - Windows notifications with tab info",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -ExecutionPolicy Bypass -File .claude/hooks/notify.ps1 -MessageType \"PreToolUse\" -ToolName \"{TOOL}\"",
+            "timeout": 7,
+            "when": "TOOL in ['Bash', 'Task']"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -ExecutionPolicy Bypass -File .claude/hooks/check-env.ps1 > .claude/hooks/env-debug.log 2>&1",
+            "timeout": 7
+          },
+          {
+            "type": "command",
+            "command": "powershell -ExecutionPolicy Bypass -File .claude/hooks/notify.ps1 -MessageType \"PostToolUse\" -ToolName \"{TOOL}\"",
+            "timeout": 7,
+            "when": "TOOL in ['Bash', 'Edit', 'Write', 'Task']"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -ExecutionPolicy Bypass -File .claude/hooks/notify.ps1 -MessageType \"UserPromptSubmit\"",
+            "timeout": 7
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -ExecutionPolicy Bypass -File .claude/hooks/notify.ps1 -MessageType \"Stop\"",
+            "timeout": 7
+          }
+        ]
+      }
+    ]
+  }
+}
