@@ -6,6 +6,7 @@ import kotlinx.collections.immutable.ImmutableList
 import ru.pavlig43.mutable.api.column.DecimalFormat
 import ru.pavlig43.mutable.api.column.decimalColumn
 import ru.pavlig43.mutable.api.column.idWithSelection
+import ru.pavlig43.mutable.api.column.readDecimalColumnWithFooter
 import ru.pavlig43.mutable.api.column.readTextColumn
 import ru.pavlig43.mutable.api.column.textWithSearchIconColumn
 import ru.pavlig43.mutable.api.column.writeDateColumn
@@ -20,6 +21,7 @@ enum class BuyField {
     SELECTION,
     COMPOSE_ID,
     COUNT,
+    SUM,
 
     BATCH_ID,
     PRODUCT_NAME,
@@ -69,8 +71,15 @@ internal fun createBuyColumn(
                 getValue = { it.price },
                 headerText = "Цена",
                 decimalFormat = DecimalFormat.RUB(),
-                updateItem = { item, price -> onEvent(MutableUiEvent.UpdateItem(item.copy(price = price))) },
-                footerValue = { tableData -> tableData.displayedItems.sumOf { it.price } }
+                updateItem = { item, price -> onEvent(MutableUiEvent.UpdateItem(item.copy(price = price))) }
+            )
+
+            readDecimalColumnWithFooter(
+                key = BuyField.SUM,
+                getValue = { it.sum },
+                headerText = "Сумма",
+                decimalFormat = DecimalFormat.RUB(),
+                footerValue = { tableData -> tableData.displayedItems.sumOf { it.sum } }
             )
            readTextColumn(
                headerText = "Партия",
