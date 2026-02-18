@@ -49,8 +49,13 @@ internal class TransactionFormTabsComponent(
     private fun onSuccessInitTransaction(transaction: TransactionEssentialsUi) {
         observeOnTransaction(transaction)
         coroutineScope.launch {
-            if (transaction.transactionType == TransactionType.BUY) {
-                tabNavigationComponent.addTab(TransactionTab.Buy)
+            when(transaction.transactionType){
+                TransactionType.BUY -> tabNavigationComponent.addTab(TransactionTab.Buy)
+                TransactionType.SALE -> TODO()
+                TransactionType.OPZS -> TODO()
+                TransactionType.WRITE_OFF -> TODO()
+                TransactionType.INVENTORY -> TODO()
+                null -> throw IllegalArgumentException("Transaction type is null")
             }
             tabNavigationComponent.onSelectTab(0)
         }

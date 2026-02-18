@@ -18,4 +18,7 @@ data class BuyUi(
     val comment: String = "",
     val batchId: Int = 0,
     val movementId: Int = 0
-) : IMultiLineTableUi
+) : IMultiLineTableUi {
+    val sum: Int
+        get() = (count.toLong() * price / 1000).toInt()
+}
