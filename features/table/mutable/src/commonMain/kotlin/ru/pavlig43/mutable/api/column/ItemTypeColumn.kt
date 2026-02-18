@@ -43,6 +43,7 @@ fun <T : Any, C, E, Type : ItemType> EditableTableColumnsBuilder<T, C, E>.writeI
 ) {
     column(column, valueOf = valueOf) {
         header(headerText)
+        autoWidth(300.dp)
         align(alignment)
         filterType?.let {
             filter(it)
@@ -64,6 +65,7 @@ fun <T : Any, C, E, Type : ItemType> EditableTableColumnsBuilder<T, C, E>.readIt
     alignment: Alignment = Alignment.Center
 ) {
     column(column, valueOf = valueOf) {
+        autoWidth(300.dp)
         header(headerText)
         align(alignment)
         filterType?.let {

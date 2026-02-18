@@ -20,6 +20,7 @@ fun <T : Any, C, E> ReadonlyTableColumnsBuilder<T, C, E>.readDateTimeColumn(
     filterType: TableFilterType.DateTableFilter? = null
 ) {
     column(column, valueOf = valueOf) {
+        autoWidth(300.dp)
         header(headerText)
         align(Alignment.CenterStart)
         filterType?.let {
@@ -36,7 +37,7 @@ private fun <T : Any, C, E> ReadonlyColumnBuilder<T, C, E>.readDateTimeCell(
     cell { item, _ ->
         Text(
             text = valueOf(item).format(dateTimeFormat),
-            modifier = Modifier.padding(start = 12.dp)
+            modifier = Modifier.padding(horizontal = 12.dp)
         )
     }
 }

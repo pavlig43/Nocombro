@@ -17,6 +17,7 @@ fun <T : Any, C, E> ReadonlyTableColumnsBuilder<T, C, E>.readTextColumn(
     filterType: TableFilterType.TextTableFilter? = null
 ) {
     column(column, valueOf = valueOf) {
+        autoWidth(300.dp)
         header(headerText)
         align(Alignment.CenterStart)
         filterType?.let {
@@ -33,7 +34,7 @@ private fun <T : Any, C, E> ReadonlyColumnBuilder<T, C, E>.readTextCell(
     cell { item, _ ->
         Text(
             text = valueOf(item),
-            modifier = Modifier.padding(start = 12.dp)
+            modifier = Modifier.padding(horizontal = 12.dp)
         )
     }
 }

@@ -24,6 +24,7 @@ internal fun <T : Any, C, E> ReadonlyTableColumnsBuilder<T, C, E>.readIsActualCo
     alignment: Alignment = Alignment.Center
 ) {
     column(column, valueOf = valueOf) {
+        autoWidth(300.dp)
         header(headerText)
         align(alignment)
         filterType?.let {

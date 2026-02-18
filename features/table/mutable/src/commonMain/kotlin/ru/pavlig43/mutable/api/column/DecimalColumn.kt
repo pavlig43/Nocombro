@@ -29,6 +29,7 @@ fun <T : IMultiLineTableUi, C, E> EditableTableColumnsBuilder<T, C, E>.decimalCo
     footerValue: ((E) -> Int)? = null
 ) {
     column(key, valueOf = { getValue(it) }) {
+        autoWidth(300.dp)
         header(headerText)
         align(Alignment.CenterStart)
         filter(
@@ -61,6 +62,7 @@ fun <T : IMultiLineTableUi, C, E> EditableTableColumnsBuilder<T, C, E>.readDecim
     decimalFormat: DecimalFormat,
 ) {
     column(key, valueOf = { getValue(it) }) {
+        autoWidth(300.dp)
         header(headerText)
         align(Alignment.CenterStart)
         readNumberCell(format = decimalFormat, getCount = { getValue(it) })
@@ -76,6 +78,7 @@ fun <T : IMultiLineTableUi, C, E> EditableTableColumnsBuilder<T, C, E>.readDecim
     footerValue: (E) -> Int
 ) {
     column(key, valueOf = { getValue(it) }) {
+        autoWidth(300.dp)
         header(headerText)
         align(Alignment.CenterStart)
         filter(

@@ -2,6 +2,8 @@ package ru.pavlig43.immutable.internal.column
 
 import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import ua.wwind.table.ReadonlyColumnBuilder
 import ua.wwind.table.ReadonlyTableColumnsBuilder
 import kotlin.math.pow
@@ -29,6 +31,7 @@ fun <T : Any, C, E> ReadonlyTableColumnsBuilder<T, C, E>.readDecimalColumn(
     alignment: Alignment = Alignment.Center
 ) {
     column(column, valueOf = { valueOf(it) }) {
+        autoWidth(300.dp)
         header(headerText)
         align(alignment)
         readDecimalCell(format = decimalFormat, getCount = valueOf)
@@ -41,7 +44,10 @@ private fun <T : Any, C, E> ReadonlyColumnBuilder<T, C, E>.readDecimalCell(
     getCount: (T) -> Int,
 ) {
     cell { item, _ ->
-        Text(text = getCount(item).toStartDoubleFormat(format))
+        Text(
+            text = getCount(item).toStartDoubleFormat(format),
+            modifier = Modifier.padding(horizontal = 12.dp)
+        )
     }
 }
 

@@ -37,6 +37,7 @@ fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.textWithSearchIconColum
     alignment: Alignment = Alignment.Center
 ) {
     column(column, valueOf = valueOf) {
+        autoWidth(300.dp)
         header(headerText)
         align(alignment)
         filterType?.let {
@@ -70,7 +71,7 @@ private fun NameRowWithSearchIcon(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Text(text, Modifier.weight(1f).padding(start = 4.dp))
+        Text(text, Modifier.weight(1f).padding(horizontal = 4.dp))
         ToolTipIconButton(
             tooltipText = "Выбрать",
             onClick = onOpenChooseDialog,
