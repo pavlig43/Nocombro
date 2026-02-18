@@ -1,14 +1,13 @@
 @file:Suppress("MatchingDeclarationName")
 package ru.pavlig43.immutable.internal.component.items.document
 
-import androidx.compose.material3.Text
-import androidx.compose.ui.Alignment
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
-import kotlinx.datetime.format
-import ru.pavlig43.core.dateFormat
 import ru.pavlig43.database.data.document.DocumentType
 import ru.pavlig43.immutable.internal.column.idWithSelection
+import ru.pavlig43.immutable.internal.column.readDateColumn
+import ru.pavlig43.immutable.internal.column.readEnumColumn
+import ru.pavlig43.immutable.internal.column.readTextColumn
 import ru.pavlig43.immutable.internal.component.ImmutableTableUiEvent
 import ru.pavlig43.tablecore.model.TableData
 import ua.wwind.table.ColumnSpec
@@ -40,38 +39,34 @@ internal fun createDocumentColumn(
                 onEvent = onEvent
             )
 
-            column(DocumentField.NAME, valueOf = { it.displayName }) {
-                header("Название")
-                align(Alignment.Center)
-                filter(TableFilterType.TextTableFilter())
-                cell { document, _ -> Text(document.displayName) }
-                sortable()
-            }
-            column(DocumentField.TYPE, valueOf = { it.type }) {
-                header("Тип")
-                align(Alignment.Center)
-                filter(
-                    TableFilterType.EnumTableFilter(
-                        listTypeForFilter.toImmutableList(),
-                        getTitle = { it.displayName })
-                )
-                cell { document, _ -> Text(document.type.displayName) }
-            }
-            column(DocumentField.CREATED_AT, valueOf = { it.createdAt }) {
-                header("Создан")
-                align(Alignment.Center)
-                filter(TableFilterType.DateTableFilter())
-                cell { document, _ ->
-                    Text(document.createdAt.format(dateFormat))
-                }
-                sortable()
-            }
-            column(DocumentField.COMMENT, valueOf = { it.comment }) {
-                header("Комментарий")
-                align(Alignment.Center)
-                filter(TableFilterType.TextTableFilter())
-                cell { document, _ -> Text(document.comment) }
-            }
+            readTextColumn(
+                headerText = "Название",
+                column = DocumentField.NAME,
+                valueOf = { it.displayName }
+            )
+
+            readEnumColumn(
+                headerText = "Тип",
+                column = DocumentField.TYPE,
+                valueOf = { it.type },
+                filterType = TableFilterType.EnumTableFilter(
+                    listTypeForFilter.toImmutableList(),
+                    getTitle = { it.displayName }
+                ),
+                getTitle = { it.displayName }
+            )
+
+            readDateColumn(
+                headerText = "Создан",
+                column = DocumentField.CREATED_AT,
+                valueOf = { it.createdAt }
+            )
+
+            readTextColumn(
+                headerText = "Комментарий",
+                column = DocumentField.COMMENT,
+                valueOf = { it.comment }
+            )
         }
     return columns
 

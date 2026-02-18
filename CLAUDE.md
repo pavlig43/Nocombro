@@ -157,6 +157,29 @@ Nocombro/
 > Пусть code-reviewer проверит мой коммит
 ```
 
+## Первичная настройка (после клонирования проекта)
+
+### MCP DeepWiki Server (поиск по документации)
+
+```bash
+# Установить DeepWiki MCP для поиска по документации библиотек
+claude mcp add -s user -t http deepwiki https://mcp.deepwiki.com/mcp
+
+# Проверить что сервер добавлен
+claude mcp list
+```
+
+**Для чего:** Поиск по документации Kotlin, Compose, Ktor и других библиотек без интернета.
+
+**Примеры использования:**
+```
+> Как использовать Decompose для навигации?
+> Объясни Kotlin StateFlow vs SharedFlow
+> Как настроить Ktor WebSocket client?
+```
+
+---
+
 ## Конфигурация Claude Code
 
 ### Project settings (`.claude/settings.local.json`)

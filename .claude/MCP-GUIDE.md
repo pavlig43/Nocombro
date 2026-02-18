@@ -1,4 +1,4 @@
-# MCP: GitHub и DeepWiki
+# MCP: DeepWiki
 
 ## Что настроено
 
@@ -9,42 +9,9 @@
     "deepwiki": {
       "type": "sse",
       "url": "https://mcp.deepwiki.com/sse"
-    },
-    "github": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-github"],
-      "env": {
-        "GITHUB_TOKEN": "YOUR_GITHUB_TOKEN_HERE"
-      }
     }
   }
 }
-```
-
----
-
-## GitHub MCP
-
-### Установка
-
-```bash
-npm install -g @modelcontextprotocol/server-github
-```
-
-### Получить токен
-
-1. GitHub → Settings → Developer settings
-2. Personal access tokens → Tokens (classic)
-3. Generate new token → Выбери `repo`, `issues`, `pull_requests`
-4. Скопируй токен и вставь в `mcp.json` вместо `YOUR_GITHUB_TOKEN_HERE`
-
-### Использование
-
-```
-> Покажи открытые PR в репозитории
-> Создай issue с заголовком "Bug in decimalColumn"
-> Какой последний коммит в main?
-> Открой issue на основе текущих изменений
 ```
 
 ---
@@ -53,7 +20,7 @@ npm install -g @modelcontextprotocol/server-github
 
 ### Что это
 
-Поиск по документации без интернета.
+Поиск по официальной документации библиотек (Kotlin, Compose, Ktor, Decompose, и т.д.).
 
 ### Использование
 
@@ -61,20 +28,23 @@ npm install -g @modelcontextprotocol/server-github
 > Как работать с DateTime в Compose?
 > Объясни Kotlin Flow
 > Как использовать Decompose для навигации?
+> Как настроить Ktor client?
 ```
+
+### Преимущества
+
+- Поиск по документации без открытия браузера
+- Актуальная информация из официальных источников
+- Любые библиотеки, не только те что в проекте
+
+### Отличие от find-src
+
+| DeepWiki | find-src |
+|----------|----------|
+| Документация библиотек | Исходный код |
+| Любые библиотеки | Только зависимости в проекте |
+| Описание API | Реализация |
 
 ---
 
-## Проверка работы
-
-```
-> Какие MCP серверы доступны?
-```
-
-Должен показать:
-- `deepwiki` — поиск по документации
-- `github` — работа с GitHub
-
----
-
-**Источник:** https://modelcontextprotocol.io/
+**Источник:** https://deepwiki.com/

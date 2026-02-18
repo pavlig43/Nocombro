@@ -9,6 +9,7 @@ import kotlinx.collections.immutable.ImmutableList
 import org.jetbrains.compose.resources.painterResource
 import ru.pavlig43.coreui.tooltip.ToolTipProject
 import ru.pavlig43.immutable.internal.column.idWithSelection
+import ru.pavlig43.immutable.internal.column.readTextColumn
 import ru.pavlig43.immutable.internal.component.ImmutableTableUiEvent
 import ru.pavlig43.tablecore.model.TableData
 import ru.pavlig43.theme.Res
@@ -40,19 +41,19 @@ internal fun createProductDeclarationColumn(
                 onEvent = onEvent
             )
 
-            column(ProductDeclarationField.DISPLAY_NAME, valueOf = { it.displayName }) {
-                header("Декларация")
-                align(Alignment.Center)
-                cell { item, _ -> Text(item.displayName) }
-                sortable()
-            }
+            readTextColumn(
+                headerText = "Декларация",
+                column = ProductDeclarationField.DISPLAY_NAME,
+                valueOf = { it.displayName }
+            )
 
-            column(ProductDeclarationField.VENDOR_NAME, valueOf = { it.vendorName }) {
-                header("Поставщик")
-                align(Alignment.Center)
-                cell { item, _ -> Text(item.vendorName) }
-                sortable()
-            }
+            readTextColumn(
+                headerText = "Поставщик",
+                column = ProductDeclarationField.VENDOR_NAME,
+                valueOf = { it.vendorName }
+            )
+
+            // Custom column with tooltip for isActual
             column(ProductDeclarationField.IS_ACTUAL, valueOf = { it.isActual }) {
                 header("Актуальность")
                 align(Alignment.Center)
@@ -67,7 +68,6 @@ internal fun createProductDeclarationColumn(
                                 tint = if (item.isActual) Color.Green else Color.Red
                             )
                         }
-
                     )
                 }
                 sortable()
