@@ -1,0 +1,230 @@
+#!/usr/bin/bash
+# find-src - Search and read source files from Gradle dependencies cache
+# Usage:
+#   find-src <pattern>              - Find files by name pattern
+#   find-src <pattern> <artifact>   - Find in specific artifact
+#   find-src cat <jar-path> <file>  - Read file from JAR
+#   find-src list <artifact>        - List all files in artifact sources
+
+set -e
+
+# Colors for output
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Gradle cache path
+GRADLE_CACHE="$HOME/.gradle/caches/modules-2/files-2.1"
+
+# Find sources JARs in Gradle cache
+find_sources_jars() {
+    local artifact="$1"
+    if [ -z "$artifact" ]; then
+        find "$GRADLE_CACHE" -name "*-sources.jar" -type f 2>/dev/null
+    else
+        find "$GRADLE_CACHE" -name "*${artifact}*sources.jar" -type f 2>/dev/null
+    fi
+}
+
+# Search for pattern in sources JARs (file names)
+search_in_jars() {
+    local pattern="$1"
+    local artifact_filter="$2"
+
+    echo -e "${BLUE}Searching for: ${GREEN}$pattern${NC}"
+    if [ -n "$artifact_filter" ]; then
+        echo -e "${BLUE}Artifact filter: ${GREEN}$artifact_filter${NC}"
+    fi
+    echo ""
+
+    local found=0
+    local jars=$(find_sources_jars "$artifact_filter")
+
+    if [ -z "$jars" ]; then
+        echo "No sources JARs found"
+        return 1
+    fi
+
+    while IFS= read -r jar; do
+        # Use unzip to list files matching pattern
+        local matches=$(unzip -l "$jar" 2>/dev/null | grep -i "$pattern" || true)
+        if [ -n "$matches" ]; then
+            local artifact=$(echo "$jar" | sed -E 's|.*modules-2/files-2\.1/([^/]+/[^/]+/[^/]+)/.*|\1|')
+            echo -e "${GREEN}Found in: ${NC}$artifact"
+            echo "$matches"
+            echo ""
+            found=1
+        fi
+    done <<< "$jars"
+
+    if [ $found -eq 0 ]; then
+        echo "No file name matches found"
+        echo ""
+        echo -e "${BLUE}Tip: Use ${GREEN}--content${NC} flag to search inside files (class names, functions, etc.)"
+        return 1
+    fi
+}
+
+# Search for pattern inside JAR file contents (class names, functions, etc.)
+search_in_jar_contents() {
+    local pattern="$1"
+    local artifact_filter="$2"
+
+    echo -e "${BLUE}Searching inside files for: ${GREEN}$pattern${NC}"
+    if [ -n "$artifact_filter" ]; then
+        echo -e "${BLUE}Artifact filter: ${GREEN}$artifact_filter${NC}"
+    fi
+    echo ""
+
+    local found=0
+    local jars=$(find_sources_jars "$artifact_filter")
+
+    if [ -z "$jars" ]; then
+        echo "No sources JARs found"
+        return 1
+    fi
+
+    # Create temp dir
+    local temp_dir=$(mktemp -d)
+    trap "rm -rf '$temp_dir'" EXIT
+
+    while IFS= read -r jar; do
+        # Extract to temp
+        unzip -q -o "$jar" -d "$temp_dir" 2>/dev/null || continue
+
+        # Search in extracted files
+        local matches=$(find "$temp_dir" -name "*.kt" -o -name "*.java" 2>/dev/null | while read file; do
+            if grep -qi "$pattern" "$file" 2>/dev/null; then
+                # Get relative path from temp_dir
+                local rel_path="${file#$temp_dir/}"
+                echo "$rel_path"
+            fi
+        done)
+
+        if [ -n "$matches" ]; then
+            local artifact=$(echo "$jar" | sed -E 's|.*modules-2/files-2\.1/([^/]+/[^/]+/[^/]+)/.*|\1|')
+            echo -e "${GREEN}Found in: ${NC}$artifact"
+            echo "$matches"
+            echo ""
+            found=1
+        fi
+
+        # Clean temp for next JAR
+        rm -rf "$temp_dir"/*
+    done <<< "$jars"
+
+    if [ $found -eq 0 ]; then
+        echo "No matches found in file contents"
+        return 1
+    fi
+}
+
+# Extract and read file from JAR
+read_file_from_jar() {
+    local jar_path="$1"
+    local file_path="$2"
+
+    if [ ! -f "$jar_path" ]; then
+        echo "Error: JAR not found: $jar_path"
+        return 1
+    fi
+
+    unzip -p "$jar_path" "$file_path" 2>/dev/null || {
+        echo "Error reading file from JAR"
+        return 1
+    }
+}
+
+# List all files in sources JAR
+list_jar_contents() {
+    local artifact="$1"
+
+    echo -e "${BLUE}Listing sources for: ${GREEN}$artifact${NC}"
+    echo ""
+
+    local jar=$(find_sources_jars "$artifact" | head -1)
+
+    if [ -z "$jar" ]; then
+        echo "No sources JAR found for: $artifact"
+        return 1
+    fi
+
+    echo -e "${GREEN}JAR: ${NC}$jar"
+    echo ""
+    unzip -l "$jar" 2>/dev/null | grep -E "\.kt$|\.java$" || {
+        echo "Error listing JAR contents"
+        return 1
+    }
+}
+
+# Show usage
+show_usage() {
+    cat << EOF
+${GREEN}find-src${NC} - Search and read source files from Gradle dependencies
+
+${BLUE}Usage:${NC}
+  find-src <pattern>                        Search for files by name pattern
+  find-src <pattern> <artifact>             Search in specific artifact
+  find-src --content <pattern>              Search inside files (class names, functions)
+  find-src --content <pattern> <artifact>   Search inside specific artifact
+  find-src cat <jar-path> <file-path>       Read file from JAR
+  find-src list <artifact>                  List all files in artifact sources
+
+${BLUE}Examples:${NC}
+  find-src AndroidAutofill                  Find AndroidAutofill.* files (by file name)
+  find-src --content TableRowStyle          Find TableRowStyle class (inside files)
+  find-src --content TableRowStyle table-core  Find class in specific artifact
+  find-src list ui-android                  List all files in ui-android sources
+
+${BLUE}Notes:${NC}
+  - Sources are read from Gradle cache: ~/.gradle/caches/modules-2/files-2.1/
+  - Use --content to search for class names, functions, properties inside files
+  - Pattern matching is case-insensitive
+EOF
+}
+
+# Main
+case "${1:-}" in
+    ""|--help|-h)
+        show_usage
+        ;;
+    cat)
+        if [ $# -lt 3 ]; then
+            echo "Error: cat requires <jar-path> and <file-path>"
+            echo "Usage: find-src cat <jar-path> <file-path>"
+            exit 1
+        fi
+        read_file_from_jar "$2" "$3"
+        ;;
+    list)
+        if [ $# -lt 2 ]; then
+            echo "Error: list requires <artifact>"
+            echo "Usage: find-src list <artifact>"
+            exit 1
+        fi
+        list_jar_contents "$2"
+        ;;
+    --content)
+        if [ $# -lt 2 ]; then
+            echo "Error: --content requires <pattern>"
+            echo "Usage: find-src --content <pattern> [artifact]"
+            exit 1
+        fi
+
+        pattern="$2"
+        artifact="${3:-}"
+
+        search_in_jar_contents "$pattern" "$artifact"
+        ;;
+    *)
+        if [ $# -eq 0 ]; then
+            show_usage
+            exit 1
+        fi
+
+        pattern="$1"
+        artifact="${2:-}"
+
+        search_in_jars "$pattern" "$artifact"
+        ;;
+esac
