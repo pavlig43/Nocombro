@@ -26,6 +26,7 @@ fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.writeDateTimeColumn(
     valueOf: (T) -> LocalDateTime,
     onOpenDateTimeDialog: (T) -> Unit,
     filterType: TableFilterType.DateTableFilter? = null,
+    isSortable: Boolean = true,
     alignment: Alignment = Alignment.CenterStart
 ) {
     column(column, valueOf = valueOf) {
@@ -39,15 +40,18 @@ fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.writeDateTimeColumn(
             valueOf = valueOf,
             onOpenDateTimeDialog = onOpenDateTimeDialog
         )
-        sortable()
+        if (isSortable) {
+            sortable()
+        }
     }
 }
-
+@Suppress("LongParameterList")
 fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.readDateTimeColumn(
     headerText: String,
     column: C,
     valueOf: (T) -> LocalDateTime,
     filterType: TableFilterType<*>? = null,
+    isSortable: Boolean = true,
     alignment: Alignment = Alignment.CenterStart
 ) {
     column(column, valueOf = valueOf) {
@@ -58,7 +62,9 @@ fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.readDateTimeColumn(
             filter(it)
         }
         readDateTimeCell(valueOf = valueOf)
-        sortable()
+        if (isSortable) {
+            sortable()
+        }
     }
 }
 

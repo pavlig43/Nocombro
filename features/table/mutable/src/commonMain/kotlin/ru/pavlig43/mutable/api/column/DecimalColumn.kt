@@ -11,7 +11,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import ru.pavlig43.tablecore.model.IMultiLineTableUi
 import ua.wwind.table.EditableColumnBuilder
 import ua.wwind.table.EditableTableColumnsBuilder
 import ua.wwind.table.component.TableCellTextFieldWithTooltipError
@@ -20,12 +19,13 @@ import kotlin.math.pow
 
 
 @Suppress("LongParameterList")
-fun <T : IMultiLineTableUi, C, E> EditableTableColumnsBuilder<T, C, E>.decimalColumn(
+fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.decimalColumn(
     key: C,
     getValue: (T) -> Int,
     headerText: String,
     decimalFormat: DecimalFormat,
     updateItem: (T, Int) -> Unit,
+    isSortable: Boolean = true,
     footerValue: ((E) -> Int)? = null
 ) {
     column(key, valueOf = { getValue(it) }) {
@@ -51,31 +51,37 @@ fun <T : IMultiLineTableUi, C, E> EditableTableColumnsBuilder<T, C, E>.decimalCo
                 )
             }
         }
-        sortable()
+        if (isSortable) {
+            sortable()
+        }
     }
 }
 
-fun <T : IMultiLineTableUi, C, E> EditableTableColumnsBuilder<T, C, E>.readDecimalColumn(
+fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.readDecimalColumn(
     key: C,
     getValue: (T) -> Int,
     headerText: String,
     decimalFormat: DecimalFormat,
+    isSortable: Boolean = true
 ) {
     column(key, valueOf = { getValue(it) }) {
         autoWidth(300.dp)
         header(headerText)
         align(Alignment.CenterStart)
         readNumberCell(format = decimalFormat, getCount = { getValue(it) })
-        sortable()
+        if (isSortable) {
+            sortable()
+        }
     }
 }
-
-fun <T : IMultiLineTableUi, C, E> EditableTableColumnsBuilder<T, C, E>.readDecimalColumnWithFooter(
+@Suppress("LongParameterList")
+fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.readDecimalColumnWithFooter(
     key: C,
     getValue: (T) -> Int,
     headerText: String,
     decimalFormat: DecimalFormat,
-    footerValue: (E) -> Int
+    footerValue: (E) -> Int,
+    isSortable: Boolean = true
 ) {
     column(key, valueOf = { getValue(it) }) {
         autoWidth(300.dp)
@@ -94,7 +100,9 @@ fun <T : IMultiLineTableUi, C, E> EditableTableColumnsBuilder<T, C, E>.readDecim
                 modifier = Modifier.padding(horizontal = 8.dp)
             )
         }
-        sortable()
+        if (isSortable) {
+            sortable()
+        }
     }
 }
 
@@ -111,7 +119,7 @@ sealed interface DecimalFormat {
     }
 }
 
-private fun <T : IMultiLineTableUi, C, E> EditableColumnBuilder<T, C, E>.readNumberCell(
+private fun <T : Any, C, E> EditableColumnBuilder<T, C, E>.readNumberCell(
     format: DecimalFormat,
     getCount: (T) -> Int,
 ) {
@@ -123,7 +131,7 @@ private fun <T : IMultiLineTableUi, C, E> EditableColumnBuilder<T, C, E>.readNum
     }
 }
 
-private fun <T : IMultiLineTableUi, C, E> EditableColumnBuilder<T, C, E>.cellForDecimalFormat(
+private fun <T : Any, C, E> EditableColumnBuilder<T, C, E>.cellForDecimalFormat(
     format: DecimalFormat,
     getCount: (T) -> Int,
     saveInModel: (T, Int) -> Unit,

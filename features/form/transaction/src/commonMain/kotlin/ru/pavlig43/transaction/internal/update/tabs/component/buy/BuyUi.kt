@@ -4,6 +4,7 @@ import kotlinx.datetime.LocalDate
 import ru.pavlig43.core.getCurrentLocalDate
 import ru.pavlig43.tablecore.model.IMultiLineTableUi
 
+@Suppress("MagicNumber")
 data class BuyUi(
     override val composeId: Int,
     val id: Int,

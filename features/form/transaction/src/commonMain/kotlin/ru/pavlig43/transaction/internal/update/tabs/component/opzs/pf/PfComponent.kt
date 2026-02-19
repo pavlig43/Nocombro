@@ -24,12 +24,23 @@ import ru.pavlig43.mutable.api.singleLine.component.SingleLineComponentFactory
 import ru.pavlig43.mutable.api.singleLine.component.UpdateSingleLineComponent
 import ru.pavlig43.mutable.api.singleLine.data.UpdateSingleLineRepository
 import ua.wwind.table.ColumnSpec
-
+private val factory = SingleLineComponentFactory<PfBD, PfUi>(
+    initItem = PfUi(),
+    errorFactory = { item ->
+        buildList {
+            val place = "Полуфабрикат"
+            if (item.productId == 0) add("$place не указан продукт")
+            if (item.count == 0) add("$place количество равно 0")
+            if (item.declarationId == 0) add("$place нет декларации")
+        }
+    },
+    mapperToUi = {toUi()}
+)
+@Suppress("LongParameterList")
 internal class PfComponent(
     componentContext: ComponentContext,
     transactionId: Int,
     updateSingleLineRepository: UpdateSingleLineRepository<PfBD>,
-    componentFactory: SingleLineComponentFactory<PfBD, PfUi>,
     private val tabOpener: TabOpener,
     private val immutableTableDependencies: ImmutableTableDependencies,
     observeOnItem: (PfUi) -> Unit = {},
@@ -38,11 +49,13 @@ internal class PfComponent(
     componentContext = componentContext,
     id = transactionId,
     updateSingleLineRepository = updateSingleLineRepository,
-    componentFactory = componentFactory,
+    componentFactory = factory,
     observeOnItem = observeOnItem,
     onSuccessInitData = onSuccessInitData,
     mapperToDTO = { toDto() }
 ) {
+    override val title: String
+        get() = "ПФ"
     private val dialogNavigation = SlotNavigation<PfDialog>()
 
     val dialog: Value<ChildSlot<PfDialog, PfDialogChild>> = childSlot(

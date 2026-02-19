@@ -3,6 +3,7 @@ package ru.pavlig43.transaction.internal.di
 import org.koin.core.qualifier.qualifier
 import org.koin.dsl.module
 import ru.pavlig43.core.TransactionExecutor
+import ru.pavlig43.core.getCurrentLocalDate
 import ru.pavlig43.core.model.ChangeSet
 import ru.pavlig43.core.model.UpsertListChangeSet
 import ru.pavlig43.database.NocombroDatabase
@@ -11,9 +12,9 @@ import ru.pavlig43.database.data.batch.BatchMovement
 import ru.pavlig43.database.data.batch.MovementType
 import ru.pavlig43.database.data.expense.ExpenseBD
 import ru.pavlig43.database.data.transact.Transact
-import ru.pavlig43.database.data.transact.pf.PfBD
 import ru.pavlig43.database.data.transact.buy.BuyBDIn
 import ru.pavlig43.database.data.transact.buy.BuyBDOut
+import ru.pavlig43.database.data.transact.pf.PfBD
 import ru.pavlig43.database.data.transact.reminder.ReminderBD
 import ru.pavlig43.files.api.FilesDependencies
 import ru.pavlig43.immutable.api.ImmutableTableDependencies
@@ -29,8 +30,7 @@ internal fun createTransactionFormModule(dependencies: TransactionFormDependenci
         single<FilesDependencies> { dependencies.filesDependencies }
         single<ImmutableTableDependencies> { dependencies.immutableTableDependencies }
         single<CreateSingleItemRepository<Transact>> { TransactionCreateRepository(get()) }
-        single<UpdateSingleLineRepository<Transact>> { TransactionUpdateRepository(get()) }
-        single<UpdateSingleLineRepository<PfBD>> { PfUpdateRepository(get()) }
+        single<UpdateSingleLineRepository<Transact>>(UpdateSingleLineRepositoryType.TRANSACTION.qualifier) { TransactionUpdateRepository(get()) }
         single<UpdateCollectionRepository<BuyBDOut, BuyBDOut>>(UpdateCollectionRepositoryType.BUY.qualifier) {
             BuyCollectionRepository(get())
         }
@@ -40,12 +40,22 @@ internal fun createTransactionFormModule(dependencies: TransactionFormDependenci
         single<UpdateCollectionRepository<ExpenseBD, ExpenseBD>>(UpdateCollectionRepositoryType.EXPENSES.qualifier) {
             ExpensesCollectionRepository(get())
         }
-
-
+        single<UpdateSingleLineRepository<PfBD>>(UpdateSingleLineRepositoryType.PF.qualifier) { PfUpdateRepository(get()) }
     }
-
 )
 
+public enum class UpdateCollectionRepositoryType {
+
+    BUY,
+    REMINDERS,
+    EXPENSES
+
+}
+
+public enum class UpdateSingleLineRepositoryType {
+    TRANSACTION,
+    PF
+}
 
 private class TransactionCreateRepository(db: NocombroDatabase) :
     CreateSingleItemRepository<Transact> {
@@ -149,14 +159,6 @@ private class BuyCollectionRepository(
     }
 }
 
-internal enum class UpdateCollectionRepositoryType {
-
-    BUY,
-    REMINDERS,
-    EXPENSES
-
-}
-
 
 private class RemindersCollectionRepository(
     private val db: NocombroDatabase
@@ -206,26 +208,49 @@ private class PfUpdateRepository(
     private val db: NocombroDatabase
 ) : UpdateSingleLineRepository<PfBD> {
 
-    private val dao = db.pfDao
+    private val pfDao = db.pfDao
+    private val batchDao = db.batchDao
+    private val movementDao = db.batchMovementDao
 
     override suspend fun getInit(id: Int): Result<PfBD> {
         return runCatching {
-            dao.getByTransactionId(id) ?: PfBD(
-                transactionId = id,
-                productId = 0,
-                productName = "",
-                declarationId = 0,
-                declarationName = "",
-                count = 0,
-                id = 0
-            )
+            pfDao.getProductFrame(id) ?: PfBD(transactionId = id, dateBorn = getCurrentLocalDate(), id = id)
         }
     }
 
     override suspend fun update(changeSet: ChangeSet<PfBD>): Result<Unit> {
         if (changeSet.old == changeSet.new) return Result.success(Unit)
+
         return runCatching {
-            dao.upsert(changeSet.new)
+            val pf = changeSet.new
+
+            // 1. Создаём/обновляем Batch
+            val batch = ru.pavlig43.database.data.batch.BatchBD(
+                id = pf.batchId,
+                productId = pf.productId,
+                dateBorn = pf.dateBorn,
+                declarationId = pf.declarationId
+            )
+            val batchId = if (batch.id == 0) {
+                batchDao.createBatch(batch).toInt()
+            } else {
+                batchDao.updateBatch(batch)
+                batch.id
+            }
+
+            // 2. Создаём/обновляем BatchMovement INCOMING
+            val movement = ru.pavlig43.database.data.batch.BatchMovement(
+                batchId = batchId,
+                movementType = ru.pavlig43.database.data.batch.MovementType.INCOMING,
+                count = pf.count,
+                transactionId = pf.transactionId,
+                id = pf.movementId
+            )
+            if (movement.id == 0) {
+                movementDao.createMovement(movement)
+            } else {
+                movementDao.upsertMovement(movement)
+            }
         }
     }
 }

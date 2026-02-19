@@ -15,4 +15,7 @@ internal sealed interface TransactionTab {
 
     @Serializable
     data object Expenses : TransactionTab
+
+    @Serializable
+    data object Pf : TransactionTab
 }

@@ -35,6 +35,7 @@ internal fun createTransactionColumns1(
                 headerText = "Проведена",
                 column = TransactionField.IS_COMPLETED,
                 valueOf = { it.isCompleted },
+                isSortable = false,
                 onChangeChecked = { item, checked -> onChangeItem(item.copy(isCompleted = checked)) },
             )
 

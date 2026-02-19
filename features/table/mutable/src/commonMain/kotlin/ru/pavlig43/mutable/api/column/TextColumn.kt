@@ -18,6 +18,7 @@ fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.writeTextColumn(
     valueOf: (T) -> String,
     onChangeItem: (T, String) -> Unit,
     filterType: TableFilterType.TextTableFilter? = null,
+    isSortable: Boolean = true,
     singleLine: Boolean = true,
     alignment: Alignment = Alignment.CenterStart
 ) {
@@ -33,15 +34,18 @@ fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.writeTextColumn(
             singleLine = singleLine,
             onValueChange = onChangeItem
         )
-        sortable()
+        if (isSortable) {
+            sortable()
+        }
     }
 }
-
+@Suppress("LongParameterList")
 fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.readTextColumn(
     headerText: String,
     column: C,
     valueOf: (T) -> String,
     filterType: TableFilterType<*>? = null,
+    isSortable: Boolean = true,
     alignment: Alignment = Alignment.CenterStart
 ) {
     column(column, valueOf = valueOf) {
@@ -52,7 +56,9 @@ fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.readTextColumn(
             filter(it)
         }
         readTextCell(valueOf = valueOf)
-        sortable()
+        if (isSortable) {
+            sortable()
+        }
     }
 }
 

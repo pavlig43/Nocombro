@@ -8,7 +8,6 @@ import ru.pavlig43.mutable.api.column.decimalColumn
 import ru.pavlig43.mutable.api.column.textWithSearchIconColumn
 import ua.wwind.table.ColumnSpec
 import ua.wwind.table.editableTableColumns
-import ua.wwind.table.filter.data.TableFilterType
 
 @Suppress("LongMethod")
 internal fun createPfColumns(
@@ -23,7 +22,6 @@ internal fun createPfColumns(
                 column = PfField.PRODUCT,
                 valueOf = { item -> item.productName },
                 onOpenDialog = { onOpenProductDialog() },
-                filterType = TableFilterType.TextTableFilter()
             )
 
             textWithSearchIconColumn(
@@ -31,7 +29,6 @@ internal fun createPfColumns(
                 column = PfField.DECLARATION,
                 valueOf = { item -> item.declarationName },
                 onOpenDialog = { onOpenDeclarationDialog() },
-                filterType = TableFilterType.TextTableFilter()
             )
 
             decimalColumn(

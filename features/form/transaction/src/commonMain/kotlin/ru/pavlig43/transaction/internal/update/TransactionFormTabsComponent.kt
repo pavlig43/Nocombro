@@ -16,9 +16,11 @@ import ru.pavlig43.database.data.transact.Transact
 import ru.pavlig43.database.data.transact.TransactionType
 import ru.pavlig43.mutable.api.singleLine.component.SingleLineComponentFactory
 import ru.pavlig43.transaction.internal.di.UpdateCollectionRepositoryType
+import ru.pavlig43.transaction.internal.di.UpdateSingleLineRepositoryType
 import ru.pavlig43.transaction.internal.model.TransactionEssentialsUi
 import ru.pavlig43.transaction.internal.update.tabs.component.buy.BuyComponent
 import ru.pavlig43.transaction.internal.update.tabs.component.expenses.ExpensesComponent
+import ru.pavlig43.transaction.internal.update.tabs.component.opzs.pf.PfComponent
 import ru.pavlig43.transaction.internal.update.tabs.component.reminders.RemindersComponent
 import ru.pavlig43.transaction.internal.update.tabs.essential.TransactionUpdateSingleLineComponent
 import ru.pavlig43.update.component.IItemFormTabsComponent
@@ -52,7 +54,7 @@ internal class TransactionFormTabsComponent(
             when(transaction.transactionType){
                 TransactionType.BUY -> tabNavigationComponent.addTab(TransactionTab.Buy)
                 TransactionType.SALE -> TODO()
-                TransactionType.OPZS -> TODO()
+                TransactionType.OPZS -> tabNavigationComponent.addTab(TransactionTab.Pf)
                 TransactionType.WRITE_OFF -> TODO()
                 TransactionType.INVENTORY -> TODO()
                 null -> throw IllegalArgumentException("Transaction type is null")
@@ -67,7 +69,7 @@ internal class TransactionFormTabsComponent(
             startConfigurations = listOf(
                 TransactionTab.Essentials,
                 TransactionTab.Expenses,
-                TransactionTab.Reminders
+                TransactionTab.Reminders,
             ),
             serializer = TransactionTab.serializer(),
             tabChildFactory = { context, config, _ ->
@@ -76,7 +78,7 @@ internal class TransactionFormTabsComponent(
                         TransactionUpdateSingleLineComponent(
                             componentContext = context,
                             transactionId = transactionId,
-                            updateRepository = scope.get(),
+                            updateRepository = scope.get(UpdateSingleLineRepositoryType.TRANSACTION.qualifier),
                             componentFactory = componentFactory,
                             observeOnItem = ::observeOnTransaction,
                             onSuccessInitData = ::onSuccessInitTransaction
@@ -109,6 +111,18 @@ internal class TransactionFormTabsComponent(
                             transactionDateTimeFlow = essentialsFields.map { it.createdAt },
                         )
                     )
+
+                    TransactionTab.Pf -> {
+                        TransactionTabChild.Pf(
+                            PfComponent(
+                                componentContext = context,
+                                transactionId = transactionId,
+                                updateSingleLineRepository = scope.get(UpdateSingleLineRepositoryType.PF.qualifier),
+                                tabOpener = tabOpener,
+                                immutableTableDependencies = scope.get()
+                            )
+                        )
+                    }
                 }
             }
         )

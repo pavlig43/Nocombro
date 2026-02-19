@@ -34,6 +34,7 @@ fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.textWithSearchIconColum
     valueOf: (T) -> String,
     onOpenDialog: (T) -> Unit,
     filterType: TableFilterType.TextTableFilter? = null,
+    isSortable: Boolean = true,
     alignment: Alignment = Alignment.Center
 ) {
     column(column, valueOf = valueOf) {
@@ -47,7 +48,9 @@ fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.textWithSearchIconColum
             valueOf = valueOf,
             onOpenDialog = onOpenDialog
         )
-        sortable()
+        if (isSortable) {
+            sortable()
+        }
     }
 }
 

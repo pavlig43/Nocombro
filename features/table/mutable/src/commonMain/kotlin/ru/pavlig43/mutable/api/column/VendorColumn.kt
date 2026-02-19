@@ -22,6 +22,7 @@ fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.vendorNameColumn(
     valueOf: (T) -> String?,
     onOpenDialog: () -> Unit,
     filterType: TableFilterType<*>? = null,
+    isSortable: Boolean = true,
     alignment: Alignment = Alignment.Center
 ) {
     column(column, valueOf = { it }) {
@@ -37,7 +38,9 @@ fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.vendorNameColumn(
                 onOpenDialog = onOpenDialog
             )
         }
-        sortable()
+        if (isSortable) {
+            sortable()
+        }
     }
 }
 

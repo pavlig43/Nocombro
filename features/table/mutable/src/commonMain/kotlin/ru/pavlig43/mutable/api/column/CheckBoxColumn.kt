@@ -16,6 +16,7 @@ fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.writeCheckBoxColumn(
     valueOf: (T) -> Boolean,
     onChangeChecked: (T, Boolean) -> Unit,
     filterType: TableFilterType.BooleanTableFilter? = null,
+    isSortable: Boolean = true,
     alignment: Alignment = Alignment.Center
 ) {
     column(column, valueOf = valueOf) {
@@ -29,7 +30,10 @@ fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.writeCheckBoxColumn(
             valueOf = valueOf,
             onCheckedChange = onChangeChecked
         )
-        sortable()
+        if (isSortable){
+            sortable()
+        }
+
     }
 }
 

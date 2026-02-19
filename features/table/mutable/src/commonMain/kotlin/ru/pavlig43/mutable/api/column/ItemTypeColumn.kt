@@ -39,6 +39,7 @@ fun <T : Any, C, E, Type : ItemType> EditableTableColumnsBuilder<T, C, E>.writeI
     options: List<Type>,
     onTypeSelected: (T, Type) -> Unit,
     filterType: TableFilterType<*>? = null,
+    isSortable: Boolean = true,
     alignment: Alignment = Alignment.Center
 ) {
     column(column, valueOf = valueOf) {
@@ -53,15 +54,18 @@ fun <T : Any, C, E, Type : ItemType> EditableTableColumnsBuilder<T, C, E>.writeI
             options = options,
             onTypeSelected = onTypeSelected
         )
-        sortable()
+        if (isSortable) {
+            sortable()
+        }
     }
 }
-
+@Suppress("LongParameterList")
 fun <T : Any, C, E, Type : ItemType> EditableTableColumnsBuilder<T, C, E>.readItemTypeColumn(
     headerText: String,
     column: C,
     valueOf: (T) -> Type?,
     filterType: TableFilterType<*>? = null,
+    isSortable: Boolean = true,
     alignment: Alignment = Alignment.Center
 ) {
     column(column, valueOf = valueOf) {
@@ -72,7 +76,9 @@ fun <T : Any, C, E, Type : ItemType> EditableTableColumnsBuilder<T, C, E>.readIt
             filter(it)
         }
         readItemTypeCell(valueOf = valueOf)
-        sortable()
+        if (isSortable) {
+            sortable()
+        }
     }
 }
 

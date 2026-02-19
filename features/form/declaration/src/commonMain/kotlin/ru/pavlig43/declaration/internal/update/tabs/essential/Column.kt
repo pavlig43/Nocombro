@@ -54,6 +54,7 @@ internal fun createDeclarationColumns1(
                 headerText = "Отслеживать в оповещениях",
                 column = DeclarationField.IS_OBSERVE,
                 valueOf = { it.isObserveFromNotification },
+                isSortable = false,
                 onChangeChecked = { item, checked -> onChangeItem(item.copy(isObserveFromNotification = checked)) },
             )
 
