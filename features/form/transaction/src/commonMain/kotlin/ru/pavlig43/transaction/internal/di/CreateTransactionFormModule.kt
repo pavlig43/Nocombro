@@ -11,6 +11,7 @@ import ru.pavlig43.database.data.batch.BatchMovement
 import ru.pavlig43.database.data.batch.MovementType
 import ru.pavlig43.database.data.expense.ExpenseBD
 import ru.pavlig43.database.data.transact.Transact
+import ru.pavlig43.database.data.transact.pf.PfBD
 import ru.pavlig43.database.data.transact.buy.BuyBDIn
 import ru.pavlig43.database.data.transact.buy.BuyBDOut
 import ru.pavlig43.database.data.transact.reminder.ReminderBD
@@ -29,6 +30,7 @@ internal fun createTransactionFormModule(dependencies: TransactionFormDependenci
         single<ImmutableTableDependencies> { dependencies.immutableTableDependencies }
         single<CreateSingleItemRepository<Transact>> { TransactionCreateRepository(get()) }
         single<UpdateSingleLineRepository<Transact>> { TransactionUpdateRepository(get()) }
+        single<UpdateSingleLineRepository<PfBD>> { PfUpdateRepository(get()) }
         single<UpdateCollectionRepository<BuyBDOut, BuyBDOut>>(UpdateCollectionRepositoryType.BUY.qualifier) {
             BuyCollectionRepository(get())
         }
@@ -200,4 +202,31 @@ private class ExpensesCollectionRepository(
 }
 
 
+private class PfUpdateRepository(
+    private val db: NocombroDatabase
+) : UpdateSingleLineRepository<PfBD> {
+
+    private val dao = db.pfDao
+
+    override suspend fun getInit(id: Int): Result<PfBD> {
+        return runCatching {
+            dao.getByTransactionId(id) ?: PfBD(
+                transactionId = id,
+                productId = 0,
+                productName = "",
+                declarationId = 0,
+                declarationName = "",
+                count = 0,
+                id = 0
+            )
+        }
+    }
+
+    override suspend fun update(changeSet: ChangeSet<PfBD>): Result<Unit> {
+        if (changeSet.old == changeSet.new) return Result.success(Unit)
+        return runCatching {
+            dao.upsert(changeSet.new)
+        }
+    }
+}
 
