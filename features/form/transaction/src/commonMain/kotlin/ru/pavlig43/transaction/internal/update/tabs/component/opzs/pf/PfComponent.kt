@@ -9,8 +9,12 @@ import com.arkivanov.decompose.router.slot.dismiss
 import com.arkivanov.decompose.value.Value
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.datetime.LocalDate
 import kotlinx.serialization.Serializable
+import ru.pavlig43.core.emptyLocalDateTime
 import ru.pavlig43.core.tabs.TabOpener
 import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.database.data.transact.pf.PfBD
@@ -40,6 +44,7 @@ private val factory = SingleLineComponentFactory<PfBD, PfUi>(
 internal class PfComponent(
     componentContext: ComponentContext,
     transactionId: Int,
+//    transactionDate: Flow<LocalDate>,
     updateSingleLineRepository: UpdateSingleLineRepository<PfBD>,
     private val tabOpener: TabOpener,
     private val immutableTableDependencies: ImmutableTableDependencies,
@@ -57,6 +62,13 @@ internal class PfComponent(
     override val title: String
         get() = "ПФ"
     private val dialogNavigation = SlotNavigation<PfDialog>()
+
+//    private val dateTime = transactionDate
+//        .stateIn(
+//            coroutineScope,
+//            SharingStarted.Eagerly,
+//            emptyLocalDateTime
+//        )
 
     val dialog: Value<ChildSlot<PfDialog, PfDialogChild>> = childSlot(
         source = dialogNavigation,
@@ -84,6 +96,7 @@ internal class PfComponent(
                                 item.copy(
                                     declarationId = declaration.declarationId,
                                     declarationName = declaration.displayName,
+                                    vendorName = declaration.vendorName
                                 )
                             )
                             dialogNavigation.dismiss()
@@ -101,7 +114,7 @@ internal class PfComponent(
                         onCreate = { tabOpener.openProductTab(0) },
                         dependencies = immutableTableDependencies,
                         immutableTableBuilderData = ProductImmutableTableBuilder(
-                            fullListProductTypes = ProductType.entries,
+                            fullListProductTypes = ProductType.entries - ProductType.FOOD_SALE,
                             withCheckbox = false
                         ),
                         onItemClick = { product ->

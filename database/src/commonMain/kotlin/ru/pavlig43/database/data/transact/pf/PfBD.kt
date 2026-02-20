@@ -1,6 +1,7 @@
 package ru.pavlig43.database.data.transact.pf
 
 import kotlinx.datetime.LocalDate
+import ru.pavlig43.core.getCurrentLocalDate
 import ru.pavlig43.core.model.SingleItem
 
 /**
@@ -16,6 +17,7 @@ data class PfBD(
     val productName: String = "",
     val declarationId: Int = 0,
     val declarationName: String = "",
-    val dateBorn: LocalDate,
+    val vendorName: String = "",
+    val dateBorn: LocalDate = getCurrentLocalDate(),
     override val id: Int = 0
 ) : SingleItem

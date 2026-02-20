@@ -40,11 +40,6 @@ internal class ExpensesComponent(
         SharingStarted.Eagerly,
         emptyLocalDateTime
     )
-    init {
-        coroutineScope.launch {
-            transactionDateTimeFlow.collect { println(it) }
-        }
-    }
     override fun createNewItem(composeId: Int): ExpensesUi {
         return ExpensesUi(
             composeId = composeId,

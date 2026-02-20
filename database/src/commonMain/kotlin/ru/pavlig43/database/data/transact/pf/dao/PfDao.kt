@@ -34,7 +34,7 @@ abstract class PfDao {
      * @param transactionId Идентификатор транзакции
      * @return DTO полуфабриката или null, если не найден
      */
-    suspend fun getProductFrame(transactionId: Int): PfBD? {
+    suspend fun getPf(transactionId: Int): PfBD? {
         return getInternalPf(transactionId)?.toPfBD()
     }
 }
@@ -68,6 +68,7 @@ private fun InternalPf.toPfBD(): PfBD {
         declarationId = batchOut.declaration.id,
         declarationName = batchOut.declaration.displayName,
         dateBorn = batchOut.batch.dateBorn,
+        vendorName = batchOut.declaration.vendorName,
         id = movement.transactionId
     )
 }

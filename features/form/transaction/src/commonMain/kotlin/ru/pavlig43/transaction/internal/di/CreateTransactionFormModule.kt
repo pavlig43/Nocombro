@@ -214,7 +214,7 @@ private class PfUpdateRepository(
 
     override suspend fun getInit(id: Int): Result<PfBD> {
         return runCatching {
-            pfDao.getProductFrame(id) ?: PfBD(transactionId = id, dateBorn = getCurrentLocalDate(), id = id)
+            pfDao.getPf(id) ?: PfBD(transactionId = id, dateBorn = getCurrentLocalDate(), id = id)
         }
     }
 
