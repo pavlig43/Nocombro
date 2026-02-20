@@ -6,7 +6,6 @@ import ru.pavlig43.database.data.transact.pf.PfBD
 import ru.pavlig43.mutable.api.singleLine.model.ISingleLineTableUi
 
 data class PfUi(
-    val id: Int = 0,
     val transactionId: Int = 0,
     val batchId: Int = 0,
     val movementId: Int = 0,
@@ -16,10 +15,9 @@ data class PfUi(
     val declarationName: String = "",
     val vendorName: String = "",
     val count: Int = 0,
-    val dateBorn: LocalDate = getCurrentLocalDate(),
 ) : ISingleLineTableUi
 
-internal fun PfUi.toDto(): PfBD = PfBD(
+internal fun PfUi.toDto(getDateBorn:()-> LocalDate): PfBD = PfBD(
     transactionId = transactionId,
     batchId = batchId,
     movementId = movementId,
@@ -29,11 +27,10 @@ internal fun PfUi.toDto(): PfBD = PfBD(
     declarationId = declarationId,
     declarationName = declarationName,
     vendorName = vendorName,
-    id = id
+    dateBorn = getDateBorn()
 )
 
 internal fun PfBD.toUi(): PfUi = PfUi(
-    id = id,
     transactionId = transactionId,
     batchId = batchId,
     movementId = movementId,

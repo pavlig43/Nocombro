@@ -205,7 +205,7 @@ private class ExpensesCollectionRepository(
 
 
 private class PfUpdateRepository(
-    private val db: NocombroDatabase
+    db: NocombroDatabase
 ) : UpdateSingleLineRepository<PfBD> {
 
     private val pfDao = db.pfDao
@@ -214,7 +214,7 @@ private class PfUpdateRepository(
 
     override suspend fun getInit(id: Int): Result<PfBD> {
         return runCatching {
-            pfDao.getPf(id) ?: PfBD(transactionId = id, dateBorn = getCurrentLocalDate(), id = id)
+            pfDao.getPf(id) ?: PfBD()
         }
     }
 
@@ -225,7 +225,7 @@ private class PfUpdateRepository(
             val pf = changeSet.new
 
             // 1. Создаём/обновляем Batch
-            val batch = ru.pavlig43.database.data.batch.BatchBD(
+            val batch = BatchBD(
                 id = pf.batchId,
                 productId = pf.productId,
                 dateBorn = pf.dateBorn,
@@ -239,9 +239,9 @@ private class PfUpdateRepository(
             }
 
             // 2. Создаём/обновляем BatchMovement INCOMING
-            val movement = ru.pavlig43.database.data.batch.BatchMovement(
+            val movement = BatchMovement(
                 batchId = batchId,
-                movementType = ru.pavlig43.database.data.batch.MovementType.INCOMING,
+                movementType = MovementType.INCOMING,
                 count = pf.count,
                 transactionId = pf.transactionId,
                 id = pf.movementId

@@ -3,7 +3,6 @@ package ru.pavlig43.transaction.internal.update
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.koin.core.qualifier.qualifier
@@ -107,8 +106,8 @@ internal class TransactionFormTabsComponent(
                         ExpensesComponent(
                             componentContext = context,
                             transactionId = transactionId,
+                            getTransactionDateTime = {essentialsFields.value.createdAt},
                             repository = scope.get(UpdateCollectionRepositoryType.EXPENSES.qualifier),
-                            transactionDateTimeFlow = essentialsFields.map { it.createdAt },
                         )
                     )
 
@@ -119,6 +118,7 @@ internal class TransactionFormTabsComponent(
                                 transactionId = transactionId,
                                 updateSingleLineRepository = scope.get(UpdateSingleLineRepositoryType.PF.qualifier),
                                 tabOpener = tabOpener,
+                                getDateBorn = {essentialsFields.value.createdAt.date},
                                 immutableTableDependencies = scope.get()
                             )
                         )

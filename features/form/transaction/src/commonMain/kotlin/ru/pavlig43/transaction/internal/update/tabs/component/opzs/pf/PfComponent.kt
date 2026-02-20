@@ -28,6 +28,7 @@ import ru.pavlig43.mutable.api.singleLine.component.SingleLineComponentFactory
 import ru.pavlig43.mutable.api.singleLine.component.UpdateSingleLineComponent
 import ru.pavlig43.mutable.api.singleLine.data.UpdateSingleLineRepository
 import ua.wwind.table.ColumnSpec
+
 private val factory = SingleLineComponentFactory<PfBD, PfUi>(
     initItem = PfUi(),
     errorFactory = { item ->
@@ -38,13 +39,14 @@ private val factory = SingleLineComponentFactory<PfBD, PfUi>(
             if (item.declarationId == 0) add("$place нет декларации")
         }
     },
-    mapperToUi = {toUi()}
+    mapperToUi = { toUi() }
 )
+
 @Suppress("LongParameterList")
 internal class PfComponent(
     componentContext: ComponentContext,
     transactionId: Int,
-//    transactionDate: Flow<LocalDate>,
+    getDateBorn: () -> LocalDate,
     updateSingleLineRepository: UpdateSingleLineRepository<PfBD>,
     private val tabOpener: TabOpener,
     private val immutableTableDependencies: ImmutableTableDependencies,
@@ -57,18 +59,12 @@ internal class PfComponent(
     componentFactory = factory,
     observeOnItem = observeOnItem,
     onSuccessInitData = onSuccessInitData,
-    mapperToDTO = { toDto() }
+    mapperToDTO = { toDto(getDateBorn) }
 ) {
     override val title: String
         get() = "ПФ"
     private val dialogNavigation = SlotNavigation<PfDialog>()
 
-//    private val dateTime = transactionDate
-//        .stateIn(
-//            coroutineScope,
-//            SharingStarted.Eagerly,
-//            emptyLocalDateTime
-//        )
 
     val dialog: Value<ChildSlot<PfDialog, PfDialogChild>> = childSlot(
         source = dialogNavigation,
@@ -118,12 +114,18 @@ internal class PfComponent(
                             withCheckbox = false
                         ),
                         onItemClick = { product ->
-                            onChangeItem(
-                                item.copy(
-                                    productId = product.composeId,
-                                    productName = product.displayName,
+                            if (product.composeId != item.productId) {
+                                onChangeItem(
+                                    item.copy(
+                                        productId = product.composeId,
+                                        productName = product.displayName,
+                                        declarationId = 0,
+                                        declarationName = "",
+                                        vendorName = ""
+                                    )
                                 )
-                            )
+                            }
+
                             dialogNavigation.dismiss()
                         },
                     )
