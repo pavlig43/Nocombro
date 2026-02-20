@@ -23,7 +23,7 @@ fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.writeTextColumn(
     alignment: Alignment = Alignment.CenterStart
 ) {
     column(column, valueOf = valueOf) {
-        autoWidth(300.dp)
+        autoWidth()
         header(headerText)
         align(alignment)
         filterType?.let {
@@ -78,7 +78,7 @@ private fun <T : Any, C, E> EditableColumnBuilder<T, C, E>.writeTextCell(
     cell { item, _ ->
         Text(
             text = valueOf(item),
-            modifier = Modifier.padding(12.dp)
+            modifier = Modifier.padding(horizontal = 12.dp)
         )
     }
 

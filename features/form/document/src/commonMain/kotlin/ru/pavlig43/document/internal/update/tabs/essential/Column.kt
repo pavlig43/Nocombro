@@ -28,6 +28,7 @@ internal fun createDocumentColumns1(
                 headerText = "Название",
                 column = DocumentField.DISPLAY_NAME,
                 valueOf = { it.displayName },
+                isSortable = false,
                 onChangeItem = { item, newValue ->
                     onChangeItem(item.copy(displayName = newValue))
                 },
@@ -36,6 +37,7 @@ internal fun createDocumentColumns1(
                 headerText = "Тип",
                 column = DocumentField.TYPE,
                 valueOf = { it.type },
+                isSortable = false,
             )
 
 
@@ -44,6 +46,7 @@ internal fun createDocumentColumns1(
                 headerText = "Дата создания",
                 column = DocumentField.CREATED_AT,
                 valueOf = { it.createdAt },
+                isSortable = false,
                 onOpenDateDialog = { onOpenDateDialog() }
             )
 
@@ -52,6 +55,7 @@ internal fun createDocumentColumns1(
                 headerText = "Комментарий",
                 column = DocumentField.COMMENT,
                 valueOf = { it.comment },
+                isSortable = false,
                 onChangeItem = { item, newValue ->
                     onChangeItem(item.copy(comment = newValue))
                 }

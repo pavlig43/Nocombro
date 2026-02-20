@@ -44,7 +44,7 @@ fun <T : Any, C, E, Type : ItemType> EditableTableColumnsBuilder<T, C, E>.writeI
 ) {
     column(column, valueOf = valueOf) {
         header(headerText)
-        autoWidth(300.dp)
+        autoWidth(900.dp)
         align(alignment)
         filterType?.let {
             filter(it)
@@ -110,7 +110,7 @@ fun <Type : ItemType> ReadItemType(currentType: Type?) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp),
-        modifier = Modifier.padding(12.dp)
+        modifier = Modifier.padding(horizontal = 12.dp)
     ) {
         Icon(
             painter = painterResource(Res.drawable.lock),
@@ -145,7 +145,7 @@ fun <Type : ItemType> WriteItemType(
                 .background(
                     color = MaterialTheme.colorScheme.surfaceVariant
                 )
-                .padding(horizontal = 12.dp, vertical = 8.dp)
+                .padding(horizontal = 12.dp)
         ) {
             Text(
                 text = text,

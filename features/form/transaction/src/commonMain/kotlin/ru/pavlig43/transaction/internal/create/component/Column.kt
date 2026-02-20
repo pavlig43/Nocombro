@@ -24,6 +24,7 @@ internal fun createTransactionColumns0(
                 column = TransactionField.TRANSACTION_TYPE,
                 valueOf = { it.transactionType },
                 options = TransactionType.entries,
+                isSortable = false,
                 onTypeSelected = { item, type -> onChangeItem(item.copy(transactionType = type)) },
             )
 
@@ -31,6 +32,7 @@ internal fun createTransactionColumns0(
                 headerText = "Дата/время",
                 column = TransactionField.CREATED_AT,
                 valueOf = { it.createdAt },
+                isSortable = false,
                 onOpenDateTimeDialog = {onOpenCreatedAtDialog()},
             )
 
@@ -38,7 +40,7 @@ internal fun createTransactionColumns0(
                 headerText = "Проведена",
                 column = TransactionField.IS_COMPLETED,
                 valueOf = { it.isCompleted },
-
+                isSortable = false,
                 onChangeChecked = { item, checked -> onChangeItem(item.copy(isCompleted = checked)) },
             )
 
@@ -46,6 +48,7 @@ internal fun createTransactionColumns0(
                 headerText = "Комментарий",
                 column = TransactionField.COMMENT,
                 valueOf = { it.comment },
+                isSortable = false,
                 onChangeItem = { item, comment -> onChangeItem(item.copy(comment = comment)) },
                 singleLine = false
             )

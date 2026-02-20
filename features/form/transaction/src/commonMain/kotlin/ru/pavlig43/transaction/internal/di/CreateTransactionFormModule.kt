@@ -3,7 +3,6 @@ package ru.pavlig43.transaction.internal.di
 import org.koin.core.qualifier.qualifier
 import org.koin.dsl.module
 import ru.pavlig43.core.TransactionExecutor
-import ru.pavlig43.core.getCurrentLocalDate
 import ru.pavlig43.core.model.ChangeSet
 import ru.pavlig43.core.model.UpsertListChangeSet
 import ru.pavlig43.database.NocombroDatabase
