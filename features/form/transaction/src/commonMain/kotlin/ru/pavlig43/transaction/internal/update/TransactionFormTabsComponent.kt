@@ -30,7 +30,6 @@ import ru.pavlig43.update.component.getDefaultUpdateComponent
 internal class TransactionFormTabsComponent(
     componentContext: ComponentContext,
     componentFactory: SingleLineComponentFactory<Transact, TransactionEssentialsUi>,
-    closeFormScreen: () -> Unit,
     scope: Scope,
     transactionId: Int,
     private val observeOnItem: (TransactionEssentialsUi) -> Unit,
@@ -128,5 +127,5 @@ internal class TransactionFormTabsComponent(
         )
 
     override val updateComponent: UpdateComponent =
-        getDefaultUpdateComponent(componentContext, closeFormScreen)
+        getDefaultUpdateComponent(componentContext)
 }

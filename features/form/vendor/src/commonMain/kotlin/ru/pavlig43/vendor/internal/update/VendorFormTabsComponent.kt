@@ -16,7 +16,6 @@ import ru.pavlig43.vendor.internal.update.tabs.essential.VendorUpdateSingleLineC
 internal class VendorFormTabsComponent(
     componentContext: ComponentContext,
     componentFactory: SingleLineComponentFactory<Vendor, VendorEssentialsUi>,
-    closeFormScreen: () -> Unit,
     scope: Scope,
     vendorId: Int,
     observeOnVendor: (VendorEssentialsUi) -> Unit,
@@ -58,5 +57,5 @@ internal class VendorFormTabsComponent(
             },
         )
 
-    override val updateComponent = getDefaultUpdateComponent(componentContext, closeFormScreen)
+    override val updateComponent = getDefaultUpdateComponent(componentContext)
 }

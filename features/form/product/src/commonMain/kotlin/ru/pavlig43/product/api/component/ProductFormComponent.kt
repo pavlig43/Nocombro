@@ -26,7 +26,6 @@ import ru.pavlig43.product.internal.update.ProductFormTabsComponent
 
 class ProductFormComponent(
     productId: Int,
-    val closeTab: () -> Unit,
     private val tabOpener: TabOpener,
     componentContext: ComponentContext,
     dependencies: ProductFormDependencies,
@@ -76,7 +75,6 @@ class ProductFormComponent(
                 ProductFormTabsComponent(
                     componentContext = componentContext,
                     componentFactory = essentialsComponentFactory,
-                    closeFormScreen = closeTab,
                     tabOpener = tabOpener,
                     scope = scope,
                     productId = config.id,
