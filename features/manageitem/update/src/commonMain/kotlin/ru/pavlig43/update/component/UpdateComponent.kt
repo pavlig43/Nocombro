@@ -24,13 +24,11 @@ data class ErrorMessage(
 /**
  * Компонент, который привязан к кнопке обновления и обновляет все вкладки в форме объекта
  * @param [errorMessages] показывает список невалидных заполненных полей(например пустое имя, отсутствие файлов)
- * @param [closeFormScreen] при успешном обновлении закрывает экран
  */
 class UpdateComponent(
     componentContext: ComponentContext,
     private val onUpdateAllTabs: suspend () -> Result<Unit>,
     errorMessages: Flow<List<ErrorMessage>>,
-    val closeFormScreen: () -> Unit,
 ) : ComponentContext by componentContext {
     private val coroutineScope = componentCoroutineScope()
 
@@ -55,6 +53,10 @@ class UpdateComponent(
 
     private val _updateState: MutableStateFlow<UpdateState> = MutableStateFlow(UpdateState.Init)
     val updateState: StateFlow<UpdateState> = _updateState.asStateFlow()
+
+    fun resetState() {
+        _updateState.update { UpdateState.Init }
+    }
 
 }
 

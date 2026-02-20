@@ -105,8 +105,7 @@ internal class MainTabNavigationComponent(
 
                     is MainTabConfig.ItemFormConfig -> createItemFormChild(
                         tabConfig = mainTabConfig,
-                        context = context,
-                        onCloseTab = onCloseTab
+                        context = context
                     )
 
                 }
@@ -192,14 +191,12 @@ internal class MainTabNavigationComponent(
 
     private fun createItemFormChild(
         tabConfig: MainTabConfig.ItemFormConfig,
-        context: ComponentContext,
-        onCloseTab: () -> Unit
+        context: ComponentContext
     ): MainTabChild.ItemFormChild {
         return when (tabConfig) {
             is DeclarationFormConfig -> DeclarationFormChild(
                 DeclarationFormComponent(
                     declarationId = tabConfig.id,
-                    closeTab = onCloseTab,
                     componentContext = context,
                     dependencies = scope.get(),
                     tabOpener = tabOpener,
@@ -209,7 +206,6 @@ internal class MainTabNavigationComponent(
             is DocumentFormConfig -> DocumentFormChild(
                 DocumentFormComponent(
                     documentId = tabConfig.id,
-                    closeTab = onCloseTab,
                     componentContext = context,
                     dependencies = scope.get()
                 )
@@ -219,7 +215,6 @@ internal class MainTabNavigationComponent(
                 ProductFormComponent(
                     componentContext = context,
                     dependencies = scope.get(),
-                    closeTab = onCloseTab,
                     productId = tabConfig.id,
                     tabOpener = tabOpener
                 )
@@ -228,7 +223,6 @@ internal class MainTabNavigationComponent(
             is TransactionFormConfig -> TransactionFormChild(
                 TransactionFormComponent(
                     transactionId = tabConfig.id,
-                    closeTab = onCloseTab,
                     componentContext = context,
                     dependencies = scope.get(),
                     tabOpener = tabOpener
@@ -238,7 +232,6 @@ internal class MainTabNavigationComponent(
             is VendorFormConfig -> VendorFormChild(
                 VendorFormComponent(
                     vendorId = tabConfig.id,
-                    closeTab = onCloseTab,
                     componentContext = context,
                     dependencies = scope.get()
                 )

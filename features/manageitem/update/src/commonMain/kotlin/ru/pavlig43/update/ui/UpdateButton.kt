@@ -20,6 +20,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.delay
 import ru.pavlig43.coreui.ClickableValidationErrorsCard
 import ru.pavlig43.coreui.LoadingUi
 import ru.pavlig43.update.component.UpdateComponent
@@ -69,7 +70,17 @@ internal fun UpdateButton(
                 is UpdateState.Init -> Text("Обновить")
                 is UpdateState.Loading -> LoadingUi(Modifier.size(24.dp))
                 is UpdateState.Success -> {
-                    LaunchedEffect(Unit) { component.closeFormScreen() }
+                    var showSuccess by remember { mutableStateOf(true) }
+
+                    LaunchedEffect(Unit) {
+                        delay(1000)
+                        showSuccess = false
+                        component.resetState()
+                    }
+
+                    if (showSuccess) {
+                        Text("Успешно", color = MaterialTheme.colorScheme.primary)
+                    }
                 }
             }
         }

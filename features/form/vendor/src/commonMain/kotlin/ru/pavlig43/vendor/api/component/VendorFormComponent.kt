@@ -25,7 +25,6 @@ import ru.pavlig43.vendor.internal.update.VendorFormTabsComponent
 
 class VendorFormComponent(
     vendorId: Int,
-    val closeTab: () -> Unit,
     componentContext: ComponentContext,
     dependencies: VendorFormDependencies,
 ) : ComponentContext by componentContext, MainTabComponent {
@@ -77,7 +76,6 @@ class VendorFormComponent(
                     componentContext = componentContext,
                     scope = scope,
                     vendorId = config.id,
-                    closeFormScreen = closeTab,
                     componentFactory = essentialsComponentFactory,
                     observeOnVendor = ::onChangeValueForMainTab
                 )

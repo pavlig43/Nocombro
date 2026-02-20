@@ -26,7 +26,6 @@ import ru.pavlig43.mutable.api.singleLine.component.SingleLineComponentFactory
 
 class DeclarationFormComponent(
     declarationId: Int,
-    val closeTab: () -> Unit,
     private val tabOpener: TabOpener,
     componentContext: ComponentContext,
     dependencies: DeclarationFormDependencies,
@@ -83,7 +82,6 @@ class DeclarationFormComponent(
                     componentContext = componentContext,
                     scope = scope,
                     declarationId = config.id,
-                    closeFormScreen = closeTab,
                     componentFactory = componentFactory,
                     tabOpener = tabOpener,
                     observeOnDeclaration = ::onChangeValueForMainTab
