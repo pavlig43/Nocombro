@@ -48,7 +48,6 @@ private fun <T : Any, C, E> ReadonlyColumnBuilder<T, C, E>.readIsActualCell(
                 contentDescription = null,
                 tint = if (isActual) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
                 modifier = Modifier
-                    .padding(12.dp)
                     .size(24.dp)
             )
         }
