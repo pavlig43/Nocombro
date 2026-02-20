@@ -45,6 +45,7 @@ import ua.wwind.table.ColumnSpec
 import ua.wwind.table.ExperimentalTableApi
 import ua.wwind.table.Table
 import ua.wwind.table.config.DefaultTableCustomization
+import ua.wwind.table.config.TableDefaults
 import ua.wwind.table.state.TableState
 import ua.wwind.table.strings.StringProvider
 
@@ -149,6 +150,9 @@ private fun <I : IMultiLineTableUi, C, E : TableData<I>> BoxScope.FlowMultiLineT
         onRowClick = { onEvent(FlowMultiLineEvent.RowClick(it)) },
         customization = DefaultTableCustomization(),
         tableData = tableData,
+        colors = TableDefaults.colors().copy(
+            headerContainerColor = MaterialTheme.colorScheme.primaryContainer.copy(0.3f)
+        ),
         columns = columns,
         verticalState = verticalState,
         horizontalState = horizontalState,

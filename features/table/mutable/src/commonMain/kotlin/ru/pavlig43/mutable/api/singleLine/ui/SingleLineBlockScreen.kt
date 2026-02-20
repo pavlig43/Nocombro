@@ -2,6 +2,7 @@ package ru.pavlig43.mutable.api.singleLine.ui
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -14,6 +15,7 @@ import ru.pavlig43.mutable.api.singleLine.model.ISingleLineTableUi
 import ua.wwind.table.EditableTable
 import ua.wwind.table.ExperimentalTableApi
 import ua.wwind.table.config.RowHeightMode
+import ua.wwind.table.config.TableDefaults
 import ua.wwind.table.config.TableSettings
 import ua.wwind.table.state.rememberTableState
 
@@ -47,6 +49,9 @@ fun <I : ISingleLineTableUi, C> SingleLineBlockScreen(
                 itemsCount = items.size,
                 itemAt = { index -> items.getOrNull(index) },
                 state = state,
+                colors = TableDefaults.colors().copy(
+                    headerContainerColor = MaterialTheme.colorScheme.primaryContainer.copy(0.3f)
+                ),
                 columns = component.columns,
                 tableData = Unit,
                 embedded = true,
