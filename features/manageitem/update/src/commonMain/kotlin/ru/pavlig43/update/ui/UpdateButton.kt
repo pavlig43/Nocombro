@@ -1,5 +1,8 @@
 package ru.pavlig43.update.ui
 
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -7,6 +10,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -19,10 +23,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
+import org.jetbrains.compose.resources.painterResource
 import ru.pavlig43.coreui.ClickableValidationErrorsCard
 import ru.pavlig43.coreui.LoadingUi
+import ru.pavlig43.theme.Res
+import ru.pavlig43.theme.check
 import ru.pavlig43.update.component.UpdateComponent
 import ru.pavlig43.update.component.UpdateState
 
@@ -34,13 +44,6 @@ internal fun UpdateButton(
     var saveDialogState by remember { mutableStateOf(false) }
     val updateState by component.updateState.collectAsState()
     val isValidValue by component.isValidValue.collectAsState()
-
-    if (updateState is UpdateState.Success) {
-        LaunchedEffect(updateState) {
-            delay(1000)
-            component.resetState()
-        }
-    }
 
     Column(
         modifier = modifier.fillMaxWidth().heightIn(max = 150.dp)
@@ -77,7 +80,29 @@ internal fun UpdateButton(
                 is UpdateState.Error -> Text("Повторить")
                 is UpdateState.Init -> Text("Обновить")
                 is UpdateState.Loading -> LoadingUi(Modifier.size(24.dp))
-                is UpdateState.Success -> Text("Успешно", color = MaterialTheme.colorScheme.primary)
+                is UpdateState.Success -> {
+                    var animationPlayed by remember { mutableStateOf(false) }
+
+                    val alpha by animateFloatAsState(
+                        targetValue = if (animationPlayed) 1f else 0f,
+                        animationSpec = tween(durationMillis = 1000),
+                    )
+
+                    Icon(
+                        painter = painterResource(Res.drawable.check),
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                        modifier = Modifier
+                            .size(36.dp)
+                            .graphicsLayer(scaleX = alpha, alpha=alpha,)
+                    )
+
+                    LaunchedEffect(Unit) {
+                        animationPlayed = true
+                        delay(1000)
+                        component.resetState()
+                    }
+                }
             }
         }
     }
