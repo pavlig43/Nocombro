@@ -52,11 +52,11 @@ fun <I : IMultiLineTableUi, C, E : TableData<I>> TableBox(
     showFastFilters = true,
     showActiveFiltersHeader = true,
     editingEnabled = true,
-    rowHeightMode = RowHeightMode.Fixed,
+    rowHeightMode = RowHeightMode.Dynamic,
     showFooter = false,
     enableTextSelection = false,
     selectionMode = SelectionMode.Multiple,
-    pinnedColumnsCount = 3
+    pinnedColumnsCount = 0
     )
 
     val state = rememberTableState(

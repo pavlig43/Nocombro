@@ -30,7 +30,7 @@ fun <I : ISingleLineTableUi, C> SingleLineBlockScreen(
         val defaultTableSettings = TableSettings(
             autoApplyFilters = false,
             editingEnabled = true,
-            rowHeightMode = RowHeightMode.Fixed,
+            rowHeightMode = RowHeightMode.Dynamic,
             enableTextSelection = false,
             pinnedColumnsCount = 0,
             showFooter = false,
