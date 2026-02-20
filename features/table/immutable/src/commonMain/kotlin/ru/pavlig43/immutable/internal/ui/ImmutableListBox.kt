@@ -73,7 +73,7 @@ internal fun <I : IMultiLineTableUi, C> ImmutableTableBox(
     }
 }
 
-@Suppress("LongParameterList", "LongMethod")
+@Suppress("LongParameterList", "LongMethod","MagicNumber")
 @OptIn(ExperimentalTableApi::class)
 @Composable
 private fun <I : IMultiLineTableUi, C, E : TableData<I>> BoxScope.ImmutableTable(

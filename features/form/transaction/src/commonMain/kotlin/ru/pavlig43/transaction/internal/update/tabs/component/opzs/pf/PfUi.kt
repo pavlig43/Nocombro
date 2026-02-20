@@ -1,7 +1,6 @@
 package ru.pavlig43.transaction.internal.update.tabs.component.opzs.pf
 
 import kotlinx.datetime.LocalDate
-import ru.pavlig43.core.getCurrentLocalDate
 import ru.pavlig43.database.data.transact.pf.PfBD
 import ru.pavlig43.mutable.api.singleLine.model.ISingleLineTableUi
 

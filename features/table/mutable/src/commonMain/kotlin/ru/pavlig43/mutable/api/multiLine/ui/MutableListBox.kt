@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -72,7 +73,7 @@ fun <I : IMultiLineTableUi, C> MutableTableBox(
 }
 
 
-@Suppress("LongParameterList", "LongMethod")
+@Suppress("LongParameterList", "LongMethod","MagicNumber")
 @OptIn(ExperimentalTableApi::class)
 @Composable
 private fun <I : IMultiLineTableUi, C, E : TableData<I>> BoxScope.MutableTable(
@@ -96,7 +97,7 @@ private fun <I : IMultiLineTableUi, C, E : TableData<I>> BoxScope.MutableTable(
         tableData = tableData,
         columns = columns,
         colors = TableDefaults.colors().copy(
-            rowSelectedContainerColor = Color.Unspecified
+            headerContainerColor = MaterialTheme.colorScheme.primaryContainer.copy(0.3f)
         ),
         verticalState = verticalState,
         horizontalState = horizontalState,
