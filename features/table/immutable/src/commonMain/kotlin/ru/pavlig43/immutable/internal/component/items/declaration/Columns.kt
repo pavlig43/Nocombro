@@ -9,6 +9,7 @@ import ru.pavlig43.immutable.internal.column.readTextColumn
 import ru.pavlig43.immutable.internal.component.ImmutableTableUiEvent
 import ru.pavlig43.tablecore.model.TableData
 import ua.wwind.table.ColumnSpec
+import ua.wwind.table.filter.data.TableFilterType
 import ua.wwind.table.tableColumns
 
 internal enum class DeclarationField {
@@ -38,25 +39,29 @@ internal fun createDeclarationColumn(
             readTextColumn(
                 headerText = "Название",
                 column = DeclarationField.NAME,
-                valueOf = { it.displayName }
+                valueOf = { it.displayName },
+                filterType = TableFilterType.TextTableFilter()
             )
 
             readTextColumn(
                 headerText = "Поставщик",
                 column = DeclarationField.VENDOR_NAME,
-                valueOf = { it.vendorName }
+                valueOf = { it.vendorName },
+                filterType = TableFilterType.TextTableFilter()
             )
 
             readDateColumn(
                 headerText = "Годна до",
                 column = DeclarationField.BEST_BEFORE,
-                valueOf = { it.bestBefore }
+                valueOf = { it.bestBefore },
+                filterType = TableFilterType.DateTableFilter()
             )
 
             readIsActualColumn(
                 headerText = "Актуальность",
                 column = DeclarationField.IS_ACTUAL,
-                valueOf = { it.isActual }
+                valueOf = { it.isActual },
+                filterType = TableFilterType.BooleanTableFilter()
             )
         }
     return columns

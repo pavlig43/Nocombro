@@ -42,7 +42,8 @@ internal fun createDocumentColumn(
             readTextColumn(
                 headerText = "Название",
                 column = DocumentField.NAME,
-                valueOf = { it.displayName }
+                valueOf = { it.displayName },
+                filterType = TableFilterType.TextTableFilter()
             )
 
             readEnumColumn(
@@ -59,13 +60,15 @@ internal fun createDocumentColumn(
             readDateColumn(
                 headerText = "Создан",
                 column = DocumentField.CREATED_AT,
-                valueOf = { it.createdAt }
+                valueOf = { it.createdAt },
+                filterType = TableFilterType.DateTableFilter()
             )
 
             readTextColumn(
                 headerText = "Комментарий",
                 column = DocumentField.COMMENT,
-                valueOf = { it.comment }
+                valueOf = { it.comment },
+                filterType = TableFilterType.TextTableFilter()
             )
         }
     return columns

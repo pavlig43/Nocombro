@@ -40,7 +40,8 @@ internal fun createProductColumn(
             readTextColumn(
                 headerText = "Название",
                 column = ProductField.NAME,
-                valueOf = { it.displayName }
+                valueOf = { it.displayName },
+                filterType = TableFilterType.TextTableFilter()
             )
 
             readEnumColumn(
@@ -57,13 +58,15 @@ internal fun createProductColumn(
             readDateColumn(
                 headerText = "Создан",
                 column = ProductField.CREATED_AT,
-                valueOf = { it.createdAt }
+                valueOf = { it.createdAt },
+                filterType = TableFilterType.DateTableFilter()
             )
 
             readTextColumn(
                 headerText = "Комментарий",
                 column = ProductField.COMMENT,
-                valueOf = { it.comment }
+                valueOf = { it.comment },
+                filterType = TableFilterType.TextTableFilter()
             )
         }
     return columns

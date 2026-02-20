@@ -84,13 +84,15 @@ internal fun createTransactionColumn(
             readDateTimeColumn(
                 headerText = "Создан",
                 column = TransactionField.CREATED_AT,
-                valueOf = { it.createdAt }
+                valueOf = { it.createdAt },
+                filterType = TableFilterType.DateTableFilter()
             )
 
             readTextColumn(
                 headerText = "Комментарий",
                 column = TransactionField.COMMENT,
-                valueOf = { it.comment }
+                valueOf = { it.comment },
+                filterType = TableFilterType.TextTableFilter()
             )
         }
     return columns

@@ -43,13 +43,15 @@ internal fun createProductDeclarationColumn(
             readTextColumn(
                 headerText = "Декларация",
                 column = ProductDeclarationField.DISPLAY_NAME,
-                valueOf = { it.displayName }
+                valueOf = { it.displayName },
+                filterType = TableFilterType.TextTableFilter()
             )
 
             readTextColumn(
                 headerText = "Поставщик",
                 column = ProductDeclarationField.VENDOR_NAME,
-                valueOf = { it.vendorName }
+                valueOf = { it.vendorName },
+                filterType = TableFilterType.TextTableFilter()
             )
 
             // Custom column with tooltip for isActual
