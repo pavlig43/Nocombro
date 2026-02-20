@@ -34,6 +34,14 @@ internal fun UpdateButton(
     var saveDialogState by remember { mutableStateOf(false) }
     val updateState by component.updateState.collectAsState()
     val isValidValue by component.isValidValue.collectAsState()
+
+    if (updateState is UpdateState.Success) {
+        LaunchedEffect(updateState) {
+            delay(1000)
+            component.resetState()
+        }
+    }
+
     Column(
         modifier = modifier.fillMaxWidth().heightIn(max = 150.dp)
             .verticalScroll(rememberScrollState()),
@@ -69,19 +77,7 @@ internal fun UpdateButton(
                 is UpdateState.Error -> Text("Повторить")
                 is UpdateState.Init -> Text("Обновить")
                 is UpdateState.Loading -> LoadingUi(Modifier.size(24.dp))
-                is UpdateState.Success -> {
-                    var showSuccess by remember { mutableStateOf(true) }
-
-                    LaunchedEffect(Unit) {
-                        delay(1000)
-                        showSuccess = false
-                        component.resetState()
-                    }
-
-                    if (showSuccess) {
-                        Text("Успешно", color = MaterialTheme.colorScheme.primary)
-                    }
-                }
+                is UpdateState.Success -> Text("Успешно", color = MaterialTheme.colorScheme.primary)
             }
         }
     }
