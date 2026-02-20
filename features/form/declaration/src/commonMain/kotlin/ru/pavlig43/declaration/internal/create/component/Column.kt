@@ -24,6 +24,7 @@ internal fun createDeclarationColumns0(
                 headerText = "Название",
                 column = DeclarationField.DISPLAY_NAME,
                 valueOf = { it.displayName },
+                isSortable = false,
                 onChangeItem = { item, name -> onChangeItem(item.copy(displayName = name)) },
             )
 
@@ -31,6 +32,7 @@ internal fun createDeclarationColumns0(
                 headerText = "Поставщик",
                 column = DeclarationField.VENDOR_NAME,
                 valueOf = {it.vendorName?:""},
+                isSortable = false,
                 onOpenDialog = {onOpenVendorDialog()},
             )
 
@@ -38,6 +40,7 @@ internal fun createDeclarationColumns0(
                 headerText = "Создана",
                 column = DeclarationField.BORN_DATE,
                 valueOf = { it.bornDate },
+                isSortable = false,
                 onOpenDateDialog = {onOpenBornDateDialog()},
             )
 
@@ -45,6 +48,7 @@ internal fun createDeclarationColumns0(
                 headerText = "Истекает",
                 column = DeclarationField.BEST_BEFORE,
                 valueOf = { it.bestBefore },
+                isSortable = false,
                 onOpenDateDialog = {onOpenBestBeforeDialog()},
             )
 
