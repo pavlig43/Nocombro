@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -25,6 +26,7 @@ import ua.wwind.table.ColumnSpec
 import ua.wwind.table.ExperimentalTableApi
 import ua.wwind.table.Table
 import ua.wwind.table.config.DefaultTableCustomization
+import ua.wwind.table.config.TableDefaults
 import ua.wwind.table.state.TableState
 import ua.wwind.table.strings.StringProvider
 
@@ -94,6 +96,9 @@ private fun <I : IMultiLineTableUi, C, E : TableData<I>> BoxScope.ImmutableTable
         strings = stringProvider,
         customization = DefaultTableCustomization(),
         tableData = tableData,
+        colors = TableDefaults.colors().copy(
+            headerContainerColor = MaterialTheme.colorScheme.primaryContainer.copy(0.3f)
+        ),
         columns = columns,
         verticalState = verticalState,
         horizontalState = horizontalState,
