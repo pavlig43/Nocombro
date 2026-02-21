@@ -9,6 +9,7 @@ import androidx.room.Relation
 import androidx.room.Transaction
 import androidx.room.Update
 import androidx.room.Upsert
+import kotlinx.coroutines.flow.Flow
 import ru.pavlig43.database.data.batch.BatchBD
 import ru.pavlig43.database.data.batch.BatchMovement
 import ru.pavlig43.database.data.batch.BatchOut
@@ -82,6 +83,15 @@ abstract class BatchMovementDao {
      */
     @Query("DELETE FROM batch_movement WHERE id in (:ids)")
     abstract suspend fun deleteByIds(ids: List<Int>)
+
+    /**
+     * Получает все движения для указанной партии.
+     *
+     * @param batchId Идентификатор партии
+     * @return Список всех движений партии
+     */
+    @Query("SELECT * FROM batch_movement WHERE batch_id = :batchId")
+    abstract fun observeMovementsByBatchId(batchId: Int): Flow<List<BatchMovement>>
 }
 
 /**

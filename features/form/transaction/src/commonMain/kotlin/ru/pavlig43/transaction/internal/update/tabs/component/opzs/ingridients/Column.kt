@@ -26,6 +26,7 @@ enum class IngredientField {
 @Suppress("LongMethod")
 internal fun createIngredientColumns(
     onOpenProductDialog: (Int) -> Unit,
+    onOpenBatchDialog: (Int) -> Unit,
     onEvent: (MutableUiEvent) -> Unit
 ): ImmutableList<ColumnSpec<IngredientUi, IngredientField, TableData<IngredientUi>>> {
     val columns =
@@ -53,7 +54,17 @@ internal fun createIngredientColumns(
                 updateItem = { item, count -> onEvent(MutableUiEvent.UpdateItem(item.copy(count = count))) },
                 footerValue = { tableData -> tableData.displayedItems.sumOf { it.count } }
             )
-
+            textWithSearchIconColumn(
+                headerText = "Партия",
+                column = IngredientField.BATCH_ID,
+                valueOf = { it.batchId.toString() },
+                onOpenDialog = {
+                    if (it.productId != 0) {
+                        onOpenBatchDialog(it.composeId)
+                    }
+                },
+                filterType = TableFilterType.TextTableFilter()
+            )
             readTextColumn(
                 headerText = "Поставщик",
                 column = IngredientField.VENDOR_NAME,
@@ -61,12 +72,6 @@ internal fun createIngredientColumns(
                 filterType = TableFilterType.TextTableFilter()
             )
 
-            readTextColumn(
-                headerText = "Партия",
-                column = IngredientField.BATCH_ID,
-                valueOf = { it.batchId.toString() },
-                filterType = TableFilterType.TextTableFilter()
-            )
         }
     return columns
 }

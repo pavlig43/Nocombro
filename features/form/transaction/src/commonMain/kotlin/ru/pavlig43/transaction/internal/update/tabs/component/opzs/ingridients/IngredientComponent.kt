@@ -13,13 +13,16 @@ import ru.pavlig43.core.tabs.TabOpener
 import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.database.data.transact.ingredient.IngredientBD
 import ru.pavlig43.immutable.api.ImmutableTableDependencies
+import ru.pavlig43.immutable.api.component.BatchImmutableTableBuilder
 import ru.pavlig43.immutable.api.component.MBSImmutableTableComponent
 import ru.pavlig43.immutable.api.component.ProductImmutableTableBuilder
+import ru.pavlig43.immutable.internal.component.items.batch.BatchTableUi
 import ru.pavlig43.immutable.internal.component.items.product.ProductTableUi
 import ru.pavlig43.mutable.api.multiLine.component.MutableTableComponent
 import ru.pavlig43.mutable.api.multiLine.component.MutableUiEvent.UpdateItem
 import ru.pavlig43.mutable.api.multiLine.data.UpdateCollectionRepository
 import ru.pavlig43.tablecore.model.TableData
+import ru.pavlig43.transaction.internal.update.tabs.component.opzs.ingridients.DialogChild.*
 import ua.wwind.table.ColumnSpec
 
 internal class IngredientComponent(
@@ -48,7 +51,7 @@ internal class IngredientComponent(
 
     private fun createDialogChild(dialogConfig: IngredientDialog, context: ComponentContext): DialogChild {
         return when (dialogConfig) {
-            is IngredientDialog.Product -> DialogChild.ImmutableMBS(
+            is IngredientDialog.Product -> ImmutableMBS(
                 MBSImmutableTableComponent<ProductTableUi>(
                     componentContext = context,
                     onDismissed = dialogNavigation::dismiss,
@@ -72,12 +75,40 @@ internal class IngredientComponent(
                     }
                 )
             )
+
+            is IngredientDialog.Batch -> {
+                val item = itemList.value[0]
+                ImmutableMBS(
+                    MBSImmutableTableComponent<BatchTableUi>(
+                        componentContext = context,
+                        onDismissed = dialogNavigation::dismiss,
+                        onCreate = { tabOpener.openProductTab(0) },
+                        dependencies = immutableTableDependencies,
+                        immutableTableBuilderData = BatchImmutableTableBuilder(
+                            parentId = item.productId
+                        ),
+                        onItemClick = { batch ->
+                            val ingredientUi = itemList.value.first { it.composeId == dialogConfig.composeId }
+                            onEvent(
+                                UpdateItem(
+                                    ingredientUi.copy(
+                                        batchId = batch.composeId,
+                                        vendorName = batch.vendorName,
+                                    )
+                                )
+                            )
+                            dialogNavigation.dismiss()
+                        }
+                    )
+                )
+            }
         }
     }
 
     override val columns: ImmutableList<ColumnSpec<IngredientUi, IngredientField, TableData<IngredientUi>>> =
         createIngredientColumns(
             onOpenProductDialog = { dialogNavigation.activate(IngredientDialog.Product(it)) },
+            onOpenBatchDialog = { dialogNavigation.activate(IngredientDialog.Batch(it)) },
             onEvent = ::onEvent
         )
 
@@ -129,6 +160,9 @@ internal class IngredientComponent(
 internal sealed interface IngredientDialog {
     @Serializable
     data class Product(val composeId: Int) : IngredientDialog
+
+    @Serializable
+    data class Batch(val composeId: Int) : IngredientDialog
 }
 
 sealed interface DialogChild {
