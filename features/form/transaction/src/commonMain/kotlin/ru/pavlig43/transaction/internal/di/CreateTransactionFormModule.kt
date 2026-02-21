@@ -3,6 +3,7 @@ package ru.pavlig43.transaction.internal.di
 import org.koin.core.qualifier.qualifier
 import org.koin.dsl.module
 import ru.pavlig43.core.TransactionExecutor
+import ru.pavlig43.core.getCurrentLocalDate
 import ru.pavlig43.core.model.ChangeSet
 import ru.pavlig43.core.model.UpsertListChangeSet
 import ru.pavlig43.database.NocombroDatabase
@@ -15,6 +16,7 @@ import ru.pavlig43.database.data.transact.buy.BuyBDIn
 import ru.pavlig43.database.data.transact.buy.BuyBDOut
 import ru.pavlig43.database.data.transact.pf.PfBD
 import ru.pavlig43.database.data.transact.reminder.ReminderBD
+import ru.pavlig43.database.data.transact.ingredient.IngredientBD
 import ru.pavlig43.files.api.FilesDependencies
 import ru.pavlig43.immutable.api.ImmutableTableDependencies
 import ru.pavlig43.mutable.api.multiLine.data.UpdateCollectionRepository
@@ -39,6 +41,9 @@ internal fun createTransactionFormModule(dependencies: TransactionFormDependenci
         single<UpdateCollectionRepository<ExpenseBD, ExpenseBD>>(UpdateCollectionRepositoryType.EXPENSES.qualifier) {
             ExpensesCollectionRepository(get())
         }
+        single<UpdateCollectionRepository<IngredientBD, IngredientBD>>(UpdateCollectionRepositoryType.INGREDIENTS.qualifier) {
+            IngredientsCollectionRepository(get())
+        }
         single<UpdateSingleLineRepository<PfBD>>(UpdateSingleLineRepositoryType.PF.qualifier) { PfUpdateRepository(get()) }
     }
 )
@@ -47,7 +52,8 @@ public enum class UpdateCollectionRepositoryType {
 
     BUY,
     REMINDERS,
-    EXPENSES
+    EXPENSES,
+    INGREDIENTS
 
 }
 
@@ -249,6 +255,66 @@ private class PfUpdateRepository(
                 movementDao.createMovement(movement)
             } else {
                 movementDao.upsertMovement(movement)
+            }
+        }
+    }
+}
+
+
+private class IngredientsCollectionRepository(
+    db: NocombroDatabase
+) : UpdateCollectionRepository<IngredientBD, IngredientBD> {
+
+    private val ingredientDao = db.ingredientDao
+    private val batchDao = db.batchDao
+    private val movementDao = db.batchMovementDao
+
+    override suspend fun getInit(id: Int): Result<List<IngredientBD>> {
+        return runCatching {
+            ingredientDao.getByTransactionId(id)
+        }
+    }
+
+    override suspend fun update(changeSet: ChangeSet<List<IngredientBD>>): Result<Unit> {
+        return UpsertListChangeSet.update(
+            changeSet = changeSet,
+            delete = ::deleteIngredientsWithMovement,
+            upsert = ::upsertAllEntity
+        )
+    }
+
+    private suspend fun deleteIngredientsWithMovement(ingredientIds: List<Int>) {
+        // IngredientBD.id == BatchMovement.id, так что ingredientIds это уже movement IDs
+        movementDao.deleteByIds(ingredientIds)
+    }
+
+    private suspend fun upsertAllEntity(ingredients: List<IngredientBD>) {
+        ingredients.forEach { ingredient ->
+            val batch = BatchBD(
+                id = ingredient.batchId,
+                productId = ingredient.productId,
+                dateBorn = getCurrentLocalDate(),
+                declarationId = 0
+            )
+            val batchId = if (batch.id == 0) {
+                batchDao.createBatch(batch).toInt()
+            } else {
+                batchDao.updateBatch(batch)
+                batch.id
+            }
+
+            val movement = BatchMovement(
+                batchId = batchId,
+                movementType = MovementType.INCOMING,
+                count = ingredient.count,
+                transactionId = ingredient.transactionId,
+                id = ingredient.movementId
+            )
+            val movementId = if (movement.id == 0) {
+                movementDao.createMovement(movement).toInt()
+            } else {
+                movementDao.upsertMovement(movement)
+                movement.id
             }
         }
     }
