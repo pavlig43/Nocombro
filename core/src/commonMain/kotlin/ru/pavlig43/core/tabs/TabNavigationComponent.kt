@@ -145,10 +145,17 @@ class TabNavigationComponent<TabConfiguration : Any, out TabChild : Any>(
     fun addTab(configuration: TabConfiguration) {
         navigation.navigate { state ->
             val updatedConfigurations = state.configurations.toMutableList()
-
             updatedConfigurations.add(configuration)
             val lastIndex = updatedConfigurations.lastIndex
             state.copy(configurations = updatedConfigurations, currentIndex = lastIndex)
+        }
+    }
+
+    fun addTab(index: Int, configuration: TabConfiguration) {
+        navigation.navigate { state ->
+            val updatedConfigurations = state.configurations.toMutableList()
+            updatedConfigurations.add(index, configuration)
+            state.copy(configurations = updatedConfigurations, currentIndex = index)
         }
     }
 
