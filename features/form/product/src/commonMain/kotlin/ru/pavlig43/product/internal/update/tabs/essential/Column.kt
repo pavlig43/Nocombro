@@ -1,6 +1,8 @@
 package ru.pavlig43.product.internal.update.tabs.essential
 
 import kotlinx.collections.immutable.ImmutableList
+import ru.pavlig43.mutable.api.column.DecimalFormat
+import ru.pavlig43.mutable.api.column.decimalColumn
 import ru.pavlig43.mutable.api.column.readItemTypeColumn
 import ru.pavlig43.mutable.api.column.writeDateColumn
 import ru.pavlig43.mutable.api.column.writeTextColumn
@@ -42,6 +44,15 @@ internal fun createProductColumns1(
                 column = ProductField.PRODUCT_TYPE,
                 valueOf = { it.productType },
                 isSortable = false,
+            )
+
+            decimalColumn(
+                key = ProductField.PRICE_FOR_SALE,
+                getValue = { it.priceForSale },
+                headerText = "Цена продажи (₽)",
+                decimalFormat = DecimalFormat.Decimal2(),
+                updateItem = { item, newPrice -> onChangeItem { it.copy(priceForSale = newPrice) } },
+                isSortable = false
             )
 
             writeDateColumn(

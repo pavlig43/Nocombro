@@ -26,6 +26,9 @@ data class Product(
 
     val comment: String = "",
 
+    @ColumnInfo("price_for_sale")
+    val priceForSale: Int = 0,
+
     @PrimaryKey(autoGenerate = true)
     override val id: Int = 0,
 ) : SingleItem

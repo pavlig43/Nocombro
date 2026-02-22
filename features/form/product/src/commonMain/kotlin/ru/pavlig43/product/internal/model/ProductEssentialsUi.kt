@@ -16,6 +16,8 @@ internal data class ProductEssentialsUi(
 
     val comment: String = "",
 
+    val priceForSale: Int = 0,
+
     val id: Int = 0,
 ) : ISingleLineTableUi
 
@@ -26,6 +28,7 @@ internal fun ProductEssentialsUi.toDto(): Product {
         displayName = displayName,
         createdAt = createdAt,
         comment = comment,
+        priceForSale = priceForSale,
         id = id
     )
 }
@@ -36,6 +39,7 @@ internal fun Product.toUi(): ProductEssentialsUi {
         productType = type,
         createdAt = createdAt,
         comment = comment,
+        priceForSale = priceForSale,
         id = id
     )
 }
