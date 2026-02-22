@@ -56,18 +56,22 @@ internal class TransactionFormTabsComponent(
         observeOnTransaction(transaction)
         coroutineScope.launch {
             when (transaction.transactionType) {
-                TransactionType.BUY -> tabNavigationComponent.addTab(TransactionTab.Buy)
+                TransactionType.BUY -> {
+                    tabNavigationComponent.addTab(1,TransactionTab.Buy)
+                    tabNavigationComponent.onSelectTab(1)
+                }
                 TransactionType.SALE -> TODO()
                 TransactionType.OPZS -> {
-                    tabNavigationComponent.addTab(TransactionTab.Pf)
-                    tabNavigationComponent.addTab(TransactionTab.Ingredients)
+                    tabNavigationComponent.addTab(1,TransactionTab.Pf)
+                    tabNavigationComponent.addTab(2,TransactionTab.Ingredients)
+                    tabNavigationComponent.onSelectTab(1)
                 }
 
                 TransactionType.WRITE_OFF -> TODO()
                 TransactionType.INVENTORY -> TODO()
                 null -> throw IllegalArgumentException("Transaction type is null")
             }
-            tabNavigationComponent.onSelectTab(0)
+
         }
     }
 
