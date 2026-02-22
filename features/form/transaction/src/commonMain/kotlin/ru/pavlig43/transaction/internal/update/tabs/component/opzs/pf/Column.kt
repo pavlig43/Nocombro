@@ -22,7 +22,7 @@ internal enum class PfField {
 internal fun createPfColumns(
     onOpenProductDialog: () -> Unit,
     onOpenDeclarationDialog: () -> Unit,
-    onChangeItem: (PfUi) -> Unit,
+    onChangeItem: ((PfUi) -> PfUi) -> Unit,
 ): ImmutableList<ColumnSpec<PfUi, PfField, Unit>> {
     val columns =
         editableTableColumns<PfUi, PfField, Unit> {
@@ -59,7 +59,7 @@ internal fun createPfColumns(
                 headerText = "Количество",
                 isSortable = false,
                 decimalFormat = DecimalFormat.Decimal3(),
-                updateItem = { item, count -> onChangeItem(item.copy(count = count)) }
+                updateItem = { item, count -> onChangeItem { it.copy(count = count) } }
             )
         }
     return columns

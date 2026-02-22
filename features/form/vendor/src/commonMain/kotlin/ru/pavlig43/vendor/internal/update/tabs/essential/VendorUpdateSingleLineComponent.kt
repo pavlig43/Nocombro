@@ -30,7 +30,7 @@ internal class VendorUpdateSingleLineComponent(
 ) {
     override val columns: ImmutableList<ColumnSpec<VendorEssentialsUi, VendorField, Unit>> =
         createVendorColumns1(
-            onChangeItem = { item -> onChangeItem(item) }
+            onChangeItem = ::onChangeItem1
         )
 
     override val errorMessages: Flow<List<String>> = errorTableMessages

@@ -67,12 +67,12 @@ internal class CreateDeclarationSingleLineComponent(
             }
 
             DialogConfig.Born -> {
-                val item = itemFields.value[0]
+                val item = item.value
                 DialogChild.Date(
                     DateComponent(
                         componentContext = context,
                         initDate = item.bornDate,
-                        onChangeDate = { newDate -> onChangeItem(item.copy(bornDate = newDate)) },
+                        onChangeDate = { newDate -> onChangeItem1 { it.copy(bornDate = newDate) } },
                         onDismissRequest = { dialogNavigation.dismiss() }
                     )
                 )
@@ -83,10 +83,9 @@ internal class CreateDeclarationSingleLineComponent(
                     componentContext = context,
                     immutableTableBuilderData = VendorImmutableTableBuilder(false),
                     onItemClick = { vendor ->
-                        val item = itemFields.value[0]
-                        onChangeItem(
-                            item.copy(vendorId = vendor.composeId, vendorName = vendor.displayName)
-                        )
+                        onChangeItem1 {
+                            it.copy(vendorId = vendor.composeId, vendorName = vendor.displayName)
+                        }
                         dialogNavigation.dismiss()
                     },
                     onCreate = { tabOpener.openVendorTab(0) },
@@ -102,7 +101,7 @@ internal class CreateDeclarationSingleLineComponent(
             onOpenVendorDialog = { dialogNavigation.activate(DialogConfig.Vendor) },
             onOpenBornDateDialog = { dialogNavigation.activate(DialogConfig.Born) },
             onOpenBestBeforeDialog = { dialogNavigation.activate(DialogConfig.BestBefore) },
-            onChangeItem = { item -> onChangeItem(item) }
+            onChangeItem = ::onChangeItem1
         )
 }
 

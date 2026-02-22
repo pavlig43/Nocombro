@@ -34,13 +34,13 @@ abstract class SingleLineComponent<I : SingleItem, UI : ISingleLineTableUi, C>(
     abstract val columns: ImmutableList<ColumnSpec<UI, C, Unit>>
 
     private val _itemFields = MutableStateFlow(listOf(componentFactory.initItem))
-    val itemFields = _itemFields.asStateFlow()
 
     val item = _itemFields.map { it[0] }.stateIn(
         coroutineScope,
         SharingStarted.Eagerly,
         componentFactory.initItem
     )
+    internal val itemFieldsList = _itemFields.asStateFlow()
 
     val initDataComponent = LoadInitDataComponent<UI>(
         componentContext = childContext("init"),
@@ -57,11 +57,6 @@ abstract class SingleLineComponent<I : SingleItem, UI : ISingleLineTableUi, C>(
     )
 
 
-    fun onChangeItem(item: UI) {
-        _itemFields.update { listOf(item) }
-        observeOnItem(item)
-
-    }
     fun onChangeItem1(updateItem: (UI) -> UI) {
         val item = updateItem(item.value)
         _itemFields.update { listOf(item) }

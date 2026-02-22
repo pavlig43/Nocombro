@@ -19,7 +19,7 @@ import ua.wwind.table.editableTableColumns
 @Suppress("LongMethod")
 internal fun createDocumentColumns0(
     onOpenDateDialog: () -> Unit,
-    onChangeItem: (DocumentEssentialsUi) -> Unit
+    onChangeItem: ((DocumentEssentialsUi) -> DocumentEssentialsUi) -> Unit
 ): ImmutableList<ColumnSpec<DocumentEssentialsUi, DocumentField, Unit>> {
     val columns =
         editableTableColumns<DocumentEssentialsUi, DocumentField, Unit> {
@@ -31,7 +31,7 @@ internal fun createDocumentColumns0(
                 valueOf = { it.displayName },
                 isSortable = false,
                 onChangeItem = { item, newValue ->
-                    onChangeItem(item.copy(displayName = newValue))
+                    onChangeItem { it.copy(displayName = newValue) }
                 },
             )
             writeItemTypeColumn(
@@ -40,7 +40,7 @@ internal fun createDocumentColumns0(
                 valueOf = { it.type },
                 options = DocumentType.entries,
                 isSortable = false,
-                onTypeSelected = { item, type -> onChangeItem(item.copy(type = type)) }
+                onTypeSelected = { item, type -> onChangeItem { it.copy(type = type) } }
             )
 
             // Дата создания
@@ -59,7 +59,7 @@ internal fun createDocumentColumns0(
                 valueOf = { it.comment },
                 isSortable = false,
                 onChangeItem = { item, newValue ->
-                    onChangeItem(item.copy(comment = newValue))
+                    onChangeItem { it.copy(comment = newValue) }
                 }
             )
         }

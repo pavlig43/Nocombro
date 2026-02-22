@@ -18,7 +18,7 @@ import ua.wwind.table.editableTableColumns
 @Suppress("LongMethod")
 internal fun createDocumentColumns1(
     onOpenDateDialog: () -> Unit,
-    onChangeItem: (DocumentEssentialsUi) -> Unit
+    onChangeItem: ((DocumentEssentialsUi) -> DocumentEssentialsUi) -> Unit
 ): ImmutableList<ColumnSpec<DocumentEssentialsUi, DocumentField, Unit>> {
     val columns =
         editableTableColumns<DocumentEssentialsUi, DocumentField, Unit> {
@@ -30,7 +30,7 @@ internal fun createDocumentColumns1(
                 valueOf = { it.displayName },
                 isSortable = false,
                 onChangeItem = { item, newValue ->
-                    onChangeItem(item.copy(displayName = newValue))
+                    onChangeItem { it.copy(displayName = newValue) }
                 },
             )
             readItemTypeColumn(
@@ -57,7 +57,7 @@ internal fun createDocumentColumns1(
                 valueOf = { it.comment },
                 isSortable = false,
                 onChangeItem = { item, newValue ->
-                    onChangeItem(item.copy(comment = newValue))
+                    onChangeItem { it.copy(comment = newValue) }
                 }
             )
         }

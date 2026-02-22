@@ -15,7 +15,7 @@ internal fun createDeclarationColumns0(
     onOpenVendorDialog: () -> Unit,
     onOpenBornDateDialog: () -> Unit,
     onOpenBestBeforeDialog: () -> Unit,
-    onChangeItem: (DeclarationEssentialsUi) -> Unit,
+    onChangeItem: ((DeclarationEssentialsUi) -> DeclarationEssentialsUi) -> Unit,
 ): ImmutableList<ColumnSpec<DeclarationEssentialsUi, DeclarationField, Unit>> {
     val columns =
         editableTableColumns<DeclarationEssentialsUi, DeclarationField, Unit> {
@@ -25,7 +25,7 @@ internal fun createDeclarationColumns0(
                 column = DeclarationField.DISPLAY_NAME,
                 valueOf = { it.displayName },
                 isSortable = false,
-                onChangeItem = { item, name -> onChangeItem(item.copy(displayName = name)) },
+                onChangeItem = { item, name -> onChangeItem { it.copy(displayName = name) } },
             )
 
             textWithSearchIconColumn(
@@ -57,7 +57,7 @@ internal fun createDeclarationColumns0(
                 column = DeclarationField.IS_OBSERVE,
                 valueOf = { it.isObserveFromNotification },
                 isSortable = false,
-                onChangeChecked = { item, checked -> onChangeItem(item.copy(isObserveFromNotification = checked)) },
+                onChangeChecked = { item, checked -> onChangeItem { it.copy(isObserveFromNotification = checked) } },
             )
 
 

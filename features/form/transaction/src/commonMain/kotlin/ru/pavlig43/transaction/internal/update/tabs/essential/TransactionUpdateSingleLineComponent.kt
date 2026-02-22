@@ -49,12 +49,12 @@ internal class TransactionUpdateSingleLineComponent(
     private fun dialogChild(config: UpdateDialogConfig, context: ComponentContext): UpdateDialogChild {
         return when (config) {
             UpdateDialogConfig.CreatedAt -> {
-                val item = itemFields.value[0]
+                val item = item.value
                 UpdateDialogChild.DateTime(
                     DateTimeComponent(
                         componentContext = context,
                         initDatetime = item.createdAt,
-                        onChangeDate = { newDate -> onChangeItem(item.copy(createdAt = newDate)) },
+                        onChangeDate = { newDate -> onChangeItem1 { it.copy(createdAt = newDate) } },
                         onDismissRequest = { dialogNavigation.dismiss() }
                     )
                 )
@@ -65,7 +65,7 @@ internal class TransactionUpdateSingleLineComponent(
     override val columns: ImmutableList<ColumnSpec<TransactionEssentialsUi, TransactionField, Unit>> =
         createTransactionColumns1(
             onOpenCreatedAtDialog = { dialogNavigation.activate(UpdateDialogConfig.CreatedAt) },
-            onChangeItem = { item -> onChangeItem(item) }
+            onChangeItem = ::onChangeItem1
         )
 
     override val errorMessages: Flow<List<String>> = errorTableMessages

@@ -13,7 +13,7 @@ import ua.wwind.table.editableTableColumns
 
 internal fun createTransactionColumns1(
     onOpenCreatedAtDialog: () -> Unit,
-    onChangeItem: (TransactionEssentialsUi) -> Unit,
+    onChangeItem: ((TransactionEssentialsUi) -> TransactionEssentialsUi) -> Unit,
 ): ImmutableList<ColumnSpec<TransactionEssentialsUi, TransactionField, Unit>> {
     val columns =
         editableTableColumns<TransactionEssentialsUi, TransactionField, Unit> {
@@ -38,7 +38,7 @@ internal fun createTransactionColumns1(
                 column = TransactionField.IS_COMPLETED,
                 valueOf = { it.isCompleted },
                 isSortable = false,
-                onChangeChecked = { item, checked -> onChangeItem(item.copy(isCompleted = checked)) },
+                onChangeChecked = { item, checked -> onChangeItem { it.copy(isCompleted = checked) } },
             )
 
             writeTextColumn(
@@ -46,7 +46,7 @@ internal fun createTransactionColumns1(
                 column = TransactionField.COMMENT,
                 valueOf = { it.comment },
                 isSortable = false,
-                onChangeItem = { item, comment -> onChangeItem(item.copy(comment = comment)) },
+                onChangeItem = { item, comment -> onChangeItem { it.copy(comment = comment) } },
                 singleLine = false
             )
         }
