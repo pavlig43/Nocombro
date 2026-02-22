@@ -107,7 +107,7 @@ internal class PfComponent(
                         onCreate = { tabOpener.openProductTab(0) },
                         dependencies = immutableTableDependencies,
                         immutableTableBuilderData = ProductImmutableTableBuilder(
-                            fullListProductTypes = ProductType.entries - ProductType.FOOD_SALE,
+                            fullListProductTypes = ProductType.entries,
                             withCheckbox = false
                         ),
                         onItemClick = { product ->
