@@ -14,7 +14,7 @@ import ua.wwind.table.editableTableColumns
  */
 @Suppress("LongMethod")
 internal fun createVendorColumns0(
-    onChangeItem: (VendorEssentialsUi) -> Unit
+    onChangeItem: ((VendorEssentialsUi) -> VendorEssentialsUi) -> Unit
 ): ImmutableList<ColumnSpec<VendorEssentialsUi, VendorField, Unit>> {
     val columns =
         editableTableColumns<VendorEssentialsUi, VendorField, Unit> {
@@ -26,7 +26,7 @@ internal fun createVendorColumns0(
                 valueOf = { it.displayName },
                 isSortable = false,
                 onChangeItem = { item, newValue ->
-                    onChangeItem(item.copy(displayName = newValue))
+                    onChangeItem { it.copy(displayName = newValue) }
                 },
             )
 
@@ -37,7 +37,7 @@ internal fun createVendorColumns0(
                 valueOf = { it.comment },
                 isSortable = false,
                 onChangeItem = { item, newValue ->
-                    onChangeItem(item.copy(comment = newValue))
+                    onChangeItem { it.copy(comment = newValue) }
                 }
             )
         }

@@ -64,7 +64,7 @@ internal class CreateProductSingleLineComponent(
             onOpenDateDialog = {
                 dialogNavigation.activate(CreateDatePickerDialogConfig)
             },
-            onChangeItem = { item -> onChangeItem(item) }
+            onChangeItem = ::onChangeItem1
         )
 
     /**
@@ -73,14 +73,14 @@ internal class CreateProductSingleLineComponent(
     private fun createDatePickerDialog(
         context: ComponentContext
     ): DateComponent {
-        val item = itemFields.value[0]
+        val item = item.value
 
         return DateComponent(
             componentContext = context,
             initDate = item.createdAt,
             onDismissRequest = { dialogNavigation.dismiss() },
             onChangeDate = { newDate ->
-                onChangeItem(item.copy(createdAt = newDate))
+                onChangeItem1 { it.copy(createdAt = newDate) }
             }
         )
     }

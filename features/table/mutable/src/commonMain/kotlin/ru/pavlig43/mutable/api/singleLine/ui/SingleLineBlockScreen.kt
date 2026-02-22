@@ -26,7 +26,7 @@ fun <I : ISingleLineTableUi, C> SingleLineBlockScreen(
     modifier: Modifier = Modifier,
 ) {
     LoadInitDataScreen(component.initDataComponent) {
-        val items by component.itemFields.collectAsState()
+        val items by component.itemFieldsList.collectAsState()
         val defaultTableSettings = TableSettings(
             autoApplyFilters = false,
             editingEnabled = true,

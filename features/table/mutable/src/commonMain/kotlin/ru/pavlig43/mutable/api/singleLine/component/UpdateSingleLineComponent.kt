@@ -27,7 +27,7 @@ abstract class UpdateSingleLineComponent<I : SingleItem, T : ISingleLineTableUi,
 
     override suspend fun onUpdate(): Result<Unit> {
         val old = initDataComponent.firstData.value?.mapperToDTO()
-        val new = itemFields.value[0].mapperToDTO()
+        val new = item.value.mapperToDTO()
         return updateSingleLineRepository.update(ChangeSet(old, new))
     }
 

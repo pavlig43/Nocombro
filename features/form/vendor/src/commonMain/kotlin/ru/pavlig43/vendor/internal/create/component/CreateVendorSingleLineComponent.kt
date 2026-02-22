@@ -34,6 +34,6 @@ internal class CreateVendorSingleLineComponent(
 ) {
     override val columns: ImmutableList<ColumnSpec<VendorEssentialsUi, VendorField, Unit>> =
         createVendorColumns0(
-            onChangeItem = { item -> onChangeItem(item) }
+            onChangeItem = ::onChangeItem1
         )
 }

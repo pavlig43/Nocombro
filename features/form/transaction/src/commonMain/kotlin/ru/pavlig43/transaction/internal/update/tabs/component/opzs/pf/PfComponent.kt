@@ -74,7 +74,7 @@ internal class PfComponent(
     private fun createDialogChild(dialogConfig: PfDialog, context: ComponentContext): PfDialogChild {
         return when (dialogConfig) {
             is PfDialog.Declaration -> {
-                val item = itemFields.value[0]
+                val item = item.value
                 PfDialogChild.ImmutableMBS(
                     MBSImmutableTableComponent<ProductDeclarationTableUi>(
                         componentContext = context,
@@ -85,13 +85,13 @@ internal class PfComponent(
                             parentId = item.productId,
                         ),
                         onItemClick = { declaration ->
-                            onChangeItem(
-                                item.copy(
+                            onChangeItem1 {
+                                it.copy(
                                     declarationId = declaration.declarationId,
                                     declarationName = declaration.displayName,
                                     vendorName = declaration.vendorName
                                 )
-                            )
+                            }
                             dialogNavigation.dismiss()
                         },
                     )
@@ -99,7 +99,7 @@ internal class PfComponent(
             }
 
             is PfDialog.Product -> {
-                val item = itemFields.value[0]
+                val item = item.value
                 PfDialogChild.ImmutableMBS(
                     MBSImmutableTableComponent<ProductTableUi>(
                         componentContext = context,
@@ -112,15 +112,15 @@ internal class PfComponent(
                         ),
                         onItemClick = { product ->
                             if (product.composeId != item.productId) {
-                                onChangeItem(
-                                    item.copy(
+                                onChangeItem1 {
+                                    it.copy(
                                         productId = product.composeId,
                                         productName = product.displayName,
                                         declarationId = 0,
                                         declarationName = "",
                                         vendorName = ""
                                     )
-                                )
+                                }
                             }
 
                             dialogNavigation.dismiss()
@@ -135,11 +135,10 @@ internal class PfComponent(
         createPfColumns(
             onOpenProductDialog = { dialogNavigation.activate(PfDialog.Product) },
             onOpenDeclarationDialog = { dialogNavigation.activate(PfDialog.Declaration) },
-            onChangeItem = { item -> onChangeItem(item) }
+            onChangeItem = ::onChangeItem1
         )
 
-    override val errorMessages: Flow<List<String>> = itemFields.map { items ->
-        val item = items.first()
+    override val errorMessages: Flow<List<String>> = item.map { item ->
         buildList {
             val place = "Полуфабрикат"
             if (item.productId == 0) add("$place не указан продукт")

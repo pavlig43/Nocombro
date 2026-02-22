@@ -50,7 +50,7 @@ internal class DeclarationUpdateSingleLineComponent(
             onOpenVendorDialog = { dialogNavigation.activate(UpdateDialogConfig.Vendor) },
             onOpenBornDateDialog = { dialogNavigation.activate(UpdateDialogConfig.Born) },
             onOpenBestBeforeDialog = { dialogNavigation.activate(UpdateDialogConfig.BestBefore) },
-            onChangeItem = { item -> onChangeItem(item) }
+            onChangeItem = ::onChangeItem1
         )
 
     private val dialogNavigation = SlotNavigation<UpdateDialogConfig>()
@@ -66,23 +66,23 @@ internal class DeclarationUpdateSingleLineComponent(
     private fun dialogChild(config: UpdateDialogConfig, context: ComponentContext): UpdateDialogChild {
         return when (config) {
             UpdateDialogConfig.BestBefore -> {
-                val item = itemFields.value[0]
+                val item = item.value
                 UpdateDialogChild.Date(
                     DateComponent(
                         componentContext = context,
                         initDate = item.bestBefore,
-                        onChangeDate = { newDate -> onChangeItem(item.copy(bestBefore = newDate)) },
+                        onChangeDate = { newDate -> onChangeItem1 { it.copy(bestBefore = newDate) } },
                         onDismissRequest = { dialogNavigation.dismiss() }
                     )
                 )
             }
             UpdateDialogConfig.Born -> {
-                val item = itemFields.value[0]
+                val item = item.value
                 UpdateDialogChild.Date(
                     DateComponent(
                         componentContext = context,
                         initDate = item.bornDate,
-                        onChangeDate = { newDate -> onChangeItem(item.copy(bornDate = newDate)) },
+                        onChangeDate = { newDate -> onChangeItem1 { it.copy(bornDate = newDate) } },
                         onDismissRequest = { dialogNavigation.dismiss() }
                     )
                 )
@@ -92,8 +92,7 @@ internal class DeclarationUpdateSingleLineComponent(
                     componentContext = context,
                     immutableTableBuilderData = VendorImmutableTableBuilder(false),
                     onItemClick = { vendor ->
-                        val item = itemFields.value[0]
-                        onChangeItem(item.copy(vendorId = vendor.composeId, vendorName = vendor.displayName))
+                        onChangeItem1 { it.copy(vendorId = vendor.composeId, vendorName = vendor.displayName) }
                         dialogNavigation.dismiss()
                     },
                     onCreate = { tabOpener.openVendorTab(0) },

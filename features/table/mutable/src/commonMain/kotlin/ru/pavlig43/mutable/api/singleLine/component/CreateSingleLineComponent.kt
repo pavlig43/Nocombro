@@ -56,7 +56,7 @@ abstract class CreateSingleLineComponent<I : SingleItem, UI : ISingleLineTableUi
     fun create() {
         coroutineScope.launch(Dispatchers.IO) {
             _createState.update { CreateState.Loading }
-            val item = itemFields.value[0].mapperToDTO()
+            val item = item.value.mapperToDTO()
             val idResult = createSingleItemRepository.createEssential(item)
             val state = idResult.fold(
                 onSuccess = { CreateState.Success(it) },

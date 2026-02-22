@@ -20,7 +20,7 @@ import ua.wwind.table.editableTableColumns
 @Suppress("LongMethod")
 internal fun createProductColumns1(
     onOpenDateDialog: () -> Unit,
-    onChangeItem: (ProductEssentialsUi) -> Unit
+    onChangeItem: ((ProductEssentialsUi) -> ProductEssentialsUi) -> Unit
 ): ImmutableList<ColumnSpec<ProductEssentialsUi, ProductField, Unit>> {
     val columns =
         editableTableColumns<ProductEssentialsUi, ProductField, Unit> {
@@ -32,7 +32,7 @@ internal fun createProductColumns1(
                 valueOf = { it.displayName },
                 isSortable = false,
                 onChangeItem = { item, newValue ->
-                    onChangeItem(item.copy(displayName = newValue))
+                    onChangeItem { it.copy(displayName = newValue) }
                 },
             )
 
@@ -59,7 +59,7 @@ internal fun createProductColumns1(
                 valueOf = { it.comment },
                 isSortable = false,
                 onChangeItem = { item, newValue ->
-                    onChangeItem(item.copy(comment = newValue))
+                    onChangeItem { it.copy(comment = newValue) }
                 }
             )
         }
