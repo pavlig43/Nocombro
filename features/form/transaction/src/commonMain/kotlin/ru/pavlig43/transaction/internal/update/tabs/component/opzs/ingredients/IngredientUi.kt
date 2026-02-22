@@ -2,6 +2,7 @@ package ru.pavlig43.transaction.internal.update.tabs.component.opzs.ingredients
 
 import kotlinx.datetime.LocalDate
 import ru.pavlig43.core.emptyDate
+import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.tablecore.model.IMultiLineTableUi
 
 data class IngredientUi(
@@ -12,6 +13,7 @@ data class IngredientUi(
     val dateBorn: LocalDate = emptyDate,
     val movementId: Int = 0,
     val productId: Int = 0,
+    val productType: ProductType,
     val productName: String = "",
     val vendorName: String = "",
     val balance: Int = 0,

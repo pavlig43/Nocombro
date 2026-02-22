@@ -52,6 +52,7 @@ private fun InternalIngredient.toIngredientBD(): IngredientBD {
         productId = product.id,
         productName = product.displayName,
         vendorName = declaration.vendorName,
+        productType = product.type,
         id = movement.id
     )
 }
