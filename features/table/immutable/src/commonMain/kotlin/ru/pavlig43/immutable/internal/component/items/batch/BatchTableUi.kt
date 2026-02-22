@@ -7,6 +7,7 @@ data class BatchTableUi(
     override val composeId: Int,
     val batchId: Int,
     val balance: Int,
+    val productName: String,
     val vendorName: String,
     val dateBorn: LocalDate
 ): IMultiLineTableUi

@@ -17,6 +17,7 @@ internal enum class BatchField {
     SELECTION,
     ID,
     BATCH_ID,
+    PRODUCT_NAME,
     VENDOR_NAME,
     COUNT,
     DATE_BORN
@@ -32,6 +33,12 @@ internal fun createBatchColumn(
                 selectionKey = BatchField.SELECTION,
                 idKey = BatchField.ID,
                 onEvent = onEvent
+            )
+            readTextColumn(
+                headerText = "Название",
+                column = BatchField.PRODUCT_NAME,
+                valueOf = { it.productName },
+                filterType = TableFilterType.TextTableFilter()
             )
 
             readTextColumn(

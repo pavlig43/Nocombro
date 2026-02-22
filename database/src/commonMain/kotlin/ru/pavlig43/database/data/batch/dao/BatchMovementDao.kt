@@ -64,6 +64,7 @@ abstract class BatchMovementDao {
                     BatchWithBalanceOut(
                         batchId = first.movement.batchId,
                         balance = balance,
+                        productName = first.batchOut.product.displayName,
                         vendorName = first.batchOut.declaration.vendorName,
                         dateBorn = first.batchOut.batch.dateBorn
                     )

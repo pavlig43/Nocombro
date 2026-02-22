@@ -49,7 +49,10 @@ internal class IngredientComponent(
         childFactory = ::createDialogChild
     )
 
-    private fun createDialogChild(dialogConfig: IngredientDialog, context: ComponentContext): DialogChild {
+    private fun createDialogChild(
+        dialogConfig: IngredientDialog,
+        context: ComponentContext
+    ): DialogChild {
         return when (dialogConfig) {
             is IngredientDialog.Product -> ImmutableMBS(
                 MBSImmutableTableComponent<ProductTableUi>(
@@ -62,7 +65,8 @@ internal class IngredientComponent(
                         withCheckbox = false
                     ),
                     onItemClick = { product ->
-                        val ingredientUi = itemList.value.first { it.composeId == dialogConfig.composeId }
+                        val ingredientUi =
+                            itemList.value.first { it.composeId == dialogConfig.composeId }
                         onEvent(
                             UpdateItem(
                                 ingredientUi.copy(
@@ -77,7 +81,6 @@ internal class IngredientComponent(
             )
 
             is IngredientDialog.Batch -> {
-                val item = itemList.value[0]
                 ImmutableMBS(
                     MBSImmutableTableComponent<BatchTableUi>(
                         componentContext = context,
@@ -85,10 +88,11 @@ internal class IngredientComponent(
                         onCreate = { tabOpener.openProductTab(0) },
                         dependencies = immutableTableDependencies,
                         immutableTableBuilderData = BatchImmutableTableBuilder(
-                            parentId = item.productId
+                            parentId = dialogConfig.productId
                         ),
                         onItemClick = { batch ->
-                            val ingredientUi = itemList.value.first { it.composeId == dialogConfig.composeId }
+                            val ingredientUi =
+                                itemList.value.first { it.composeId == dialogConfig.composeId }
                             onEvent(
                                 UpdateItem(
                                     ingredientUi.copy(
@@ -109,7 +113,13 @@ internal class IngredientComponent(
     override val columns: ImmutableList<ColumnSpec<IngredientUi, IngredientField, TableData<IngredientUi>>> =
         createIngredientColumns(
             onOpenProductDialog = { dialogNavigation.activate(IngredientDialog.Product(it)) },
-            onOpenBatchDialog = { dialogNavigation.activate(IngredientDialog.Batch(it)) },
+            onOpenBatchDialog = { composeId, productId ->
+                dialogNavigation.activate(
+                    IngredientDialog.Batch(
+                        composeId,productId
+                    )
+                )
+            },
             onEvent = ::onEvent
         )
 
@@ -167,7 +177,7 @@ internal sealed interface IngredientDialog {
     data class Product(val composeId: Int) : IngredientDialog
 
     @Serializable
-    data class Batch(val composeId: Int) : IngredientDialog
+    data class Batch(val composeId: Int, val productId: Int) : IngredientDialog
 }
 
 sealed interface DialogChild {

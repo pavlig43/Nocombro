@@ -18,6 +18,7 @@ internal object BatchFilterMatcher : FilterMatcher<BatchTableUi, BatchField>() {
                 BatchField.VENDOR_NAME -> matchesTextField(item.vendorName, stateAny)
                 BatchField.COUNT -> matchesTextField(item.balance.toString(), stateAny)
                 BatchField.DATE_BORN -> matchesTextField(item.dateBorn.toString(), stateAny)
+                BatchField.PRODUCT_NAME -> matchesTextField(item.productName, stateAny)
             }
         return matches
     }

@@ -37,6 +37,7 @@ private fun BatchWithBalanceOut.toUi(): BatchTableUi {
         composeId = batchId,
         batchId = batchId,
         balance = balance,
+        productName = productName,
         vendorName = vendorName,
         dateBorn = dateBorn
     )

@@ -11,6 +11,7 @@ import kotlinx.datetime.LocalDate
  */
 data class BatchWithBalanceOut(
     val batchId: Int,
+    val productName: String,
     val balance: Int,
     val vendorName: String,
     val dateBorn: LocalDate

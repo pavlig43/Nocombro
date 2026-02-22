@@ -28,7 +28,7 @@ enum class IngredientField {
 @Suppress("LongMethod")
 internal fun createIngredientColumns(
     onOpenProductDialog: (Int) -> Unit,
-    onOpenBatchDialog: (Int) -> Unit,
+    onOpenBatchDialog: (Int, Int) -> Unit,
     onEvent: (MutableUiEvent) -> Unit
 ): ImmutableList<ColumnSpec<IngredientUi, IngredientField, TableData<IngredientUi>>> {
     val columns =
@@ -64,7 +64,7 @@ internal fun createIngredientColumns(
                 },
                 onOpenDialog = {
                     if (it.productId != 0) {
-                        onOpenBatchDialog(it.composeId)
+                        onOpenBatchDialog(it.composeId, it.productId)
                     }
                 },
                 filterType = TableFilterType.TextTableFilter()
