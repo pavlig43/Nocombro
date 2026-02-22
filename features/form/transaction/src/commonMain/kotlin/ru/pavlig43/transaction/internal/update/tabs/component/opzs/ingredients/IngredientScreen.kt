@@ -19,6 +19,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import kotlinx.collections.immutable.toImmutableList
+import ru.pavlig43.coreui.ErrorScreen
+import ru.pavlig43.coreui.LoadingUi
 import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.immutable.api.ui.MBSImmutableTable
 import ru.pavlig43.mutable.api.multiLine.ui.MutableTableBox
@@ -64,6 +66,14 @@ internal fun IngredientScreen(
             enabled = enabledFillButton,
             onClick = component::fillFromPf
         )
+
+        when (loadCompositionState) {
+            is LoadCompositionState.Loading -> LoadingUi()
+            is LoadCompositionState.Error -> ErrorScreen(
+                message = (loadCompositionState as LoadCompositionState.Error).message
+            )
+            is LoadCompositionState.Success -> Unit
+        }
 
         MutableTableBox(
             component = component,
