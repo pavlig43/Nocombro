@@ -24,6 +24,7 @@ import ua.wwind.table.ColumnSpec
 import ua.wwind.table.EditableTable
 import ua.wwind.table.ExperimentalTableApi
 import ua.wwind.table.config.DefaultTableCustomization
+import ua.wwind.table.config.TableCustomization
 import ua.wwind.table.config.TableDefaults
 import ua.wwind.table.config.TableSettings
 import ua.wwind.table.state.TableState
@@ -34,9 +35,9 @@ import ua.wwind.table.strings.StringProvider
 fun <I : IMultiLineTableUi, C> MutableTableBox(
     component: MutableTableComponent<*, *, I, C>,
     tableSettingsModify:(TableSettings)-> TableSettings = {it},
+    tableCustomization: TableCustomization<I,C> = DefaultTableCustomization(),
     modifier: Modifier = Modifier
 ) {
-
 
     LoadInitDataScreen(component.initDataComponent) {
 
@@ -60,6 +61,7 @@ fun <I : IMultiLineTableUi, C> MutableTableBox(
                     items = tableData.displayedItems,
                     onEvent = component::onEvent,
                     tableData = tableData,
+                    tableCustomization = tableCustomization,
                     modifier = modifier
                 )
 
@@ -84,6 +86,7 @@ private fun <I : IMultiLineTableUi, C, E : TableData<I>> BoxScope.MutableTable(
     items: List<I>,
     onEvent: (MutableUiEvent) -> Unit,
     tableData: E,
+    tableCustomization: TableCustomization<I,C>,
     modifier: Modifier
 ) {
 
@@ -92,12 +95,12 @@ private fun <I : IMultiLineTableUi, C, E : TableData<I>> BoxScope.MutableTable(
         itemAt = { index -> items.getOrNull(index) },
         state = tableState,
         strings = stringProvider,
-        customization = DefaultTableCustomization(),
         tableData = tableData,
         columns = columns,
         colors = TableDefaults.colors().copy(
             headerContainerColor = MaterialTheme.colorScheme.primaryContainer.copy(0.3f)
         ),
+        customization = tableCustomization,
         verticalState = verticalState,
         horizontalState = horizontalState,
         modifier = modifier

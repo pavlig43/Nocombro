@@ -71,7 +71,8 @@ internal class IngredientComponent(
                             UpdateItem(
                                 ingredientUi.copy(
                                     productId = product.composeId,
-                                    productName = product.displayName
+                                    productName = product.displayName,
+                                    productType = product.type
                                 )
                             )
                         )
@@ -127,7 +128,8 @@ internal class IngredientComponent(
         return IngredientUi(
             composeId = composeId,
             transactionId = transactionId,
-            id = 0
+            id = 0,
+            productType = ProductType.FOOD_BASE
         )
     }
 
@@ -141,6 +143,7 @@ internal class IngredientComponent(
             productName = productName,
             vendorName = vendorName,
             balance = count,
+            productType = productType,
             id = id
         )
     }
@@ -154,6 +157,7 @@ internal class IngredientComponent(
             productId = productId,
             productName = productName,
             vendorName = vendorName,
+            productType = productType,
             id = id
         )
     }

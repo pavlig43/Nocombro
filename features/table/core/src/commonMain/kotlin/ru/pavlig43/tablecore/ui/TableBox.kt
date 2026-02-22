@@ -19,8 +19,10 @@ import ru.pavlig43.tablecore.model.IMultiLineTableUi
 import ru.pavlig43.tablecore.model.TableData
 import ua.wwind.table.ColumnSpec
 import ua.wwind.table.ExperimentalTableApi
+import ua.wwind.table.config.DefaultTableCustomization
 import ua.wwind.table.config.RowHeightMode
 import ua.wwind.table.config.SelectionMode
+import ua.wwind.table.config.TableCustomization
 import ua.wwind.table.config.TableSettings
 import ua.wwind.table.filter.data.TableFilterState
 import ua.wwind.table.state.SortState
@@ -52,7 +54,7 @@ fun <I : IMultiLineTableUi, C, E : TableData<I>> TableBox(
     showFastFilters = true,
     showActiveFiltersHeader = true,
     editingEnabled = true,
-    rowHeightMode = RowHeightMode.Dynamic,
+    rowHeightMode = RowHeightMode.Fixed,
     showFooter = false,
     enableTextSelection = false,
     selectionMode = SelectionMode.Multiple,
