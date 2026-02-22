@@ -6,12 +6,15 @@ import ru.pavlig43.transaction.internal.update.tabs.component.expenses.ExpensesC
 import ru.pavlig43.transaction.internal.update.tabs.component.opzs.ingredients.IngredientComponent
 import ru.pavlig43.transaction.internal.update.tabs.component.opzs.pf.PfComponent
 import ru.pavlig43.transaction.internal.update.tabs.component.reminders.RemindersComponent
+import ru.pavlig43.transaction.internal.update.tabs.component.sale.SaleComponent
 import ru.pavlig43.transaction.internal.update.tabs.essential.TransactionUpdateSingleLineComponent
 
 internal sealed interface TransactionTabChild : FormTabChild {
     class Essentials(override val component: TransactionUpdateSingleLineComponent) : TransactionTabChild
 
     class Buy(override val component: BuyComponent) : TransactionTabChild
+
+    class Sale(override val component: SaleComponent) : TransactionTabChild
 
     class Reminders(override val component: RemindersComponent) : TransactionTabChild
 

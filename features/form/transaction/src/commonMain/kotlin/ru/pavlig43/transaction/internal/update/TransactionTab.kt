@@ -11,6 +11,9 @@ internal sealed interface TransactionTab {
     data object Buy : TransactionTab
 
     @Serializable
+    data object Sale : TransactionTab
+
+    @Serializable
     data object Reminders : TransactionTab
 
     @Serializable
