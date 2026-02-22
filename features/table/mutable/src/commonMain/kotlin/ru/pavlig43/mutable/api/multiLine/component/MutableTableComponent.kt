@@ -99,6 +99,7 @@ abstract class MutableTableComponent<BDOut : CollectionObject, BDIn : Collection
 
     suspend fun loadItemsOutside(
         getData: suspend () -> Result<List<BDOut>>,
+        handleSuccess: () -> Unit,
         handleError: (Throwable) -> Unit
     ) {
 
@@ -110,6 +111,7 @@ abstract class MutableTableComponent<BDOut : CollectionObject, BDIn : Collection
                 selectionManager.clearSelected()
                 filterManager.clearFilters()
                 sortManager.clearSort()
+                handleSuccess()
             },
             onFailure = { handleError(it) }
         )

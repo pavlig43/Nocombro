@@ -18,7 +18,7 @@ import ua.wwind.table.config.RowHeightMode
 import ua.wwind.table.config.TableDefaults
 import ua.wwind.table.config.TableSettings
 import ua.wwind.table.state.rememberTableState
-
+@Suppress("MagicNumber")
 @OptIn(ExperimentalTableApi::class)
 @Composable
 fun <I : ISingleLineTableUi, C> SingleLineBlockScreen(

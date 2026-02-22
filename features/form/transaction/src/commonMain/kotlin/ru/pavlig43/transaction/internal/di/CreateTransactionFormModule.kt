@@ -50,7 +50,7 @@ internal fun createTransactionFormModule(dependencies: TransactionFormDependenci
     }
 )
 
-public enum class UpdateCollectionRepositoryType {
+internal enum class UpdateCollectionRepositoryType {
 
     BUY,
     REMINDERS,
@@ -59,7 +59,7 @@ public enum class UpdateCollectionRepositoryType {
 
 }
 
-public enum class UpdateSingleLineRepositoryType {
+internal enum class UpdateSingleLineRepositoryType {
     TRANSACTION,
     PF
 }
@@ -77,7 +77,7 @@ private class TransactionCreateRepository(db: NocombroDatabase) :
 }
 
 private class TransactionUpdateRepository(
-    private val db: NocombroDatabase
+    db: NocombroDatabase
 ) : UpdateSingleLineRepository<Transact> {
 
     private val dao = db.transactionDao
@@ -168,7 +168,7 @@ private class BuyCollectionRepository(
 
 
 private class RemindersCollectionRepository(
-    private val db: NocombroDatabase
+    db: NocombroDatabase
 ) : UpdateCollectionRepository<ReminderBD, ReminderBD> {
 
     private val dao = db.reminderDao

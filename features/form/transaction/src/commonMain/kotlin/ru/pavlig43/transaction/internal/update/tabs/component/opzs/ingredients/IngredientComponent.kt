@@ -9,7 +9,6 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.SharingStarted.Companion.Eagerly
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -57,6 +56,7 @@ internal class IngredientComponent(
     private val dialogNavigation = SlotNavigation<IngredientDialog>()
 
 
+    @Suppress("MagicNumber")
     fun fillFromPf() {
         val pf = pfFlow.value
         if (pf.productId == 0) return
@@ -67,8 +67,14 @@ internal class IngredientComponent(
                     fillIngredientsRepository.getIngredientsFromComposition(
                         productId = pf.productId,
                         transactionId = transactionId,
-                        countPf = pf.count
+                        // Количество полуфабриката в кг(изначально числится в граммах)
+                        countPf = pf.count.div(1000)
                     )
+                },
+                handleSuccess = {
+                    _loadCompositionState.update {
+                        LoadCompositionState.Success
+                    }
                 },
                 handleError = { t ->
                     _loadCompositionState.update {
@@ -92,7 +98,7 @@ internal class IngredientComponent(
     )
 
     val enabledFillButton: StateFlow<Boolean> = pfFlow.map {
-        it.productId != 0
+        it.productId != 0 && loadCompositionState.value !is LoadCompositionState.Loading
     }.stateIn(
         coroutineScope,
         started = Eagerly,
@@ -186,6 +192,7 @@ internal class IngredientComponent(
     override fun IngredientBD.toUi(composeId: Int): IngredientUi {
         return IngredientUi(
             composeId = composeId,
+            transactionId = this@IngredientComponent.transactionId,
             movementId = movementId,
             batchId = batchId,
             dateBorn = dateBorn,

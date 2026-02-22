@@ -48,7 +48,7 @@ class ImmutableTableComponentFactoryMain(
 
     internal val tableComponent = build<IMultiLineTableUi>(context = childContext("table"))
 
-    @Suppress("UNCHECKED_CAST")
+    @Suppress("UNCHECKED_CAST","LongMethod")
     private fun <I : IMultiLineTableUi> build(
         context: ComponentContext,
     ): ImmutableTableComponent<*, I, *> {

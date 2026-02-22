@@ -127,7 +127,7 @@ fun <I : IMultiLineTableUi, C> FlowMultiLineTableBox(
  * @param tableData Данные таблицы
  * @param modifier Модификатор для размещения
  */
-@Suppress("LongParameterList", "LongMethod")
+@Suppress("LongParameterList", "LongMethod","MagicNumber")
 @OptIn(ExperimentalTableApi::class)
 @Composable
 private fun <I : IMultiLineTableUi, C, E : TableData<I>> BoxScope.FlowMultiLineTable(
