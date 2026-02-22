@@ -47,8 +47,8 @@ internal class PfComponent(
     updateSingleLineRepository: UpdateSingleLineRepository<PfBD>,
     private val tabOpener: TabOpener,
     private val immutableTableDependencies: ImmutableTableDependencies,
-    observeOnItem: (PfUi) -> Unit = {},
-    onSuccessInitData: (PfUi) -> Unit = {},
+    observeOnItem: (PfUi) -> Unit,
+    onSuccessInitData: (PfUi) -> Unit,
 ) : UpdateSingleLineComponent<PfBD, PfUi, PfField>(
     componentContext = componentContext,
     id = transactionId,

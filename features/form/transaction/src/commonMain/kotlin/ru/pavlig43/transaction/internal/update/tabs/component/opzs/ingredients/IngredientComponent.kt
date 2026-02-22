@@ -7,7 +7,11 @@ import com.arkivanov.decompose.router.slot.childSlot
 import com.arkivanov.decompose.router.slot.dismiss
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.SharingStarted.Companion.Eagerly
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.serialization.Serializable
 import ru.pavlig43.core.tabs.TabOpener
 import ru.pavlig43.database.data.product.ProductType
@@ -23,12 +27,14 @@ import ru.pavlig43.mutable.api.multiLine.component.MutableUiEvent.UpdateItem
 import ru.pavlig43.mutable.api.multiLine.data.UpdateCollectionRepository
 import ru.pavlig43.tablecore.model.TableData
 import ru.pavlig43.transaction.internal.update.tabs.component.opzs.ingredients.DialogChild.ImmutableMBS
+import ru.pavlig43.transaction.internal.update.tabs.component.opzs.pf.PfUi
 import ua.wwind.table.ColumnSpec
 
 internal class IngredientComponent(
     componentComponent: ComponentContext,
     private val transactionId: Int,
     private val tabOpener: TabOpener,
+    private val pfFlow: StateFlow<PfUi>,
     private val immutableTableDependencies: ImmutableTableDependencies,
     repository: UpdateCollectionRepository<IngredientBD, IngredientBD>,
 ) : MutableTableComponent<IngredientBD, IngredientBD, IngredientUi, IngredientField>(
@@ -47,6 +53,13 @@ internal class IngredientComponent(
         serializer = IngredientDialog.serializer(),
         handleBackButton = true,
         childFactory = ::createDialogChild
+    )
+    val enabledFillButton: StateFlow<Boolean> = pfFlow.map {
+        it.productId != 0
+    }.stateIn(
+        coroutineScope,
+        started = Eagerly,
+        initialValue = false
     )
 
     private fun createDialogChild(

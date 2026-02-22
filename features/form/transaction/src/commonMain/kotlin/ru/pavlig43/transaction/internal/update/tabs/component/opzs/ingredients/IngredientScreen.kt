@@ -1,11 +1,21 @@
 package ru.pavlig43.transaction.internal.update.tabs.component.opzs.ingredients
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import kotlinx.collections.immutable.toImmutableList
@@ -46,17 +56,45 @@ internal fun IngredientScreen(
         }
     )
     val dialog by component.dialog.subscribeAsState()
-    MutableTableBox(
-        component = component,
-        tableSettingsModify = { ts -> ts.copy(
-            stripedRows = false,
-            showFooter = true) },
-        tableCustomization = customization
+    val enabledFillButton by component.enabledFillButton.collectAsState()
+
+    Column {
+        FillButton(
+            enabled = enabledFillButton,
+            onClick = { /* TODO: реализовать заполнение из ПФ */ })
+
+        MutableTableBox(
+            component = component,
+            tableSettingsModify = { ts -> ts.copy(
+                stripedRows = false,
+                showFooter = true) },
+            tableCustomization = customization
         )
+    }
 
     dialog.child?.instance?.also { dialogChild ->
         when (dialogChild) {
             is DialogChild.ImmutableMBS -> MBSImmutableTable(dialogChild.component)
+        }
+    }
+}
+
+@Composable
+private fun FillButton(
+    enabled: Boolean,
+    onClick: () -> Unit) {
+    Row(
+        modifier = Modifier.padding(16.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Button(
+            onClick = onClick,
+            enabled = enabled,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer
+            )
+        ) {
+            Text("Заполнить по ПФ")
         }
     }
 }
