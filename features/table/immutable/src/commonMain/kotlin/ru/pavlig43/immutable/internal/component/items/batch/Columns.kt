@@ -2,7 +2,10 @@
 package ru.pavlig43.immutable.internal.component.items.batch
 
 import kotlinx.collections.immutable.ImmutableList
+import ru.pavlig43.immutable.internal.column.DecimalFormat
 import ru.pavlig43.immutable.internal.column.idWithSelection
+import ru.pavlig43.immutable.internal.column.readDateColumn
+import ru.pavlig43.immutable.internal.column.readDecimalColumn
 import ru.pavlig43.immutable.internal.column.readTextColumn
 import ru.pavlig43.immutable.internal.component.ImmutableTableUiEvent
 import ru.pavlig43.tablecore.model.TableData
@@ -32,31 +35,24 @@ internal fun createBatchColumn(
             )
 
             readTextColumn(
-                headerText = "ID партии",
-                column = BatchField.BATCH_ID,
-                valueOf = { it.batchId.toString() },
-                filterType = TableFilterType.TextTableFilter()
-            )
-
-            readTextColumn(
                 headerText = "Поставщик",
                 column = BatchField.VENDOR_NAME,
                 valueOf = { it.vendorName },
                 filterType = TableFilterType.TextTableFilter()
             )
-
-            readTextColumn(
+            readDecimalColumn(
                 headerText = "Остаток",
                 column = BatchField.COUNT,
-                valueOf = { it.count.toString() },
-                filterType = TableFilterType.TextTableFilter()
+                valueOf = { it.balance },
+                decimalFormat = DecimalFormat.Decimal3(),
+                filterType = TableFilterType.NumberTableFilter(delegate = TableFilterType.NumberTableFilter.IntDelegate)
             )
 
-            readTextColumn(
-                headerText = "Дата создания",
+            readDateColumn(
+                headerText = "Дата производства",
                 column = BatchField.DATE_BORN,
-                valueOf = { it.dateBorn.toString() },
-                filterType = TableFilterType.TextTableFilter()
+                valueOf = { it.dateBorn },
+                filterType = TableFilterType.DateTableFilter()
             )
         }
     return columns

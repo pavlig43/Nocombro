@@ -6,7 +6,7 @@ import ru.pavlig43.tablecore.model.IMultiLineTableUi
 data class BatchTableUi(
     override val composeId: Int,
     val batchId: Int,
-    val count: Int,
+    val balance: Int,
     val vendorName: String,
     val dateBorn: LocalDate
 ): IMultiLineTableUi

@@ -14,16 +14,18 @@ import ru.pavlig43.database.data.transact.ingredient.IngredientBD
 abstract class IngredientDao {
 
     @Transaction
-    @Query("SELECT * FROM batch_movement WHERE transaction_id = :transactionId ORDER BY id DESC")
-    internal abstract suspend fun getMovementsWithRelations(transactionId: Int): List<InternalIngredient>
+    @Query("""
+        SELECT * FROM batch_movement
+        WHERE transaction_id = :transactionId
+            AND movement_type = 'OUTGOING'
+        ORDER BY id DESC    
+    """)
+    internal abstract suspend fun getIngredients(transactionId: Int): List<InternalIngredient>
 
     suspend fun getByTransactionId(transactionId: Int): List<IngredientBD> {
-        return getMovementsWithRelations(transactionId).map { it.toIngredientBD() }
+        return getIngredients(transactionId).map { it.toIngredientBD() }
     }
 
-    suspend fun getMovementIdsByIngredientIds(ids: List<Int>): List<Int> {
-        return ids
-    }
 }
 
 internal data class InternalIngredient(
@@ -44,6 +46,7 @@ private fun InternalIngredient.toIngredientBD(): IngredientBD {
     return IngredientBD(
         transactionId = movement.transactionId,
         batchId = movement.batchId,
+        dateBorn = batchOut.batch.dateBorn,
         movementId = movement.id,
         count = movement.count,
         productId = product.id,

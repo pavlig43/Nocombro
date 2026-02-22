@@ -1,4 +1,4 @@
-package ru.pavlig43.transaction.internal.update.tabs.component.opzs.ingridients
+package ru.pavlig43.transaction.internal.update.tabs.component.opzs.ingredients
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue

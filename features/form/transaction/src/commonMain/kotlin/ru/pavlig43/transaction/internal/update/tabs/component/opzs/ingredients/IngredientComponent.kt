@@ -1,4 +1,4 @@
-package ru.pavlig43.transaction.internal.update.tabs.component.opzs.ingridients
+package ru.pavlig43.transaction.internal.update.tabs.component.opzs.ingredients
 
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.router.slot.SlotNavigation
@@ -22,12 +22,12 @@ import ru.pavlig43.mutable.api.multiLine.component.MutableTableComponent
 import ru.pavlig43.mutable.api.multiLine.component.MutableUiEvent.UpdateItem
 import ru.pavlig43.mutable.api.multiLine.data.UpdateCollectionRepository
 import ru.pavlig43.tablecore.model.TableData
-import ru.pavlig43.transaction.internal.update.tabs.component.opzs.ingridients.DialogChild.*
+import ru.pavlig43.transaction.internal.update.tabs.component.opzs.ingredients.DialogChild.ImmutableMBS
 import ua.wwind.table.ColumnSpec
 
 internal class IngredientComponent(
     componentComponent: ComponentContext,
-    transactionId: Int,
+    private val transactionId: Int,
     private val tabOpener: TabOpener,
     private val immutableTableDependencies: ImmutableTableDependencies,
     repository: UpdateCollectionRepository<IngredientBD, IngredientBD>,
@@ -94,6 +94,7 @@ internal class IngredientComponent(
                                     ingredientUi.copy(
                                         batchId = batch.composeId,
                                         vendorName = batch.vendorName,
+                                        dateBorn = batch.dateBorn
                                     )
                                 )
                             )
@@ -115,6 +116,7 @@ internal class IngredientComponent(
     override fun createNewItem(composeId: Int): IngredientUi {
         return IngredientUi(
             composeId = composeId,
+            transactionId = transactionId,
             id = 0
         )
     }
@@ -124,10 +126,11 @@ internal class IngredientComponent(
             composeId = composeId,
             movementId = movementId,
             batchId = batchId,
+            dateBorn = dateBorn,
             productId = productId,
             productName = productName,
             vendorName = vendorName,
-            count = count,
+            balance = count,
             id = id
         )
     }
@@ -137,7 +140,7 @@ internal class IngredientComponent(
             transactionId = transactionId,
             batchId = batchId,
             movementId = movementId,
-            count = count,
+            count = balance,
             productId = productId,
             productName = productName,
             vendorName = vendorName,
@@ -147,10 +150,12 @@ internal class IngredientComponent(
 
     override val errorMessages: Flow<List<String>> = itemList.map { lst ->
         buildList {
+            if (lst.isEmpty()) add("Не указаны ингредиенты")
             lst.forEach { ingredientUi ->
                 val place = "В строке ${ingredientUi.composeId + 1}"
                 if (ingredientUi.productId == 0) add("$place не указан продукт")
-                if (ingredientUi.count == 0) add("$place количество равно 0")
+                if (ingredientUi.batchId == 0) add("$place не указан партия")
+                if (ingredientUi.balance == 0) add("$place количество равно 0")
             }
         }
     }

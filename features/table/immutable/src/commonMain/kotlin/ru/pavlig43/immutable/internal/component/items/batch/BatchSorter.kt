@@ -19,7 +19,7 @@ internal object BatchSorter :
                 BatchField.ID -> items.sortedBy { it.composeId }
                 BatchField.BATCH_ID -> items.sortedBy { it.batchId }
                 BatchField.VENDOR_NAME -> items.sortedBy { it.vendorName.lowercase() }
-                BatchField.COUNT -> items.sortedBy { it.count }
+                BatchField.COUNT -> items.sortedBy { it.balance }
                 BatchField.DATE_BORN -> items.sortedBy { it.dateBorn }
                 else -> items
             }

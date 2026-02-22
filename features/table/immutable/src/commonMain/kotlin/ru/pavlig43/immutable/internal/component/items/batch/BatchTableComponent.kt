@@ -34,10 +34,10 @@ internal class BatchTableComponent(
 
 private fun BatchWithBalanceOut.toUi(): BatchTableUi {
     return BatchTableUi(
-        composeId = batch.id,
-        batchId = batch.id,
-        count = balance,
-        vendorName = declaration.vendorName,
-        dateBorn = batch.dateBorn
+        composeId = batchId,
+        batchId = batchId,
+        balance = balance,
+        vendorName = vendorName,
+        dateBorn = dateBorn
     )
 }

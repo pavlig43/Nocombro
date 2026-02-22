@@ -7,12 +7,15 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Relation
 import androidx.room.Transaction
-import androidx.room.Update
 import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import ru.pavlig43.core.mapParallel
 import ru.pavlig43.database.data.batch.BatchBD
 import ru.pavlig43.database.data.batch.BatchMovement
 import ru.pavlig43.database.data.batch.BatchOut
+import ru.pavlig43.database.data.batch.BatchWithBalanceOut
+import ru.pavlig43.database.data.batch.MovementType
 
 /**
  * DAO для работы с движениями партий (batch movements).
@@ -23,64 +26,54 @@ import ru.pavlig43.database.data.batch.BatchOut
 @Dao
 abstract class BatchMovementDao {
 
-    /**
-     * Создаёт новое движение партии.
-     *
-     * @param batchMovement Движение для создания
-     * @return Идентификатор созданной записи
-     */
+
     @Insert
     abstract suspend fun createMovement(batchMovement: BatchMovement): Long
 
-    /**
-     * Обновляет существующее движение партии.
-     *
-     * @param movement Движение для обновления
-     */
-    @Update
-    abstract suspend fun updateMovement(movement: BatchMovement)
 
-    /**
-     * Вставляет список движений с заменой при конфликте.
-     *
-     * @param movements Список движений для вставки
-     */
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    abstract suspend fun insertMovements(movements: List<BatchMovement>)
+    @Upsert
+    abstract suspend fun upsertMovements(movements: List<BatchMovement>)
 
-    /**
-     * Вставляет или обновляет движение партии.
-     *
-     * @param movement Движение для сохранения
-     */
+
     @Upsert
     abstract suspend fun upsertMovement(movement: BatchMovement)
 
-    /**
-     * Удаляет все движения для указанной транзакции.
-     *
-     * @param transactionId Идентификатор транзакции
-     */
-    @Query("DELETE FROM batch_movement WHERE transaction_id = :transactionId")
-    abstract suspend fun deleteByTransactionId(transactionId: Int)
 
-    /**
-     * Получает движения для указанной транзакции с загруженными партиями.
-     *
-     * Использует @Relation для автоматической загрузки связанной партии (BatchBD).
-     *
-     * @param transactionId Идентификатор транзакции
-     * @return Список движений с загруженными партиями
-     */
+
     @Query("SELECT * FROM batch_movement WHERE transaction_id = :transactionId")
     @Transaction
-    abstract suspend fun getByTransactionId(transactionId: Int): List<MovementOut>
+    internal abstract suspend fun getByTransactionId(transactionId: Int): List<MovementOut>
 
-    /**
-     * Удаляет движения с указанными идентификаторами.
-     *
-     * @param ids Список идентификаторов для удаления
-     */
+    @Transaction
+    @Query("SELECT * FROM batch_movement WHERE batch_id IN (SELECT id FROM batch WHERE product_id = :productId)")
+    internal abstract fun observeMovementsByProductId(productId: Int): Flow<List<MovementOut>>
+
+    fun observeBatchWithBalanceByProductId(productId: Int): Flow<List<BatchWithBalanceOut>> {
+        return observeMovementsByProductId(productId).map { lst ->
+            lst.groupBy { it.movement.batchId }.values.mapParallel { movements ->
+                val balance = movements.fold(0) { acc, out ->
+                    val movementType = out.movement.movementType
+                    val count = out.movement.count
+                    when (movementType) {
+                        MovementType.INCOMING -> acc + count
+                        MovementType.OUTGOING -> acc - count
+                    }
+                }
+                if (balance > 0) {
+                    val first = movements.first()
+                    BatchWithBalanceOut(
+                        batchId = first.movement.batchId,
+                        balance = balance,
+                        vendorName = first.batchOut.declaration.vendorName,
+                        dateBorn = first.batchOut.batch.dateBorn
+                    )
+                } else null
+
+            }.filterNotNull()
+        }
+    }
+
+
     @Query("DELETE FROM batch_movement WHERE id in (:ids)")
     abstract suspend fun deleteByIds(ids: List<Int>)
 
@@ -102,7 +95,7 @@ abstract class BatchMovementDao {
  * @property movement Движение партии
  * @property batchOut Связанная партия с продуктом
  */
-data class MovementOut(
+internal data class MovementOut(
     @Embedded
     val movement: BatchMovement,
     @Relation(

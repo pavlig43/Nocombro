@@ -196,7 +196,7 @@ private class ProductDeclarationRepository(db: NocombroDatabase) :
  */
 private class BatchRepository(db: NocombroDatabase) :
     ImmutableListRepository<BatchWithBalanceOut> {
-    private val dao = db.batchDao
+    private val dao = db.batchMovementDao
     override suspend fun deleteByIds(ids: Set<Int>): Result<Unit> {
         // партии не удаляются через таблицу (только через транзакции)
         return Result.success(Unit)
@@ -206,7 +206,7 @@ private class BatchRepository(db: NocombroDatabase) :
         require(parentId != 0) {
             "BatchRepository requires non-zero parentId (productId) for filtering batches by product"
         }
-        return dao.observeBatchesByProductId(parentId).map { Result.success(it) }
+        return dao.observeBatchWithBalanceByProductId(parentId).map { Result.success(it) }
             .catch { emit(Result.failure(it)) }
     }
 }

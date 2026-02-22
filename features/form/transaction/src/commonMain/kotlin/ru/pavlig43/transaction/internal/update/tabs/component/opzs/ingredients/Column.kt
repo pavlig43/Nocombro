@@ -1,8 +1,10 @@
 @file:Suppress("MatchingDeclarationName")
 
-package ru.pavlig43.transaction.internal.update.tabs.component.opzs.ingridients
+package ru.pavlig43.transaction.internal.update.tabs.component.opzs.ingredients
 
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.datetime.format
+import ru.pavlig43.core.dateFormat
 import ru.pavlig43.mutable.api.column.DecimalFormat
 import ru.pavlig43.mutable.api.column.decimalColumn
 import ru.pavlig43.mutable.api.column.idWithSelection
@@ -20,7 +22,7 @@ enum class IngredientField {
     PRODUCT_NAME,
     COUNT,
     VENDOR_NAME,
-    BATCH_ID
+    BATCH_NAME
 }
 
 @Suppress("LongMethod")
@@ -48,16 +50,18 @@ internal fun createIngredientColumns(
 
             decimalColumn(
                 key = IngredientField.COUNT,
-                getValue = { it.count },
+                getValue = { it.balance },
                 headerText = "Количество",
                 decimalFormat = DecimalFormat.Decimal3(),
-                updateItem = { item, count -> onEvent(MutableUiEvent.UpdateItem(item.copy(count = count))) },
-                footerValue = { tableData -> tableData.displayedItems.sumOf { it.count } }
+                updateItem = { item, count -> onEvent(MutableUiEvent.UpdateItem(item.copy(balance = count))) },
+                footerValue = { tableData -> tableData.displayedItems.sumOf { it.balance } }
             )
             textWithSearchIconColumn(
                 headerText = "Партия",
-                column = IngredientField.BATCH_ID,
-                valueOf = { it.batchId.toString() },
+                column = IngredientField.BATCH_NAME,
+                valueOf = {
+                    "(${it.batchId}) ${it.dateBorn.format(dateFormat)}"
+                },
                 onOpenDialog = {
                     if (it.productId != 0) {
                         onOpenBatchDialog(it.composeId)
