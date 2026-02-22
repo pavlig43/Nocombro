@@ -1,5 +1,6 @@
 package ru.pavlig43.transaction.internal.di
 
+import org.koin.core.module.dsl.singleOf
 import org.koin.core.qualifier.qualifier
 import org.koin.dsl.module
 import ru.pavlig43.core.TransactionExecutor
@@ -22,6 +23,7 @@ import ru.pavlig43.mutable.api.multiLine.data.UpdateCollectionRepository
 import ru.pavlig43.mutable.api.singleLine.data.CreateSingleItemRepository
 import ru.pavlig43.mutable.api.singleLine.data.UpdateSingleLineRepository
 import ru.pavlig43.transaction.api.TransactionFormDependencies
+import ru.pavlig43.transaction.internal.update.tabs.component.opzs.ingredients.FillIngredientsRepository
 
 internal fun createTransactionFormModule(dependencies: TransactionFormDependencies) = listOf(
     module {
@@ -44,10 +46,11 @@ internal fun createTransactionFormModule(dependencies: TransactionFormDependenci
             IngredientsCollectionRepository(get())
         }
         single<UpdateSingleLineRepository<PfBD>>(UpdateSingleLineRepositoryType.PF.qualifier) { PfUpdateRepository(get()) }
+        singleOf(::FillIngredientsRepository)
     }
 )
 
-public enum class UpdateCollectionRepositoryType {
+internal enum class UpdateCollectionRepositoryType {
 
     BUY,
     REMINDERS,
@@ -56,7 +59,7 @@ public enum class UpdateCollectionRepositoryType {
 
 }
 
-public enum class UpdateSingleLineRepositoryType {
+internal enum class UpdateSingleLineRepositoryType {
     TRANSACTION,
     PF
 }
@@ -74,7 +77,7 @@ private class TransactionCreateRepository(db: NocombroDatabase) :
 }
 
 private class TransactionUpdateRepository(
-    private val db: NocombroDatabase
+    db: NocombroDatabase
 ) : UpdateSingleLineRepository<Transact> {
 
     private val dao = db.transactionDao
@@ -165,7 +168,7 @@ private class BuyCollectionRepository(
 
 
 private class RemindersCollectionRepository(
-    private val db: NocombroDatabase
+    db: NocombroDatabase
 ) : UpdateCollectionRepository<ReminderBD, ReminderBD> {
 
     private val dao = db.reminderDao

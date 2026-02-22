@@ -82,6 +82,7 @@ class LoadInitDataComponent<I : Any>(
             _loadState.update { initData }
         }
     }
+
 }
 
 

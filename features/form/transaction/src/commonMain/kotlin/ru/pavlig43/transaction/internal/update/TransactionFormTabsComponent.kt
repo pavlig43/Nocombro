@@ -21,6 +21,7 @@ import ru.pavlig43.transaction.internal.update.tabs.component.buy.BuyComponent
 import ru.pavlig43.transaction.internal.update.tabs.component.expenses.ExpensesComponent
 import ru.pavlig43.transaction.internal.update.tabs.component.opzs.ingredients.IngredientComponent
 import ru.pavlig43.transaction.internal.update.tabs.component.opzs.pf.PfComponent
+import ru.pavlig43.transaction.internal.update.tabs.component.opzs.pf.PfUi
 import ru.pavlig43.transaction.internal.update.tabs.component.reminders.RemindersComponent
 import ru.pavlig43.transaction.internal.update.tabs.essential.TransactionUpdateSingleLineComponent
 import ru.pavlig43.update.component.IItemFormTabsComponent
@@ -40,7 +41,11 @@ internal class TransactionFormTabsComponent(
     private val coroutineScope = componentCoroutineScope()
 
     override val transactionExecutor: TransactionExecutor = scope.get()
-    private val essentialsFields = MutableStateFlow<TransactionEssentialsUi>(componentFactory.initItem)
+    private val essentialsFields =
+        MutableStateFlow<TransactionEssentialsUi>(componentFactory.initItem)
+    private val pfFlow = MutableStateFlow(PfUi())
+
+
 
     private fun observeOnTransaction(transaction: TransactionEssentialsUi) {
         observeOnItem(transaction)
@@ -50,13 +55,14 @@ internal class TransactionFormTabsComponent(
     private fun onSuccessInitTransaction(transaction: TransactionEssentialsUi) {
         observeOnTransaction(transaction)
         coroutineScope.launch {
-            when(transaction.transactionType){
+            when (transaction.transactionType) {
                 TransactionType.BUY -> tabNavigationComponent.addTab(TransactionTab.Buy)
                 TransactionType.SALE -> TODO()
                 TransactionType.OPZS -> {
                     tabNavigationComponent.addTab(TransactionTab.Pf)
                     tabNavigationComponent.addTab(TransactionTab.Ingredients)
                 }
+
                 TransactionType.WRITE_OFF -> TODO()
                 TransactionType.INVENTORY -> TODO()
                 null -> throw IllegalArgumentException("Transaction type is null")
@@ -109,7 +115,7 @@ internal class TransactionFormTabsComponent(
                         ExpensesComponent(
                             componentContext = context,
                             transactionId = transactionId,
-                            getTransactionDateTime = {essentialsFields.value.createdAt},
+                            getTransactionDateTime = { essentialsFields.value.createdAt },
                             repository = scope.get(UpdateCollectionRepositoryType.EXPENSES.qualifier),
                         )
                     )
@@ -119,9 +125,15 @@ internal class TransactionFormTabsComponent(
                             PfComponent(
                                 componentContext = context,
                                 transactionId = transactionId,
-                                updateSingleLineRepository = scope.get(UpdateSingleLineRepositoryType.PF.qualifier),
+                                updateSingleLineRepository = scope.get(
+                                    UpdateSingleLineRepositoryType.PF.qualifier
+                                ),
                                 tabOpener = tabOpener,
-                                getDateBorn = {essentialsFields.value.createdAt.date},
+                                getDateBorn = { essentialsFields.value.createdAt.date },
+                                observeOnItem = {newPf-> pfFlow.update { newPf } },
+                                onSuccessInitData = { newPf: PfUi ->
+                                    pfFlow.update { newPf }
+                                },
                                 immutableTableDependencies = scope.get()
                             )
                         )
@@ -134,7 +146,9 @@ internal class TransactionFormTabsComponent(
                                 transactionId = transactionId,
                                 repository = scope.get(UpdateCollectionRepositoryType.INGREDIENTS.qualifier),
                                 tabOpener = tabOpener,
-                                immutableTableDependencies = scope.get()
+                                pfFlow = pfFlow,
+                                immutableTableDependencies = scope.get(),
+                                fillIngredientsRepository = scope.get()
                             )
                         )
                     }

@@ -8,11 +8,13 @@ import androidx.room.Transaction
 import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import ru.pavlig43.core.emptyDate
 import ru.pavlig43.database.data.common.NotificationDTO
 import ru.pavlig43.database.data.product.CompositionIn
 import ru.pavlig43.database.data.product.CompositionOut
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductType
+import ru.pavlig43.database.data.transact.ingredient.IngredientBD
 
 @Dao
 abstract class CompositionDao {
@@ -23,6 +25,16 @@ abstract class CompositionDao {
 
     suspend fun getCompositionOut(parentId: Int): List<CompositionOut> {
         return getComposition(parentId).map(InternalComposition::toCompositionOut)
+    }
+
+    suspend fun getIngredientsFromComposition(
+        productId: Int,
+        transactionId: Int,
+        countPf: Int
+    ): List<IngredientBD> {
+        return getComposition(productId).map {
+            it.toIngredients(transactionId, countPf)
+        }
     }
 
     @Upsert
@@ -76,5 +88,20 @@ private fun InternalComposition.toCompositionOut(): CompositionOut {
         productName = product.displayName,
         productType = product.type,
         count = composition.count
+    )
+}
+
+private fun InternalComposition.toIngredients(transactionId: Int, countPf: Int): IngredientBD {
+    return IngredientBD(
+        transactionId = transactionId,
+        batchId = 0,
+        dateBorn = emptyDate,
+        movementId = 0,
+        count = composition.count * countPf,
+        productType = product.type,
+        productId = product.id,
+        productName = product.displayName,
+        vendorName = "",
+        id = 0
     )
 }
