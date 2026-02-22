@@ -30,6 +30,7 @@ internal fun createProductColumns1(
                 headerText = "Название продукта",
                 column = ProductField.DISPLAY_NAME,
                 valueOf = { it.displayName },
+                isSortable = false,
                 onChangeItem = { item, newValue ->
                     onChangeItem(item.copy(displayName = newValue))
                 },
@@ -40,12 +41,14 @@ internal fun createProductColumns1(
                 headerText = "Тип продукта",
                 column = ProductField.PRODUCT_TYPE,
                 valueOf = { it.productType },
+                isSortable = false,
             )
 
             writeDateColumn(
                 headerText = "Дата создания",
                 column = ProductField.CREATED_AT,
                 valueOf = { it.createdAt },
+                isSortable = false,
                 onOpenDateDialog = { onOpenDateDialog() }
             )
 
@@ -54,6 +57,7 @@ internal fun createProductColumns1(
                 headerText = "Комментарий",
                 column = ProductField.COMMENT,
                 valueOf = { it.comment },
+                isSortable = false,
                 onChangeItem = { item, newValue ->
                     onChangeItem(item.copy(comment = newValue))
                 }

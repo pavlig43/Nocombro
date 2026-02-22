@@ -1,14 +1,13 @@
 @file:Suppress("MatchingDeclarationName")
 package ru.pavlig43.immutable.internal.component.items.product
 
-import androidx.compose.material3.Text
-import androidx.compose.ui.Alignment
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
-import kotlinx.datetime.format
-import ru.pavlig43.core.dateFormat
 import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.immutable.internal.column.idWithSelection
+import ru.pavlig43.immutable.internal.column.readDateColumn
+import ru.pavlig43.immutable.internal.column.readEnumColumn
+import ru.pavlig43.immutable.internal.column.readTextColumn
 import ru.pavlig43.immutable.internal.component.ImmutableTableUiEvent
 import ru.pavlig43.tablecore.model.TableData
 import ua.wwind.table.ColumnSpec
@@ -38,40 +37,37 @@ internal fun createProductColumn(
                 onEvent = onEvent
             )
 
-            column(ProductField.NAME, valueOf = { it.displayName }) {
-                header("Название")
-                align(Alignment.Center)
-                filter(TableFilterType.TextTableFilter())
-                cell { document, _ -> Text(document.displayName) }
-                sortable()
-            }
-            column(ProductField.TYPE, valueOf = { it.type }) {
-                header("Тип")
-                align(Alignment.Center)
-                filter(
-                    TableFilterType.EnumTableFilter(
-                        ProductType.entries.toImmutableList(),
-                        getTitle = { it.displayName })
-                )
-                cell { item, _ -> Text(item.type.displayName) }
-            }
-            column(ProductField.CREATED_AT, valueOf = { it.createdAt }) {
-                header("Создан")
-                align(Alignment.Center)
-                filter(TableFilterType.DateTableFilter())
-                cell { document, _ ->
-                    Text(
-                        document.createdAt.format(dateFormat)
-                    )
-                }
-                sortable()
-            }
-            column(ProductField.COMMENT, valueOf = { it.comment }) {
-                header("Комментарий")
-                align(Alignment.Center)
-                filter(TableFilterType.TextTableFilter())
-                cell { document, _ -> Text(document.comment) }
-            }
+            readTextColumn(
+                headerText = "Название",
+                column = ProductField.NAME,
+                valueOf = { it.displayName },
+                filterType = TableFilterType.TextTableFilter()
+            )
+
+            readEnumColumn(
+                headerText = "Тип",
+                column = ProductField.TYPE,
+                valueOf = { it.type },
+                filterType = TableFilterType.EnumTableFilter(
+                    ProductType.entries.toImmutableList(),
+                    getTitle = { it.displayName }
+                ),
+                getTitle = { it.displayName }
+            )
+
+            readDateColumn(
+                headerText = "Создан",
+                column = ProductField.CREATED_AT,
+                valueOf = { it.createdAt },
+                filterType = TableFilterType.DateTableFilter()
+            )
+
+            readTextColumn(
+                headerText = "Комментарий",
+                column = ProductField.COMMENT,
+                valueOf = { it.comment },
+                filterType = TableFilterType.TextTableFilter()
+            )
         }
     return columns
 

@@ -20,7 +20,6 @@ import ru.pavlig43.update.component.getDefaultUpdateComponent
 internal class DeclarationFormTabsComponent(
     componentContext: ComponentContext,
     componentFactory: SingleLineComponentFactory<Declaration, DeclarationEssentialsUi>,
-    closeFormScreen: () -> Unit,
     scope: Scope,
     declarationId: Int,
     observeOnDeclaration: (DeclarationEssentialsUi) -> Unit,
@@ -66,6 +65,6 @@ internal class DeclarationFormTabsComponent(
             },
         )
 
-    override val updateComponent = getDefaultUpdateComponent(componentContext, closeFormScreen)
+    override val updateComponent = getDefaultUpdateComponent(componentContext)
 
 }

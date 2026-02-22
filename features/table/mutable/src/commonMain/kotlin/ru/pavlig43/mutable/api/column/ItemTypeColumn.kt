@@ -39,10 +39,12 @@ fun <T : Any, C, E, Type : ItemType> EditableTableColumnsBuilder<T, C, E>.writeI
     options: List<Type>,
     onTypeSelected: (T, Type) -> Unit,
     filterType: TableFilterType<*>? = null,
+    isSortable: Boolean = true,
     alignment: Alignment = Alignment.Center
 ) {
     column(column, valueOf = valueOf) {
         header(headerText)
+        autoWidth(900.dp)
         align(alignment)
         filterType?.let {
             filter(it)
@@ -52,25 +54,31 @@ fun <T : Any, C, E, Type : ItemType> EditableTableColumnsBuilder<T, C, E>.writeI
             options = options,
             onTypeSelected = onTypeSelected
         )
-        sortable()
+        if (isSortable) {
+            sortable()
+        }
     }
 }
-
+@Suppress("LongParameterList")
 fun <T : Any, C, E, Type : ItemType> EditableTableColumnsBuilder<T, C, E>.readItemTypeColumn(
     headerText: String,
     column: C,
     valueOf: (T) -> Type?,
     filterType: TableFilterType<*>? = null,
+    isSortable: Boolean = true,
     alignment: Alignment = Alignment.Center
 ) {
     column(column, valueOf = valueOf) {
+        autoWidth(300.dp)
         header(headerText)
         align(alignment)
         filterType?.let {
             filter(it)
         }
         readItemTypeCell(valueOf = valueOf)
-        sortable()
+        if (isSortable) {
+            sortable()
+        }
     }
 }
 
@@ -102,7 +110,7 @@ fun <Type : ItemType> ReadItemType(currentType: Type?) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp),
-        modifier = Modifier.padding(12.dp)
+        modifier = Modifier.padding(horizontal = 12.dp)
     ) {
         Icon(
             painter = painterResource(Res.drawable.lock),
@@ -137,7 +145,7 @@ fun <Type : ItemType> WriteItemType(
                 .background(
                     color = MaterialTheme.colorScheme.surfaceVariant
                 )
-                .padding(horizontal = 12.dp, vertical = 8.dp)
+                .padding(horizontal = 12.dp)
         ) {
             Text(
                 text = text,

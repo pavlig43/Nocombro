@@ -27,7 +27,6 @@ import ru.pavlig43.transaction.internal.update.TransactionFormTabsComponent
 
 class TransactionFormComponent(
     transactionId: Int,
-    val closeTab: () -> Unit,
     private val tabOpener: TabOpener,
     componentContext: ComponentContext,
     dependencies: TransactionFormDependencies,
@@ -81,7 +80,6 @@ class TransactionFormComponent(
                     componentContext = componentContext,
                     scope = scope,
                     transactionId = config.id,
-                    closeFormScreen = closeTab,
                     componentFactory = componentFactory,
                     tabOpener = tabOpener,
                     observeOnItem = ::onChangeValueForMainTab

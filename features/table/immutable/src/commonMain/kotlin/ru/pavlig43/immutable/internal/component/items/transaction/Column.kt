@@ -1,19 +1,21 @@
-
 @file:Suppress("MatchingDeclarationName")
 package ru.pavlig43.immutable.internal.component.items.transaction
 
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
-import kotlinx.datetime.format
 import org.jetbrains.compose.resources.painterResource
-import ru.pavlig43.core.dateTimeFormat
 import ru.pavlig43.database.data.transact.TransactionType
 import ru.pavlig43.immutable.internal.column.idWithSelection
+import ru.pavlig43.immutable.internal.column.readDateTimeColumn
+import ru.pavlig43.immutable.internal.column.readEnumColumn
+import ru.pavlig43.immutable.internal.column.readTextColumn
 import ru.pavlig43.immutable.internal.component.ImmutableTableUiEvent
 import ru.pavlig43.tablecore.model.TableData
 import ru.pavlig43.theme.Res
@@ -48,48 +50,50 @@ internal fun createTransactionColumn(
                 idKey = TransactionField.ID,
                 onEvent = onEvent
             )
+
+            // Custom column for isCompleted with icon
             column(TransactionField.IS_COMPLETED, valueOf = { it.isCompleted }) {
                 header("V")
                 align(Alignment.Center)
-                cell { transaction, _ -> Icon(
-                    painter = painterResource(if (transaction.isCompleted) Res.drawable.check else Res.drawable.close),
-                    contentDescription = null,
-                    tint = if (transaction.isCompleted) Color.Green else Color.Red
-
-
-                ) }
-                autoWidth(max = 500.dp)
-
-            }
-
-
-            column(TransactionField.TRANSACTION_TYPE, valueOf = { it.transactionType }) {
-                header("Тип")
-                align(Alignment.Center)
-                filter(
-                    TableFilterType.EnumTableFilter(
-                        listTypeForFilter.toImmutableList(),
-                        getTitle = { it.displayName })
-                )
-                cell { transaction, _ -> Text(transaction.transactionType.displayName) }
-            }
-            column(TransactionField.CREATED_AT, valueOf = { it.createdAt }) {
-                header("Создан")
-                align(Alignment.Center)
-                filter(TableFilterType.DateTableFilter())
                 cell { transaction, _ ->
-                    Text(
-                        transaction.createdAt.format(dateTimeFormat)
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            painter = painterResource(if (transaction.isCompleted) Res.drawable.check else Res.drawable.close),
+                            contentDescription = null,
+                            tint = if (transaction.isCompleted) Color.Green else Color.Red,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
                 }
-                sortable()
+                autoWidth(max = 500.dp)
             }
-            column(TransactionField.COMMENT, valueOf = { it.comment }) {
-                header("Комментарий")
-                align(Alignment.Center)
-                filter(TableFilterType.TextTableFilter())
-                cell { transaction, _ -> Text(transaction.comment) }
-            }
+
+            readEnumColumn(
+                headerText = "Тип",
+                column = TransactionField.TRANSACTION_TYPE,
+                valueOf = { it.transactionType },
+                filterType = TableFilterType.EnumTableFilter(
+                    listTypeForFilter.toImmutableList(),
+                    getTitle = { it.displayName }
+                ),
+                getTitle = { it.displayName }
+            )
+
+            readDateTimeColumn(
+                headerText = "Создан",
+                column = TransactionField.CREATED_AT,
+                valueOf = { it.createdAt },
+                filterType = TableFilterType.DateTableFilter()
+            )
+
+            readTextColumn(
+                headerText = "Комментарий",
+                column = TransactionField.COMMENT,
+                valueOf = { it.comment },
+                filterType = TableFilterType.TextTableFilter()
+            )
         }
     return columns
 

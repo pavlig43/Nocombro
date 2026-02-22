@@ -28,7 +28,6 @@ import ru.pavlig43.update.component.getDefaultUpdateComponent
 internal class ProductFormTabsComponent(
     componentContext: ComponentContext,
     componentFactory: SingleLineComponentFactory<Product, ProductEssentialsUi>,
-    closeFormScreen: () -> Unit,
     tabOpener: TabOpener,
     scope: Scope,
     productId: Int,
@@ -102,5 +101,5 @@ internal class ProductFormTabsComponent(
         }
     }
 
-    override val updateComponent = getDefaultUpdateComponent(componentContext, closeFormScreen)
+    override val updateComponent = getDefaultUpdateComponent(componentContext)
 }

@@ -60,7 +60,7 @@ internal fun createCompositionColumn(
                 key = CompositionField.COUNT,
                 getValue = { it.count },
                 headerText = "Количество",
-                decimalFormat = DecimalFormat.KG(),
+                decimalFormat = DecimalFormat.Decimal3(),
                 updateItem = { item, count -> onEvent(MutableUiEvent.UpdateItem(item.copy(count = count))) },
 
             )

@@ -58,7 +58,7 @@ fun <I : IMultiLineTableUi, C, E : TableData<I>> TableBox(
     showFooter = false,
     enableTextSelection = false,
     selectionMode = SelectionMode.Multiple,
-    pinnedColumnsCount = 3
+    pinnedColumnsCount = 0
     )
 
     val state = rememberTableState(

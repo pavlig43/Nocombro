@@ -1,7 +1,6 @@
 package ru.pavlig43.immutable.internal.column
 
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -24,6 +23,7 @@ internal fun <T : Any, C, E> ReadonlyTableColumnsBuilder<T, C, E>.readIsActualCo
     alignment: Alignment = Alignment.Center
 ) {
     column(column, valueOf = valueOf) {
+        autoWidth(300.dp)
         header(headerText)
         align(alignment)
         filterType?.let {
@@ -47,7 +47,6 @@ private fun <T : Any, C, E> ReadonlyColumnBuilder<T, C, E>.readIsActualCell(
                 contentDescription = null,
                 tint = if (isActual) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
                 modifier = Modifier
-                    .padding(12.dp)
                     .size(24.dp)
             )
         }

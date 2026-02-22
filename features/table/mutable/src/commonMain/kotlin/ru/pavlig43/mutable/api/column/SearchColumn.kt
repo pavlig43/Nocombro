@@ -34,9 +34,11 @@ fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.textWithSearchIconColum
     valueOf: (T) -> String,
     onOpenDialog: (T) -> Unit,
     filterType: TableFilterType.TextTableFilter? = null,
+    isSortable: Boolean = true,
     alignment: Alignment = Alignment.Center
 ) {
     column(column, valueOf = valueOf) {
+        autoWidth(300.dp)
         header(headerText)
         align(alignment)
         filterType?.let {
@@ -46,7 +48,9 @@ fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.textWithSearchIconColum
             valueOf = valueOf,
             onOpenDialog = onOpenDialog
         )
-        sortable()
+        if (isSortable) {
+            sortable()
+        }
     }
 }
 
@@ -70,7 +74,7 @@ private fun NameRowWithSearchIcon(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Text(text, Modifier.weight(1f).padding(start = 4.dp))
+        Text(text, Modifier.weight(1f).padding(horizontal = 4.dp))
         ToolTipIconButton(
             tooltipText = "Выбрать",
             onClick = onOpenChooseDialog,

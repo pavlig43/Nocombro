@@ -63,12 +63,10 @@ interface IItemFormTabsComponent<TabConfiguration : Any, TabChild : FormTabChild
     }
 }
 fun IItemFormTabsComponent<*,*>.getDefaultUpdateComponent(
-    componentContext: ComponentContext,
-    closeFormScreen:()-> Unit): UpdateComponent {
+    componentContext: ComponentContext): UpdateComponent {
     return UpdateComponent(
         componentContext = componentContext.childContext("update"),
         onUpdateAllTabs = { update() },
-        errorMessages = getErrors(componentContext.lifecycle),
-        closeFormScreen = closeFormScreen
+        errorMessages = getErrors(componentContext.lifecycle)
     )
 }

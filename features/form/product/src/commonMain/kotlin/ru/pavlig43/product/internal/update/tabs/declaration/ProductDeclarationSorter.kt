@@ -1,5 +1,6 @@
 package ru.pavlig43.product.internal.update.tabs.declaration
 
+import ru.pavlig43.product.internal.update.tabs.declaration.ProductDeclarationSorter.sort
 import ru.pavlig43.tablecore.utils.SortMatcher
 import ua.wwind.table.data.SortOrder
 import ua.wwind.table.state.SortState

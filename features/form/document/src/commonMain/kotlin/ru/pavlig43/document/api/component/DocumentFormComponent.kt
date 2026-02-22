@@ -26,7 +26,6 @@ import ru.pavlig43.mutable.api.singleLine.component.SingleLineComponentFactory
 
 class DocumentFormComponent(
     documentId: Int,
-    val closeTab: () -> Unit,
     componentContext: ComponentContext,
     dependencies: DocumentFormDependencies,
 ) : ComponentContext by componentContext, MainTabComponent {
@@ -81,7 +80,6 @@ class DocumentFormComponent(
                     componentContext = componentContext,
                     scope = scope,
                     documentId = config.id,
-                    closeFormScreen = closeTab,
                     componentFactory = essentialsComponentFactory,
                     observeOnDocument = ::onChangeValueForMainTab
                 )

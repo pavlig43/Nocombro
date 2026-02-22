@@ -3,7 +3,6 @@ package ru.pavlig43.transaction.internal.update
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.koin.core.qualifier.qualifier
@@ -16,9 +15,12 @@ import ru.pavlig43.database.data.transact.Transact
 import ru.pavlig43.database.data.transact.TransactionType
 import ru.pavlig43.mutable.api.singleLine.component.SingleLineComponentFactory
 import ru.pavlig43.transaction.internal.di.UpdateCollectionRepositoryType
+import ru.pavlig43.transaction.internal.di.UpdateSingleLineRepositoryType
 import ru.pavlig43.transaction.internal.model.TransactionEssentialsUi
 import ru.pavlig43.transaction.internal.update.tabs.component.buy.BuyComponent
 import ru.pavlig43.transaction.internal.update.tabs.component.expenses.ExpensesComponent
+import ru.pavlig43.transaction.internal.update.tabs.component.opzs.ingredients.IngredientComponent
+import ru.pavlig43.transaction.internal.update.tabs.component.opzs.pf.PfComponent
 import ru.pavlig43.transaction.internal.update.tabs.component.reminders.RemindersComponent
 import ru.pavlig43.transaction.internal.update.tabs.essential.TransactionUpdateSingleLineComponent
 import ru.pavlig43.update.component.IItemFormTabsComponent
@@ -29,7 +31,6 @@ import ru.pavlig43.update.component.getDefaultUpdateComponent
 internal class TransactionFormTabsComponent(
     componentContext: ComponentContext,
     componentFactory: SingleLineComponentFactory<Transact, TransactionEssentialsUi>,
-    closeFormScreen: () -> Unit,
     scope: Scope,
     transactionId: Int,
     private val observeOnItem: (TransactionEssentialsUi) -> Unit,
@@ -49,8 +50,16 @@ internal class TransactionFormTabsComponent(
     private fun onSuccessInitTransaction(transaction: TransactionEssentialsUi) {
         observeOnTransaction(transaction)
         coroutineScope.launch {
-            if (transaction.transactionType == TransactionType.BUY) {
-                tabNavigationComponent.addTab(TransactionTab.Buy)
+            when(transaction.transactionType){
+                TransactionType.BUY -> tabNavigationComponent.addTab(TransactionTab.Buy)
+                TransactionType.SALE -> TODO()
+                TransactionType.OPZS -> {
+                    tabNavigationComponent.addTab(TransactionTab.Pf)
+                    tabNavigationComponent.addTab(TransactionTab.Ingredients)
+                }
+                TransactionType.WRITE_OFF -> TODO()
+                TransactionType.INVENTORY -> TODO()
+                null -> throw IllegalArgumentException("Transaction type is null")
             }
             tabNavigationComponent.onSelectTab(0)
         }
@@ -71,7 +80,7 @@ internal class TransactionFormTabsComponent(
                         TransactionUpdateSingleLineComponent(
                             componentContext = context,
                             transactionId = transactionId,
-                            updateRepository = scope.get(),
+                            updateRepository = scope.get(UpdateSingleLineRepositoryType.TRANSACTION.qualifier),
                             componentFactory = componentFactory,
                             observeOnItem = ::observeOnTransaction,
                             onSuccessInitData = ::onSuccessInitTransaction
@@ -100,14 +109,39 @@ internal class TransactionFormTabsComponent(
                         ExpensesComponent(
                             componentContext = context,
                             transactionId = transactionId,
+                            getTransactionDateTime = {essentialsFields.value.createdAt},
                             repository = scope.get(UpdateCollectionRepositoryType.EXPENSES.qualifier),
-                            transactionDateTimeFlow = essentialsFields.map { it.createdAt },
                         )
                     )
+
+                    TransactionTab.Pf -> {
+                        TransactionTabChild.Pf(
+                            PfComponent(
+                                componentContext = context,
+                                transactionId = transactionId,
+                                updateSingleLineRepository = scope.get(UpdateSingleLineRepositoryType.PF.qualifier),
+                                tabOpener = tabOpener,
+                                getDateBorn = {essentialsFields.value.createdAt.date},
+                                immutableTableDependencies = scope.get()
+                            )
+                        )
+                    }
+
+                    TransactionTab.Ingredients -> {
+                        TransactionTabChild.Ingredients(
+                            IngredientComponent(
+                                componentComponent = context,
+                                transactionId = transactionId,
+                                repository = scope.get(UpdateCollectionRepositoryType.INGREDIENTS.qualifier),
+                                tabOpener = tabOpener,
+                                immutableTableDependencies = scope.get()
+                            )
+                        )
+                    }
                 }
             }
         )
 
     override val updateComponent: UpdateComponent =
-        getDefaultUpdateComponent(componentContext, closeFormScreen)
+        getDefaultUpdateComponent(componentContext)
 }

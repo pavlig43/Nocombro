@@ -18,10 +18,12 @@ fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.writeTextColumn(
     valueOf: (T) -> String,
     onChangeItem: (T, String) -> Unit,
     filterType: TableFilterType.TextTableFilter? = null,
+    isSortable: Boolean = true,
     singleLine: Boolean = true,
     alignment: Alignment = Alignment.CenterStart
 ) {
     column(column, valueOf = valueOf) {
+        autoWidth()
         header(headerText)
         align(alignment)
         filterType?.let {
@@ -32,25 +34,31 @@ fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.writeTextColumn(
             singleLine = singleLine,
             onValueChange = onChangeItem
         )
-        sortable()
+        if (isSortable) {
+            sortable()
+        }
     }
 }
-
+@Suppress("LongParameterList")
 fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.readTextColumn(
     headerText: String,
     column: C,
     valueOf: (T) -> String,
     filterType: TableFilterType<*>? = null,
+    isSortable: Boolean = true,
     alignment: Alignment = Alignment.CenterStart
 ) {
     column(column, valueOf = valueOf) {
+        autoWidth(300.dp)
         header(headerText)
         align(alignment)
         filterType?.let {
             filter(it)
         }
         readTextCell(valueOf = valueOf)
-        sortable()
+        if (isSortable) {
+            sortable()
+        }
     }
 }
 
@@ -70,7 +78,7 @@ private fun <T : Any, C, E> EditableColumnBuilder<T, C, E>.writeTextCell(
     cell { item, _ ->
         Text(
             text = valueOf(item),
-            modifier = Modifier.padding(12.dp)
+            modifier = Modifier.padding(horizontal = 12.dp)
         )
     }
 

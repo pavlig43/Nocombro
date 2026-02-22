@@ -22,7 +22,7 @@ internal fun LockText(
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp),
-        modifier = modifier.padding(12.dp)
+        modifier = modifier.padding(horizontal = 12.dp)
     ) {
         Icon(
             painter = painterResource(Res.drawable.lock),

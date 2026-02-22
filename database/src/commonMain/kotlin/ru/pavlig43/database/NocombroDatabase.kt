@@ -35,6 +35,8 @@ import ru.pavlig43.database.data.transact.Transact
 import ru.pavlig43.database.data.transact.buy.BuyBDIn
 import ru.pavlig43.database.data.transact.buy.dao.BuyDao
 import ru.pavlig43.database.data.transact.dao.TransactionDao
+import ru.pavlig43.database.data.transact.ingredient.dao.IngredientDao
+import ru.pavlig43.database.data.transact.pf.dao.PfDao
 import ru.pavlig43.database.data.transact.reminder.ReminderBD
 import ru.pavlig43.database.data.transact.reminder.dao.ReminderDao
 import ru.pavlig43.database.data.vendor.Vendor
@@ -65,6 +67,7 @@ import ru.pavlig43.database.data.vendor.dao.VendorDao
         ReminderBD::class,
 
         ExpenseBD::class,
+
     ],
     version = 1,
 
@@ -92,6 +95,8 @@ abstract class NocombroDatabase : RoomDatabase() {
     abstract val buyDao: BuyDao
     abstract val reminderDao: ReminderDao
     abstract val expenseDao: ExpenseDao
+    abstract val pfDao: PfDao
+    abstract val ingredientDao: IngredientDao
 }
 
 

@@ -24,6 +24,7 @@ internal fun createVendorColumns0(
                 headerText = "Название поставщика",
                 column = VendorField.DISPLAY_NAME,
                 valueOf = { it.displayName },
+                isSortable = false,
                 onChangeItem = { item, newValue ->
                     onChangeItem(item.copy(displayName = newValue))
                 },
@@ -34,6 +35,7 @@ internal fun createVendorColumns0(
                 headerText = "Комментарий",
                 column = VendorField.COMMENT,
                 valueOf = { it.comment },
+                isSortable = false,
                 onChangeItem = { item, newValue ->
                     onChangeItem(item.copy(comment = newValue))
                 }

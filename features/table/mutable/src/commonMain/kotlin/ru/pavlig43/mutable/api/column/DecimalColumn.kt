@@ -1,5 +1,6 @@
 package ru.pavlig43.mutable.api.column
 
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -8,7 +9,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import ru.pavlig43.tablecore.model.IMultiLineTableUi
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import ua.wwind.table.EditableColumnBuilder
 import ua.wwind.table.EditableTableColumnsBuilder
 import ua.wwind.table.component.TableCellTextFieldWithTooltipError
@@ -17,17 +19,19 @@ import kotlin.math.pow
 
 
 @Suppress("LongParameterList")
-fun <T : IMultiLineTableUi, C, E> EditableTableColumnsBuilder<T, C, E>.decimalColumn(
+fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.decimalColumn(
     key: C,
     getValue: (T) -> Int,
     headerText: String,
     decimalFormat: DecimalFormat,
     updateItem: (T, Int) -> Unit,
+    isSortable: Boolean = true,
     footerValue: ((E) -> Int)? = null
 ) {
     column(key, valueOf = { getValue(it) }) {
+        autoWidth(300.dp)
         header(headerText)
-        align(Alignment.Center)
+        align(Alignment.CenterStart)
         filter(
             TableFilterType.NumberTableFilter(
                 delegate = TableFilterType.NumberTableFilter.IntDelegate,
@@ -41,24 +45,64 @@ fun <T : IMultiLineTableUi, C, E> EditableTableColumnsBuilder<T, C, E>.decimalCo
         footerValue?.let { accumulateFunction ->
             footer { tableData ->
                 val accumValue = accumulateFunction(tableData)
-                Text(accumValue.toStartDoubleFormat(decimalFormat))
+                Text(
+                    text = accumValue.toStartDoubleFormat(decimalFormat),
+                    modifier = Modifier.padding(horizontal = 8.dp)
+                )
             }
         }
-        sortable()
+        if (isSortable) {
+            sortable()
+        }
     }
 }
 
-fun <T : IMultiLineTableUi, C, E> EditableTableColumnsBuilder<T, C, E>.readDecimalColumn(
+fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.readDecimalColumn(
     key: C,
     getValue: (T) -> Int,
     headerText: String,
     decimalFormat: DecimalFormat,
+    isSortable: Boolean = true
 ) {
     column(key, valueOf = { getValue(it) }) {
+        autoWidth(300.dp)
         header(headerText)
-        align(Alignment.Center)
+        align(Alignment.CenterStart)
         readNumberCell(format = decimalFormat, getCount = { getValue(it) })
-        sortable()
+        if (isSortable) {
+            sortable()
+        }
+    }
+}
+@Suppress("LongParameterList")
+fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.readDecimalColumnWithFooter(
+    key: C,
+    getValue: (T) -> Int,
+    headerText: String,
+    decimalFormat: DecimalFormat,
+    footerValue: (E) -> Int,
+    isSortable: Boolean = true
+) {
+    column(key, valueOf = { getValue(it) }) {
+        autoWidth(300.dp)
+        header(headerText)
+        align(Alignment.CenterStart)
+        filter(
+            TableFilterType.NumberTableFilter(
+                delegate = TableFilterType.NumberTableFilter.IntDelegate,
+            )
+        )
+        readNumberCell(format = decimalFormat, getCount = { getValue(it) })
+        footer { tableData ->
+            val accumValue = footerValue(tableData)
+            Text(
+                text = accumValue.toStartDoubleFormat(decimalFormat),
+                modifier = Modifier.padding(horizontal = 8.dp)
+            )
+        }
+        if (isSortable) {
+            sortable()
+        }
     }
 }
 
@@ -66,32 +110,40 @@ sealed interface DecimalFormat {
     val countDecimal: Int
 
     @Suppress("MagicNumber")
-    class KG : DecimalFormat {
+    class Decimal3 : DecimalFormat {
         override val countDecimal: Int = 3
     }
 
-    class RUB : DecimalFormat {
+    class Decimal2 : DecimalFormat {
         override val countDecimal: Int = 2
     }
 }
 
-private fun <T : IMultiLineTableUi, C, E> EditableColumnBuilder<T, C, E>.readNumberCell(
+private fun <T : Any, C, E> EditableColumnBuilder<T, C, E>.readNumberCell(
     format: DecimalFormat,
     getCount: (T) -> Int,
 ) {
     cell { item, _ ->
-        LockText(text = getCount(item).toStartDoubleFormat(format))
+        LockText(
+            text = getCount(item).toStartDoubleFormat(format),
+            modifier = Modifier.padding(horizontal = 8.dp)
+        )
     }
 }
 
-private fun <T : IMultiLineTableUi, C, E> EditableColumnBuilder<T, C, E>.cellForDecimalFormat(
+private fun <T : Any, C, E> EditableColumnBuilder<T, C, E>.cellForDecimalFormat(
     format: DecimalFormat,
     getCount: (T) -> Int,
     saveInModel: (T, Int) -> Unit,
 
     ) {
     // Для отображения значения, когда оно не редактируется
-    cell { item, _ -> Text(getCount(item).toStartDoubleFormat(format)) }
+    cell { item, _ ->
+        Text(
+            text = getCount(item).toStartDoubleFormat(format),
+            modifier = Modifier.padding(horizontal = 8.dp)
+        )
+    }
 
     editCell { item: T, tableData: E, onComplete: () -> Unit ->
 

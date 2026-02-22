@@ -4,6 +4,7 @@ import kotlinx.datetime.LocalDate
 import ru.pavlig43.core.getCurrentLocalDate
 import ru.pavlig43.tablecore.model.IMultiLineTableUi
 
+@Suppress("MagicNumber")
 data class BuyUi(
     override val composeId: Int,
     val id: Int,
@@ -18,4 +19,7 @@ data class BuyUi(
     val comment: String = "",
     val batchId: Int = 0,
     val movementId: Int = 0
-) : IMultiLineTableUi
+) : IMultiLineTableUi {
+    val sum: Int
+        get() = (count.toLong() * price / 1000).toInt()
+}
