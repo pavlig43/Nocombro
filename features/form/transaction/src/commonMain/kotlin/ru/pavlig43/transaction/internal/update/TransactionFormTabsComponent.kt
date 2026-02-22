@@ -45,6 +45,8 @@ internal class TransactionFormTabsComponent(
         MutableStateFlow<TransactionEssentialsUi>(componentFactory.initItem)
     private val pfFlow = MutableStateFlow(PfUi())
 
+
+
     private fun observeOnTransaction(transaction: TransactionEssentialsUi) {
         observeOnItem(transaction)
         essentialsFields.update { transaction }
@@ -128,8 +130,10 @@ internal class TransactionFormTabsComponent(
                                 ),
                                 tabOpener = tabOpener,
                                 getDateBorn = { essentialsFields.value.createdAt.date },
-                                observeOnItem = { pfFlow.update { it } },
-                                onSuccessInitData = { pfFlow.update { it } },
+                                observeOnItem = {newPf-> pfFlow.update { newPf } },
+                                onSuccessInitData = { newPf: PfUi ->
+                                    pfFlow.update { newPf }
+                                },
                                 immutableTableDependencies = scope.get()
                             )
                         )
@@ -143,7 +147,8 @@ internal class TransactionFormTabsComponent(
                                 repository = scope.get(UpdateCollectionRepositoryType.INGREDIENTS.qualifier),
                                 tabOpener = tabOpener,
                                 pfFlow = pfFlow,
-                                immutableTableDependencies = scope.get()
+                                immutableTableDependencies = scope.get(),
+                                fillIngredientsRepository = scope.get()
                             )
                         )
                     }

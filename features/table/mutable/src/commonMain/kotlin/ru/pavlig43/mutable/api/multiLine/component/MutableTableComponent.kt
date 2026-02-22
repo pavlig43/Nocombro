@@ -27,18 +27,17 @@ import ua.wwind.table.filter.data.TableFilterState
 import ua.wwind.table.state.SortState
 
 
-abstract class MutableTableComponent<BDOut: CollectionObject,BDIn:CollectionObject, UI : IMultiLineTableUi, C>(
+abstract class MutableTableComponent<BDOut : CollectionObject, BDIn : CollectionObject, UI : IMultiLineTableUi, C>(
     componentContext: ComponentContext,
     parentId: Int,
     override val title: String,
     sortMatcher: SortMatcher<UI, C>,
     filterMatcher: FilterMatcher<UI, C>,
-    private  val repository: UpdateCollectionRepository<BDOut, BDIn>
+    private val repository: UpdateCollectionRepository<BDOut, BDIn>
 
-    ) : ComponentContext by componentContext, FormTabComponent {
+) : ComponentContext by componentContext, FormTabComponent {
 
     protected val coroutineScope = componentCoroutineScope()
-
 
 
     abstract val columns: ImmutableList<ColumnSpec<UI, C, TableData<UI>>>
@@ -48,9 +47,6 @@ abstract class MutableTableComponent<BDOut: CollectionObject,BDIn:CollectionObje
     protected abstract fun UI.toBDIn(): BDIn
     private val _itemList = MutableStateFlow<List<UI>>(emptyList())
     val itemList = _itemList.asStateFlow()
-
-
-
 
 
     val initDataComponent = LoadInitDataComponent<List<UI>>(
@@ -76,7 +72,7 @@ abstract class MutableTableComponent<BDOut: CollectionObject,BDIn:CollectionObje
         selectionManager.selectedIdsFlow,
         filterManager.filters,
         sortManager.sort,
-    ) { fields, selectedIds, filters, sort, ->
+    ) { fields, selectedIds, filters, sort ->
         val filtered = fields.filter { ui ->
             filterMatcher.matchesItem(ui, filters)
         }
@@ -101,19 +97,43 @@ abstract class MutableTableComponent<BDOut: CollectionObject,BDIn:CollectionObje
         sortManager.update(sort)
     }
 
+    suspend fun loadItemsOutside(
+        getData: suspend () -> Result<List<BDOut>>,
+        handleError: (Throwable) -> Unit
+    ) {
+
+        getData().map { lst ->
+            lst.mapIndexed { index, bd -> bd.toUi(index) }
+        }.fold(
+            onSuccess = {newData->
+                _itemList.update { newData }
+                selectionManager.clearSelected()
+                filterManager.clearFilters()
+                sortManager.clearSort()
+            },
+            onFailure = { handleError(it) }
+        )
+
+
+    }
+
     @Suppress("UNCHECKED_CAST")
     fun onEvent(event: MutableUiEvent) {
         when (event) {
             is MutableUiEvent.DeleteSelected -> {
                 _itemList.update { lst ->
 
-                    val updatedList = lst - lst.filter { it.composeId in selectionManager.selectedIds }.toSet()
+                    val updatedList =
+                        lst - lst.filter { it.composeId in selectionManager.selectedIds }.toSet()
                     selectionManager.clearSelected()
                     updatedList
                 }
             }
 
-            is MutableUiEvent.Selection -> {selectionManager.onEvent(event.selectionUiEvent)}
+            is MutableUiEvent.Selection -> {
+                selectionManager.onEvent(event.selectionUiEvent)
+            }
+
             is MutableUiEvent.UpdateItem -> {
                 _itemList.update { lst ->
                     lst.map { ui ->
@@ -135,6 +155,7 @@ abstract class MutableTableComponent<BDOut: CollectionObject,BDIn:CollectionObje
         }
 
     }
+
     override suspend fun onUpdate(): Result<Unit> {
         val old = initDataComponent.firstData.value?.map { it.toBDIn() }
         val new = _itemList.value.map { it.toBDIn() }

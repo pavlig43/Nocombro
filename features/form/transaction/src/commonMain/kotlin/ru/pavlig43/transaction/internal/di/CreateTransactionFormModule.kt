@@ -1,5 +1,6 @@
 package ru.pavlig43.transaction.internal.di
 
+import org.koin.core.module.dsl.singleOf
 import org.koin.core.qualifier.qualifier
 import org.koin.dsl.module
 import ru.pavlig43.core.TransactionExecutor
@@ -22,6 +23,7 @@ import ru.pavlig43.mutable.api.multiLine.data.UpdateCollectionRepository
 import ru.pavlig43.mutable.api.singleLine.data.CreateSingleItemRepository
 import ru.pavlig43.mutable.api.singleLine.data.UpdateSingleLineRepository
 import ru.pavlig43.transaction.api.TransactionFormDependencies
+import ru.pavlig43.transaction.internal.update.tabs.component.opzs.ingredients.FillIngredientsRepository
 
 internal fun createTransactionFormModule(dependencies: TransactionFormDependencies) = listOf(
     module {
@@ -44,6 +46,7 @@ internal fun createTransactionFormModule(dependencies: TransactionFormDependenci
             IngredientsCollectionRepository(get())
         }
         single<UpdateSingleLineRepository<PfBD>>(UpdateSingleLineRepositoryType.PF.qualifier) { PfUpdateRepository(get()) }
+        singleOf(::FillIngredientsRepository)
     }
 )
 

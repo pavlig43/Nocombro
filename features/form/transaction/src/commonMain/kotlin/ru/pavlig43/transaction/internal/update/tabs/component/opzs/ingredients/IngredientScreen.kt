@@ -57,11 +57,13 @@ internal fun IngredientScreen(
     )
     val dialog by component.dialog.subscribeAsState()
     val enabledFillButton by component.enabledFillButton.collectAsState()
+    val loadCompositionState by component.loadCompositionState.collectAsState()
 
     Column {
         FillButton(
             enabled = enabledFillButton,
-            onClick = { /* TODO: реализовать заполнение из ПФ */ })
+            onClick = component::fillFromPf
+        )
 
         MutableTableBox(
             component = component,

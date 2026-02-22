@@ -13,6 +13,10 @@ class SortManager<Column>(
     private val _sort = MutableStateFlow<SortState<Column>?>(null)
     val sort: StateFlow<SortState<Column>?> = _sort.asStateFlow()
 
+    fun clearSort() {
+        _sort.update { null }
+    }
+
     fun update(sort: SortState<Column>?) {
         _sort.update { sort }
     }

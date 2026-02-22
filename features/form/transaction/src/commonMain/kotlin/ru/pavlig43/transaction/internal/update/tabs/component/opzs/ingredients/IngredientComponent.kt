@@ -6,12 +6,17 @@ import com.arkivanov.decompose.router.slot.activate
 import com.arkivanov.decompose.router.slot.childSlot
 import com.arkivanov.decompose.router.slot.dismiss
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.SharingStarted.Companion.Eagerly
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import ru.pavlig43.core.tabs.TabOpener
 import ru.pavlig43.database.data.product.ProductType
@@ -37,6 +42,7 @@ internal class IngredientComponent(
     private val pfFlow: StateFlow<PfUi>,
     private val immutableTableDependencies: ImmutableTableDependencies,
     repository: UpdateCollectionRepository<IngredientBD, IngredientBD>,
+    private val fillIngredientsRepository: FillIngredientsRepository,
 ) : MutableTableComponent<IngredientBD, IngredientBD, IngredientUi, IngredientField>(
     componentContext = componentComponent,
     parentId = transactionId,
@@ -45,7 +51,37 @@ internal class IngredientComponent(
     filterMatcher = IngredientFilterMatcher,
     repository = repository
 ) {
+    private val _loadCompositionState =
+        MutableStateFlow<LoadCompositionState>(LoadCompositionState.Success)
+    val loadCompositionState = _loadCompositionState.asStateFlow()
     private val dialogNavigation = SlotNavigation<IngredientDialog>()
+
+
+    fun fillFromPf() {
+        val pf = pfFlow.value
+        if (pf.productId == 0) return
+        _loadCompositionState.update { LoadCompositionState.Loading }
+        coroutineScope.launch(Dispatchers.IO) {
+            loadItemsOutside(
+                getData = {
+                    fillIngredientsRepository.getIngredientsFromComposition(
+                        productId = pf.productId,
+                        transactionId = transactionId,
+                        countPf = pf.count
+                    )
+                },
+                handleError = { t ->
+                    _loadCompositionState.update {
+                        LoadCompositionState.Error(
+                            t.message ?: "unknown"
+                        )
+                    }
+                }
+            )
+        }
+
+
+    }
 
     internal val dialog = childSlot(
         source = dialogNavigation,
@@ -54,6 +90,7 @@ internal class IngredientComponent(
         handleBackButton = true,
         childFactory = ::createDialogChild
     )
+
     val enabledFillButton: StateFlow<Boolean> = pfFlow.map {
         it.productId != 0
     }.stateIn(
@@ -130,7 +167,7 @@ internal class IngredientComponent(
             onOpenBatchDialog = { composeId, productId ->
                 dialogNavigation.activate(
                     IngredientDialog.Batch(
-                        composeId,productId
+                        composeId, productId
                     )
                 )
             },
@@ -199,4 +236,10 @@ internal sealed interface IngredientDialog {
 
 sealed interface DialogChild {
     class ImmutableMBS(val component: MBSImmutableTableComponent<*>) : DialogChild
+}
+
+internal sealed interface LoadCompositionState {
+    data object Loading : LoadCompositionState
+    data object Success : LoadCompositionState
+    data class Error(val message: String) : LoadCompositionState
 }

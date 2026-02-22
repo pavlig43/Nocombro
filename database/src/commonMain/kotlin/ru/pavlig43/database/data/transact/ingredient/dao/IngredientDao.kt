@@ -25,7 +25,7 @@ abstract class IngredientDao {
     suspend fun getByTransactionId(transactionId: Int): List<IngredientBD> {
         return getIngredients(transactionId).map { it.toIngredientBD() }
     }
-
+    
 }
 
 internal data class InternalIngredient(
