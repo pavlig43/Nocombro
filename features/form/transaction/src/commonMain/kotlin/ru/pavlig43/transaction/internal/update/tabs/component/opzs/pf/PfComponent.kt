@@ -138,8 +138,7 @@ internal class PfComponent(
             onChangeItem = { item -> onChangeItem(item) }
         )
 
-    override val errorMessages: Flow<List<String>> = itemFields.map { items ->
-        val item = items.first()
+    override val errorMessages: Flow<List<String>> = item.map { item ->
         buildList {
             val place = "Полуфабрикат"
             if (item.productId == 0) add("$place не указан продукт")

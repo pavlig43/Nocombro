@@ -54,12 +54,13 @@ internal class CreateDeclarationSingleLineComponent(
     private fun dialogChild(config: DialogConfig, context: ComponentContext): DialogChild {
         return when (config) {
             DialogConfig.BestBefore -> {
-                val item = itemFields.value[0]
                 DialogChild.Date(
                     DateComponent(
                         componentContext = context,
-                        initDate = item.bestBefore,
-                        onChangeDate = { newDate -> onChangeItem(item.copy(bestBefore = newDate)) },
+                        initDate = item.value.bestBefore,
+                        onChangeDate = { newDate ->
+                            onChangeItem1 { it.copy(bestBefore = newDate) }
+                        },
                         onDismissRequest = { dialogNavigation.dismiss() }
                     )
                 )
@@ -102,7 +103,7 @@ internal class CreateDeclarationSingleLineComponent(
             onOpenBornDateDialog = { dialogNavigation.activate(DialogConfig.Born) },
             onOpenBestBeforeDialog = { dialogNavigation.activate(DialogConfig.BestBefore) },
             onChangeItem = { item -> onChangeItem(item) }
-    )
+        )
 }
 
 @Serializable
