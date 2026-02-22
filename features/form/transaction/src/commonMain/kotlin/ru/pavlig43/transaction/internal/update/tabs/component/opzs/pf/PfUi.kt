@@ -29,7 +29,7 @@ internal fun PfUi.toDto(getDateBorn:()-> LocalDate): PfBD = PfBD(
     dateBorn = getDateBorn()
 )
 
-internal fun PfBD.toUi(): PfUi = PfUi(
+internal fun PfBD.toUi(transactionId: Int): PfUi = PfUi(
     transactionId = transactionId,
     batchId = batchId,
     movementId = movementId,

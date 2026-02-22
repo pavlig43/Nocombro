@@ -477,7 +477,7 @@ suspend fun seedDatabase(db: NocombroDatabase) {
     batches.forEach { db.batchDao.createBatch(it) }
 
     // Движения партий
-    db.batchMovementDao.insertMovements(batchMovements)
+    db.batchMovementDao.upsertMovements(batchMovements)
 
     // Покупки, напоминания, расходы
     buys.forEach { db.buyDao.upsertBuyBd(it) }

@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.map
 import org.koin.core.qualifier.qualifier
 import org.koin.dsl.module
 import ru.pavlig43.database.NocombroDatabase
+import ru.pavlig43.database.data.batch.BatchWithBalanceOut
 import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.database.data.document.Document
 import ru.pavlig43.database.data.product.Product
@@ -60,7 +61,10 @@ internal enum class ImmutableTableRepositoryType {
     VENDOR,
 
     /** Транзакции */
-    TRANSACTION
+    TRANSACTION,
+
+    /** Партии */
+    BATCH
 }
 
 /**
@@ -80,6 +84,7 @@ private fun createImmutableRepository(
     ImmutableTableRepositoryType.VENDOR -> VendorRepository(db)
     ImmutableTableRepositoryType.TRANSACTION -> TransactionRepository(db)
     ImmutableTableRepositoryType.PRODUCT_DECLARATION -> ProductDeclarationRepository(db)
+    ImmutableTableRepositoryType.BATCH -> BatchRepository(db)
 }
 
 /**
@@ -179,6 +184,29 @@ private class ProductDeclarationRepository(db: NocombroDatabase) :
             "ProductDeclarationRepository requires non-zero parentId for filtering declarations by product"
         }
         return dao.observeOnProductDeclarationOut(parentId).map { Result.success(it) }
+            .catch { emit(Result.failure(it)) }
+    }
+}
+
+/**
+ * Репозиторий для работы с партиями.
+ *
+ * **Важно:** Удаление не поддерживается (возвращает success),
+ * партии удаляются только через транзакции.
+ */
+private class BatchRepository(db: NocombroDatabase) :
+    ImmutableListRepository<BatchWithBalanceOut> {
+    private val dao = db.batchMovementDao
+    override suspend fun deleteByIds(ids: Set<Int>): Result<Unit> {
+        // партии не удаляются через таблицу (только через транзакции)
+        return Result.success(Unit)
+    }
+
+    override fun observeOnItems(parentId: Int): Flow<Result<List<BatchWithBalanceOut>>> {
+        require(parentId != 0) {
+            "BatchRepository requires non-zero parentId (productId) for filtering batches by product"
+        }
+        return dao.observeBatchWithBalanceByProductId(parentId).map { Result.success(it) }
             .catch { emit(Result.failure(it)) }
     }
 }

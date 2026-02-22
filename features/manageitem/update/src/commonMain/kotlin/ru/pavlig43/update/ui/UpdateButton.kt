@@ -1,6 +1,5 @@
 package ru.pavlig43.update.ui
 
-import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Column
@@ -23,11 +22,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.painterResource
 import ru.pavlig43.coreui.ClickableValidationErrorsCard
 import ru.pavlig43.coreui.LoadingUi
@@ -36,6 +32,7 @@ import ru.pavlig43.theme.check
 import ru.pavlig43.update.component.UpdateComponent
 import ru.pavlig43.update.component.UpdateState
 
+@Suppress("LongMethod")
 @Composable
 internal fun UpdateButton(
     component: UpdateComponent,
@@ -86,6 +83,9 @@ internal fun UpdateButton(
                     val alpha by animateFloatAsState(
                         targetValue = if (animationPlayed) 1f else 0f,
                         animationSpec = tween(durationMillis = 1000),
+                        finishedListener = {
+                            component.resetState()
+                        }
                     )
 
                     Icon(
@@ -97,10 +97,8 @@ internal fun UpdateButton(
                             .graphicsLayer(scaleX = alpha, alpha=alpha,)
                     )
 
-                    LaunchedEffect(Unit) {
+                    LaunchedEffect(updateState) {
                         animationPlayed = true
-                        delay(1000)
-                        component.resetState()
                     }
                 }
             }

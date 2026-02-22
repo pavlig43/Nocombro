@@ -19,6 +19,7 @@ import ru.pavlig43.transaction.internal.di.UpdateSingleLineRepositoryType
 import ru.pavlig43.transaction.internal.model.TransactionEssentialsUi
 import ru.pavlig43.transaction.internal.update.tabs.component.buy.BuyComponent
 import ru.pavlig43.transaction.internal.update.tabs.component.expenses.ExpensesComponent
+import ru.pavlig43.transaction.internal.update.tabs.component.opzs.ingredients.IngredientComponent
 import ru.pavlig43.transaction.internal.update.tabs.component.opzs.pf.PfComponent
 import ru.pavlig43.transaction.internal.update.tabs.component.reminders.RemindersComponent
 import ru.pavlig43.transaction.internal.update.tabs.essential.TransactionUpdateSingleLineComponent
@@ -52,7 +53,10 @@ internal class TransactionFormTabsComponent(
             when(transaction.transactionType){
                 TransactionType.BUY -> tabNavigationComponent.addTab(TransactionTab.Buy)
                 TransactionType.SALE -> TODO()
-                TransactionType.OPZS -> tabNavigationComponent.addTab(TransactionTab.Pf)
+                TransactionType.OPZS -> {
+                    tabNavigationComponent.addTab(TransactionTab.Pf)
+                    tabNavigationComponent.addTab(TransactionTab.Ingredients)
+                }
                 TransactionType.WRITE_OFF -> TODO()
                 TransactionType.INVENTORY -> TODO()
                 null -> throw IllegalArgumentException("Transaction type is null")
@@ -67,7 +71,7 @@ internal class TransactionFormTabsComponent(
             startConfigurations = listOf(
                 TransactionTab.Essentials,
                 TransactionTab.Expenses,
-                TransactionTab.Reminders,
+                TransactionTab.Reminders
             ),
             serializer = TransactionTab.serializer(),
             tabChildFactory = { context, config, _ ->
@@ -118,6 +122,18 @@ internal class TransactionFormTabsComponent(
                                 updateSingleLineRepository = scope.get(UpdateSingleLineRepositoryType.PF.qualifier),
                                 tabOpener = tabOpener,
                                 getDateBorn = {essentialsFields.value.createdAt.date},
+                                immutableTableDependencies = scope.get()
+                            )
+                        )
+                    }
+
+                    TransactionTab.Ingredients -> {
+                        TransactionTabChild.Ingredients(
+                            IngredientComponent(
+                                componentComponent = context,
+                                transactionId = transactionId,
+                                repository = scope.get(UpdateCollectionRepositoryType.INGREDIENTS.qualifier),
+                                tabOpener = tabOpener,
                                 immutableTableDependencies = scope.get()
                             )
                         )

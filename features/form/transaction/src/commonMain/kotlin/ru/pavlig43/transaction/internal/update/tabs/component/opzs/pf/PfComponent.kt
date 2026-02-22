@@ -26,7 +26,7 @@ import ru.pavlig43.mutable.api.singleLine.component.UpdateSingleLineComponent
 import ru.pavlig43.mutable.api.singleLine.data.UpdateSingleLineRepository
 import ua.wwind.table.ColumnSpec
 
-private val factory = SingleLineComponentFactory<PfBD, PfUi>(
+private fun factory(transactionId: Int) = SingleLineComponentFactory<PfBD, PfUi>(
     initItem = PfUi(),
     errorFactory = { item ->
         buildList {
@@ -36,7 +36,7 @@ private val factory = SingleLineComponentFactory<PfBD, PfUi>(
             if (item.declarationId == 0) add("$place нет декларации")
         }
     },
-    mapperToUi = { toUi() }
+    mapperToUi = { toUi(transactionId) }
 )
 
 @Suppress("LongParameterList")
@@ -53,7 +53,7 @@ internal class PfComponent(
     componentContext = componentContext,
     id = transactionId,
     updateSingleLineRepository = updateSingleLineRepository,
-    componentFactory = factory,
+    componentFactory = factory(transactionId),
     observeOnItem = observeOnItem,
     onSuccessInitData = onSuccessInitData,
     mapperToDTO = { toDto(getDateBorn) }

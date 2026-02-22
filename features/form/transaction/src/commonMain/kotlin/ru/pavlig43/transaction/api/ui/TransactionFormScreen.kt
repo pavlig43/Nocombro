@@ -16,6 +16,7 @@ import ru.pavlig43.transaction.internal.create.ui.CreateTransactionSingleLineScr
 import ru.pavlig43.transaction.internal.update.TransactionTabChild
 import ru.pavlig43.transaction.internal.update.tabs.component.buy.BuyScreen
 import ru.pavlig43.transaction.internal.update.tabs.component.expenses.ExpensesScreen
+import ru.pavlig43.transaction.internal.update.tabs.component.opzs.ingredients.IngredientScreen
 import ru.pavlig43.transaction.internal.update.tabs.component.opzs.pf.PfScreen
 import ru.pavlig43.transaction.internal.update.tabs.component.reminders.RemindersScreen
 import ru.pavlig43.transaction.internal.update.tabs.essential.UpdateTransactionSingleLineScreen
@@ -62,6 +63,7 @@ private fun TransactionSlotScreen(
         is TransactionTabChild.Reminders -> RemindersScreen(child.component)
         is TransactionTabChild.Expenses -> ExpensesScreen(child.component)
         is TransactionTabChild.Pf -> PfScreen(child.component)
+        is TransactionTabChild.Ingredients -> IngredientScreen(child.component)
 
         null -> Box(Modifier)
 

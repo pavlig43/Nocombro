@@ -67,3 +67,10 @@ data class TransactionImmutableTableBuilder(
 ): ImmutableTableBuilderData<ru.pavlig43.immutable.internal.component.items.transaction.TransactionTableUi> {
     override val tabTitle: String = "Транзакции"
 }
+
+data class BatchImmutableTableBuilder(
+    override val parentId: Int
+): ImmutableTableBuilderData<ru.pavlig43.immutable.internal.component.items.batch.BatchTableUi> {
+    override val tabTitle: String = "Партии"
+    override val withCheckbox: Boolean = false
+}

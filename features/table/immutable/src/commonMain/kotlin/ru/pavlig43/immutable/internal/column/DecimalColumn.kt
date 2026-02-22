@@ -7,6 +7,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import ua.wwind.table.ReadonlyColumnBuilder
 import ua.wwind.table.ReadonlyTableColumnsBuilder
+import ua.wwind.table.filter.data.TableFilterType
 import kotlin.math.pow
 
 
@@ -17,11 +18,15 @@ fun <T : Any, C, E> ReadonlyTableColumnsBuilder<T, C, E>.readDecimalColumn(
     column: C,
     valueOf: (T) -> Int,
     decimalFormat: DecimalFormat,
-    alignment: Alignment = Alignment.Center
+    alignment: Alignment = Alignment.Center,
+    filterType: TableFilterType.NumberTableFilter<Int>? = null
 ) {
     column(column, valueOf = { valueOf(it) }) {
         autoWidth(300.dp)
         header(headerText)
+        filterType?.let {
+            filter(it)
+        }
         align(alignment)
         readDecimalCell(format = decimalFormat, getCount = valueOf)
         sortable()

@@ -13,6 +13,7 @@ import ru.pavlig43.database.data.expense.ExpenseBD
 import ru.pavlig43.database.data.transact.Transact
 import ru.pavlig43.database.data.transact.buy.BuyBDIn
 import ru.pavlig43.database.data.transact.buy.BuyBDOut
+import ru.pavlig43.database.data.transact.ingredient.IngredientBD
 import ru.pavlig43.database.data.transact.pf.PfBD
 import ru.pavlig43.database.data.transact.reminder.ReminderBD
 import ru.pavlig43.files.api.FilesDependencies
@@ -39,6 +40,9 @@ internal fun createTransactionFormModule(dependencies: TransactionFormDependenci
         single<UpdateCollectionRepository<ExpenseBD, ExpenseBD>>(UpdateCollectionRepositoryType.EXPENSES.qualifier) {
             ExpensesCollectionRepository(get())
         }
+        single<UpdateCollectionRepository<IngredientBD, IngredientBD>>(UpdateCollectionRepositoryType.INGREDIENTS.qualifier) {
+            IngredientsCollectionRepository(get())
+        }
         single<UpdateSingleLineRepository<PfBD>>(UpdateSingleLineRepositoryType.PF.qualifier) { PfUpdateRepository(get()) }
     }
 )
@@ -47,7 +51,8 @@ public enum class UpdateCollectionRepositoryType {
 
     BUY,
     REMINDERS,
-    EXPENSES
+    EXPENSES,
+    INGREDIENTS
 
 }
 
@@ -250,6 +255,44 @@ private class PfUpdateRepository(
             } else {
                 movementDao.upsertMovement(movement)
             }
+        }
+    }
+}
+
+
+private class IngredientsCollectionRepository(
+    db: NocombroDatabase
+) : UpdateCollectionRepository<IngredientBD, IngredientBD> {
+
+    private val ingredientDao = db.ingredientDao
+    private val movementDao = db.batchMovementDao
+
+    override suspend fun getInit(id: Int): Result<List<IngredientBD>> {
+        return runCatching {
+            ingredientDao.getByTransactionId(id)
+        }
+    }
+
+    override suspend fun update(changeSet: ChangeSet<List<IngredientBD>>): Result<Unit> {
+        return UpsertListChangeSet.update(
+            changeSet = changeSet,
+            delete = movementDao::deleteByIds,
+            upsert = ::upsertIngredients
+        )
+    }
+
+    private suspend fun upsertIngredients(ingredients: List<IngredientBD>) {
+        ingredients.map { ingredient ->
+
+            BatchMovement(
+                batchId = ingredient.batchId,
+                movementType = MovementType.OUTGOING,
+                count = ingredient.count,
+                transactionId = ingredient.transactionId,
+                id = ingredient.movementId
+            )
+        }.also {
+            movementDao.upsertMovements(it)
         }
     }
 }
