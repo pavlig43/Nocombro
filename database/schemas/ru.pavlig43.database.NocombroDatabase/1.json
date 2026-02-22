@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "23ff40f3f83df9bf289bd540e44cb7ef",
+    "identityHash": "3351a4624b8b8e9e21cbc9d311623a25",
     "entities": [
       {
         "tableName": "file",
@@ -198,7 +198,7 @@
       },
       {
         "tableName": "product",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`type` TEXT NOT NULL, `display_name` TEXT NOT NULL, `created_at` TEXT NOT NULL, `comment` TEXT NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`type` TEXT NOT NULL, `display_name` TEXT NOT NULL, `created_at` TEXT NOT NULL, `comment` TEXT NOT NULL, `price_for_sale` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL)",
         "fields": [
           {
             "fieldPath": "type",
@@ -222,6 +222,12 @@
             "fieldPath": "comment",
             "columnName": "comment",
             "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "priceForSale",
+            "columnName": "price_for_sale",
+            "affinity": "INTEGER",
             "notNull": true
           },
           {
@@ -820,7 +826,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '23ff40f3f83df9bf289bd540e44cb7ef')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '3351a4624b8b8e9e21cbc9d311623a25')"
     ]
   }
 }

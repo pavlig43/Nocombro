@@ -7,6 +7,8 @@ internal enum class ProductField {
     DISPLAY_NAME,
     /** Тип продукта */
     PRODUCT_TYPE,
+    /** Рекомендованная цена продажи */
+    PRICE_FOR_SALE,
     /** Дата создания */
     CREATED_AT,
     /** Комментарий */

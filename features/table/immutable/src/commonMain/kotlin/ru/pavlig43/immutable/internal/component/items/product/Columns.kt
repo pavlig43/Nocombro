@@ -4,8 +4,10 @@ package ru.pavlig43.immutable.internal.component.items.product
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import ru.pavlig43.database.data.product.ProductType
+import ru.pavlig43.immutable.internal.column.DecimalFormat
 import ru.pavlig43.immutable.internal.column.idWithSelection
 import ru.pavlig43.immutable.internal.column.readDateColumn
+import ru.pavlig43.immutable.internal.column.readDecimalColumn
 import ru.pavlig43.immutable.internal.column.readEnumColumn
 import ru.pavlig43.immutable.internal.column.readTextColumn
 import ru.pavlig43.immutable.internal.component.ImmutableTableUiEvent
@@ -22,7 +24,7 @@ internal enum class ProductField {
     NAME,
     TYPE,
     CREATED_AT,
-    COMMENT
+    COMMENT,
 }
 @Suppress("LongMethod")
 internal fun createProductColumn(
@@ -68,6 +70,7 @@ internal fun createProductColumn(
                 valueOf = { it.comment },
                 filterType = TableFilterType.TextTableFilter()
             )
+
         }
     return columns
 
