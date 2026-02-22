@@ -15,6 +15,8 @@ import ru.pavlig43.database.data.transact.Transact
 import ru.pavlig43.database.data.transact.buy.BuyBDIn
 import ru.pavlig43.database.data.transact.buy.BuyBDOut
 import ru.pavlig43.database.data.transact.ingredient.IngredientBD
+import ru.pavlig43.database.data.transact.sale.SaleBDIn
+import ru.pavlig43.database.data.transact.sale.SaleBDOut
 import ru.pavlig43.database.data.transact.pf.PfBD
 import ru.pavlig43.database.data.transact.reminder.ReminderBD
 import ru.pavlig43.files.api.FilesDependencies
@@ -45,6 +47,9 @@ internal fun createTransactionFormModule(dependencies: TransactionFormDependenci
         single<UpdateCollectionRepository<IngredientBD, IngredientBD>>(UpdateCollectionRepositoryType.INGREDIENTS.qualifier) {
             IngredientsCollectionRepository(get())
         }
+        single<UpdateCollectionRepository<SaleBDOut, SaleBDOut>>(UpdateCollectionRepositoryType.SALE.qualifier) {
+            SaleCollectionRepository(get())
+        }
         single<UpdateSingleLineRepository<PfBD>>(UpdateSingleLineRepositoryType.PF.qualifier) { PfUpdateRepository(get()) }
         singleOf(::FillIngredientsRepository)
     }
@@ -55,7 +60,8 @@ internal enum class UpdateCollectionRepositoryType {
     BUY,
     REMINDERS,
     EXPENSES,
-    INGREDIENTS
+    INGREDIENTS,
+    SALE
 
 }
 
@@ -296,6 +302,64 @@ private class IngredientsCollectionRepository(
             )
         }.also {
             movementDao.upsertMovements(it)
+        }
+    }
+}
+
+
+private class SaleCollectionRepository(
+    db: NocombroDatabase
+) : UpdateCollectionRepository<SaleBDOut, SaleBDOut> {
+
+    private val saleDao = db.saleDao
+    private val movementDao = db.batchMovementDao
+
+    override suspend fun getInit(id: Int): Result<List<SaleBDOut>> {
+        return runCatching {
+            saleDao.getSalesWithDetails(id)
+        }
+    }
+
+    override suspend fun update(changeSet: ChangeSet<List<SaleBDOut>>): Result<Unit> {
+        return UpsertListChangeSet.update(
+            changeSet = changeSet,
+            delete = ::deleteSalesWithMovement,
+            upsert = ::upsertAllEntity
+        )
+    }
+
+    private suspend fun deleteSalesWithMovement(saleIds: List<Int>) {
+        val movementIds = saleDao.getMovementIdsBySaleIds(saleIds)
+        saleDao.deleteByIds(saleIds)
+        movementDao.deleteByIds(movementIds)
+    }
+
+    private suspend fun upsertAllEntity(sales: List<SaleBDOut>) {
+        sales.forEach { sale ->
+
+
+            val movement = BatchMovement(
+                batchId = sale.batchId,
+                movementType = MovementType.OUTGOING,
+                count = sale.count,
+                transactionId = sale.transactionId,
+                id = sale.movementId
+            )
+            val movementId = if (movement.id == 0) {
+                movementDao.createMovement(movement).toInt()
+            } else {
+                movementDao.upsertMovement(movement)
+                movement.id
+            }
+            val saleBdIn = SaleBDIn(
+                transactionId = sale.transactionId,
+                movementId = movementId,
+                price = sale.price,
+                comment = sale.comment,
+                clientId = sale.clientId,
+                id = sale.id
+            )
+            saleDao.upsertSaleBd(saleBdIn)
         }
     }
 }

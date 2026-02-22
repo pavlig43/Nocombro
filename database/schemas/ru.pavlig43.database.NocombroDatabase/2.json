@@ -1,8 +1,8 @@
 {
   "formatVersion": 1,
   "database": {
-    "version": 1,
-    "identityHash": "636866b81bc1819ac7ac8f062191eea2",
+    "version": 2,
+    "identityHash": "32e07adc71f362e210c0164be5f0d5a2",
     "entities": [
       {
         "tableName": "file",
@@ -694,7 +694,7 @@
       },
       {
         "tableName": "sale",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`transaction_id` INTEGER NOT NULL, `movement_id` INTEGER NOT NULL, `price` INTEGER NOT NULL, `comment` TEXT NOT NULL, `client_id` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, FOREIGN KEY(`transaction_id`) REFERENCES `transact`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`movement_id`) REFERENCES `batch_movement`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION , FOREIGN KEY(`client_id`) REFERENCES `vendor`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`transaction_id` INTEGER NOT NULL, `movement_id` INTEGER NOT NULL, `price` INTEGER NOT NULL, `comment` TEXT NOT NULL, `client_id` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, FOREIGN KEY(`transaction_id`) REFERENCES `transact`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`movement_id`) REFERENCES `batch_movement`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION , FOREIGN KEY(`client_id`) REFERENCES `vendor`(`id`) ON UPDATE NO ACTION ON DELETE RESTRICT )",
         "fields": [
           {
             "fieldPath": "transactionId",
@@ -793,7 +793,7 @@
           },
           {
             "table": "vendor",
-            "onDelete": "NO ACTION",
+            "onDelete": "RESTRICT",
             "onUpdate": "NO ACTION",
             "columns": [
               "client_id"
@@ -938,7 +938,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '636866b81bc1819ac7ac8f062191eea2')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '32e07adc71f362e210c0164be5f0d5a2')"
     ]
   }
 }

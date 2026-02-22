@@ -23,6 +23,7 @@ import ru.pavlig43.transaction.internal.update.tabs.component.opzs.ingredients.I
 import ru.pavlig43.transaction.internal.update.tabs.component.opzs.pf.PfComponent
 import ru.pavlig43.transaction.internal.update.tabs.component.opzs.pf.PfUi
 import ru.pavlig43.transaction.internal.update.tabs.component.reminders.RemindersComponent
+import ru.pavlig43.transaction.internal.update.tabs.component.sale.SaleComponent
 import ru.pavlig43.transaction.internal.update.tabs.essential.TransactionUpdateSingleLineComponent
 import ru.pavlig43.update.component.IItemFormTabsComponent
 import ru.pavlig43.update.component.UpdateComponent
@@ -60,7 +61,10 @@ internal class TransactionFormTabsComponent(
                     tabNavigationComponent.addTab(1,TransactionTab.Buy)
                     tabNavigationComponent.onSelectTab(1)
                 }
-                TransactionType.SALE -> TODO()
+                TransactionType.SALE -> {
+                    tabNavigationComponent.addTab(1, TransactionTab.Sale)
+                    tabNavigationComponent.onSelectTab(1)
+                }
                 TransactionType.OPZS -> {
                     tabNavigationComponent.addTab(1,TransactionTab.Pf)
                     tabNavigationComponent.addTab(2,TransactionTab.Ingredients)
@@ -102,6 +106,16 @@ internal class TransactionFormTabsComponent(
                             componentComponent = context,
                             transactionId = transactionId,
                             repository = scope.get(UpdateCollectionRepositoryType.BUY.qualifier),
+                            tabOpener = tabOpener,
+                            immutableTableDependencies = scope.get()
+                        )
+                    )
+
+                    TransactionTab.Sale -> TransactionTabChild.Sale(
+                        SaleComponent(
+                            componentComponent = context,
+                            transactionId = transactionId,
+                            repository = scope.get(UpdateCollectionRepositoryType.SALE.qualifier),
                             tabOpener = tabOpener,
                             immutableTableDependencies = scope.get()
                         )
