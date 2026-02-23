@@ -8,6 +8,7 @@ plugins {
     alias(libs.plugins.pavlig43.koin)
     alias(libs.plugins.pavlig43.serialization)
     alias(libs.plugins.pavlig43.coroutines)
+    alias(libs.plugins.pavlig43.testing)
 
     id("jp.ntsk.room-schema-docs")
 

@@ -67,8 +67,8 @@ internal class IngredientComponent(
                     fillIngredientsRepository.getIngredientsFromComposition(
                         productId = pf.productId,
                         transactionId = transactionId,
-                        // Количество полуфабриката в кг(изначально числится в граммах)
-                        countPf = pf.count.div(1000)
+
+                        countPf = pf.count
                     )
                 },
                 handleSuccess = {

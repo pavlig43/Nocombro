@@ -91,13 +91,15 @@ private fun InternalComposition.toCompositionOut(): CompositionOut {
     )
 }
 
+@Suppress("MagicNumber")
 private fun InternalComposition.toIngredients(transactionId: Int, countPf: Int): IngredientBD {
     return IngredientBD(
         transactionId = transactionId,
         batchId = 0,
         dateBorn = emptyDate,
         movementId = 0,
-        count = composition.count * countPf,
+        // Количество полуфабриката в кг(изначально числится в граммах)
+        count = (composition.count * countPf) / 1000,
         productType = product.type,
         productId = product.id,
         productName = product.displayName,
