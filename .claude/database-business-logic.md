@@ -1,454 +1,272 @@
-# Бизнес-логика базы данных Nocombro
+# Бизнес-логика Nocombro
 
-## Обзор проекта
+## 1. Контрагенты (Vendor)
 
-Nocombro — это Kotlin Multiplatform приложение для управления:
-- Товарами и партиями
-- Транзакциями (покупка, продажа, производство)
-- Декларациями и документами
-- Расходами и напоминаниями
+**Сущность:** `Vendor`
 
----
-
-## Основные сущности
-
-### 1. Vendor (Поставщик)
-
-```kotlin
-data class Vendor(
-    val displayName: String,
-    val comment: String,
-    val id: Int
-)
-```
-
-**Назначение:** Поставщики товаров/сырья.
-
----
-
-### 2. Declaration (Декларация качества)
-
-```kotlin
-data class Declaration(
-    val displayName: String,        // название декларации
-    val vendorId: Int,              // поставщик
-    val vendorName: String,
-    val bornDate: LocalDate,        // дата создания декларации
-    val bestBefore: LocalDate,      // срок годности
-    val observeFromNotification: Boolean,
-    val createdAt: LocalDate,
-    val id: Int
-)
-```
-
-**Назначение:** Документ качества (сертификат соответствия) от производителя.
-
-**Важно:**
-- Создаётся производителем и загружается на официальный сайт
-- **Без декларации продукта не может быть**
-- Действует ограниченное время (например, 3 года)
-- В системе хранятся и просроченные декларации (для истории)
+**Назначение:** Контрагент — может быть поставщиком ИЛИ клиентом (одна сущность).
 
 **Связи:**
-- Один продукт может иметь **несколько деклараций** одновременно (старая + свежая)
-- Одна декларация может покрывать **несколько продуктов** (группа товаров)
-- Связь реализована через таблицу `ProductDeclarationIn` (M:N)
+- Как **поставщик** → `Declaration` (декларации качества)
+- Как **клиент** → `SaleBDIn` (продажи)
 
 ---
 
-### 3. Product (Товар/Продукт)
+## 2. Декларация качества (Declaration)
 
-```kotlin
-data class Product(
-    val type: ProductType,          // FOOD_BASE, FOOD_PF, FOOD_SALE, PACK
-    val displayName: String,
-    val createdAt: LocalDate,
-    val comment: String,
-    val id: Int
-)
-```
+**Сущность:** `Declaration`
 
-**Назначение:** Товары, сырьё, полуфабрикаты, готовая продукция, упаковка.
+**Назначение:** Документ качества от производителя.
 
-**Типы продуктов:**
+**Правила:**
+- Без декларации **продукт не может существовать**
+- Создаётся поставщиком и загружается на официальный сайт
+- Действует ограниченное время (например, 3 года)
+- В системе хранятся и просроченные (для истории)
+
+**Связи:**
+- Принадлежит `Vendor` (поставщику)
+- Связь с `Product` — M:N (через `ProductDeclarationIn`)
+  - Один продукт может иметь **несколько** деклараций (актуальная + просроченные)
+  - Одна декларация может покрывать **несколько** продуктов
+
+---
+
+## 3. Продукт (Product)
+
+**Сущность:** `Product`
+
+**Типы:**
 - `FOOD_BASE` — Пищевой базовый (сырьё: мука, сахар, соль)
 - `FOOD_PF` — Пищевой полуфабрикат (тесто, фарш)
-- `FOOD_SALE` — Пищевой продукт для продажи (готовая продукция)
 - `PACK` — Упаковка
 
----
+**Поля:**
+- `priceForSale` — справочная цена продажи (копейки)
 
-### 4. Document (Техническая документация)
+**Правила:**
+- **НЕ может существовать без Declaration** (обязательная связь)
+- Может иметь состав (`CompositionIn`) — для полуфабрикатов
 
-```kotlin
-data class Document(
-    val displayName: String,
-    val type: DocumentType,         // GOST или SPECIFICATION
-    val createdAt: LocalDate,
-    val comment: String,
-    val id: Int
-)
-```
-
-**Назначение:** Техническая документация (ГОСТ, спецификации).
-
-**Важное отличие от Declaration:**
-- **Declaration** — критически важный документ качества (отслеживается срок, уведомления)
-- **Document** — справочная техдокументация (не требует пристального внимания)
+**Связи:**
+- M:N с `Declaration` (обязательно минимум одна)
+- 1:N с `Batch` (партии)
+- M:N с `Product` (состав) — через `CompositionIn`
 
 ---
 
-### 5. Batch (Партия товара)
+## 4. Состав продукта (CompositionIn)
 
-```kotlin
-data class Batch(
-    val id: Int,
-    val productId: Int,            // ссылка на Product
-    val declarationId: Int,        // ссылка на Declaration
-    val dateBorn: LocalDate        // дата производства (на упаковке)
-)
-```
+**Сущность:** `CompositionIn`
+
+**Назначение:** Рецептура — из чего состоит продукт.
+
+**Пример:** "Тесто" = Мука 500г + Яйца 2шт + Вода 200мл
+
+**Использование:**
+1. Для **справки** — посмотреть состав продукта
+2. Как **шаблон** при заполнении формы ОПЗС (подставляет ингредиенты)
+
+**Важно:** Реальный расход фиксируется через `BatchMovement`, не через `CompositionIn`.
+
+---
+
+## 5. Партия (Batch)
+
+**Сущность:** `Batch`
 
 **Назначение:** Физическая партия товара на складе.
 
-**Важно:**
-- `dateBorn` = дата производства с упаковки, **НЕ** дата поступления
-- Связь с `Declaration` нужна для **истории** (даже если Declaration просрочится или Product поменяет её)
-- Одна партия создаётся один раз (immutable)
+**Поля:**
+- `dateBorn` — дата производства **с упаковки** (не дата поступления!)
 
-**Связи:**
-- `ForeignKey` на `Product` (RESTRICT)
-- `ForeignKey` на `Declaration` (RESTRICT)
+**Правила создания:**
 
----
+| Способ | Когда создаётся | Declaration |
+|--------|-----------------|-------------|
+| **Покупка (BUY)** | При покупке товара | Выбирается из списка |
+| **Производство (OPZS)** | При производстве полуфабриката | Выбирается вручную |
 
-### 6. BatchMovement (Движение по партии)
-
-```kotlin
-data class BatchMovement(
-    val batchId: Int,              // ссылка на Batch
-    val movementType: MovementType, // INCOMING или OUTGOING
-    val count: Int,                // количество в граммах/штуках
-    val transactionId: Int,        // ссылка на Transaction
-    val id: Int
-)
-```
-
-**Назначение:** Учёт движения товара по партиям.
-
-**Типы движения:**
-- `INCOMING` — Приход (создание партии, покупка, производство, инвентаризация доначисление)
-- `OUTGOING` — Расход (продажа, списание, производство, инвентаризация списание)
+> **Важно:** Партия НЕ может быть создана отдельно от транзакции.
 
 **Остаток партии:**
 ```
-Остаток = SUM(INCOMING.count) - SUM(OUTGOING.count) по batchId
+Остаток = SUM(INCOMING.count) - SUM(OUTGOING.count)
 ```
-
-**Важно:**
-- Дублирующие поля (`productId`, `declarationId`, `dateBorn`) **НЕ хранятся** — берутся из `Batch` через @Relation
 
 ---
 
-### 7. Transaction (Транзакция)
+## 6. Движение партии (BatchMovement)
 
-```kotlin
-data class Transaction(
-    val transactionType: TransactionType,
-    val createdAt: LocalDateTime,
-    val comment: String,
-    val isCompleted: Boolean,
-    val id: Int
-)
-```
+**Сущность:** `BatchMovement`
 
-**Назначение:** Операция с товарами/партиями.
+**Типы движения:**
+- `INCOMING` — Приход
+- `OUTGOING` — Расход
 
-**Типы транзакций:**
+**Создание OUTGOING движений:**
+
+| Операция | Выбор партии | Статус |
+|----------|--------------|--------|
+| **Продажа (SALE)** | Пользователь выбирает вручную | ✅ Реализовано |
+| **Производство (OPZS)** | Пользователь выбирает компоненты вручную | ✅ Реализовано |
+| **Списание (WRITE_OFF)** | Пользователь выбирает вручную | ⏳ Не реализовано |
+| **Инвентаризация (INVENTORY)** | Автоматически по всем партиям | ✅ Реализовано |
+
+> **Важно:** Система НЕ подбирает партии автоматически (нет FIFO).
+
+---
+
+## 7. Транзакции (Transaction)
+
+**Сущность:** `Transact`
+
+**Типы:**
 
 | Тип | Описание | Что создаётся |
 |-----|----------|---------------|
 | **BUY** | Покупка | `Batch` + `BatchMovement(INCOMING)` + `BuyBDIn` |
-| **SALE** | Продажа | `BatchMovement(OUTGOING)` |
+| **SALE** | Продажа | `BatchMovement(OUTGOING)` + `SaleBDIn` |
 | **OPZS** | Отчёт производства за смену | `BatchMovement` для компонентов (OUTGOING) + полуфабриката (INCOMING) |
-| **WRITE_OFF** | Списание | `BatchMovement(OUTGOING)` (дегустация, порча, хищение) |
-| **INVENTORY** | Инвентаризация | `BatchMovement` для каждой партии (INCOMING/OUTGOING) |
-
-**Важно:**
-- `WRITE_OFF` — любой расход, не связанный с продажей (дегустация, порча)
-- При `INVENTORY` для каждой партии создаётся `BatchMovement` с нужным типом для корректировки остатков
+| **WRITE_OFF** | Списание | `BatchMovement(OUTGOING)` |
+| **INVENTORY** | Инвентаризация | `BatchMovement` для каждой партии (корректировка остатков) |
 
 ---
 
-### 8. BuyBDIn / BuyBD (Покупка)
+## 8. Покупка (BUY)
 
-**BuyBDIn (Entity в БД):**
-```kotlin
-data class BuyBDIn(
-    val price: Int,                // цена закупки в копейках
-    val count: Int,                // количество
-    val transactionId: Int,
-    // другие поля...
-)
-```
-
-**BuyBD/Out (DTO для UI):**
-```kotlin
-data class BuyBD(
-    val productName: String,       // через @Relation с Product
-    val count: Int,
-    val declarationName: String,   // через @Relation с Declaration
-    val vendorName: String,        // через @Relation с Vendor
-    val dateBorn: LocalDate,       // через @Relation с Batch
-    val price: Int,                // из BuyBDIn
-    val comment: String,
-    val id: Int
-)
-```
+**Сущность:** `BuyBDIn`
 
 **Логика:**
 ```
-Покупка (BUY)
-  ↓
-Создаётся BuyBDIn (с ценой)
-  ↓
-Создаётся Batch (партия)
-  ↓
-Создаётся BatchMovement (INCOMING)
-  ↓
-BuyBD/Out собирается через @Relation для UI
+BUY → BuyBDIn (с ценой) → Batch (партия) → BatchMovement(INCOMING)
 ```
 
-**Маржа:** Высчитывается runtime для готового продукта.
+**Поля:**
+- `price` — цена закупки в копейках (хранится исторически)
+
+**Для UI:** `BuyBDOut` собирается через @Relation.
 
 ---
 
-### 9. CompositionIn (Состав продукта)
+## 9. Продажа (SALE)
 
-```kotlin
-data class CompositionIn(
-    val parentId: Int,             // родительский продукт
-    val productId: Int,            // дочерний продукт (компонент)
-    val count: Int,                // количество
-    val id: Int
-)
+**Сущность:** `SaleBDIn`
+
+**Логика:**
+```
+SALE → SaleBDIn (с ценой) → BatchMovement(OUTGOING)
 ```
 
-**Назначение:** Рецептура / состав полуфабрикатов.
+**Цена:**
+- **Продажи:** вводится вручную, берётся из `Product.priceForSale` как дефолт (можно отредактировать)
+- **Себестоимость:** берётся из `BuyBDIn.price` (цена закупки партии)
+- **Маржа = Цена продажи − Себестоимость**
 
-**Примеры:**
-- "Тесто" состоит из: Мука 500г + Яйца 2шт + Вода 200мл
-- "Булочка с мясом" состоит из: Тесто 100г + Начинка 50г
-
-**Использование:**
-- Для ознакомления (просмотр состава продукта)
-- Для **первичного заполнения формы OPZS** (шаблон)
-
-**Важно:** Реальный расход компонентов фиксируется через `BatchMovement`, а не через `CompositionIn`.
+**Клиент:** `client_id` → `Vendor` (контрагент)
 
 ---
 
-### 10. ReminderBD (Напоминания)
+## 10. Производство (OPZS)
 
-```kotlin
-data class ReminderBD(
-    val transactionId: Int,        // привязка к транзакции
-    val text: String,              // свободный текст
-    val reminderDateTime: LocalDateTime,
-    val id: Int
-)
-```
+**DTO:** `PfBD` (полуфабрикат), `IngredientBD` (ингредиент)
 
-**Назначение:** Напоминания о необходимости оплаты/поставки по транзакции.
-
-**Важно:** Пользователь сам вводит текст напоминания (свободный формат).
+**Логика:**
+1. `CompositionIn` заполняет форму (шаблон рецептуры)
+2. Для каждого компонента → `BatchMovement(OUTGOING)`
+3. Для готового полуфабриката → создаётся **новая Batch** + `BatchMovement(INCOMING)`
+4. Declaration выбирается вручную
 
 ---
 
-### 11. ExpenseBD (Расходы)
+## 11. Инвентаризация (INVENTORY)
 
-```kotlin
-data class ExpenseBD(
-    val transactionId: Int?,       // опциональная связь с транзакцией
-    val expenseType: ExpenseType,
-    val amount: Int,               // сумма в копейках
-    val expenseDateTime: LocalDateTime,
-    val comment: String,
-    val id: Int
-)
-```
+**Логика:**
+1. Пользователь вводит фактическое количество по каждой партии
+2. Если факт > остаток → `BatchMovement(INCOMING)` — доначисление
+3. Если факт < остаток → `BatchMovement(OUTGOING)` — списание
 
-**Типы расходов:**
+---
+
+## 12. Файлы (FileBD)
+
+**Сущность:** `FileBD`
+
+**Назначение:** Универсальная система прикрепления файлов.
+
+**OwnerType:**
+- `DECLARATION` — скан сертификата
+- `PRODUCT` — фото товара
+- `VENDOR` — документы поставщика
+- `DOCUMENT` — техническая документация
+- `TRANSACTION` — документы по транзакции
+
+---
+
+## 13. Напоминания (ReminderBD)
+
+**Сущность:** `ReminderBD`
+
+**Назначение:** Напоминания о любых событиях.
+
+**Связи:** Привязаны к `Transaction`.
+
+**Примеры:** напомнить об оплате, поставке, чём угодно (свободный текст).
+
+---
+
+## 14. Расходы (ExpenseBD)
+
+**Сущность:** `ExpenseBD`
+
+**Типы:**
 - `TRANSPORT_GASOLINE` — Бензин
 - `TRANSPORT_DELIVERY` — Доставка
 - `TRANSPORT_DEPRECIATION` — Амортизация авто
 - `STATIONERY` — Канцелярия
-- `COMMISSION` — Откаты (условное название расхода)
+- `COMMISSION` — Комиссионные
+
+**Связи:** Опционально к `Transaction`.
 
 ---
 
-### 12. FileBD (Файлы)
-
-```kotlin
-data class FileBD(
-    val ownerId: Int,
-    val ownerFileType: OwnerType,  // DECLARATION, PRODUCT, VENDOR, DOCUMENT, TRANSACTION
-    val path: String,
-    val id: Int
-)
-```
-
-**Назначение:** Универсальная система прикрепления файлов к любой сущности.
-
-**Примеры:**
-- Скан сертификата → `DECLARATION`
-- Фото товара → `PRODUCT`
-- Любые другие документы
-
----
-
-## Диаграмма связей
+## Диаграмма зависимостей
 
 ```
-Vendor (Поставщик)
-  └── Declaration (Декларация качества)
-        ├── bornDate (создания документа)
-        ├── bestBefore (срок годности)
-        └── (M:N) Product ←─ через ProductDeclarationIn
-              ├── type, displayName, createdAt
-              ├── (1:N) Batch
-              │     └── dateBorn (дата производства)
-              ├── (M:N) Product (состав) ←─ через CompositionIn
-              └── (1:N) BatchMovement ←─ через Batch
-                    ├── movementType (INCOMING/OUTGOING)
-                    ├── count
-                    └── (N:1) Transaction
+Vendor (Контрагент)
+  ├── (как поставщик) → Declaration
+  │     └── (M:N) ←→ Product [ОБЯЗАТЕЛЬНО]
+  │           ├── priceForSale
+  │           ├── (M:N) ←→ Product (состав) [CompositionIn]
+  │           └── (1:N) → Batch
+  │                 ├── dateBorn (дата производства)
+  │                 ├── (1:N) → BatchMovement
+  │                 │     ├── movementType (INCOMING/OUTGOING)
+  │                 │     └── (N:1) → Transaction
+  │                 │
+  │           Transaction
+  │                 ├── type: BUY/SALE/OPZS/WRITE_OFF/INVENTORY
+  │                 ├── (1:N) → BuyBDIn (цена закупки)
+  │                 ├── (1:N) → SaleBDIn (цена продажи + клиент)
+  │                 ├── (1:N) → ReminderBD
+  │                 └── (1:N?) → ExpenseBD
+  │
+  └── (как клиент) ← SaleBDIn.client_id
 
-Document (Техническая документация)
-  ├── type: GOST / SPECIFICATION
-  └── (1:N) FileBD
-
-Transaction (Транзакция)
-  ├── type: BUY/SALE/OPZS/WRITE_OFF/INVENTORY
-  ├── createdAt, comment, isCompleted
-  └── (1:N) BatchMovement
-
-BuyBDIn (Покупка в БД)
-  ├── batchId, price, count
-  └── → BuyBD/Out (через @Relation для UI)
-
-ReminderBD (Напоминания)
-  └── (N:1) Transaction
-
-ExpenseBD (Расходы)
-  └── (N:1?) Transaction (опционально)
-
-FileBD (Файлы)
-  └── ownerId, ownerType
+FileBD → OwnerId, OwnerType (DECLARATION/PRODUCT/VENDOR/DOCUMENT/TRANSACTION)
+Document (техническая документация: GOST, SPECIFICATION)
 ```
 
 ---
 
-## Сценарии использования
+## Правила дизайна
 
-### Сценарий 1: Покупка товара
-
-1. Пользователь создаёт транзакцию типа `BUY`
-2. Создаётся `BuyBDIn` с ценой закупки
-3. Создаётся `Batch` (партия товара) с датой производства
-4. Создаётся `BatchMovement` с `movementType = INCOMING`
-5. UI получает `BuyBD` через @Relation
-
-### Сценарий 2: Продажа товара
-
-1. Пользователь **сам выбирает партию** из списка
-2. Создаётся транзакция типа `SALE`
-3. Создаётся `BatchMovement` с `movementType = OUTGOING`
-4. Остаток партии пересчитывается: `SUM(INCOMING) - SUM(OUTGOING)`
-
-### Сценарий 3: Производство полуфабриката (OPZS)
-
-1. Пользователь создаёт отчёт `OPZS`
-2. `CompositionIn` заполняет форму (шаблон рецептуры)
-3. Для каждого компонента создаётся `BatchMovement` с `movementType = OUTGOING`
-4. Для готового полуфабриката создаётся новый `Batch` + `BatchMovement` с `movementType = INCOMING`
-
-### Сценарий 4: Инвентаризация
-
-1. Пользователь создаёт транзакцию типа `INVENTORY`
-2. Для каждой партии:
-   - Если факт > остаток → `BatchMovement(INCOMING)` — доначисление
-   - Если факт < остаток → `BatchMovement(OUTGOING)` — списание
-
-### Сценарий 5: Списание (не продажа)
-
-1. Пользователь создаёт транзакцию типа `WRITE_OFF`
-2. Выбирает партию и количество
-3. Создаётся `BatchMovement` с `movementType = OUTGOING`
-4. Причина: дегустация, порча, хищение и т.д.
-
----
-
-## Правила дизайна (Database Rules)
-
-### 1. Используй @Relation вместо raw SQL JOINs
-
-❌ **Плохо:**
-```kotlin
-@Query("""
-    SELECT p.name, b.count, d.displayName
-    FROM buy_bd b
-    INNER JOIN products p ON b.product_id = p.id
-    INNER JOIN declarations d ON b.declaration_id = d.id
-""")
-suspend fun getAllBuys(): List<BuyBD>
-```
-
-✅ **Хорошо:**
-```kotlin
-data class BuyBD(
-    @Embedded val buy: BuyEntity,
-    @Relation(parentColumn = "product_id", entityColumn = "id")
-    val product: Product,
-    @Relation(parentColumn = "declaration_id", entityColumn = "id")
-    val declaration: Declaration
-)
-```
+### 1. @Relation вместо raw SQL JOINs
+Используй `@Relation` аннотацию в Room Database вместо написания JOIN запросов.
 
 ### 2. Храни десятичные числа как Int
-
 - **Деньги** — в копейках (×100)
 - **Вес** — в граммах (×1000)
 
-Используй `decimalColumn()` из `TableCellTextFieldNumber.kt` для отображения.
-
-### 3. Дата и время
-
-- Используй готовые компоненты из `coreui`:
-  - `DateTimeRow` — дата + время
-  - `DateRow` — только дата
-  - `DateTimePickerDialog` / `DatePickerDialog`
-
-- В Decompose используй `SlotNavigation` для управления диалогами.
-
-### 4. Без дублирования данных
-
+### 3. Без дублирования данных
 Если данные есть в родительской сущности — не дублируй в дочерней.
-- ❌ `BatchMovement` с `productId`, `declarationId`, `dateBorn`
-- ✅ `BatchMovement` с `batchId` (остальное через @Relation)
-
----
-
-## Планы на будущее
-
-- [ ] Расчёт маржи runtime для готовой продукции
-- [ ] Создание `BuyBDIn` entity
-
----
-
-## История изменений
-
-- **2024** — Рефакторинг: `TransactionProductBDIn` → `BatchMovement`
-- Добавлена сущность `Batch` для партий товара
-- Убраны дублирующие поля из `BatchMovement`
-- Добавлена документация бизнес-логики

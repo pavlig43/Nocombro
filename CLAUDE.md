@@ -1,223 +1,97 @@
-# Nocombro - Kotlin Multiplatform Application
+# CLAUDE.md
 
-## Project Overview
-
-Nocombro — это Kotlin Multiplatform приложение для управления документами, товарами, транзакциями и подписями. Приложение работает на **Android** и **Desktop** платформах.
-
-## Tech Stack
-
-| Технология | Версия | Для чего |
-|------------|--------|----------|
-| **Kotlin Multiplatform** | - | Общая кодовая база для Android + Desktop |
-| **Compose Multiplatform** | - | UI фреймворк |
-| **Koin** | - | Dependency Injection |
-| **Decompose** | - | Навигация и управление компонентами |
-| **SQLDelight** | - | Локальная база данных |
-| **Room** | - | Альтернативная БД (используется параллельно) |
-| **Detekt** | - | Статический анализ кода |
-| **Gradle** | - | Система сборки с custom convention plugins |
-
-## Project Structure
-
-```
-Nocombro/
-├── app/                          # Приложения
-│   ├── nocombroapp/              # Android приложение
-│   └── desktopApp/               # Desktop приложение
-│
-├── core/                         # Core бизнес-логика
-├── coreui/                       # Общие UI компоненты
-├── corekoin/                     # Koin DI модули
-├── database/                     # База данных
-├── datastore/                    # DataStore для настроек
-├── theme/                        # Темы оформления
-│
-├── features/                     # Feature модули
-│   ├── sign/                     # Авторизация
-│   │   ├── common/               # Общая логика sign
-│   │   ├── signin/               # Вход
-│   │   ├── signup/               # Регистрация
-│   │   └── root/                 # Root sign компонент
-│   │
-│   ├── table/                    # Таблицы
-│   │   ├── core/                 # Core логика таблиц
-│   │   ├── immutable/            # Immutable таблицы
-│   │   └── mutable/              # Mutable таблицы
-│   │
-│   ├── form/                     # Формы
-│   │   ├── product/              # Товары
-│   │   ├── vendor/               # Поставщики
-│   │   ├── document/             # Документы
-│   │   ├── declaration/          # Декларации
-│   │   └── transaction/          # Транзакции
-│   │
-│   ├── manageitem/               # Управление элементами
-│   │   ├── upsert/               # Создание/обновление
-│   │   └── loadinitdata/         # Загрузка начальных данных
-│   │
-│   ├── storage/                  # Хранилище
-│   ├── files/                    # Файлы
-│   ├── notification/             # Уведомления
-│   └── sampletable/              # Пример таблицы
-│
-├── rootnocombro/                 # Root компонент приложения
-├── build-logic/                  # Custom Gradle plugins
-│   └── convention/               # Convention plugins для KMP
-│
-├── build.gradle.kts              # Root build file
-├── settings.gradle.kts           # Gradle settings
-└── default-detekt-config.yml     # Detekt конфигурация
-```
-
-## Module Architecture
-
-### Core Modules
-- **core** — общая бизнес-логика, не зависящая от платформы
-- **coreui** — переиспользуемые UI компоненты
-- **corekoin** — Koin модули для DI
-- **database** — слой доступа к данным (SQLDelight/Room)
-- **datastore** — хранение настроек (DataStore)
-- **theme** — дизайн-система (цвета, типографика)
-
-### Feature Modules
-Каждый feature модуль — это автономная часть с UI, логикой и DI.
-
-### Platform-Specific
-- **commonMain** — общий код для всех платформ
-- **androidMain** — Android-specific код
-- **desktopMain** — Desktop-specific код
-
-## Как запускать
-
-### Android
-```bash
-./gradlew :app:nocombroapp:installDebug
-```
-
-### Desktop
-```bash
-./gradlew :app:desktopApp:run
-```
-
-### Сборка всех модулей
-```bash
-./gradlew build
-```
-
-## Тестирование
-
-### Запустить тесты
-```bash
-# Все тесты
-./gradlew test
-
-# Тесты конкретного модуля
-./gradlew :core:test
-```
-
-## Gradle Convention Plugins
-
-Проект использует custom convention plugins из `build-logic/convention/`:
-
-| Plugin | Для чего |
-|--------|----------|
-| `pavlig43.kmplibrary` | Базовая конфигурация KMP библиотеки |
-| `pavlig43.serialization` | Kotlinx Serialization |
-| `pavlig43.coroutines` | Coroutines |
-| `pavlig43.koin` | Koin DI |
-| `pavlig43.ktor` | Ktor HTTP клиент |
-| `pavlig43.feature` | Feature модули |
-| `pavlig43.sqldelight` | SQLDelight |
-| `pavlig43.decompose` | Decompose навигация |
-| `pavlig43.detekt` | Detekt статический анализ |
-
-## Code Style
-- **Detekt** — статический анализ (см. `default-detekt-config.yml`)
-- **Kotlin conventions** — следуй Kotlin coding conventions
-- **KDoc** — добавляй документацию к публичным API
-
-## Coding Rules
-Правила проекта находятся в директории `.claude/rules/` — обязательно ознакомься перед написанием кода.
-
-## Claude Code Subagents
-
-В проекте установлены следующие агенты (`.claude/agents/`):
-
-| Агент | Специализация |
-|-------|---------------|
-| `kotlin-specialist` | Kotlin/KMP разработка |
-| `code-reviewer` | Ревью кода |
-| `debugger` | Отладка |
-| `security-auditor` | Безопасность |
-
-### Использование агентов
-
-```
-> Используй kotlin-specialist для рефакторинга этого модуля
-> Пусть code-reviewer проверит мой коммит
-```
-
-## Первичная настройка (после клонирования проекта)
-
-### MCP DeepWiki Server (поиск по документации)
-
-```bash
-# Установить DeepWiki MCP для поиска по документации библиотек
-claude mcp add -s user -t http deepwiki https://mcp.deepwiki.com/mcp
-
-# Проверить что сервер добавлен
-claude mcp list
-```
-
-**Для чего:** Поиск по документации Kotlin, Compose, Ktor и других библиотек без интернета.
-
-**Примеры использования:**
-```
-> Как использовать Decompose для навигации?
-> Объясни Kotlin StateFlow vs SharedFlow
-> Как настроить Ktor WebSocket client?
-```
+**Nocombro** — Kotlin Multiplatform приложение для управления складом и производством пищевой продукции.
 
 ---
 
-## Конфигурация Claude Code
+## Быстрый старт
 
-### Project settings (`.claude/settings.local.json`)
-Разрешённые bash команды для git, gradle, gh (GitHub CLI) и других операций.
-
-### Global settings (`~/.claude/settings.json`)
-- Язык: русский
-- Модель: Sonnet 4.5
-- Плагины: voltagent-*
-
-## Полезные команды
-
-### Очистка
+### Сборка
 ```bash
-./gradlew clean
+./gradlew build --continue     # Игнорируй [MissingType] от room-schema-docs
+./gradlew :app:desktopApp:run  # Запуск Desktop
 ```
 
-### Зависимости
-```bash
-./gradlew :app:nocombroapp:dependencies
-```
-
-### Dry-run (без реального выполнения)
-```bash
-./gradlew build --dry-run
-```
-
-## FAQ
-
-**Q: Где находится DI конфигурация?**
-A: В модулях `corekoin` и `build.gradle.kts` каждого модуля.
-
-**Q: Как добавить новый экран?**
-A: Создай feature модуль, используй Decompose для навигации.
-
-**Q: Где бизнес-логика?**
-A: В `core/` и соответствующих feature модулях.
+### Где выполнять задачи?
+**ВСЕГДА** спрашивай перед началом работы. См. `.claude/rules/task-execution-scope.md`
+1. **Git Worktree** (рекомендуется) — `git worktree add -b feature/имя ../путь`
+2. **Новая ветка** — `git checkout -b feature/имя`
+3. **Текущая ветка** — только для typo fixes
 
 ---
 
-**Важно:** Этот файл (`CLAUDE.md`) предназначен для Claude Code AI и содержит контекст проекта для более эффективной работы.
+## Технологии
+
+KMP • Compose Multiplatform • Decompose • Koin • Room Database • Kotlin Coroutines
+
+---
+
+## Структура проекта
+
+```
+root/
+├── core/         # MainTabComponent, FormTabComponent
+├── coreui/       # DateTimeRow, TextFieldRow
+├── database/     # Room Entity, DAO
+├── features/
+│   ├── table/    # Immutable/Mutable таблицы
+│   ├── form/     # Формы (product, declaration, vendor, etc.)
+│   └── sign/     # Авторизация
+└── app/
+    ├── nocombroapp/    # Android
+    └── desktopApp/     # Desktop
+```
+
+### Паттерны
+- **MutableTableComponent** — таблицы с редактированием
+- **ImmutableTableComponent** — read-only таблицы
+- **UpdateSingleLineComponent** — одна строка редактирования
+- **SlotNavigation** — управление диалогами
+
+---
+
+## Правила проекта (читай при необходимости)
+
+| Правило | Когда нужно |
+|---------|-------------|
+| `.claude/rules/database.md` | Работа с БД — используй `@Relation` вместо JOIN |
+| `.claude/rules/decimal-fields.md` | Поля с ценой/весом — храни в Int (копейки/граммы) |
+| `.claude/rules/dialogs.md` | Диалоги — используй `SlotNavigation` для управления |
+| `.claude/rules/date-time-picker.md` | Выбор даты/времени — DateTimeRow + SlotNavigation |
+| `.claude/rules/imports.md` | Любой код — без wildcard импортов |
+| `.claude/rules/agents.md` | Сложные задачи — делегируй экспертам |
+| `.claude/rules/find-src.md` | Поиск API библиотек — используй `./.claude/tools/find-src` |
+
+---
+
+## Сущности БД
+
+| Сущность | Описание |
+|----------|----------|
+| Vendor | Поставщик |
+| Declaration | Декларация качества |
+| Product | Товар/сырьё |
+| Batch | Партия товара |
+| BatchMovement | Движение партии |
+| Transaction | BUY/SALE/OPZS/WRITE_OFF/INVENTORY |
+
+Связи: `Product ↔ Declaration` (M:N), `Product → Batch` (1:N), `Batch → BatchMovement` (1:N)
+
+Подробнее: `.claude/database-business-logic.md`
+
+---
+
+## Skills
+
+| Skill | Описание |
+|-------|----------|
+| `/table` | Создать таблицу |
+| `/form` | Создать форму |
+| `/feature` | Создать функциональность |
+
+---
+
+## Troubleshooting
+
+- **[MissingType] от room-schema-docs** — игнорируй, используй `--continue`
+- **Не могу найти API** — `./.claude/tools/find-src --content "ClassName"`
