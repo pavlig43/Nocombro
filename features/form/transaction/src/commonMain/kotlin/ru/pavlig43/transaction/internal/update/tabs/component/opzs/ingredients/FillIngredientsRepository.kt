@@ -10,7 +10,6 @@ internal class FillIngredientsRepository(
 
     suspend fun getIngredientsFromComposition(productId: Int,transactionId: Int,countPf: Int): Result<List<IngredientBD>> {
         return runCatching {
-            println("countpf $countPf")
             compositionDao.getIngredientsFromComposition(productId,transactionId,countPf)
         }
     }

@@ -15,10 +15,10 @@ import ru.pavlig43.database.data.transact.Transact
 import ru.pavlig43.database.data.transact.buy.BuyBDIn
 import ru.pavlig43.database.data.transact.buy.BuyBDOut
 import ru.pavlig43.database.data.transact.ingredient.IngredientBD
-import ru.pavlig43.database.data.transact.sale.SaleBDIn
-import ru.pavlig43.database.data.transact.sale.SaleBDOut
 import ru.pavlig43.database.data.transact.pf.PfBD
 import ru.pavlig43.database.data.transact.reminder.ReminderBD
+import ru.pavlig43.database.data.transact.sale.SaleBDIn
+import ru.pavlig43.database.data.transact.sale.SaleBDOut
 import ru.pavlig43.files.api.FilesDependencies
 import ru.pavlig43.immutable.api.ImmutableTableDependencies
 import ru.pavlig43.mutable.api.multiLine.data.UpdateCollectionRepository

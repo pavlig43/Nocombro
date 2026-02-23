@@ -6,8 +6,8 @@ import kotlinx.collections.immutable.ImmutableList
 import ru.pavlig43.mutable.api.column.DecimalFormat
 import ru.pavlig43.mutable.api.column.decimalColumn
 import ru.pavlig43.mutable.api.column.idWithSelection
-import ru.pavlig43.mutable.api.column.readDecimalColumnWithFooter
 import ru.pavlig43.mutable.api.column.readDateColumn
+import ru.pavlig43.mutable.api.column.readDecimalColumnWithFooter
 import ru.pavlig43.mutable.api.column.readTextColumn
 import ru.pavlig43.mutable.api.column.textWithSearchIconColumn
 import ru.pavlig43.mutable.api.column.writeTextColumn
