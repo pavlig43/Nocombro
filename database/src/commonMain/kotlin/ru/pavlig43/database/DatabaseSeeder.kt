@@ -1,9 +1,12 @@
 @file:Suppress("MagicNumber")
 package ru.pavlig43.database
 
+import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.plus
 import ru.pavlig43.core.emptyDate
+import ru.pavlig43.core.getCurrentLocalDate
 import ru.pavlig43.database.data.batch.BatchBD
 import ru.pavlig43.database.data.batch.BatchMovement
 import ru.pavlig43.database.data.batch.MovementType
@@ -87,13 +90,13 @@ suspend fun seedDatabase(db: NocombroDatabase) {
     val declarations = listOf(
         Declaration(
             displayName = "Декларация ингре",
-            createdAt = LocalDate.fromEpochDays(0),
+            createdAt = getCurrentLocalDate(),
             vendorId = 1,
             vendorName = "Ингре",
-            bestBefore = LocalDate.fromEpochDays(365),
+            bestBefore = getCurrentLocalDate().plus(10, DateTimeUnit.DAY),
             id = 1,
             observeFromNotification = true,
-            bornDate = emptyDate
+            bornDate = getCurrentLocalDate().plus(5, DateTimeUnit.DAY)
         ),
         Declaration(
             displayName = "Декларация стоинг",
@@ -223,7 +226,7 @@ suspend fun seedDatabase(db: NocombroDatabase) {
     val compositions = listOf(
         CompositionIn(parentId = 2, productId = 1, count = 500, id = 1), // Баварские содержат 500г соли
         CompositionIn(parentId = 2, productId = 3, count = 200, id = 2), // Баварские содержат 200г декстрозы
-        CompositionIn(parentId = 2, productId = 5, count = 1000, id = 3), // Баварские содержат 1кг муки
+        CompositionIn(parentId = 2, productId = 5, count = 300, id = 3), // Баварские содержат 300г муки
         CompositionIn(parentId = 5, productId = 1, count = 10, id = 4), // Мука содержит соль
         CompositionIn(parentId = 5, productId = 3, count = 50, id = 5) // Мука содержит декстрозу
     )

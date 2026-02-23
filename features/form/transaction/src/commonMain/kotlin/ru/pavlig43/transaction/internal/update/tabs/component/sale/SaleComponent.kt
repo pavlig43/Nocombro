@@ -74,6 +74,7 @@ internal class SaleComponent(
                                 saleUi.copy(
                                     productId = product.composeId,
                                     productName = product.displayName,
+                                    price = product.priceForSale
                                 )
                             )
                         )
