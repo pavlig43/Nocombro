@@ -1,7 +1,12 @@
-plugins {
-  alias(libs.plugins.pavlig43.feature)  
-  }
+import ru.pavlig43.convention.extension.commonMainDependencies
 
-android {
-    namespace = "ru.pavlig43.storage"
+plugins {
+    alias(libs.plugins.pavlig43.feature)
+    alias(libs.plugins.pavlig43.table)
+}
+
+kotlin{
+    commonMainDependencies {
+        implementation(projects.database)
+    }
 }

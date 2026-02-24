@@ -8,13 +8,17 @@ import androidx.room.Relation
 import androidx.room.Transaction
 import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.core.mapParallel
+import ru.pavlig43.core.mapValues
 import ru.pavlig43.database.data.batch.BatchBD
 import ru.pavlig43.database.data.batch.BatchMovement
 import ru.pavlig43.database.data.batch.BatchOut
 import ru.pavlig43.database.data.batch.BatchWithBalanceOut
 import ru.pavlig43.database.data.batch.MovementType
+import ru.pavlig43.database.data.batch.StorageProduct
 
 /**
  * DAO для работы с движениями партий (batch movements).
@@ -46,6 +50,14 @@ abstract class BatchMovementDao {
     @Transaction
     @Query("SELECT * FROM batch_movement WHERE batch_id IN (SELECT id FROM batch WHERE product_id = :productId)")
     internal abstract fun observeMovementsByProductId(productId: Int): Flow<List<MovementOut>>
+
+    @Transaction
+    @Query("SELECT * FROM batch_movement ")
+    internal abstract fun observeOnAllMovements(): Flow<List<MovementOut>>
+
+    fun observeOnStorageProducts(): Flow<List<String>> {
+        return observeOnAllMovements().mapValues { "$it \n" }
+    }
 
     fun observeBatchWithBalanceByProductId(productId: Int): Flow<List<BatchWithBalanceOut>> {
         return observeMovementsByProductId(productId).map { lst ->
@@ -85,6 +97,14 @@ abstract class BatchMovementDao {
      */
     @Query("SELECT * FROM batch_movement WHERE batch_id = :batchId")
     abstract fun observeMovementsByBatchId(batchId: Int): Flow<List<BatchMovement>>
+
+
+    internal fun observeOnMovementInDateTimePeriod(
+        start: LocalDateTime,
+        end: LocalDateTime
+    ): Flow<List<StorageProduct>>{
+        return flowOf()
+    }
 }
 
 /**

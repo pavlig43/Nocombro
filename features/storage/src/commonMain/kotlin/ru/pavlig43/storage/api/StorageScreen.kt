@@ -1,0 +1,29 @@
+package ru.pavlig43.storage.api
+
+import androidx.compose.foundation.layout.Column
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import ru.pavlig43.coreui.ErrorScreen
+import ru.pavlig43.coreui.LoadingUi
+import ru.pavlig43.storage.api.component.LoadState
+import ru.pavlig43.storage.api.component.StorageComponent
+
+@Composable
+fun StorageScreen(
+    component: StorageComponent
+){
+    val loadState by component.loadState.collectAsState()
+    when(val state = loadState) {
+        is LoadState.Error -> ErrorScreen(state.message)
+        is LoadState.Loading -> LoadingUi()
+        is LoadState.Success -> {
+            Column(){
+                state.str.forEach {
+                    Text(it)
+                }
+            }
+        }
+    }
+}
