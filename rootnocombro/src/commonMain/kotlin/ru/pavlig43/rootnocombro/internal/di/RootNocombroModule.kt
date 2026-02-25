@@ -10,6 +10,7 @@ import ru.pavlig43.immutable.api.ImmutableTableDependencies
 import ru.pavlig43.notification.api.NotificationDependencies
 import ru.pavlig43.product.api.ProductFormDependencies
 import ru.pavlig43.signroot.api.IRootSignDependencies
+import ru.pavlig43.storage.api.StorageDependencies
 import ru.pavlig43.transaction.api.TransactionFormDependencies
 import ru.pavlig43.vendor.api.VendorFormDependencies
 
@@ -25,6 +26,7 @@ internal val featureDependenciesModule = listOf(module {
     factoryOf(::VendorFormDependencies)
     factoryOf(::DeclarationFormDependencies)
     factoryOf(::TransactionFormDependencies)
+    factoryOf(::StorageDependencies)
 
 })
 

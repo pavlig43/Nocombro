@@ -1,6 +1,7 @@
 package ru.pavlig43.storage.api.component
 
 import com.arkivanov.decompose.ComponentContext
+import com.arkivanov.essenty.instancekeeper.getOrCreate
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -9,13 +10,22 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import ru.pavlig43.core.MainTabComponent
 import ru.pavlig43.core.componentCoroutineScope
+import ru.pavlig43.corekoin.ComponentKoinContext
+import ru.pavlig43.storage.api.StorageDependencies
 import ru.pavlig43.storage.internal.di.StorageRepository
+import ru.pavlig43.storage.internal.di.createStorageModule
 
 class StorageComponent(
     componentContext: ComponentContext,
-    private val storageRepository: StorageRepository
-    
+    dependencies: StorageDependencies
+
 ): ComponentContext by componentContext, MainTabComponent{
+
+    private val koinComponent = instanceKeeper.getOrCreate { ComponentKoinContext() }
+    private val scope = koinComponent.getOrCreateKoinScope(
+        createStorageModule(dependencies)
+    )
+    private val storageRepository: StorageRepository = scope.get()
 
     private val _model = MutableStateFlow(MainTabComponent.NavTabState("Склад"))
     override val model = _model.asStateFlow()

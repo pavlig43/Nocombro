@@ -12,6 +12,9 @@ sealed interface MainTabConfig{
     class SampleTableConfig: MainTabConfig
 
     @Serializable
+    class StorageConfig: MainTabConfig
+
+    @Serializable
     sealed interface ItemListConfig: MainTabConfig{
         @Serializable
         class DocumentListConfig : ItemListConfig
