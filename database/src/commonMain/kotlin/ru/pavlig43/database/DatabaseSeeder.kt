@@ -254,18 +254,39 @@ suspend fun seedDatabase(db: NocombroDatabase) {
             id = 3
         ),
         Transact(
+            transactionType = TransactionType.OPZS,
+            createdAt = LocalDateTime(2024, 5, 6, 10, 0),
+            comment = "",
+            isCompleted = true,
+            id = 4
+        ),
+        Transact(
+            transactionType = TransactionType.OPZS,
+            createdAt = LocalDateTime(2024, 5, 10, 10, 0),
+            comment = "",
+            isCompleted = true,
+            id = 5
+        ),
+        Transact(
+            transactionType = TransactionType.OPZS,
+            createdAt = LocalDateTime(2024, 5, 15, 10, 0),
+            comment = "",
+            isCompleted = true,
+            id = 6
+        ),
+        Transact(
             transactionType = TransactionType.SALE,
             createdAt = LocalDateTime(2024, 6, 5, 14, 0),
             comment = "",
             isCompleted = true,
-            id = 4
+            id = 7
         ),
         Transact(
             transactionType = TransactionType.WRITE_OFF,
             createdAt = LocalDateTime(2024, 6, 10, 9, 15),
             comment = "",
             isCompleted = false,
-            id = 5
+            id = 8
         )
     )
 
@@ -279,7 +300,10 @@ suspend fun seedDatabase(db: NocombroDatabase) {
         BatchBD(productId = 3, dateBorn = LocalDate(2024, 3, 10), declarationId = 1, id = 6),
         BatchBD(productId = 5, dateBorn = LocalDate(2024, 4, 5), declarationId = 4, id = 7),
         BatchBD(productId = 5, dateBorn = LocalDate(2024, 4, 10), declarationId = 4, id = 8),
-        BatchBD(productId = 5, dateBorn = LocalDate(2024, 4, 15), declarationId = 4, id = 9)
+        BatchBD(productId = 5, dateBorn = LocalDate(2024, 4, 15), declarationId = 4, id = 9),
+        BatchBD(productId = 1, dateBorn = LocalDate(2024, 5, 6), declarationId = 1, id = 10),
+        BatchBD(productId = 1, dateBorn = LocalDate(2024, 5, 10), declarationId = 1, id = 11),
+        BatchBD(productId = 1, dateBorn = LocalDate(2024, 5, 15), declarationId = 1, id = 12)
     )
 
     // 10. ===
@@ -292,7 +316,19 @@ suspend fun seedDatabase(db: NocombroDatabase) {
         BatchMovement(batchId = 6, movementType = MovementType.INCOMING, count = 24000, transactionId = 2, id = 6),
         BatchMovement(batchId = 7, movementType = MovementType.INCOMING, count = 21000, transactionId = 3, id = 7),
         BatchMovement(batchId = 8, movementType = MovementType.INCOMING, count = 23000, transactionId = 3, id = 8),
-        BatchMovement(batchId = 9, movementType = MovementType.INCOMING, count = 20050, transactionId = 3, id = 9)
+        BatchMovement(batchId = 9, movementType = MovementType.INCOMING, count = 20050, transactionId = 3, id = 9),
+        BatchMovement(batchId = 10, movementType = MovementType.INCOMING, count = 25000, transactionId = 4, id = 10),
+        BatchMovement(batchId = 1, movementType = MovementType.OUTGOING, count = 17500, transactionId = 4, id = 11),
+        BatchMovement(batchId = 4, movementType = MovementType.OUTGOING, count = 6250, transactionId = 4, id = 12),
+        BatchMovement(batchId = 7, movementType = MovementType.OUTGOING, count = 1250, transactionId = 4, id = 13),
+        BatchMovement(batchId = 11, movementType = MovementType.INCOMING, count = 30000, transactionId = 5, id = 14),
+        BatchMovement(batchId = 2, movementType = MovementType.OUTGOING, count = 21000, transactionId = 5, id = 15),
+        BatchMovement(batchId = 5, movementType = MovementType.OUTGOING, count = 7500, transactionId = 5, id = 16),
+        BatchMovement(batchId = 8, movementType = MovementType.OUTGOING, count = 1500, transactionId = 5, id = 17),
+        BatchMovement(batchId = 12, movementType = MovementType.INCOMING, count = 22000, transactionId = 6, id = 18),
+        BatchMovement(batchId = 3, movementType = MovementType.OUTGOING, count = 15400, transactionId = 6, id = 19),
+        BatchMovement(batchId = 6, movementType = MovementType.OUTGOING, count = 5500, transactionId = 6, id = 20),
+        BatchMovement(batchId = 9, movementType = MovementType.OUTGOING, count = 1100, transactionId = 6, id = 21)
     )
 
     // 11. ===
@@ -327,6 +363,18 @@ suspend fun seedDatabase(db: NocombroDatabase) {
             text = "",
             reminderDateTime = LocalDateTime(2024, 4, 21, 11, 0),
             id = 3
+        ),
+        ReminderBD(
+            transactionId = 4,
+            text = "",
+            reminderDateTime = LocalDateTime(2024, 5, 7, 9, 0),
+            id = 4
+        ),
+        ReminderBD(
+            transactionId = 5,
+            text = "",
+            reminderDateTime = LocalDateTime(2024, 5, 11, 9, 0),
+            id = 5
         )
     )
 
