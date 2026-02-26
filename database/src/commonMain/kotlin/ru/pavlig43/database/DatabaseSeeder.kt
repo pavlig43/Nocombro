@@ -225,193 +225,108 @@ suspend fun seedDatabase(db: NocombroDatabase) {
 
     // 7. ===
     val compositions = listOf(
-        CompositionIn(parentId = 2, productId = 1, count = 700, id = 1), //
-        CompositionIn(parentId = 2, productId = 3, count = 250, id = 2), //
-        CompositionIn(parentId = 2, productId = 5, count = 50, id = 3), //
+        CompositionIn(parentId = 1, productId = 2, count = 700, id = 1),
+        CompositionIn(parentId = 1, productId = 3, count = 250, id = 2),
+        CompositionIn(parentId = 1, productId = 5, count = 50, id = 3)
     )
 
     // 8. ===
     val transactions = listOf(
         Transact(
             transactionType = TransactionType.BUY,
-            createdAt = LocalDateTime(2024, 6, 1, 10, 30),
+            createdAt = LocalDateTime(2024, 4, 10, 9, 0),
             comment = "",
             isCompleted = true,
             id = 1
+        ),
+        Transact(
+            transactionType = TransactionType.BUY,
+            createdAt = LocalDateTime(2024, 4, 15, 10, 30),
+            comment = "",
+            isCompleted = true,
+            id = 2
+        ),
+        Transact(
+            transactionType = TransactionType.BUY,
+            createdAt = LocalDateTime(2024, 4, 20, 11, 15),
+            comment = "",
+            isCompleted = true,
+            id = 3
         ),
         Transact(
             transactionType = TransactionType.SALE,
             createdAt = LocalDateTime(2024, 6, 5, 14, 0),
             comment = "",
             isCompleted = true,
-            id = 2
+            id = 4
         ),
         Transact(
             transactionType = TransactionType.WRITE_OFF,
             createdAt = LocalDateTime(2024, 6, 10, 9, 15),
             comment = "",
             isCompleted = false,
-            id = 3
-        ),
-        Transact(
-            transactionType = TransactionType.INVENTORY,
-            createdAt = LocalDateTime(2024, 6, 15, 12, 0),
-            comment = "",
-            isCompleted = false,
-            id = 4
-        ),
-        Transact(
-            transactionType = TransactionType.OPZS,
-            createdAt = LocalDateTime(2024, 6, 20, 16, 45),
-            comment = "",
-            isCompleted = true,
             id = 5
         )
     )
 
     // 9. ===
     val batches = listOf(
-        BatchBD(
-            productId = 1,
-            dateBorn = LocalDate(2024, 5, 15),
-            declarationId = 1,
-            id = 1
-        ),
-        BatchBD(
-            productId = 2,
-            dateBorn = LocalDate(2024, 5, 20),
-            declarationId = 2,
-            id = 2
-        ),
-        BatchBD(
-            productId = 3,
-            dateBorn = LocalDate(2024, 5, 25),
-            declarationId = 1,
-            id = 3
-        ),
-        BatchBD(
-            productId = 4,
-            dateBorn = LocalDate(2024, 6, 1),
-            declarationId = 5,
-            id = 4
-        ),
-        BatchBD(
-            productId = 5,
-            dateBorn = LocalDate(2024, 6, 5),
-            declarationId = 4,
-            id = 5
-        )
+        BatchBD(productId = 2, dateBorn = LocalDate(2024, 2, 10), declarationId = 1, id = 1),
+        BatchBD(productId = 2, dateBorn = LocalDate(2024, 2, 15), declarationId = 1, id = 2),
+        BatchBD(productId = 2, dateBorn = LocalDate(2024, 2, 20), declarationId = 1, id = 3),
+        BatchBD(productId = 3, dateBorn = LocalDate(2024, 3, 1), declarationId = 1, id = 4),
+        BatchBD(productId = 3, dateBorn = LocalDate(2024, 3, 5), declarationId = 1, id = 5),
+        BatchBD(productId = 3, dateBorn = LocalDate(2024, 3, 10), declarationId = 1, id = 6),
+        BatchBD(productId = 5, dateBorn = LocalDate(2024, 4, 5), declarationId = 4, id = 7),
+        BatchBD(productId = 5, dateBorn = LocalDate(2024, 4, 10), declarationId = 4, id = 8),
+        BatchBD(productId = 5, dateBorn = LocalDate(2024, 4, 15), declarationId = 4, id = 9)
     )
 
     // 10. ===
     val batchMovements = listOf(
-        BatchMovement(
-            batchId = 1,
-            movementType = MovementType.INCOMING,
-            count = 100,
-            transactionId = 1,
-            id = 1
-        ),
-        BatchMovement(
-            batchId = 2,
-            movementType = MovementType.INCOMING,
-            count = 50,
-            transactionId = 1,
-            id = 2
-        ),
-        BatchMovement(
-            batchId = 2,
-            movementType = MovementType.OUTGOING,
-            count = 20,
-            transactionId = 2,
-            id = 3
-        ),
-        BatchMovement(
-            batchId = 3,
-            movementType = MovementType.INCOMING,
-            count = 200,
-            transactionId = 1,
-            id = 4
-        ),
-        BatchMovement(
-            batchId = 1,
-            movementType = MovementType.OUTGOING,
-            count = 10,
-            transactionId = 3,
-            id = 5
-        )
+        BatchMovement(batchId = 1, movementType = MovementType.INCOMING, count = 25000, transactionId = 1, id = 1),
+        BatchMovement(batchId = 2, movementType = MovementType.INCOMING, count = 30000, transactionId = 1, id = 2),
+        BatchMovement(batchId = 3, movementType = MovementType.INCOMING, count = 27500, transactionId = 1, id = 3),
+        BatchMovement(batchId = 4, movementType = MovementType.INCOMING, count = 22000, transactionId = 2, id = 4),
+        BatchMovement(batchId = 5, movementType = MovementType.INCOMING, count = 25000, transactionId = 2, id = 5),
+        BatchMovement(batchId = 6, movementType = MovementType.INCOMING, count = 24000, transactionId = 2, id = 6),
+        BatchMovement(batchId = 7, movementType = MovementType.INCOMING, count = 21000, transactionId = 3, id = 7),
+        BatchMovement(batchId = 8, movementType = MovementType.INCOMING, count = 23000, transactionId = 3, id = 8),
+        BatchMovement(batchId = 9, movementType = MovementType.INCOMING, count = 20050, transactionId = 3, id = 9)
     )
 
     // 11. ===
     val buys = listOf(
-        BuyBDIn(
-            transactionId = 1,
-            movementId = 1,
-            price = 15000, // 150.00 рублей
-            comment = "",
-            id = 1
-        ),
-        BuyBDIn(
-            transactionId = 1,
-            movementId = 2,
-            price = 45000, // 450.00 рублей
-            comment = "",
-            id = 2
-        ),
-        BuyBDIn(
-            transactionId = 1,
-            movementId = 4,
-            price = 8000, // 80.00 рублей
-            comment = "",
-            id = 3
-        ),
-        BuyBDIn(
-            transactionId = 2,
-            movementId = 3,
-            price = 18000, // 180.00 рублей
-            comment = "",
-            id = 4
-        ),
-        BuyBDIn(
-            transactionId = 3,
-            movementId = 5,
-            price = 2000, // 20.00 рублей
-            comment = "",
-            id = 5
-        )
+        BuyBDIn(transactionId = 1, movementId = 1, price = 250000, comment = "", id = 1),
+        BuyBDIn(transactionId = 1, movementId = 2, price = 300000, comment = "", id = 2),
+        BuyBDIn(transactionId = 1, movementId = 3, price = 275000, comment = "", id = 3),
+        BuyBDIn(transactionId = 2, movementId = 4, price = 180000, comment = "", id = 4),
+        BuyBDIn(transactionId = 2, movementId = 5, price = 200000, comment = "", id = 5),
+        BuyBDIn(transactionId = 2, movementId = 6, price = 192000, comment = "", id = 6),
+        BuyBDIn(transactionId = 3, movementId = 7, price = 504000, comment = "", id = 7),
+        BuyBDIn(transactionId = 3, movementId = 8, price = 552000, comment = "", id = 8),
+        BuyBDIn(transactionId = 3, movementId = 9, price = 481200, comment = "", id = 9)
     )
 
     // 12. ===
     val reminders = listOf(
         ReminderBD(
             transactionId = 1,
-            text = "Проверить качество поставки",
-            reminderDateTime = LocalDateTime(2024, 6, 2, 10, 0),
+            text = "",
+            reminderDateTime = LocalDateTime(2024, 4, 11, 9, 0),
             id = 1
         ),
         ReminderBD(
             transactionId = 2,
-            text = "Оплатить счёт поставщику",
-            reminderDateTime = LocalDateTime(2024, 6, 6, 14, 0),
+            text = "",
+            reminderDateTime = LocalDateTime(2024, 4, 16, 10, 0),
             id = 2
         ),
         ReminderBD(
             transactionId = 3,
-            text = "Подать акт списания",
-            reminderDateTime = LocalDateTime(2024, 6, 11, 9, 0),
+            text = "",
+            reminderDateTime = LocalDateTime(2024, 4, 21, 11, 0),
             id = 3
-        ),
-        ReminderBD(
-            transactionId = 4,
-            text = "Завершить инвентаризацию",
-            reminderDateTime = LocalDateTime(2024, 6, 16, 18, 0),
-            id = 4
-        ),
-        ReminderBD(
-            transactionId = 5,
-            text = "Отправить отчёт в налоговую",
-            reminderDateTime = LocalDateTime(2024, 6, 25, 12, 0),
-            id = 5
         )
     )
 
@@ -420,42 +335,34 @@ suspend fun seedDatabase(db: NocombroDatabase) {
         ExpenseBD(
             transactionId = 1,
             expenseType = ExpenseType.TRANSPORT_DELIVERY,
-            amount = 5000, // 50.00 рублей
-            expenseDateTime = LocalDateTime(2024, 6, 1, 11, 0),
+            amount = 5000,
+            expenseDateTime = LocalDateTime(2024, 4, 10, 10, 0),
             comment = "",
             id = 1
         ),
         ExpenseBD(
             transactionId = 2,
-            expenseType = ExpenseType.TRANSPORT_GASOLINE,
-            amount = 3500, // 35.00 рублей
-            expenseDateTime = LocalDateTime(2024, 6, 5, 15, 0),
+            expenseType = ExpenseType.TRANSPORT_DELIVERY,
+            amount = 3500,
+            expenseDateTime = LocalDateTime(2024, 4, 15, 11, 0),
             comment = "",
             id = 2
         ),
         ExpenseBD(
-            transactionId = null,
-            expenseType = ExpenseType.STATIONERY,
-            amount = 1200, // 12.00 рублей
-            expenseDateTime = LocalDateTime(2024, 6, 7, 10, 30),
+            transactionId = 3,
+            expenseType = ExpenseType.TRANSPORT_DELIVERY,
+            amount = 2000,
+            expenseDateTime = LocalDateTime(2024, 4, 20, 12, 0),
             comment = "",
             id = 3
         ),
         ExpenseBD(
             transactionId = null,
-            expenseType = ExpenseType.TRANSPORT_DEPRECIATION,
-            amount = 10000, // 100.00 рублей
-            expenseDateTime = LocalDateTime(2024, 6, 10, 9, 0),
+            expenseType = ExpenseType.STATIONERY,
+            amount = 1200,
+            expenseDateTime = LocalDateTime(2024, 4, 25, 10, 0),
             comment = "",
             id = 4
-        ),
-        ExpenseBD(
-            transactionId = 1,
-            expenseType = ExpenseType.COMMISSION,
-            amount = 5000, // 50.00 рублей
-            expenseDateTime = LocalDateTime(2024, 6, 1, 12, 0),
-            comment = "",
-            id = 5
         )
     )
 
