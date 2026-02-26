@@ -4,6 +4,7 @@ package ru.pavlig43.database
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.minus
 import kotlinx.datetime.plus
 import ru.pavlig43.core.emptyDate
 import ru.pavlig43.core.getCurrentLocalDate
@@ -33,60 +34,60 @@ import kotlin.time.ExperimentalTime
 suspend fun seedDatabase(db: NocombroDatabase) {
     try {
         db.productDao.getProduct(1)
-        return // База уже инициализирована
+        return //
     } catch (_: Exception) {
-        // База пуста, заполняем данными
+        //
     }
 
-    // 1. === VENDOR (5 записей) ===
+    // 1. ===
     val vendors = listOf(
-        Vendor(displayName = "Ингре", comment = "Поставщик инградиентов", id = 1),
-        Vendor(displayName = "Стоинг", comment = "Оптовый склад", id = 2),
-        Vendor(displayName = "Рустарк", comment = "Российские товары", id = 3),
-        Vendor(displayName = "Агро-Союз", comment = "Сельхозпродукция", id = 4),
-        Vendor(displayName = "ФудМастер", comment = "Пищевые добавки", id = 5)
+        Vendor(displayName = "NOCOMBRO", comment = "", id = 1),
+        Vendor(displayName = "Стоинг", comment = "", id = 2),
+        Vendor(displayName = "Рустарк", comment = "", id = 3),
+        Vendor(displayName = "Агро-Союз", comment = "", id = 4),
+        Vendor(displayName = "Ingre", comment = "", id = 5)
     )
 
-    // 2. === PRODUCT (5 записей) ===
+    // 2. ===
     val products = listOf(
         Product(
             type = ProductType.FOOD_BASE,
             displayName = "Соль",
-            createdAt = LocalDate.fromEpochDays(0),
-            comment = "Пищевая соль",
-            id = 1
+            createdAt = getCurrentLocalDate(),
+            comment = "",
+            id = 2
         ),
         Product(
             type = ProductType.FOOD_PF,
             displayName = "Баварские колбаски",
-            createdAt = LocalDate.fromEpochDays(0),
-            comment = "Полуфабрикат",
-            id = 2
+            createdAt = getCurrentLocalDate(),
+            comment = "",
+            id = 1
         ),
         Product(
             type = ProductType.FOOD_BASE,
             displayName = "Декстроза",
-            createdAt = LocalDate.fromEpochDays(0),
-            comment = "Глюкоза",
+            createdAt = getCurrentLocalDate(),
+            comment = "",
             id = 3
         ),
         Product(
             type = ProductType.PACK,
             displayName = "Пленка ПЭТ",
-            createdAt = LocalDate.fromEpochDays(0),
-            comment = "Упаковочный материал",
+            createdAt = getCurrentLocalDate(),
+            comment = "",
             id = 4
         ),
         Product(
             type = ProductType.FOOD_BASE,
-            displayName = "Мука пшеничная",
-            createdAt = LocalDate.fromEpochDays(0),
-            comment = "Высший сорт",
+            displayName = "Ароматизатор мясо",
+            createdAt = getCurrentLocalDate(),
+            comment = "",
             id = 5
         )
     )
 
-    // 3. === DECLARATION (5 записей) ===
+    // 3. ===
     val declarations = listOf(
         Declaration(
             displayName = "Декларация ингре",
@@ -96,90 +97,90 @@ suspend fun seedDatabase(db: NocombroDatabase) {
             bestBefore = getCurrentLocalDate().plus(10, DateTimeUnit.DAY),
             id = 1,
             observeFromNotification = true,
-            bornDate = getCurrentLocalDate().plus(5, DateTimeUnit.DAY)
+            bornDate = getCurrentLocalDate().minus(5, DateTimeUnit.DAY)
         ),
         Declaration(
             displayName = "Декларация стоинг",
-            createdAt = LocalDate.fromEpochDays(0),
+            createdAt = getCurrentLocalDate(),
             vendorId = 2,
             vendorName = "Стоинг",
-            bestBefore = LocalDate.fromEpochDays(180),
+            bestBefore = getCurrentLocalDate().plus(10, DateTimeUnit.DAY),
             id = 2,
             observeFromNotification = true,
-            bornDate = emptyDate
+            bornDate = getCurrentLocalDate().minus(5, DateTimeUnit.DAY)
         ),
         Declaration(
             displayName = "Декларация рустарк",
-            createdAt = LocalDate.fromEpochDays(0),
+            createdAt = getCurrentLocalDate(),
             vendorId = 3,
             vendorName = "Рустарк",
-            bestBefore = LocalDate.fromEpochDays(270),
+            bestBefore = getCurrentLocalDate().plus(10, DateTimeUnit.DAY),
             id = 3,
             observeFromNotification = true,
-            bornDate = emptyDate
+            bornDate = getCurrentLocalDate().minus(5, DateTimeUnit.DAY)
         ),
         Declaration(
             displayName = "Декларация агро",
-            createdAt = LocalDate.fromEpochDays(0),
+            createdAt = getCurrentLocalDate(),
             vendorId = 4,
             vendorName = "Агро-Союз",
-            bestBefore = LocalDate.fromEpochDays(90),
+            bestBefore = getCurrentLocalDate().plus(10, DateTimeUnit.DAY),
             id = 4,
             observeFromNotification = false,
-            bornDate = emptyDate
+            bornDate = getCurrentLocalDate().minus(5, DateTimeUnit.DAY)
         ),
         Declaration(
             displayName = "Декларация фуд",
-            createdAt = LocalDate.fromEpochDays(0),
+            createdAt = getCurrentLocalDate(),
             vendorId = 5,
             vendorName = "ФудМастер",
-            bestBefore = LocalDate.fromEpochDays(540),
+            bestBefore = getCurrentLocalDate().plus(10, DateTimeUnit.DAY),
             id = 5,
             observeFromNotification = true,
-            bornDate = emptyDate
+            bornDate = getCurrentLocalDate().minus(5, DateTimeUnit.DAY)
         )
     )
 
-    // 4. === DOCUMENT (5 записей) ===
+    // 4. ===
     val documents = listOf(
         Document(
             displayName = "ГОСТ 12345-2000",
             type = DocumentType.GOST,
             createdAt = LocalDate(2024, 1, 15),
-            comment = "Государственный стандарт",
+            comment = "",
             id = 1
         ),
         Document(
             displayName = "Спецификация №001",
             type = DocumentType.SPECIFICATION,
             createdAt = LocalDate(2024, 2, 20),
-            comment = "Техническая спецификация",
+            comment = "",
             id = 2
         ),
         Document(
             displayName = "ГОСТ 54321-2018",
             type = DocumentType.GOST,
             createdAt = LocalDate(2024, 3, 10),
-            comment = "Стандарт качества",
+            comment = "",
             id = 3
         ),
         Document(
             displayName = "Спецификация №002",
             type = DocumentType.SPECIFICATION,
             createdAt = LocalDate(2024, 4, 5),
-            comment = "Производственная спецификация",
+            comment = "",
             id = 4
         ),
         Document(
             displayName = "ГОСТ 67890-2022",
             type = DocumentType.GOST,
             createdAt = LocalDate(2024, 5, 12),
-            comment = "Новый стандарт",
+            comment = "",
             id = 5
         )
     )
 
-    // 5. === FILE (5 записей) ===
+    // 5. ===
     val files = listOf(
         FileBD(
             ownerId = 1,
@@ -213,7 +214,7 @@ suspend fun seedDatabase(db: NocombroDatabase) {
         )
     )
 
-    // 6. === PRODUCT_DECLARATION (5 записей) ===
+    // 6. ===
     val productDeclarations = listOf(
         ProductDeclarationIn(productId = 2, declarationId = 1, id = 1),
         ProductDeclarationIn(productId = 2, declarationId = 2, id = 2),
@@ -222,55 +223,53 @@ suspend fun seedDatabase(db: NocombroDatabase) {
         ProductDeclarationIn(productId = 5, declarationId = 4, id = 5)
     )
 
-    // 7. === COMPOSITION (5 записей) ===
+    // 7. ===
     val compositions = listOf(
-        CompositionIn(parentId = 2, productId = 1, count = 500, id = 1), // Баварские содержат 500г соли
-        CompositionIn(parentId = 2, productId = 3, count = 200, id = 2), // Баварские содержат 200г декстрозы
-        CompositionIn(parentId = 2, productId = 5, count = 300, id = 3), // Баварские содержат 300г муки
-        CompositionIn(parentId = 5, productId = 1, count = 10, id = 4), // Мука содержит соль
-        CompositionIn(parentId = 5, productId = 3, count = 50, id = 5) // Мука содержит декстрозу
+        CompositionIn(parentId = 2, productId = 1, count = 700, id = 1), //
+        CompositionIn(parentId = 2, productId = 3, count = 250, id = 2), //
+        CompositionIn(parentId = 2, productId = 5, count = 50, id = 3), //
     )
 
-    // 8. === TRANSACT (5 записей) ===
+    // 8. ===
     val transactions = listOf(
         Transact(
             transactionType = TransactionType.BUY,
             createdAt = LocalDateTime(2024, 6, 1, 10, 30),
-            comment = "Закупка сырья",
+            comment = "",
             isCompleted = true,
             id = 1
         ),
         Transact(
             transactionType = TransactionType.SALE,
             createdAt = LocalDateTime(2024, 6, 5, 14, 0),
-            comment = "Продажа партии",
+            comment = "",
             isCompleted = true,
             id = 2
         ),
         Transact(
             transactionType = TransactionType.WRITE_OFF,
             createdAt = LocalDateTime(2024, 6, 10, 9, 15),
-            comment = "Списание испорченного товара",
+            comment = "",
             isCompleted = false,
             id = 3
         ),
         Transact(
             transactionType = TransactionType.INVENTORY,
             createdAt = LocalDateTime(2024, 6, 15, 12, 0),
-            comment = "Ежемесячная инвентаризация",
+            comment = "",
             isCompleted = false,
             id = 4
         ),
         Transact(
             transactionType = TransactionType.OPZS,
             createdAt = LocalDateTime(2024, 6, 20, 16, 45),
-            comment = "Отчёт для ОПЗС",
+            comment = "",
             isCompleted = true,
             id = 5
         )
     )
 
-    // 9. === BATCH (5 записей) ===
+    // 9. ===
     val batches = listOf(
         BatchBD(
             productId = 1,
@@ -304,7 +303,7 @@ suspend fun seedDatabase(db: NocombroDatabase) {
         )
     )
 
-    // 10. === BATCH_MOVEMENT (5 записей) ===
+    // 10. ===
     val batchMovements = listOf(
         BatchMovement(
             batchId = 1,
@@ -343,46 +342,46 @@ suspend fun seedDatabase(db: NocombroDatabase) {
         )
     )
 
-    // 11. === BUY (5 записей) ===
+    // 11. ===
     val buys = listOf(
         BuyBDIn(
             transactionId = 1,
             movementId = 1,
             price = 15000, // 150.00 рублей
-            comment = "Закупка соли",
+            comment = "",
             id = 1
         ),
         BuyBDIn(
             transactionId = 1,
             movementId = 2,
             price = 45000, // 450.00 рублей
-            comment = "Закупка колбасок",
+            comment = "",
             id = 2
         ),
         BuyBDIn(
             transactionId = 1,
             movementId = 4,
             price = 8000, // 80.00 рублей
-            comment = "Закупка декстрозы",
+            comment = "",
             id = 3
         ),
         BuyBDIn(
             transactionId = 2,
             movementId = 3,
             price = 18000, // 180.00 рублей
-            comment = "Продажа оптом",
+            comment = "",
             id = 4
         ),
         BuyBDIn(
             transactionId = 3,
             movementId = 5,
             price = 2000, // 20.00 рублей
-            comment = "Списание",
+            comment = "",
             id = 5
         )
     )
 
-    // 12. === REMINDER (5 записей) ===
+    // 12. ===
     val reminders = listOf(
         ReminderBD(
             transactionId = 1,
@@ -416,14 +415,14 @@ suspend fun seedDatabase(db: NocombroDatabase) {
         )
     )
 
-    // 13. === EXPENSE (5 записей) ===
+    // 13. ===
     val expenses = listOf(
         ExpenseBD(
             transactionId = 1,
             expenseType = ExpenseType.TRANSPORT_DELIVERY,
             amount = 5000, // 50.00 рублей
             expenseDateTime = LocalDateTime(2024, 6, 1, 11, 0),
-            comment = "Доставка товара",
+            comment = "",
             id = 1
         ),
         ExpenseBD(
@@ -431,7 +430,7 @@ suspend fun seedDatabase(db: NocombroDatabase) {
             expenseType = ExpenseType.TRANSPORT_GASOLINE,
             amount = 3500, // 35.00 рублей
             expenseDateTime = LocalDateTime(2024, 6, 5, 15, 0),
-            comment = "Бензин для доставки",
+            comment = "",
             id = 2
         ),
         ExpenseBD(
@@ -439,7 +438,7 @@ suspend fun seedDatabase(db: NocombroDatabase) {
             expenseType = ExpenseType.STATIONERY,
             amount = 1200, // 12.00 рублей
             expenseDateTime = LocalDateTime(2024, 6, 7, 10, 30),
-            comment = "Канцелярия для офиса",
+            comment = "",
             id = 3
         ),
         ExpenseBD(
@@ -447,7 +446,7 @@ suspend fun seedDatabase(db: NocombroDatabase) {
             expenseType = ExpenseType.TRANSPORT_DEPRECIATION,
             amount = 10000, // 100.00 рублей
             expenseDateTime = LocalDateTime(2024, 6, 10, 9, 0),
-            comment = "Амортизация авто за июнь",
+            comment = "",
             id = 4
         ),
         ExpenseBD(
@@ -455,34 +454,34 @@ suspend fun seedDatabase(db: NocombroDatabase) {
             expenseType = ExpenseType.COMMISSION,
             amount = 5000, // 50.00 рублей
             expenseDateTime = LocalDateTime(2024, 6, 1, 12, 0),
-            comment = "Комиссия посреднику",
+            comment = "",
             id = 5
         )
     )
 
-    // === ЗАПИСЬ В БАЗУ В ПРАВИЛЬНОМ ПОРЯДКЕ ===
+    // === ЗАПИСЬ В БАЗУ ===
 
-    // Сначала базовые сущности без зависимостей
+    //
     vendors.forEach { db.vendorDao.create(it) }
     products.forEach { db.productDao.create(it) }
     documents.forEach { db.documentDao.create(it) }
     transactions.forEach { db.transactionDao.create(it) }
 
-    // Затем сущности с зависимостями
+    //
     declarations.forEach { db.declarationDao.create(it) }
     db.fileDao.upsertFiles(files)
 
-    // Связующие таблицы
+    //
     db.productDeclarationDao.upsertProductDeclarations(productDeclarations)
     db.compositionDao.upsertComposition(compositions)
 
-    // Партии
+    //
     batches.forEach { db.batchDao.createBatch(it) }
 
-    // Движения партий
+    //
     db.batchMovementDao.upsertMovements(batchMovements)
 
-    // Покупки, напоминания, расходы
+    //
     buys.forEach { db.buyDao.upsertBuyBd(it) }
     db.reminderDao.upsertAll(reminders)
     db.expenseDao.upsertAll(expenses)
