@@ -18,8 +18,7 @@ import ru.pavlig43.database.data.batch.BatchMovement
 import ru.pavlig43.database.data.batch.BatchOut
 import ru.pavlig43.database.data.batch.BatchWithBalanceOut
 import ru.pavlig43.database.data.batch.MovementType
-import ru.pavlig43.database.data.batch.StorageBatch
-import ru.pavlig43.database.data.batch.StorageProduct
+import ru.pavlig43.database.data.storage.StorageProduct
 import ru.pavlig43.database.data.transact.Transact
 
 /**
@@ -53,24 +52,7 @@ abstract class BatchMovementDao {
     @Query("SELECT * FROM batch_movement WHERE batch_id IN (SELECT id FROM batch WHERE product_id = :productId)")
     internal abstract fun observeMovementsByProductId(productId: Int): Flow<List<MovementOut>>
 
-    @Transaction
-    @Query("SELECT * FROM batch_movement ")
-    internal abstract fun observeOnAllMovements(): Flow<List<MovementOut>>
 
-    fun observeOnStorageProducts1(): Flow<List<String>> {
-        return observeOnAllMovements().mapValues { "$it \n" }
-    }
-    fun observeOnStorageProducts(
-        start: LocalDateTime,
-        end: LocalDateTime
-    ): Flow<List<String>> {
-        val a = observeOnAllMovements().map{ lst->
-            lst.groupBy { it.batchOut.product.id }
-                .values.mapParallel { movementOuts: List<MovementOut> ->
-                    StorageBatch
-                }
-                }
-        }
 
 
 
@@ -114,12 +96,7 @@ abstract class BatchMovementDao {
     abstract fun observeMovementsByBatchId(batchId: Int): Flow<List<BatchMovement>>
 
 
-    internal fun observeOnMovementInDateTimePeriod(
-        start: LocalDateTime,
-        end: LocalDateTime
-    ): Flow<List<StorageProduct>>{
-        return flowOf()
-    }
+
 }
 
 /**

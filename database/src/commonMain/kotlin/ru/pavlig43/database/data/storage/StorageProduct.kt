@@ -1,4 +1,6 @@
-package ru.pavlig43.database.data.batch
+package ru.pavlig43.database.data.storage
+
+import ru.pavlig43.database.data.batch.MovementType
 
 data class StorageProduct(
     val productId: Int,
@@ -9,7 +11,6 @@ data class StorageProduct(
 data class StorageBatch(
     val batchId: Int,
     val batchName: String,
-    val movementType: MovementType,
     val balanceBeforeStart: Int,
     val incoming: Int,
     val outgoing: Int,
