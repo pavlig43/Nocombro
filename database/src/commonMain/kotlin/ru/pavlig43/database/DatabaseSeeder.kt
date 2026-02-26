@@ -146,35 +146,35 @@ suspend fun seedDatabase(db: NocombroDatabase) {
         Document(
             displayName = "ГОСТ 12345-2000",
             type = DocumentType.GOST,
-            createdAt = LocalDate(2024, 1, 15),
+            createdAt = LocalDate(2026, 1, 15),
             comment = "",
             id = 1
         ),
         Document(
             displayName = "Спецификация №001",
             type = DocumentType.SPECIFICATION,
-            createdAt = LocalDate(2024, 2, 20),
+            createdAt = LocalDate(2026, 2, 20),
             comment = "",
             id = 2
         ),
         Document(
             displayName = "ГОСТ 54321-2018",
             type = DocumentType.GOST,
-            createdAt = LocalDate(2024, 3, 10),
+            createdAt = LocalDate(2026, 1, 10),
             comment = "",
             id = 3
         ),
         Document(
             displayName = "Спецификация №002",
             type = DocumentType.SPECIFICATION,
-            createdAt = LocalDate(2024, 4, 5),
+            createdAt = LocalDate(2026, 1, 5),
             comment = "",
             id = 4
         ),
         Document(
             displayName = "ГОСТ 67890-2022",
             type = DocumentType.GOST,
-            createdAt = LocalDate(2024, 5, 12),
+            createdAt = LocalDate(2026, 2, 1),
             comment = "",
             id = 5
         )
@@ -234,56 +234,56 @@ suspend fun seedDatabase(db: NocombroDatabase) {
     val transactions = listOf(
         Transact(
             transactionType = TransactionType.BUY,
-            createdAt = LocalDateTime(2024, 4, 10, 9, 0),
+            createdAt = LocalDateTime(2026, 1, 10, 9, 0),
             comment = "",
             isCompleted = true,
             id = 1
         ),
         Transact(
             transactionType = TransactionType.BUY,
-            createdAt = LocalDateTime(2024, 4, 15, 10, 30),
+            createdAt = LocalDateTime(2026, 1, 15, 10, 30),
             comment = "",
             isCompleted = true,
             id = 2
         ),
         Transact(
             transactionType = TransactionType.BUY,
-            createdAt = LocalDateTime(2024, 4, 20, 11, 15),
+            createdAt = LocalDateTime(2026, 1, 20, 11, 15),
             comment = "",
             isCompleted = true,
             id = 3
         ),
         Transact(
             transactionType = TransactionType.OPZS,
-            createdAt = LocalDateTime(2024, 5, 6, 10, 0),
+            createdAt = LocalDateTime(2026, 2, 6, 10, 0),
             comment = "",
             isCompleted = true,
             id = 4
         ),
         Transact(
             transactionType = TransactionType.OPZS,
-            createdAt = LocalDateTime(2024, 5, 10, 10, 0),
+            createdAt = LocalDateTime(2026, 2, 10, 10, 0),
             comment = "",
             isCompleted = true,
             id = 5
         ),
         Transact(
             transactionType = TransactionType.OPZS,
-            createdAt = LocalDateTime(2024, 5, 15, 10, 0),
+            createdAt = LocalDateTime(2026, 2, 15, 10, 0),
             comment = "",
             isCompleted = true,
             id = 6
         ),
         Transact(
             transactionType = TransactionType.SALE,
-            createdAt = LocalDateTime(2024, 6, 5, 14, 0),
+            createdAt = LocalDateTime(2026, 2, 20, 14, 0),
             comment = "",
             isCompleted = true,
             id = 7
         ),
         Transact(
             transactionType = TransactionType.WRITE_OFF,
-            createdAt = LocalDateTime(2024, 6, 10, 9, 15),
+            createdAt = LocalDateTime(2026, 2, 25, 9, 15),
             comment = "",
             isCompleted = false,
             id = 8
@@ -292,18 +292,18 @@ suspend fun seedDatabase(db: NocombroDatabase) {
 
     // 9. ===
     val batches = listOf(
-        BatchBD(productId = 2, dateBorn = LocalDate(2024, 2, 10), declarationId = 1, id = 1),
-        BatchBD(productId = 2, dateBorn = LocalDate(2024, 2, 15), declarationId = 1, id = 2),
-        BatchBD(productId = 2, dateBorn = LocalDate(2024, 2, 20), declarationId = 1, id = 3),
-        BatchBD(productId = 3, dateBorn = LocalDate(2024, 3, 1), declarationId = 1, id = 4),
-        BatchBD(productId = 3, dateBorn = LocalDate(2024, 3, 5), declarationId = 1, id = 5),
-        BatchBD(productId = 3, dateBorn = LocalDate(2024, 3, 10), declarationId = 1, id = 6),
-        BatchBD(productId = 5, dateBorn = LocalDate(2024, 4, 5), declarationId = 4, id = 7),
-        BatchBD(productId = 5, dateBorn = LocalDate(2024, 4, 10), declarationId = 4, id = 8),
-        BatchBD(productId = 5, dateBorn = LocalDate(2024, 4, 15), declarationId = 4, id = 9),
-        BatchBD(productId = 1, dateBorn = LocalDate(2024, 5, 6), declarationId = 1, id = 10),
-        BatchBD(productId = 1, dateBorn = LocalDate(2024, 5, 10), declarationId = 1, id = 11),
-        BatchBD(productId = 1, dateBorn = LocalDate(2024, 5, 15), declarationId = 1, id = 12)
+        BatchBD(productId = 2, dateBorn = LocalDate(2026, 1, 5), declarationId = 1, id = 1),
+        BatchBD(productId = 2, dateBorn = LocalDate(2026, 1, 6), declarationId = 1, id = 2),
+        BatchBD(productId = 2, dateBorn = LocalDate(2026, 1, 7), declarationId = 1, id = 3),
+        BatchBD(productId = 3, dateBorn = LocalDate(2026, 1, 8), declarationId = 1, id = 4),
+        BatchBD(productId = 3, dateBorn = LocalDate(2026, 1, 9), declarationId = 1, id = 5),
+        BatchBD(productId = 3, dateBorn = LocalDate(2026, 1, 10), declarationId = 1, id = 6),
+        BatchBD(productId = 5, dateBorn = LocalDate(2026, 1, 11), declarationId = 4, id = 7),
+        BatchBD(productId = 5, dateBorn = LocalDate(2026, 1, 12), declarationId = 4, id = 8),
+        BatchBD(productId = 5, dateBorn = LocalDate(2026, 1, 13), declarationId = 4, id = 9),
+        BatchBD(productId = 1, dateBorn = LocalDate(2026, 2, 6), declarationId = 1, id = 10),
+        BatchBD(productId = 1, dateBorn = LocalDate(2026, 2, 10), declarationId = 1, id = 11),
+        BatchBD(productId = 1, dateBorn = LocalDate(2026, 2, 15), declarationId = 1, id = 12)
     )
 
     // 10. ===
@@ -349,31 +349,31 @@ suspend fun seedDatabase(db: NocombroDatabase) {
         ReminderBD(
             transactionId = 1,
             text = "",
-            reminderDateTime = LocalDateTime(2024, 4, 11, 9, 0),
+            reminderDateTime = LocalDateTime(2026, 1, 11, 9, 0),
             id = 1
         ),
         ReminderBD(
             transactionId = 2,
             text = "",
-            reminderDateTime = LocalDateTime(2024, 4, 16, 10, 0),
+            reminderDateTime = LocalDateTime(2026, 1, 16, 10, 0),
             id = 2
         ),
         ReminderBD(
             transactionId = 3,
             text = "",
-            reminderDateTime = LocalDateTime(2024, 4, 21, 11, 0),
+            reminderDateTime = LocalDateTime(2026, 1, 21, 11, 0),
             id = 3
         ),
         ReminderBD(
             transactionId = 4,
             text = "",
-            reminderDateTime = LocalDateTime(2024, 5, 7, 9, 0),
+            reminderDateTime = LocalDateTime(2026, 2, 7, 9, 0),
             id = 4
         ),
         ReminderBD(
             transactionId = 5,
             text = "",
-            reminderDateTime = LocalDateTime(2024, 5, 11, 9, 0),
+            reminderDateTime = LocalDateTime(2026, 2, 11, 9, 0),
             id = 5
         )
     )
@@ -384,7 +384,7 @@ suspend fun seedDatabase(db: NocombroDatabase) {
             transactionId = 1,
             expenseType = ExpenseType.TRANSPORT_DELIVERY,
             amount = 5000,
-            expenseDateTime = LocalDateTime(2024, 4, 10, 10, 0),
+            expenseDateTime = LocalDateTime(2026, 1, 10, 10, 0),
             comment = "",
             id = 1
         ),
@@ -392,7 +392,7 @@ suspend fun seedDatabase(db: NocombroDatabase) {
             transactionId = 2,
             expenseType = ExpenseType.TRANSPORT_DELIVERY,
             amount = 3500,
-            expenseDateTime = LocalDateTime(2024, 4, 15, 11, 0),
+            expenseDateTime = LocalDateTime(2026, 1, 15, 11, 0),
             comment = "",
             id = 2
         ),
@@ -400,7 +400,7 @@ suspend fun seedDatabase(db: NocombroDatabase) {
             transactionId = 3,
             expenseType = ExpenseType.TRANSPORT_DELIVERY,
             amount = 2000,
-            expenseDateTime = LocalDateTime(2024, 4, 20, 12, 0),
+            expenseDateTime = LocalDateTime(2026, 1, 20, 12, 0),
             comment = "",
             id = 3
         ),
@@ -408,7 +408,7 @@ suspend fun seedDatabase(db: NocombroDatabase) {
             transactionId = null,
             expenseType = ExpenseType.STATIONERY,
             amount = 1200,
-            expenseDateTime = LocalDateTime(2024, 4, 25, 10, 0),
+            expenseDateTime = LocalDateTime(2026, 2, 5, 10, 0),
             comment = "",
             id = 4
         )
