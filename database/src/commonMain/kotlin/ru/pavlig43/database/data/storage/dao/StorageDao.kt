@@ -77,6 +77,10 @@ abstract class StorageDao {
                         StorageProduct(
                             productId = productId,
                             productName = productName,
+                            balanceBeforeStart = batches.sumOf { it.balanceBeforeStart },
+                            incoming = batches.sumOf { it.incoming },
+                            outgoing = batches.sumOf { it.outgoing },
+                            balanceOnEnd = batches.sumOf { it.balanceOnEnd },
                             batches = batches
                         )
                     }
