@@ -22,17 +22,23 @@ abstract class StorageDao {
     @Query("SELECT * FROM batch_movement ")
     internal abstract fun observeOnAllMovements(): Flow<List<MovementOut>>
 
+    @Transaction
+    @Query("""
+        SELECT bm.* FROM batch_movement bm
+        INNER JOIN transact t ON bm.transaction_id = t.id
+        WHERE t.created_at <= :end
+    """)
+    internal abstract fun observeMovementsUntil(end: LocalDateTime): Flow<List<MovementOut>>
+
 
     fun observeOnStorageBatches(
         start: LocalDateTime,
         end: LocalDateTime
     ): Flow<List<String>> {
-        val storageBatches: Flow<List<StorageProduct>> = observeOnAllMovements().map { fillList ->
-            val filteredList = fillList.filter { it.transaction.createdAt <= end }
-            filteredList.groupBy { it.batchOut.product }
-
+        return observeMovementsUntil(end).map { fillList ->
+            fillList.groupBy { it.batchOut.product }
                 .run {
-                    this.values.mapParallel(Dispatchers.IO) { movementOuts: List<MovementOut> ->
+                    this.values.mapParallel(Dispatchers.Default) { movementOuts: List<MovementOut> ->
                         val product = movementOuts.first().batchOut.product
                         val productId = product.id
                         val productName = product.displayName
@@ -42,25 +48,17 @@ abstract class StorageDao {
                             .map { (batch, moves) ->
                                 val batchId = batch.id
                                 val batchName = "($batchId) ${batch.dateBorn.format(dateFormat)}"
-                                var balanceBeforeStart = 0
-                                var incoming = 0
-                                var outgoing = 0
 
-                                moves.forEach { move ->
+                                val (balanceBeforeStart, incoming, outgoing) = moves.fold(Triple(0, 0, 0)) { (accBefore, accIn, accOut), move ->
                                     val count = move.movement.count
                                     val type = move.movement.movementType
-                                    val transactionDt = move.transaction.createdAt
-                                    val sign = when(type) {
-                                        MovementType.INCOMING -> 1
-                                        MovementType.OUTGOING -> -1
-                                    }
-
+                                    val dt = move.transaction.createdAt
                                     when {
-                                        transactionDt < start -> balanceBeforeStart += count * sign
-                                        else -> {
-                                            if (type == MovementType.INCOMING) incoming += count
-                                            else outgoing += count
-                                        }
+                                        dt < start && type == MovementType.INCOMING -> Triple(accBefore + count, accIn, accOut)
+                                        dt < start && type == MovementType.OUTGOING -> Triple(accBefore - count, accIn, accOut)
+                                        type == MovementType.INCOMING -> Triple(accBefore, accIn + count, accOut)
+                                        type == MovementType.OUTGOING -> Triple(accBefore, accIn, accOut + count)
+                                        else -> Triple(accBefore, accIn, accOut)
                                     }
                                 }
 
@@ -74,18 +72,27 @@ abstract class StorageDao {
                                 )
                             }
 
+                        val totals = batches.fold(Triple(0, 0, 0)) { (accBefore, accIn, accOut), batch ->
+                            Triple(
+                                accBefore + batch.balanceBeforeStart,
+                                accIn + batch.incoming,
+                                accOut + batch.outgoing
+                            )
+                        }
+
                         StorageProduct(
                             productId = productId,
                             productName = productName,
-                            balanceBeforeStart = batches.sumOf { it.balanceBeforeStart },
-                            incoming = batches.sumOf { it.incoming },
-                            outgoing = batches.sumOf { it.outgoing },
-                            balanceOnEnd = batches.sumOf { it.balanceOnEnd },
+                            balanceBeforeStart = totals.first,
+                            incoming = totals.second,
+                            outgoing = totals.third,
+                            balanceOnEnd = totals.first + totals.second - totals.third,
                             batches = batches
                         )
                     }
                 }
-        }
-        return storageBatches.mapValues { "$it \n" }
+        }.mapValues {
+            println(it)
+            "$it \n" }
     }
 }
