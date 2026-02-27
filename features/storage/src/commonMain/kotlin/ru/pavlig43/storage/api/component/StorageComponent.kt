@@ -11,10 +11,10 @@ import kotlinx.coroutines.flow.stateIn
 import ru.pavlig43.core.MainTabComponent
 import ru.pavlig43.core.componentCoroutineScope
 import ru.pavlig43.corekoin.ComponentKoinContext
-import ru.pavlig43.database.data.storage.StorageProduct
 import ru.pavlig43.storage.api.StorageDependencies
 import ru.pavlig43.storage.internal.di.StorageRepository
 import ru.pavlig43.storage.internal.di.createStorageModule
+import ru.pavlig43.storage.internal.model.StorageProductUi
 import ru.pavlig43.storage.internal.model.toUi
 
 class StorageComponent(
@@ -50,5 +50,5 @@ class StorageComponent(
 internal sealed interface LoadState{
     data object Loading: LoadState
     data class Error(val message: String): LoadState
-    data class Success(val str:List<StorageProductUi>): LoadState
+    data class Success(val products:List<StorageProductUi>): LoadState
 }
