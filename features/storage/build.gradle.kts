@@ -9,5 +9,7 @@ kotlin{
     commonMainDependencies {
         implementation(projects.database)
         implementation(projects.features.table.core)
+        implementation(projects.features.table.mutable)
+        implementation(projects.features.table.immutable)
     }
 }

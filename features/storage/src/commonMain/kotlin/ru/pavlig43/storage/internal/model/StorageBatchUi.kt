@@ -2,13 +2,14 @@ package ru.pavlig43.storage.internal.model
 
 import ru.pavlig43.database.data.storage.StorageBatch
 
-internal data class StorageBatchUi(
+data class StorageBatchUi(
     val batchId: Int,
     val batchName: String,
     val balanceBeforeStart: Int,
     val incoming: Int,
     val outgoing: Int,
     val balanceOnEnd: Int,
+    val composeId: Int = batchId
 )
 
 internal fun StorageBatch.toUi(): StorageBatchUi {

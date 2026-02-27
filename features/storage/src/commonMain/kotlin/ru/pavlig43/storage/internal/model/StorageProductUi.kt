@@ -3,7 +3,7 @@ package ru.pavlig43.storage.internal.model
 import ru.pavlig43.database.data.storage.StorageProduct
 import ru.pavlig43.tablecore.model.IMultiLineTableUi
 
-internal data class StorageProductUi(
+data class StorageProductUi(
     override val composeId: Int,
     val productId: Int,
     val productName: String,
@@ -11,7 +11,8 @@ internal data class StorageProductUi(
     val incoming: Int,
     val outgoing: Int,
     val balanceOnEnd: Int,
-    val batches: List<StorageBatchUi>
+    val batches: List<StorageBatchUi>,
+    val expanded: Boolean = false
 ) : IMultiLineTableUi
 
 internal fun StorageProduct.toUi(): StorageProductUi {
