@@ -10,6 +10,7 @@ import ru.pavlig43.core.getCurrentLocalDate
 import ru.pavlig43.core.getCurrentLocalDateTime
 import ru.pavlig43.core.minusMonths
 import ru.pavlig43.database.NocombroDatabase
+import ru.pavlig43.database.data.storage.StorageProduct
 import ru.pavlig43.storage.api.StorageDependencies
 
 internal fun createStorageModule(dependencies: StorageDependencies) = listOf(module {
@@ -21,7 +22,7 @@ class StorageRepository(
 ){
     private val dao = db.storageDao
 
-    fun observeOnStorageProducts(): Flow<Result<List<String>>> {
+    fun observeOnStorageProducts(): Flow<Result<List<StorageProduct>>> {
         return  dao.observeOnStorageBatches(
             start = getCurrentLocalDateTime().minusMonths(5,TimeZone.currentSystemDefault()),
             end = getCurrentLocalDateTime()

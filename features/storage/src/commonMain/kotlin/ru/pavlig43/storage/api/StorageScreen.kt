@@ -23,8 +23,11 @@ fun StorageScreen(
         is LoadState.Loading -> LoadingUi()
         is LoadState.Success -> {
             Column(Modifier.verticalScroll(rememberScrollState())){
-                state.str.forEach {
-                    Text(it)
+                state.str.forEach { product ->
+                    Text("${product.productName}: ${product.balanceOnEnd}")
+                    product.batches.forEach { batch ->
+                        Text("  ${batch.batchName}: ${batch.balanceOnEnd}")
+                    }
                 }
             }
         }

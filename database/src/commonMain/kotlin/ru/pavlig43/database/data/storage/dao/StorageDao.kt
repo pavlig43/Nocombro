@@ -23,18 +23,20 @@ abstract class StorageDao {
     internal abstract fun observeOnAllMovements(): Flow<List<MovementOut>>
 
     @Transaction
-    @Query("""
+    @Query(
+        """
         SELECT bm.* FROM batch_movement bm
         INNER JOIN transact t ON bm.transaction_id = t.id
         WHERE t.created_at <= :end
-    """)
+    """
+    )
     internal abstract fun observeMovementsUntil(end: LocalDateTime): Flow<List<MovementOut>>
 
 
     fun observeOnStorageBatches(
         start: LocalDateTime,
         end: LocalDateTime
-    ): Flow<List<String>> {
+    ): Flow<List<StorageProduct>> {
         return observeMovementsUntil(end).map { fillList ->
             fillList.groupBy { it.batchOut.product }
                 .run {
@@ -49,13 +51,29 @@ abstract class StorageDao {
                                 val batchId = batch.id
                                 val batchName = "($batchId) ${batch.dateBorn.format(dateFormat)}"
 
-                                val (balanceBeforeStart, incoming, outgoing) = moves.fold(Triple(0, 0, 0)) { (accBefore, accIn, accOut), move ->
+                                val (balanceBeforeStart, incoming, outgoing) = moves.fold(
+                                    Triple(
+                                        0,
+                                        0,
+                                        0
+                                    )
+                                ) { (accBefore, accIn, accOut), move ->
                                     val count = move.movement.count
                                     val type = move.movement.movementType
                                     val dt = move.transaction.createdAt
                                     when {
-                                        dt < start && type == MovementType.INCOMING -> Triple(accBefore + count, accIn, accOut)
-                                        dt < start && type == MovementType.OUTGOING -> Triple(accBefore - count, accIn, accOut)
+                                        dt < start && type == MovementType.INCOMING -> Triple(
+                                            accBefore + count,
+                                            accIn,
+                                            accOut
+                                        )
+
+                                        dt < start && type == MovementType.OUTGOING -> Triple(
+                                            accBefore - count,
+                                            accIn,
+                                            accOut
+                                        )
+
                                         type == MovementType.INCOMING -> Triple(accBefore, accIn + count, accOut)
                                         type == MovementType.OUTGOING -> Triple(accBefore, accIn, accOut + count)
                                         else -> Triple(accBefore, accIn, accOut)
@@ -91,8 +109,6 @@ abstract class StorageDao {
                         )
                     }
                 }
-        }.mapValues {
-            println(it)
-            "$it \n" }
+        }
     }
 }
