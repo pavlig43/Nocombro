@@ -1,58 +1,63 @@
 package ru.pavlig43.storage.api.column
 
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.toImmutableList
-import ru.pavlig43.mutable.api.column.DecimalFormat
-import ru.pavlig43.mutable.api.column.readDecimalColumn
-import ru.pavlig43.mutable.api.column.readTextColumn
+import ru.pavlig43.immutable.internal.column.DecimalFormat
+import ru.pavlig43.immutable.internal.column.readDecimalColumn
+import ru.pavlig43.immutable.internal.column.readTextColumn
 import ru.pavlig43.storage.internal.model.StorageBatchUi
+import ru.pavlig43.storage.internal.model.StorageProductUi
 import ua.wwind.table.ColumnSpec
-import ua.wwind.table.EditableTableColumnsBuilder
-import ua.wwind.table.editableTableColumns
+import ua.wwind.table.tableColumns
 
-fun createStorageBatchColumns(): ImmutableList<ColumnSpec<StorageBatchUi, StorageBatchColumn, ru.pavlig43.storage.internal.model.StorageProductUi>> =
-    editableTableColumns {
+enum class StorageBatchColumn {
+    EMPTY,
+    BATCH_NAME,
+    BALANCE_BEFORE,
+    INCOMING,
+    OUTGOING,
+    BALANCE_END
+}
+
+fun createStorageBatchColumns(): ImmutableList<ColumnSpec<StorageBatchUi, StorageBatchColumn, StorageProductUi>> =
+    tableColumns {
+
+        readTextColumn(
+            column = StorageBatchColumn.EMPTY,
+            headerText = "",
+            valueOf = { ""},
+        )
         readTextColumn(
             column = StorageBatchColumn.BATCH_NAME,
             valueOf = { it.batchName },
-            headerText = "Партия"
+            headerText = ""
         )
 
         readDecimalColumn(
-            key = StorageBatchColumn.BALANCE_BEFORE,
-            getValue = { it.balanceBeforeStart },
+            column = StorageBatchColumn.BALANCE_BEFORE,
+            valueOf = { it.balanceBeforeStart },
             headerText = "Старт",
             decimalFormat = DecimalFormat.Decimal3(),
-            isSortable = false
         )
 
         readDecimalColumn(
-            key = StorageBatchColumn.INCOMING,
-            getValue = { it.incoming },
+            column = StorageBatchColumn.INCOMING,
+            valueOf = { it.incoming },
             headerText = "Приход",
             decimalFormat = DecimalFormat.Decimal3(),
-            isSortable = false
         )
 
         readDecimalColumn(
-            key = StorageBatchColumn.OUTGOING,
-            getValue = { it.outgoing },
+            column = StorageBatchColumn.OUTGOING,
+            valueOf = { it.outgoing },
             headerText = "Расход",
             decimalFormat = DecimalFormat.Decimal3(),
-            isSortable = false
         )
 
         readDecimalColumn(
-            key = StorageBatchColumn.BALANCE_END,
-            getValue = { it.balanceOnEnd },
+            column = StorageBatchColumn.BALANCE_END,
+            valueOf = { it.balanceOnEnd },
             headerText = "Остаток",
             decimalFormat = DecimalFormat.Decimal3(),
-            isSortable = false
         )
     }
 

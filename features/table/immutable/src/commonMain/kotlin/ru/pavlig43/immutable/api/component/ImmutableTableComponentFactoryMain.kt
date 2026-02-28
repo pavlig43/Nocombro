@@ -14,6 +14,7 @@ import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.database.data.document.Document
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductDeclarationOut
+import ru.pavlig43.database.data.storage.StorageProduct
 import ru.pavlig43.database.data.transact.Transact
 import ru.pavlig43.database.data.vendor.Vendor
 import ru.pavlig43.immutable.api.ImmutableTableDependencies
@@ -23,6 +24,7 @@ import ru.pavlig43.immutable.internal.component.items.declaration.DeclarationTab
 import ru.pavlig43.immutable.internal.component.items.document.DocumentTableComponent
 import ru.pavlig43.immutable.internal.component.items.product.ProductTableComponent
 import ru.pavlig43.immutable.internal.component.items.productDeclaration.ProductDeclarationTableComponent
+import ru.pavlig43.immutable.internal.component.items.storage.ProductStorageComponent
 import ru.pavlig43.immutable.internal.component.items.transaction.TransactionTableComponent
 import ru.pavlig43.immutable.internal.component.items.vendor.VendorTableComponent
 import ru.pavlig43.immutable.internal.data.ImmutableListRepository
@@ -117,6 +119,16 @@ class ImmutableTableComponentFactoryMain(
                 onItemClick = onItemClick,
                 repository = scope.get<ImmutableListRepository<BatchWithBalanceOut>>(
                     ImmutableTableRepositoryType.BATCH.qualifier
+                ),
+            )
+
+            is StorageImmutableTableBuilder -> ProductStorageComponent(
+                componentContext = context,
+                tableBuilder = immutableTableBuilderData,
+                onCreate = onCreate,
+                onItemClick = onItemClick,
+                repository = scope.get<ImmutableListRepository<StorageProduct>>(
+                    ImmutableTableRepositoryType.STORAGE.qualifier
                 ),
             )
 

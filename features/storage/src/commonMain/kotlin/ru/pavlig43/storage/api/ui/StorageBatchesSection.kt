@@ -49,11 +49,6 @@ fun StorageBatchesSection(
         modifier = modifier.padding(top = 8.dp, bottom = 8.dp).padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
-        Text(
-            text = "Партии",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-        )
 
         Table(
             itemsCount = product.batches.size,

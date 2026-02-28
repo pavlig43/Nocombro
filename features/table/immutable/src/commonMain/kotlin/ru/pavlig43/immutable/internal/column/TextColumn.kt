@@ -14,12 +14,13 @@ fun <T : Any, C, E> ReadonlyTableColumnsBuilder<T, C, E>.readTextColumn(
     headerText: String,
     column: C,
     valueOf: (T) -> String,
-    filterType: TableFilterType.TextTableFilter? = null
+    filterType: TableFilterType.TextTableFilter? = null ,
+    align: Alignment = Alignment.CenterStart,
 ) {
     column(column, valueOf = valueOf) {
         autoWidth(300.dp)
         header(headerText)
-        align(Alignment.CenterStart)
+        align(align)
         filterType?.let {
             filter(it)
         }

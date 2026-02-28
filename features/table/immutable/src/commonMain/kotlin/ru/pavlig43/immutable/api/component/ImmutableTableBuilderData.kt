@@ -74,3 +74,9 @@ data class BatchImmutableTableBuilder(
     override val tabTitle: String = "Партии"
     override val withCheckbox: Boolean = false
 }
+
+data class StorageImmutableTableBuilder(
+    override val withCheckbox: Boolean = false
+): ImmutableTableBuilderData<ru.pavlig43.immutable.internal.component.items.storage.StorageProductUi> {
+    override val tabTitle: String = "Склад"
+}
