@@ -13,6 +13,7 @@ import kotlinx.collections.immutable.toImmutableList
 import org.jetbrains.compose.resources.painterResource
 import ru.pavlig43.mutable.api.column.DecimalFormat
 import ru.pavlig43.mutable.api.column.readDecimalColumnWithFooter
+import ru.pavlig43.mutable.api.column.readTextColumn
 import ru.pavlig43.storage.internal.model.StorageProductUi
 import ru.pavlig43.storage.internal.model.StorageTableData
 import ru.pavlig43.theme.Res
@@ -26,16 +27,13 @@ fun createStorageColumns(
     onToggleExpand: (productId: Int) -> Unit
 ): ImmutableList<ColumnSpec<StorageProductUi, StorageColumn, StorageTableData>> =
     editableTableColumns {
-        val iconButtonSize = 48.dp
 
         column(StorageColumn.EXPAND, valueOf = { it.expanded }) {
             title { "Партии" }
-            width(iconButtonSize, iconButtonSize)
             resizable(false)
             cell { item, _ ->
                 IconButton(
                     onClick = { onToggleExpand(item.productId) },
-                    modifier = Modifier.size(iconButtonSize),
                 ) {
                     if (item.expanded) {
                         Icon(
@@ -53,15 +51,15 @@ fun createStorageColumns(
         }
 
         readTextColumn(
-            key = StorageColumn.PRODUCT_NAME,
-            getValue = { it.productName },
+            column = StorageColumn.PRODUCT_NAME,
+            valueOf = { it.productName },
             headerText = "Продукт"
         )
 
         readDecimalColumnWithFooter(
             key = StorageColumn.BALANCE_BEFORE,
             getValue = { it.balanceBeforeStart },
-            headerText = "Остаток на начало (кг)",
+            headerText = "Старт",
             decimalFormat = DecimalFormat.Decimal3(),
             footerValue = { tableData ->
                 tableData.displayedProducts.sumOf { it.balanceBeforeStart }
@@ -72,7 +70,7 @@ fun createStorageColumns(
         readDecimalColumnWithFooter(
             key = StorageColumn.INCOMING,
             getValue = { it.incoming },
-            headerText = "Приход (кг)",
+            headerText = "Приход",
             decimalFormat = DecimalFormat.Decimal3(),
             footerValue = { tableData ->
                 tableData.displayedProducts.sumOf { it.incoming }
@@ -83,7 +81,7 @@ fun createStorageColumns(
         readDecimalColumnWithFooter(
             key = StorageColumn.OUTGOING,
             getValue = { it.outgoing },
-            headerText = "Расход (кг)",
+            headerText = "Расход",
             decimalFormat = DecimalFormat.Decimal3(),
             footerValue = { tableData ->
                 tableData.displayedProducts.sumOf { it.outgoing }
@@ -94,7 +92,7 @@ fun createStorageColumns(
         readDecimalColumnWithFooter(
             key = StorageColumn.BALANCE_END,
             getValue = { it.balanceOnEnd },
-            headerText = "Остаток на конец (кг)",
+            headerText = "Остаток",
             decimalFormat = DecimalFormat.Decimal3(),
             footerValue = { tableData ->
                 tableData.displayedProducts.sumOf { it.balanceOnEnd }
@@ -103,19 +101,19 @@ fun createStorageColumns(
         )
     }
 
-private fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.readTextColumn(
-    key: C,
-    getValue: (T) -> String,
-    headerText: String
-) {
-    column(key, valueOf = { getValue(it) }) {
-        autoWidth(300.dp)
-        header(headerText)
-        cell { item, _ ->
-            Text(
-                text = getValue(item),
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
-            )
-        }
-    }
-}
+//private fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.readTextColumn(
+//    key: C,
+//    getValue: (T) -> String,
+//    headerText: String
+//) {
+//    column(key, valueOf = { getValue(it) }) {
+//        autoWidth(300.dp)
+//        header(headerText)
+//        cell { item, _ ->
+//            Text(
+//                text = getValue(item),
+//                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+//            )
+//        }
+//    }
+//}

@@ -1,4 +1,4 @@
-package ru.pavlig43.storage.api.components
+package ru.pavlig43.storage.api.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -12,7 +12,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.toImmutableList
 import ru.pavlig43.storage.api.column.createStorageBatchColumns
-import ru.pavlig43.storage.internal.model.StorageBatchUi
 import ru.pavlig43.storage.internal.model.StorageProductUi
 import ua.wwind.table.ExperimentalTableApi
 import ua.wwind.table.Table

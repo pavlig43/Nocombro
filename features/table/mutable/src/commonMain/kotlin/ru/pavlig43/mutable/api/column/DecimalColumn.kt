@@ -65,7 +65,7 @@ fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.readDecimalColumn(
     isSortable: Boolean = true
 ) {
     column(key, valueOf = { getValue(it) }) {
-        autoWidth(300.dp)
+//        autoWidth(300.dp)
         header(headerText)
         align(Alignment.CenterStart)
         readNumberCell(format = decimalFormat, getCount = { getValue(it) })

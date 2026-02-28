@@ -1,4 +1,4 @@
-package ru.pavlig43.storage.api.components
+package ru.pavlig43.storage.api.ui
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
@@ -13,7 +13,6 @@ import kotlinx.collections.immutable.ImmutableList
 import ua.wwind.table.ColumnSpec
 import ua.wwind.table.EditableTable
 import ua.wwind.table.ExperimentalTableApi
-import ua.wwind.table.config.TableCustomization
 import ua.wwind.table.state.TableState
 import ua.wwind.table.strings.DefaultStrings
 import ru.pavlig43.storage.api.column.StorageColumn

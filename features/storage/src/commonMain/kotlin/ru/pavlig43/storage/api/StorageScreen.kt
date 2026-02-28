@@ -11,7 +11,7 @@ import ru.pavlig43.coreui.ErrorScreen
 import ru.pavlig43.coreui.LoadingUi
 import ru.pavlig43.storage.api.component.LoadState
 import ru.pavlig43.storage.api.component.StorageComponent
-import ru.pavlig43.storage.api.components.StorageTable
+import ru.pavlig43.storage.api.ui.StorageTable
 import ru.pavlig43.storage.api.column.createStorageColumns
 import ua.wwind.table.state.rememberTableState
 
