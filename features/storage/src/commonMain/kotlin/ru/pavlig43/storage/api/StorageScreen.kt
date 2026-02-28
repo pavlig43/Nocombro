@@ -9,6 +9,7 @@ import androidx.compose.ui.Modifier
 import kotlinx.collections.immutable.toImmutableList
 import ru.pavlig43.coreui.ErrorScreen
 import ru.pavlig43.coreui.LoadingUi
+import ru.pavlig43.storage.api.column.StorageProductField
 import ru.pavlig43.storage.api.component.LoadState
 import ru.pavlig43.storage.api.component.StorageComponent
 import ru.pavlig43.storage.api.ui.StorageTable
@@ -26,7 +27,7 @@ fun StorageScreen(
         is LoadState.Success -> {
             val columns = remember { createStorageColumns(component::toggleExpand) }
             val tableState = rememberTableState(
-                columns = ru.pavlig43.storage.api.column.StorageColumn.entries.toImmutableList(),
+                columns = StorageProductField.entries.toImmutableList(),
             )
             val tableData by component.tableData.collectAsState()
 

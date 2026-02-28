@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.toImmutableList
+import ru.pavlig43.storage.api.column.StorageBatchColumn
 import ru.pavlig43.storage.api.column.createStorageBatchColumns
 import ru.pavlig43.storage.internal.model.StorageProductUi
 import ua.wwind.table.ExperimentalTableApi
@@ -33,18 +34,13 @@ fun StorageBatchesSection(
         TableSettings(
             isDragEnabled = false,
             autoApplyFilters = false,
-            showFastFilters = false,
-            autoFilterDebounce = 0,
-            stripedRows = false,
+            stripedRows = true,
             showActiveFiltersHeader = false,
-            selectionMode = SelectionMode.None,
             rowHeightMode = RowHeightMode.Dynamic,
-            enableDragToScroll = false,
-            showFooter = false,
         )
     }
     val batchState = rememberTableState(
-        columns = ru.pavlig43.storage.api.column.StorageBatchColumn.entries.toImmutableList(),
+        columns = StorageBatchColumn.entries.toImmutableList(),
         settings = batchSettings,
         dimensions = TableDefaults.compactDimensions(),
     )

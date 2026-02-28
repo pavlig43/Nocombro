@@ -3,14 +3,18 @@ package ru.pavlig43.immutable.internal.di
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
+import kotlinx.datetime.TimeZone
 import org.koin.core.qualifier.qualifier
 import org.koin.dsl.module
+import ru.pavlig43.core.getCurrentLocalDateTime
+import ru.pavlig43.core.minusMonths
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.batch.BatchWithBalanceOut
 import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.database.data.document.Document
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductDeclarationOut
+import ru.pavlig43.database.data.storage.StorageProduct
 import ru.pavlig43.database.data.transact.Transact
 import ru.pavlig43.database.data.vendor.Vendor
 import ru.pavlig43.immutable.api.ImmutableTableDependencies
@@ -64,7 +68,8 @@ internal enum class ImmutableTableRepositoryType {
     TRANSACTION,
 
     /** Партии */
-    BATCH
+    BATCH,
+
 }
 
 /**

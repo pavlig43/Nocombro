@@ -6,7 +6,7 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
 
 @Composable
-internal actual fun BoxScope.ScrollBar(
+actual fun BoxScope.ScrollBar(
     verticalState: LazyListState,
     horizontalState: ScrollState
 ) {

@@ -4,7 +4,6 @@ import ru.pavlig43.database.data.document.DocumentType
 import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.database.data.transact.TransactionType
 import ru.pavlig43.immutable.internal.component.items.productDeclaration.ProductDeclarationTableUi
-import ru.pavlig43.immutable.internal.component.items.storage.StorageProductUi
 import ru.pavlig43.tablecore.model.IMultiLineTableUi
 
 
@@ -33,12 +32,6 @@ data class DocumentImmutableTableBuilder(
     ):
     ImmutableTableBuilderData<ru.pavlig43.immutable.internal.component.items.document.DocumentTableUi> {
     override val tabTitle: String = "Документы"
-}
-class StorageImmutableTableBuilder(
-):
-    ImmutableTableBuilderData<StorageProductUi> {
-    override val tabTitle: String = "Склад"
-    override val withCheckbox: Boolean = false
 }
 
 data class DeclarationImmutableTableBuilder(
