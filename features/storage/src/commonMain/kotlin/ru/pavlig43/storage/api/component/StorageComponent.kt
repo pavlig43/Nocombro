@@ -7,17 +7,13 @@ import com.arkivanov.decompose.router.slot.activate
 import com.arkivanov.decompose.router.slot.childSlot
 import com.arkivanov.decompose.router.slot.dismiss
 import com.arkivanov.essenty.instancekeeper.getOrCreate
-import jdk.jfr.internal.OldObjectSample.emit
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.flow.update
@@ -81,7 +77,7 @@ class StorageComponent(
         val currentPeriod = dateTimePeriodUi.value
         return when (dialogConfig) {
             is StorageDialog.StartDateTime -> {
-                DialogChild.StartDateTime(
+                DialogChild.DateTime(
                     DateTimeComponent(
                         componentContext = context,
                         initDatetime = currentPeriod.start,
@@ -93,7 +89,7 @@ class StorageComponent(
                 )
             }
             is StorageDialog.EndDateTime -> {
-                DialogChild.EndDateTime(
+                DialogChild.DateTime(
                     DateTimeComponent(
                         componentContext = context,
                         initDatetime = currentPeriod.end,
@@ -225,6 +221,5 @@ internal sealed interface StorageDialog {
 }
 
 sealed interface DialogChild {
-    class StartDateTime(val component: DateTimeComponent) : DialogChild
-    class EndDateTime(val component: DateTimeComponent) : DialogChild
+    class DateTime(val component: DateTimeComponent) : DialogChild
 }

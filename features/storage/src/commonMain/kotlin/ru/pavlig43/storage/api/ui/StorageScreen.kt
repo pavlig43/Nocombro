@@ -71,8 +71,7 @@ fun StorageScreen(
 
     dialog.child?.instance?.also { dialogChild ->
         when (dialogChild) {
-            is DialogChild.StartDateTime -> DateTimePickerDialog(dialogChild.component)
-            is DialogChild.EndDateTime -> DateTimePickerDialog(dialogChild.component)
+            is DialogChild.DateTime -> DateTimePickerDialog(dialogChild.component)
         }
     }
 
