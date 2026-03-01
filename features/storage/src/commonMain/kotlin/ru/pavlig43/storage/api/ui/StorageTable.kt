@@ -27,7 +27,7 @@ import ru.pavlig43.tablecore.ui.ScrollBar
 
 @OptIn(ExperimentalTableApi::class)
 @Composable
-fun StorageTable(
+internal fun StorageTable(
     state: TableState<StorageProductField>,
     tableData: StorageTableData,
     columns: ImmutableList<ColumnSpec<StorageProductUi, StorageProductField, StorageTableData>>,

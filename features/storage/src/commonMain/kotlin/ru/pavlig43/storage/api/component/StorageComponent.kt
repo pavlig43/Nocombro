@@ -20,7 +20,6 @@ import ru.pavlig43.storage.internal.di.StorageRepository
 import ru.pavlig43.storage.internal.di.createStorageModule
 import ru.pavlig43.storage.internal.model.StorageProductUi
 import ru.pavlig43.storage.internal.model.StorageTableData
-import ru.pavlig43.storage.internal.model.toUi
 import ru.pavlig43.tablecore.manger.FilterManager
 import ru.pavlig43.tablecore.manger.SortManager
 import ua.wwind.table.filter.data.TableFilterState
@@ -63,7 +62,7 @@ class StorageComponent(
             LoadState.Loading
         )
 
-    val tableData: StateFlow<StorageTableData> = combine(
+    internal val tableData: StateFlow<StorageTableData> = combine(
         _products,
         filterManager.filters,
         sortManager.sort

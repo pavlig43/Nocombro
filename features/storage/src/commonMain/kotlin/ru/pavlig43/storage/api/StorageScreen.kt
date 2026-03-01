@@ -29,8 +29,8 @@ fun StorageScreen(
             val columns = remember { createStorageColumns(component::toggleExpand) }
             val tableSettings = remember {
                 TableSettings(
-                    autoApplyFilters = false,
                     showActiveFiltersHeader = true,
+                    stripedRows = true
                 )
             }
             val tableState = rememberTableState(

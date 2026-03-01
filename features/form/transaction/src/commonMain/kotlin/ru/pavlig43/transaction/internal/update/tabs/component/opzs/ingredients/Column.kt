@@ -5,7 +5,7 @@ package ru.pavlig43.transaction.internal.update.tabs.component.opzs.ingredients
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.datetime.format
 import ru.pavlig43.core.dateFormat
-import ru.pavlig43.mutable.api.column.DecimalFormat
+import ru.pavlig43.coreui.DecimalFormat
 import ru.pavlig43.mutable.api.column.decimalColumn
 import ru.pavlig43.mutable.api.column.idWithSelection
 import ru.pavlig43.mutable.api.column.readTextColumn

@@ -2,7 +2,7 @@
 package ru.pavlig43.immutable.internal.component.items.batch
 
 import kotlinx.collections.immutable.ImmutableList
-import ru.pavlig43.immutable.internal.column.DecimalFormat
+import ru.pavlig43.coreui.DecimalFormat
 import ru.pavlig43.immutable.internal.column.idWithSelection
 import ru.pavlig43.immutable.internal.column.readDateColumn
 import ru.pavlig43.immutable.internal.column.readDecimalColumn

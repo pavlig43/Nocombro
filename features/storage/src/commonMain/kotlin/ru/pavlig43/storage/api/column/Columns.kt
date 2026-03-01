@@ -7,7 +7,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.ImmutableList
 import ru.pavlig43.coreui.tooltip.ToolTipIconButton
-import ru.pavlig43.immutable.internal.column.DecimalFormat
+import ru.pavlig43.coreui.DecimalFormat
+import ru.pavlig43.coreui.toStartDoubleFormat
 import ru.pavlig43.immutable.internal.column.readDecimalColumn
 import ru.pavlig43.storage.internal.model.StorageProductUi
 import ru.pavlig43.storage.internal.model.StorageTableData
@@ -42,42 +43,27 @@ internal fun createStorageColumns(
         }
         nameColumn()
 
-        readDecimalColumn(
-            headerText = "Старт",
+        decimalColumn(
             column = StorageProductField.BALANCE_BEFORE,
-            valueOf = { it.balanceBeforeStart },
-            decimalFormat = DecimalFormat.Decimal3(),
-            filterType = TableFilterType.NumberTableFilter(
-                delegate = TableFilterType.NumberTableFilter.IntDelegate
-            )
+            title = "Старт",
+            valueOf = {it.balanceBeforeStart}
         )
-        readDecimalColumn(
-            headerText = "Приход",
+        decimalColumn(
             column = StorageProductField.INCOMING,
-            valueOf = { it.incoming },
-            decimalFormat = DecimalFormat.Decimal3(),
-            filterType = TableFilterType.NumberTableFilter(
-                delegate = TableFilterType.NumberTableFilter.IntDelegate
-            )
+            title = "Приход",
+            valueOf = {it.incoming}
         )
-        readDecimalColumn(
-            headerText = "Расход",
+        decimalColumn(
             column = StorageProductField.OUTGOING,
-            valueOf = { it.outgoing },
-            decimalFormat = DecimalFormat.Decimal3(),
-            filterType = TableFilterType.NumberTableFilter(
-                delegate = TableFilterType.NumberTableFilter.IntDelegate
-            )
+            title = "Расход",
+            valueOf = {it.outgoing}
         )
-        readDecimalColumn(
-            headerText = "Остаток",
+        decimalColumn(
             column = StorageProductField.BALANCE_END,
-            valueOf = { it.balanceOnEnd },
-            decimalFormat = DecimalFormat.Decimal3(),
-            filterType = TableFilterType.NumberTableFilter(
-                delegate = TableFilterType.NumberTableFilter.IntDelegate
-            )
+            title = "Остаток",
+            valueOf = {it.balanceOnEnd}
         )
+
 
     }
 
@@ -115,26 +101,27 @@ private fun ReadonlyTableColumnsBuilder<StorageProductUi, StorageProductField, S
             val padding = if (item.isProduct) 4.dp else 16.dp
             Text(item.name, modifier = Modifier.padding(start = padding, end = 8.dp))
         }
+        sortable()
     }
 
 }
-//private fun ReadonlyTableColumnsBuilder<StorageProductUi, StorageProductField, StorageTableData>.decimalColumn(
-//    column:StorageProductField,
-//    title:String,
-//    valueOf:(StorageProductUi)->Int,
-//    decimalFormat:DecimalFormat,
-//    filterType:TableFilterType.NumberTableFilter
-//) {
-//
-//    column(key = column, valueOf = valueOf) {
-//        title { title }
-//        autoWidth()
-//        cell { item, _ ->
-//            Text(
-//                text = valueOf(item).toStartDoubleFormat(format),
-//                modifier = Modifier.padding(horizontal = 12.dp)
-//            )
-//        }
-//    }
-//
-//}
+private fun ReadonlyTableColumnsBuilder<StorageProductUi, StorageProductField, StorageTableData>.decimalColumn(
+    column:StorageProductField,
+    title:String,
+    valueOf:(StorageProductUi)->Int,
+) {
+
+    column(key = column, valueOf = valueOf) {
+        title { title }
+        autoWidth()
+        cell { item, _ ->
+            val padding = if (item.isProduct) 8.dp else 20.dp
+            Text(
+                text = valueOf(item).toStartDoubleFormat(DecimalFormat.Decimal3()),
+                modifier = Modifier.padding(start = padding, end = 12.dp)
+            )
+        }
+        sortable()
+    }
+
+}

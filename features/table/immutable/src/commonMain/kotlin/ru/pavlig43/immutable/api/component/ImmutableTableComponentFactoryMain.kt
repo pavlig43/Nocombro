@@ -24,7 +24,6 @@ import ru.pavlig43.immutable.internal.component.items.declaration.DeclarationTab
 import ru.pavlig43.immutable.internal.component.items.document.DocumentTableComponent
 import ru.pavlig43.immutable.internal.component.items.product.ProductTableComponent
 import ru.pavlig43.immutable.internal.component.items.productDeclaration.ProductDeclarationTableComponent
-import ru.pavlig43.immutable.internal.component.items.storage.ProductStorageComponent
 import ru.pavlig43.immutable.internal.component.items.transaction.TransactionTableComponent
 import ru.pavlig43.immutable.internal.component.items.vendor.VendorTableComponent
 import ru.pavlig43.immutable.internal.data.ImmutableListRepository
@@ -122,15 +121,6 @@ class ImmutableTableComponentFactoryMain(
                 ),
             )
 
-            is StorageImmutableTableBuilder -> ProductStorageComponent(
-                componentContext = context,
-                tableBuilder = immutableTableBuilderData,
-                onCreate = onCreate,
-                onItemClick = onItemClick,
-                repository = scope.get<ImmutableListRepository<StorageProduct>>(
-                    ImmutableTableRepositoryType.STORAGE.qualifier
-                ),
-            )
 
         } as ImmutableTableComponent<*, I, *>
     }

@@ -11,6 +11,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import ru.pavlig43.coreui.DecimalFormat
+import ru.pavlig43.coreui.toStartDoubleFormat
 import ua.wwind.table.EditableColumnBuilder
 import ua.wwind.table.EditableTableColumnsBuilder
 import ua.wwind.table.component.TableCellTextFieldWithTooltipError
@@ -106,19 +108,6 @@ fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.readDecimalColumnWithFo
     }
 }
 
-sealed interface DecimalFormat {
-    val countDecimal: Int
-
-    @Suppress("MagicNumber")
-    class Decimal3 : DecimalFormat {
-        override val countDecimal: Int = 3
-    }
-
-    class Decimal2 : DecimalFormat {
-        override val countDecimal: Int = 2
-    }
-}
-
 private fun <T : Any, C, E> EditableColumnBuilder<T, C, E>.readNumberCell(
     format: DecimalFormat,
     getCount: (T) -> Int,
@@ -157,12 +146,6 @@ private fun <T : Any, C, E> EditableColumnBuilder<T, C, E>.cellForDecimalFormat(
         )
     }
 
-}
-
-private fun Int.toStartDoubleFormat(decimalFormat: DecimalFormat): String {
-    return (this / (10.0.pow(decimalFormat.countDecimal))).toString()
-        .dropLastWhile { it == '0' }
-        .run { if (last() == '.') dropLast(1) else this }
 }
 
 /**

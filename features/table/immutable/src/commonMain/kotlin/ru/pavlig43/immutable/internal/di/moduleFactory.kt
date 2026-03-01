@@ -70,8 +70,7 @@ internal enum class ImmutableTableRepositoryType {
     /** Партии */
     BATCH,
 
-    /** Склад */
-    STORAGE,
+
 
 }
 
@@ -93,7 +92,6 @@ private fun createImmutableRepository(
     ImmutableTableRepositoryType.TRANSACTION -> TransactionRepository(db)
     ImmutableTableRepositoryType.PRODUCT_DECLARATION -> ProductDeclarationRepository(db)
     ImmutableTableRepositoryType.BATCH -> BatchRepository(db)
-    ImmutableTableRepositoryType.STORAGE -> StorageRepository(db)
 }
 
 /**
@@ -220,20 +218,3 @@ private class BatchRepository(db: NocombroDatabase) :
     }
 }
 
-/**
- * Репозиторий для работы со складскими остатками.
- */
-private class StorageRepository(db: NocombroDatabase) :
-    ImmutableListRepository<StorageProduct> {
-    private val dao = db.storageDao
-    override suspend fun deleteByIds(ids: Set<Int>): Result<Unit> {
-        return Result.success(Unit)
-    }
-
-    override fun observeOnItems(parentId: Int): Flow<Result<List<StorageProduct>>> {
-        val start = getCurrentLocalDateTime().minusMonths(5, TimeZone.currentSystemDefault())
-        val end = getCurrentLocalDateTime()
-        return dao.observeOnStorageBatches(start, end).map { Result.success(it) }
-            .catch { emit(Result.failure(it)) }
-    }
-}
