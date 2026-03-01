@@ -30,18 +30,9 @@ interface ProductDao {
 """)
     fun observeOnProducts(): Flow<List<Product>>
 
-    @Query(
-        """
-        SELECT CASE
-            WHEN (SELECT display_name FROM product WHERE id =:id) =:name THEN TRUE
-            ELSE NOT EXISTS (SELECT 1 FROM product WHERE display_name = :name AND id != :id)
-        END
-    """
-    )
-    suspend fun isNameAllowed(id: Int, name: String): Boolean
 
     suspend fun isCanSave(product: Product): Result<Unit> {
-        return isCanSaveWithName(product.id,product.displayName,::isNameAllowed)
+        return Result.success(Unit)
 
     }
 
