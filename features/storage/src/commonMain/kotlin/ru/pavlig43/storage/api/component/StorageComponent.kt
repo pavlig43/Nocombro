@@ -2,8 +2,14 @@ package ru.pavlig43.storage.api.component
 
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
+import com.arkivanov.decompose.router.slot.SlotNavigation
+import com.arkivanov.decompose.router.slot.activate
+import com.arkivanov.decompose.router.slot.childSlot
+import com.arkivanov.decompose.router.slot.dismiss
 import com.arkivanov.essenty.instancekeeper.getOrCreate
+import jdk.jfr.internal.OldObjectSample.emit
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -11,9 +17,12 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.datetime.LocalDateTime
+import ru.pavlig43.core.DateTimeComponent
 import ru.pavlig43.core.MainTabComponent
 import ru.pavlig43.core.componentCoroutineScope
 import ru.pavlig43.core.getCurrentLocalDateTime
@@ -26,6 +35,7 @@ import ru.pavlig43.storage.internal.model.StorageProductUi
 import ru.pavlig43.storage.internal.model.StorageTableData
 import ru.pavlig43.tablecore.manger.FilterManager
 import ua.wwind.table.filter.data.TableFilterState
+import kotlinx.serialization.Serializable
 import kotlin.collections.map
 
 class StorageComponent(
@@ -46,34 +56,86 @@ class StorageComponent(
 
     private val filterManager = FilterManager<StorageProductField>(childContext("filter"))
 
-    private val _dateTimePeriod = MutableStateFlow(DateTimePeriod())
-    internal val dateTimePeriod = _dateTimePeriod.asStateFlow()
-    internal fun updateDateTimePeriod(dateTimePeriod: DateTimePeriod) {
-        _dateTimePeriod.update { dateTimePeriod }
+    private val dialogNavigation = SlotNavigation<StorageDialog>()
+
+    internal val dialog = childSlot(
+        source = dialogNavigation,
+        key = "storage_dialog",
+        serializer = StorageDialog.serializer(),
+        handleBackButton = true,
+        childFactory = ::createDialogChild
+    )
+
+    private val _dateTimePeriodUi = MutableStateFlow(DateTimePeriod())
+    internal val dateTimePeriodUi: StateFlow<DateTimePeriod> = _dateTimePeriodUi.asStateFlow()
+
+    private val dateTimePeriodForData = MutableStateFlow(DateTimePeriod())
+
+
+
+    fun updateDateTimePeriod() {
+        dateTimePeriodForData.update { _dateTimePeriodUi.value }
     }
+
+    private fun createDialogChild(dialogConfig: StorageDialog, context: ComponentContext): DialogChild {
+        val currentPeriod = dateTimePeriodUi.value
+        return when (dialogConfig) {
+            is StorageDialog.StartDateTime -> {
+                DialogChild.StartDateTime(
+                    DateTimeComponent(
+                        componentContext = context,
+                        initDatetime = currentPeriod.start,
+                        onChangeDate = { newDateTime ->
+                            _dateTimePeriodUi.update { it.copy(start = newDateTime) }
+                        },
+                        onDismissRequest = { dialogNavigation.dismiss() }
+                    )
+                )
+            }
+            is StorageDialog.EndDateTime -> {
+                DialogChild.EndDateTime(
+                    DateTimeComponent(
+                        componentContext = context,
+                        initDatetime = currentPeriod.end,
+                        onChangeDate = { newDateTime ->
+                            _dateTimePeriodUi.update { it.copy(end = newDateTime) }
+                        },
+                        onDismissRequest = { dialogNavigation.dismiss() }
+                    )
+                )
+            }
+        }
+    }
+
+    fun openStartDateTimeDialog() = dialogNavigation.activate(StorageDialog.StartDateTime)
+    fun openEndDateTimeDialog() = dialogNavigation.activate(StorageDialog.EndDateTime)
 
     private val _products = MutableStateFlow<List<StorageProductUi>>(emptyList())
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    internal val loadState: StateFlow<LoadState> = _dateTimePeriod.flatMapLatest { dateTimePeriod ->
-        storageRepository.observeOnStorageProducts(
-            start = dateTimePeriod.start,
-            end = dateTimePeriod.end
+    internal val loadState: StateFlow<LoadState> = dateTimePeriodForData
+        .transformLatest { dateTimePeriod ->
+            emit(LoadState.Loading)
+            storageRepository.observeOnStorageProducts(
+                start = dateTimePeriod.start,
+                end = dateTimePeriod.end
+            )
+                .map { result ->
+                    result.fold(
+                        onSuccess = { lst ->
+                            _products.value = lst.toUi()
+                            LoadState.Success(_products.value)
+                        },
+                        onFailure = { throwable -> LoadState.Error(throwable.message ?: "") }
+                    )
+                }
+                .collect { emit(it) }
+        }
+        .stateIn(
+            coroutineScope,
+            SharingStarted.Lazily,
+            LoadState.Loading
         )
-            .map { result ->
-                result.fold(
-                    onSuccess = { lst ->
-                        _products.value = lst.toUi()
-                        LoadState.Success(_products.value)
-                    },
-                    onFailure = { throwable -> LoadState.Error(throwable.message ?: "") }
-                )
-            }
-    }.stateIn(
-        coroutineScope,
-        SharingStarted.Lazily,
-        LoadState.Loading
-    )
 
     internal val tableData: StateFlow<StorageTableData> = combine(
         _products,
@@ -152,3 +214,17 @@ internal data class DateTimePeriod(
     val start: LocalDateTime = getCurrentLocalDateTime(),
     val end: LocalDateTime = getCurrentLocalDateTime()
 )
+
+@Serializable
+internal sealed interface StorageDialog {
+    @Serializable
+    data object StartDateTime : StorageDialog
+
+    @Serializable
+    data object EndDateTime : StorageDialog
+}
+
+sealed interface DialogChild {
+    class StartDateTime(val component: DateTimeComponent) : DialogChild
+    class EndDateTime(val component: DateTimeComponent) : DialogChild
+}
