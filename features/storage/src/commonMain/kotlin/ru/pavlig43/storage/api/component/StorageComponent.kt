@@ -123,8 +123,8 @@ class StorageComponent(
                 .map { result ->
                     result.fold(
                         onSuccess = { lst ->
-                            _products.value = lst.toUi()
-                            LoadState.Success(_products.value)
+                            _products.update { lst.toUi() }
+                            LoadState.Success
                         },
                         onFailure = { throwable -> LoadState.Error(throwable.message ?: "") }
                     )
@@ -171,7 +171,7 @@ class StorageComponent(
 internal sealed interface LoadState {
     data object Loading : LoadState
     data class Error(val message: String) : LoadState
-    data class Success(val products: List<StorageProductUi>) : LoadState
+    data object Success : LoadState
 }
 
 private fun List<StorageProduct>.toUi(): List<StorageProductUi> {
