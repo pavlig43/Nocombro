@@ -48,22 +48,6 @@ fun StorageTable(
             strings = RussianStringProvider,
             verticalState = verticalState,
             horizontalState = horizontalState,
-            rowEmbedded = { _, product ->
-                val visible = product.expanded
-                if (visible) {
-                    HorizontalDivider(
-                        thickness = state.dimensions.dividerThickness,
-                        modifier = Modifier.width(state.tableWidth),
-                    )
-                }
-                AnimatedVisibility(
-                    visible = visible,
-                    enter = expandVertically() + fadeIn(),
-                    exit = shrinkVertically() + fadeOut(),
-                ) {
-                    StorageBatchesSection(product = product)
-                }
-            },
             modifier = modifier,
         )
         ScrollBar(

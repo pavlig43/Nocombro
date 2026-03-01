@@ -14,6 +14,7 @@ import ru.pavlig43.storage.api.component.LoadState
 import ru.pavlig43.storage.api.component.StorageComponent
 import ru.pavlig43.storage.api.ui.StorageTable
 import ru.pavlig43.storage.api.column.createStorageColumns
+import ua.wwind.table.config.TableSettings
 import ua.wwind.table.state.rememberTableState
 
 @Composable
@@ -26,8 +27,15 @@ fun StorageScreen(
         is LoadState.Loading -> LoadingUi()
         is LoadState.Success -> {
             val columns = remember { createStorageColumns(component::toggleExpand) }
+            val tableSettings = remember {
+                TableSettings(
+                    autoApplyFilters = false,
+                    showActiveFiltersHeader = true,
+                )
+            }
             val tableState = rememberTableState(
                 columns = StorageProductField.entries.toImmutableList(),
+                settings = tableSettings,
             )
             val tableData by component.tableData.collectAsState()
 
