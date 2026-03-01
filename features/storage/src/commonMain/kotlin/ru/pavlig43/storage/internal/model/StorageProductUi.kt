@@ -1,11 +1,10 @@
 package ru.pavlig43.storage.internal.model
 
-import ru.pavlig43.database.data.storage.StorageProduct
-
 internal data class StorageProductUi(
     val productId: Int,
+    val productName: String,
     val itemId: Int,
-    val name: String,
+    val itemName: String,
     val balanceBeforeStart: Int,
     val incoming: Int,
     val outgoing: Int,
