@@ -196,7 +196,7 @@ private fun StorageTable(
             verticalState = verticalState,
             horizontalState = horizontalState,
             modifier = modifier,
-            border = BorderStroke(2.dp,MaterialTheme.colorScheme.primary)
+            border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
 
         )
         ScrollBar(
@@ -298,7 +298,8 @@ private fun PeriodSelectorRow(
             // Кнопка поиска
             Button(
                 onClick = onSearchNewData,
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(12.dp),
+                enabled = startDateTime <= endDateTime
             ) {
                 Icon(
                     painter = painterResource(Res.drawable.clock),
@@ -345,9 +346,9 @@ private fun getNegativeBatches(tableData: StorageTableData): List<NegativeBatchI
             if (item.isProduct) return@mapNotNull null
 
             val hasNegative = item.balanceBeforeStart < 0 ||
-                            item.incoming < 0 ||
-                            item.outgoing < 0 ||
-                            item.balanceOnEnd < 0
+                    item.incoming < 0 ||
+                    item.outgoing < 0 ||
+                    item.balanceOnEnd < 0
 
             if (hasNegative) {
                 val displayName = "${item.productName} — ${item.itemName}"
@@ -420,7 +421,10 @@ private fun NegativeBatchItemRow(
         colors = ButtonDefaults.textButtonColors(
             contentColor = MaterialTheme.colorScheme.onSurfaceVariant
         ),
-        contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 8.dp, vertical = 4.dp)
+        contentPadding = androidx.compose.foundation.layout.PaddingValues(
+            horizontal = 8.dp,
+            vertical = 4.dp
+        )
     ) {
         Text(
             text = item.displayName,
