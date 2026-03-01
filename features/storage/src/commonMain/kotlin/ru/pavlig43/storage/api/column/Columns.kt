@@ -1,21 +1,21 @@
 package ru.pavlig43.storage.api.column
 
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.ImmutableList
-import org.jetbrains.compose.resources.painterResource
 import ru.pavlig43.coreui.tooltip.ToolTipIconButton
 import ru.pavlig43.immutable.internal.column.DecimalFormat
 import ru.pavlig43.immutable.internal.column.readDecimalColumn
-import ru.pavlig43.immutable.internal.column.readTextColumn
 import ru.pavlig43.storage.internal.model.StorageProductUi
 import ru.pavlig43.storage.internal.model.StorageTableData
 import ru.pavlig43.theme.Res
 import ru.pavlig43.theme.arrow_downward
 import ru.pavlig43.theme.arrow_upward
 import ua.wwind.table.ColumnSpec
+import ua.wwind.table.ReadonlyTableColumnsBuilder
 import ua.wwind.table.filter.data.TableFilterType
 import ua.wwind.table.tableColumns
 
@@ -40,13 +40,8 @@ internal fun createStorageColumns(
                 ExpandedCell(item, onToggleExpand)
             }
         }
+        nameColumn()
 
-        readTextColumn(
-            column = StorageProductField.NAME,
-            valueOf = { it.name },
-            headerText = "Имя",
-            filterType = TableFilterType.TextTableFilter()
-        )
         readDecimalColumn(
             headerText = "Старт",
             column = StorageProductField.BALANCE_BEFORE,
@@ -110,3 +105,36 @@ private fun ExpandedCell(
     }
 
 }
+
+private fun ReadonlyTableColumnsBuilder<StorageProductUi, StorageProductField, StorageTableData>.nameColumn(
+) {
+    column(key = StorageProductField.NAME, valueOf = { it.name }) {
+        title { "Имя" }
+        autoWidth()
+        cell { item, _ ->
+            val padding = if (item.isProduct) 4.dp else 16.dp
+            Text(item.name, modifier = Modifier.padding(start = padding, end = 8.dp))
+        }
+    }
+
+}
+//private fun ReadonlyTableColumnsBuilder<StorageProductUi, StorageProductField, StorageTableData>.decimalColumn(
+//    column:StorageProductField,
+//    title:String,
+//    valueOf:(StorageProductUi)->Int,
+//    decimalFormat:DecimalFormat,
+//    filterType:TableFilterType.NumberTableFilter
+//) {
+//
+//    column(key = column, valueOf = valueOf) {
+//        title { title }
+//        autoWidth()
+//        cell { item, _ ->
+//            Text(
+//                text = valueOf(item).toStartDoubleFormat(format),
+//                modifier = Modifier.padding(horizontal = 12.dp)
+//            )
+//        }
+//    }
+//
+//}

@@ -19,6 +19,7 @@ fun <T : Any, C, E> ReadonlyTableColumnsBuilder<T, C, E>.readDecimalColumn(
     valueOf: (T) -> Int,
     decimalFormat: DecimalFormat,
     alignment: Alignment = Alignment.Center,
+    textModifier: Modifier = Modifier.padding(horizontal = 12.dp),
     filterType: TableFilterType.NumberTableFilter<Int>? = null
 ) {
     column(column, valueOf = { valueOf(it) }) {
@@ -28,7 +29,7 @@ fun <T : Any, C, E> ReadonlyTableColumnsBuilder<T, C, E>.readDecimalColumn(
             filter(it)
         }
         align(alignment)
-        readDecimalCell(format = decimalFormat, getCount = valueOf)
+        readDecimalCell(format = decimalFormat, getCount = valueOf,modifier = textModifier)
         sortable()
     }
 }
@@ -36,11 +37,12 @@ fun <T : Any, C, E> ReadonlyTableColumnsBuilder<T, C, E>.readDecimalColumn(
 private fun <T : Any, C, E> ReadonlyColumnBuilder<T, C, E>.readDecimalCell(
     format: DecimalFormat,
     getCount: (T) -> Int,
+    modifier: Modifier
 ) {
     cell { item, _ ->
         Text(
             text = getCount(item).toStartDoubleFormat(format),
-            modifier = Modifier.padding(horizontal = 12.dp)
+            modifier = modifier
         )
     }
 }
