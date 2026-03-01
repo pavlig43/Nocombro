@@ -18,8 +18,8 @@ data class Product(
     @ColumnInfo("display_name")
     val displayName: String,
 
-    @ColumnInfo("second_name")
-    val secondName: String,
+    @ColumnInfo("second_name", defaultValue = "")
+    val secondName: String = "",
 
 //    @ColumnInfo("unit")
 //    val unit: ProductUnit,

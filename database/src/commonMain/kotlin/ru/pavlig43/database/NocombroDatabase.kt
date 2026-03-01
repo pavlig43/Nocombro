@@ -1,5 +1,6 @@
 package ru.pavlig43.database
 
+import androidx.room.AutoMigration
 import androidx.room.ConstructedBy
 import androidx.room.Database
 import androidx.room.RoomDatabase
@@ -73,7 +74,10 @@ import ru.pavlig43.database.data.vendor.dao.VendorDao
         ExpenseBD::class,
 
     ],
-    version = 2,
+    version = 3,
+    autoMigrations = [
+        AutoMigration(from = 2, to = 3)
+    ]
 
 
 )

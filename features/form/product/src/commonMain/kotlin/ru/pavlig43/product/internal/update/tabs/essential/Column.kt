@@ -38,6 +38,17 @@ internal fun createProductColumns1(
                 },
             )
 
+            // Второе название продукта
+            writeTextColumn(
+                headerText = "SN",
+                column = ProductField.SECOND_NAME,
+                valueOf = { it.secondName },
+                isSortable = false,
+                onChangeItem = { item, newValue ->
+                    onChangeItem { it.copy(secondName = newValue) }
+                },
+            )
+
             // Тип продукта
             readItemTypeColumn(
                 headerText = "Тип продукта",

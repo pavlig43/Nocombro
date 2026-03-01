@@ -20,6 +20,7 @@ internal enum class ProductField {
 
     ID,
     NAME,
+    SECOND_NAME,
     TYPE,
     CREATED_AT,
     COMMENT,
@@ -41,6 +42,13 @@ internal fun createProductColumn(
                 headerText = "Название",
                 column = ProductField.NAME,
                 valueOf = { it.displayName },
+                filterType = TableFilterType.TextTableFilter()
+            )
+
+            readTextColumn(
+                headerText = "SN",
+                column = ProductField.SECOND_NAME,
+                valueOf = { it.secondName },
                 filterType = TableFilterType.TextTableFilter()
             )
 
