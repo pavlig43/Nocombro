@@ -65,12 +65,13 @@ class StorageComponent(
     private val _dateTimePeriodUi = MutableStateFlow(DateTimePeriod())
     internal val dateTimePeriodUi: StateFlow<DateTimePeriod> = _dateTimePeriodUi.asStateFlow()
 
-    private val dateTimePeriodForData = MutableStateFlow(DateTimePeriod())
+    private val _dateTimePeriodForData = MutableStateFlow(DateTimePeriod())
+    internal val dateTimePeriodForData = _dateTimePeriodForData.asStateFlow()
 
 
 
     fun updateDateTimePeriod() {
-        dateTimePeriodForData.update { _dateTimePeriodUi.value }
+        _dateTimePeriodForData.update { _dateTimePeriodUi.value }
     }
 
     private fun createDialogChild(dialogConfig: StorageDialog, context: ComponentContext): DialogChild {
@@ -109,7 +110,7 @@ class StorageComponent(
     private val _products = MutableStateFlow<List<StorageProductUi>>(emptyList())
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    internal val loadState: StateFlow<LoadState> = dateTimePeriodForData
+    internal val loadState: StateFlow<LoadState> = _dateTimePeriodForData
         .transformLatest { dateTimePeriod ->
             emit(LoadState.Loading)
             storageRepository.observeOnStorageProducts(

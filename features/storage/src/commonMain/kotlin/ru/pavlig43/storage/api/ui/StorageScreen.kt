@@ -4,14 +4,20 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.LaunchedEffect
@@ -26,6 +32,7 @@ import kotlinx.datetime.format
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.datetime.LocalDateTime
+import org.jetbrains.compose.resources.painterResource
 import ru.pavlig43.coreui.ErrorScreen
 import ru.pavlig43.coreui.LoadingUi
 import ru.pavlig43.storage.api.component.LoadState
@@ -57,17 +64,27 @@ import ua.wwind.table.state.rememberTableState
 @Composable
 fun StorageScreen(
     component: StorageComponent
-){
-    val dateTimePeriod by component.dateTimePeriodUi.collectAsState()
+) {
+    val dateTimePeriodUi by component.dateTimePeriodUi.collectAsState()
+    val dateTimePeriodForData by component.dateTimePeriodForData.collectAsState()
     val dialog by component.dialog.subscribeAsState()
 
     PeriodSelectorRow(
-        startDateTime = dateTimePeriod.start,
-        endDateTime = dateTimePeriod.end,
+        startDateTime = dateTimePeriodUi.start,
+        endDateTime = dateTimePeriodUi.end,
         onStartClick = { component.openStartDateTimeDialog() },
         onEndClick = { component.openEndDateTimeDialog() },
         onSearchNewData = component::updateDateTimePeriod
     )
+    Text(
+        "Выбранный период ${dateTimePeriodForData.start.format(dateTimeFormat)} - ${
+            dateTimePeriodForData.end.format(
+                dateTimeFormat
+            )
+        }",
+        Modifier.padding(start = 24.dp)
+    )
+
 
     dialog.child?.instance?.also { dialogChild ->
         when (dialogChild) {
@@ -76,7 +93,7 @@ fun StorageScreen(
     }
 
     val loadState by component.loadState.collectAsState()
-    when(val state = loadState) {
+    when (val state = loadState) {
         is LoadState.Error -> ErrorScreen(state.message)
         is LoadState.Loading -> LoadingUi()
         is LoadState.Success -> {
@@ -91,7 +108,11 @@ fun StorageScreen(
                 settings = tableSettings,
             )
             LaunchedEffect(tableState) {
-                snapshotFlow { tableState.filters.toMap() }.collect { filters -> component.updateFilters(filters) }
+                snapshotFlow { tableState.filters.toMap() }.collect { filters ->
+                    component.updateFilters(
+                        filters
+                    )
+                }
             }
             val tableData by component.tableData.collectAsState()
 
@@ -104,6 +125,7 @@ fun StorageScreen(
         }
     }
 }
+
 @OptIn(ExperimentalTableApi::class)
 @Composable
 private fun StorageTable(
@@ -141,7 +163,8 @@ private fun StorageTable(
     }
 }
 
-private class StorageTableCustomization : TableCustomization<StorageProductUi, StorageProductField> {
+private class StorageTableCustomization :
+    TableCustomization<StorageProductUi, StorageProductField> {
     @Composable
     override fun resolveRowStyle(ctx: TableRowContext<StorageProductUi, StorageProductField>): TableRowStyle {
         return if (!ctx.item.isProduct) {
@@ -179,31 +202,66 @@ private fun PeriodSelectorRow(
     endDateTime: LocalDateTime,
     onStartClick: () -> Unit,
     onEndClick: () -> Unit,
-    onSearchNewData:()-> Unit,
+    onSearchNewData: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Row(
-        modifier = modifier.padding(start = 24.dp, top = 8.dp, bottom = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
-        verticalAlignment = Alignment.CenterVertically
+    Card(
+        modifier = modifier.padding(start = 24.dp, top = 12.dp, bottom = 12.dp, end = 24.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Text("Период:")
+        Row(
+            modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(20.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Заголовок секции
+            Text(
+                text = "Период",
+                style = MaterialTheme.typography.titleMedium,
+                color = contentColorFor(MaterialTheme.colorScheme.surfaceVariant)
+            )
 
-        DateTimeRow(
-            label = "Начало",
-            dateTime = startDateTime,
-            onClick = onStartClick
-        )
+            Spacer(Modifier.width(8.dp))
 
-        Text("—")
+            // Дата начала
+            DateTimeRow(
+                label = "Начало",
+                dateTime = startDateTime,
+                onClick = onStartClick
+            )
 
-        DateTimeRow(
-            label = "Конец",
-            dateTime = endDateTime,
-            onClick = onEndClick
-        )
-        Button(onSearchNewData){
-            Text("Поиск")
+            // Разделитель
+            Text(
+                text = "—",
+                style = MaterialTheme.typography.titleLarge,
+                color = contentColorFor(MaterialTheme.colorScheme.surfaceVariant).copy(alpha = 0.6f)
+            )
+
+            // Дата конца
+            DateTimeRow(
+                label = "Конец",
+                dateTime = endDateTime,
+                onClick = onEndClick
+            )
+
+            Spacer(Modifier.width(8.dp))
+
+            // Кнопка поиска
+            Button(
+                onClick = onSearchNewData,
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Icon(
+                    painter = painterResource(Res.drawable.clock),
+                    contentDescription = null,
+                    modifier = Modifier.padding(end = 6.dp)
+                )
+                Text("Поиск")
+            }
         }
     }
 }
