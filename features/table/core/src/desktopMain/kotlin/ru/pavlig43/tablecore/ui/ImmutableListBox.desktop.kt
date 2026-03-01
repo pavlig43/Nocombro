@@ -16,7 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 @Composable
-internal actual fun BoxScope.ScrollBar(
+actual fun BoxScope.ScrollBar(
     verticalState: LazyListState,
     horizontalState: ScrollState
 ) {

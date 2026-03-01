@@ -64,7 +64,10 @@ internal enum class ImmutableTableRepositoryType {
     TRANSACTION,
 
     /** Партии */
-    BATCH
+    BATCH,
+
+
+
 }
 
 /**
@@ -210,3 +213,4 @@ private class BatchRepository(db: NocombroDatabase) :
             .catch { emit(Result.failure(it)) }
     }
 }
+

@@ -74,3 +74,4 @@ data class BatchImmutableTableBuilder(
     override val tabTitle: String = "Партии"
     override val withCheckbox: Boolean = false
 }
+

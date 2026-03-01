@@ -119,6 +119,8 @@ class ImmutableTableComponentFactoryMain(
                     ImmutableTableRepositoryType.BATCH.qualifier
                 ),
             )
+
+
         } as ImmutableTableComponent<*, I, *>
     }
 }

@@ -15,6 +15,7 @@ import ru.pavlig43.database.data.batch.BatchMovement
 import ru.pavlig43.database.data.batch.BatchOut
 import ru.pavlig43.database.data.batch.BatchWithBalanceOut
 import ru.pavlig43.database.data.batch.MovementType
+import ru.pavlig43.database.data.transact.Transact
 
 /**
  * DAO для работы с движениями партий (batch movements).
@@ -46,6 +47,10 @@ abstract class BatchMovementDao {
     @Transaction
     @Query("SELECT * FROM batch_movement WHERE batch_id IN (SELECT id FROM batch WHERE product_id = :productId)")
     internal abstract fun observeMovementsByProductId(productId: Int): Flow<List<MovementOut>>
+
+
+
+
 
     fun observeBatchWithBalanceByProductId(productId: Int): Flow<List<BatchWithBalanceOut>> {
         return observeMovementsByProductId(productId).map { lst ->
@@ -85,6 +90,9 @@ abstract class BatchMovementDao {
      */
     @Query("SELECT * FROM batch_movement WHERE batch_id = :batchId")
     abstract fun observeMovementsByBatchId(batchId: Int): Flow<List<BatchMovement>>
+
+
+
 }
 
 /**
@@ -103,5 +111,12 @@ internal data class MovementOut(
         parentColumn = "batch_id",
         entityColumn = "id"
     )
-    val batchOut: BatchOut
+    val batchOut: BatchOut,
+
+    @Relation(
+        entity = Transact::class,
+        parentColumn = "transaction_id",
+        entityColumn = "id"
+    )
+    val transaction: Transact
 )

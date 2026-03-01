@@ -28,6 +28,7 @@ import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ItemFormChild.T
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ItemFormChild.VendorFormChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.NotificationChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.SampleTableChild
+import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.StorageChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemFormConfig.DeclarationFormConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemFormConfig.DocumentFormConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemFormConfig.ProductFormConfig
@@ -42,6 +43,7 @@ import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.NotificationCo
 import ru.pavlig43.rootnocombro.internal.navigation.drawer.component.DrawerComponent
 import ru.pavlig43.rootnocombro.internal.navigation.drawer.component.DrawerDestination
 import ru.pavlig43.sampletable.api.component.SampleTableComponentMain
+import ru.pavlig43.storage.api.component.StorageComponent
 import ru.pavlig43.tablecore.model.IMultiLineTableUi
 import ru.pavlig43.transaction.api.component.TransactionFormComponent
 import ru.pavlig43.vendor.api.component.VendorFormComponent
@@ -77,6 +79,7 @@ internal class MainTabNavigationComponent(
             DrawerDestination.DeclarationList -> DeclarationListConfig()
             DrawerDestination.ProductTransactionList -> TransactionListConfig()
             DrawerDestination.SampleTable -> MainTabConfig.SampleTableConfig()
+            DrawerDestination.Storage -> MainTabConfig.StorageConfig()
         }
 
     val tabNavigationComponent: TabNavigationComponent<MainTabConfig, MainTabChild> =
@@ -94,6 +97,13 @@ internal class MainTabNavigationComponent(
                     is MainTabConfig.SampleTableConfig -> SampleTableChild(
                         SampleTableComponentMain(
                             componentContext = context
+                        )
+                    )
+
+                    is MainTabConfig.StorageConfig -> StorageChild(
+                        StorageComponent(
+                            componentContext = context,
+                            dependencies = scope.get(),
                         )
                     )
 

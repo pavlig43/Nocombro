@@ -225,7 +225,7 @@ fun SampleApp(context: ComponentContext,modifier: Modifier = Modifier,) {
                                     onSortChanged = viewModel::updateSort,
                                     onRowEditStart = { person, rowIndex ->
                                         viewModel.onEvent(
-                                            ru.pavlig43.sampletable.viewmodel.SampleUiEvent.StartEditing(
+                                            SampleUiEvent.StartEditing(
                                                 rowIndex,
                                                 person
                                             ),
