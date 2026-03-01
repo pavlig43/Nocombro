@@ -3,15 +3,20 @@ package ru.pavlig43.storage.api.component
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
 import com.arkivanov.essenty.instancekeeper.getOrCreate
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
+import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.core.MainTabComponent
 import ru.pavlig43.core.componentCoroutineScope
+import ru.pavlig43.core.getCurrentLocalDateTime
 import ru.pavlig43.corekoin.ComponentKoinContext
 import ru.pavlig43.database.data.storage.StorageProduct
 import ru.pavlig43.storage.api.StorageDependencies
@@ -27,7 +32,7 @@ class StorageComponent(
     componentContext: ComponentContext,
     dependencies: StorageDependencies
 
-): ComponentContext by componentContext, MainTabComponent{
+) : ComponentContext by componentContext, MainTabComponent {
 
     private val koinComponent = instanceKeeper.getOrCreate { ComponentKoinContext() }
     private val scope = koinComponent.getOrCreateKoinScope(
@@ -41,22 +46,34 @@ class StorageComponent(
 
     private val filterManager = FilterManager<StorageProductField>(childContext("filter"))
 
+    private val _dateTimePeriod = MutableStateFlow(DateTimePeriod())
+    internal val dateTimePeriod = _dateTimePeriod.asStateFlow()
+    internal fun updateDateTimePeriod(dateTimePeriod: DateTimePeriod) {
+        _dateTimePeriod.update { dateTimePeriod }
+    }
+
     private val _products = MutableStateFlow<List<StorageProductUi>>(emptyList())
 
-    internal val loadState: StateFlow<LoadState> = storageRepository.observeOnStorageProducts()
-        .map { result ->
-            result.fold(
-                onSuccess = { lst ->
-                    _products.value = lst.toUi()
-                    LoadState.Success(_products.value)
-                },
-                onFailure = { throwable -> LoadState.Error(throwable.message ?: "") }
-            )
-        }.stateIn(
-            coroutineScope,
-            SharingStarted.Lazily,
-            LoadState.Loading
+    @OptIn(ExperimentalCoroutinesApi::class)
+    internal val loadState: StateFlow<LoadState> = _dateTimePeriod.flatMapLatest { dateTimePeriod ->
+        storageRepository.observeOnStorageProducts(
+            start = dateTimePeriod.start,
+            end = dateTimePeriod.end
         )
+            .map { result ->
+                result.fold(
+                    onSuccess = { lst ->
+                        _products.value = lst.toUi()
+                        LoadState.Success(_products.value)
+                    },
+                    onFailure = { throwable -> LoadState.Error(throwable.message ?: "") }
+                )
+            }
+    }.stateIn(
+        coroutineScope,
+        SharingStarted.Lazily,
+        LoadState.Loading
+    )
 
     internal val tableData: StateFlow<StorageTableData> = combine(
         _products,
@@ -88,15 +105,17 @@ class StorageComponent(
 
 
 }
-internal sealed interface LoadState{
-    data object Loading: LoadState
-    data class Error(val message: String): LoadState
-    data class Success(val products:List<StorageProductUi>): LoadState
+
+internal sealed interface LoadState {
+    data object Loading : LoadState
+    data class Error(val message: String) : LoadState
+    data class Success(val products: List<StorageProductUi>) : LoadState
 }
 
 private fun List<StorageProduct>.toUi(): List<StorageProductUi> {
     return flatMap { it.toUi() }
 }
+
 private fun StorageProduct.toUi(): List<StorageProductUi> {
     val productItem = StorageProductUi(
         productId = productId,
@@ -128,3 +147,8 @@ private fun StorageProduct.toUi(): List<StorageProductUi> {
 
     return listOf(productItem) + batchItems
 }
+
+internal data class DateTimePeriod(
+    val start: LocalDateTime = getCurrentLocalDateTime(),
+    val end: LocalDateTime = getCurrentLocalDateTime()
+)

@@ -22,10 +22,13 @@ class StorageRepository(
 ){
     private val dao = db.storageDao
 
-    fun observeOnStorageProducts(): Flow<Result<List<StorageProduct>>> {
+    fun observeOnStorageProducts(
+        start: LocalDateTime,
+        end: LocalDateTime,
+    ): Flow<Result<List<StorageProduct>>> {
         return  dao.observeOnStorageBatches(
-            start = getCurrentLocalDateTime().minusMonths(5,TimeZone.currentSystemDefault()),
-            end = getCurrentLocalDateTime()
+            start = start,
+            end = start
         ).map { Result.success(it) }
             .catch { emit(Result.failure(it)) }
     }
