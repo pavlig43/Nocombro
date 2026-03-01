@@ -10,7 +10,7 @@ internal data class StorageProductUi(
     val outgoing: Int,
     val balanceOnEnd: Int,
     val isProduct: Boolean,
-    val expanded: Boolean = false
+    val isExpanded: Boolean = false,
 )
 
 

@@ -33,7 +33,7 @@ internal fun createStorageColumns(
 ): ImmutableList<ColumnSpec<StorageProductUi, StorageProductField, StorageTableData>> =
     tableColumns {
 
-        column(StorageProductField.EXPAND, valueOf = { it.expanded }) {
+        column(StorageProductField.EXPAND, valueOf = { it.isExpanded }) {
             title { "" }
             autoWidth()
             cell { item, _ ->
@@ -71,14 +71,14 @@ private fun ExpandedCell(
     item: StorageProductUi,
     onToggleExpand: (productId: Int) -> Unit
 ) {
-    if (item.isProduct && !item.expanded) {
+    if (item.isProduct && !item.isExpanded) {
         ToolTipIconButton(
             tooltipText = "Развернуть",
             onClick = { onToggleExpand(item.itemId) },
             icon = Res.drawable.arrow_downward,
         )
     }
-    if (item.isProduct && item.expanded) {
+    if (item.isProduct && item.isExpanded) {
         ToolTipIconButton(
             tooltipText = "Свернуть",
             onClick = { onToggleExpand(item.itemId) },

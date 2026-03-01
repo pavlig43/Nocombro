@@ -138,8 +138,18 @@ class StorageComponent(
         _products,
         filterManager.filters,
     ) { products, filters ->
+        val expandedProductIds = products
+            .filter { it.isProduct && it.isExpanded }
+            .map { it.productId }
+            .toSet()
+
         val filtered = products.filter { item ->
-            StorageFilterMatcher.matchesItem(item, filters)
+            val matchesFilter = StorageFilterMatcher.matchesItem(item, filters)
+            val isVisible = when {
+                item.isProduct -> true
+                else -> item.productId in expandedProductIds
+            }
+            matchesFilter && isVisible
         }
         StorageTableData(displayedProducts = filtered)
     }.stateIn(
@@ -150,8 +160,8 @@ class StorageComponent(
 
     fun toggleExpand(productId: Int) {
         _products.value = _products.value.map { product ->
-            if (product.itemId == productId) {
-                product.copy(expanded = !product.expanded)
+            if (product.productId == productId && product.isProduct) {
+                product.copy(isExpanded = !product.isExpanded)
             } else {
                 product
             }
@@ -186,7 +196,6 @@ private fun StorageProduct.toUi(): List<StorageProductUi> {
         outgoing = outgoing,
         balanceOnEnd = balanceOnEnd,
         isProduct = true,
-        expanded = false
     )
 
     val batchItems = batches.map { batch ->
@@ -200,7 +209,6 @@ private fun StorageProduct.toUi(): List<StorageProductUi> {
             outgoing = batch.outgoing,
             balanceOnEnd = batch.balanceOnEnd,
             isProduct = false,
-            expanded = false
         )
     }
 
