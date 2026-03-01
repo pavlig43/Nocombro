@@ -40,14 +40,17 @@ abstract class StorageDao {
         return observeMovementsUntil(end).map { fillList ->
             fillList.groupBy { it.batchOut.product }
                 .run {
-                    this.values.mapParallel(Dispatchers.Default) { movementOuts: List<MovementOut> ->
-                        val product = movementOuts.first().batchOut.product
-                        val productId = product.id
-                        val productName = product.displayName
+                    this.values
+                        .mapParallel(Dispatchers.Default) { movementOuts: List<MovementOut> ->
+                            val product = movementOuts.first().batchOut.product
+                            val productId = product.id
+                            val productName = product.displayName
 
-                        val batches = movementOuts
-                            .groupBy { it.batchOut.batch }
-                            .map { (batch, moves) ->
+                            val batches = movementOuts
+                                .groupBy { it.batchOut.batch }
+                                .entries
+                                .sortedBy { it.key.dateBorn }
+                                .map { (batch, moves) ->
                                 val batchId = batch.id
                                 val batchName = "($batchId) ${batch.dateBorn.format(dateFormat)}"
 
@@ -108,6 +111,7 @@ abstract class StorageDao {
                             batches = batches
                         )
                     }
+                    .sortedBy { it.productName }
                 }
         }
     }
