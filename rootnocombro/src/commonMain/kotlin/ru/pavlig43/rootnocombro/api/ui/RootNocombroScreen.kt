@@ -38,7 +38,7 @@ import ru.pavlig43.rootnocombro.internal.navigation.tab.ui.TabContent
 import ru.pavlig43.rootnocombro.internal.topbar.ui.NocombroAppBar
 import ru.pavlig43.sampletable.api.ui.SampleTableScreen
 import ru.pavlig43.signroot.api.ui.RootSignScreen
-import ru.pavlig43.storage.api.StorageScreen
+import ru.pavlig43.storage.api.ui.StorageScreen
 import ru.pavlig43.transaction.api.ui.TransactionFormScreen
 import ru.pavlig43.vendor.api.ui.VendorFormScreen
 
