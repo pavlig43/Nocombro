@@ -28,7 +28,7 @@ class StorageRepository(
     ): Flow<Result<List<StorageProduct>>> {
         return  dao.observeOnStorageBatches(
             start = start,
-            end = start
+            end = end
         ).map { Result.success(it) }
             .catch { emit(Result.failure(it)) }
     }
