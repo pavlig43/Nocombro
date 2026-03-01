@@ -43,7 +43,6 @@ class StorageComponent(
     private val coroutineScope = componentCoroutineScope()
 
     private val filterManager = FilterManager<StorageProductField>(childContext("filter"))
-    private val sortManager = SortManager<StorageProductField>(childContext("sort"))
 
     private val _products = MutableStateFlow<List<StorageProductUi>>(emptyList())
 
@@ -65,13 +64,11 @@ class StorageComponent(
     internal val tableData: StateFlow<StorageTableData> = combine(
         _products,
         filterManager.filters,
-        sortManager.sort
-    ) { products, filters, sort ->
+    ) { products, filters ->
         val filtered = products.filter { item ->
             StorageFilterMatcher.matchesItem(item, filters)
         }
-        val displayed = StorageSorter.sort(filtered, sort)
-        StorageTableData(displayedProducts = displayed)
+        StorageTableData(displayedProducts = filtered)
     }.stateIn(
         coroutineScope,
         SharingStarted.Lazily,
@@ -92,9 +89,6 @@ class StorageComponent(
         filterManager.update(filters)
     }
 
-    fun updateSort(sort: SortState<StorageProductField>?) {
-        sortManager.update(sort)
-    }
 
 }
 internal sealed interface LoadState{

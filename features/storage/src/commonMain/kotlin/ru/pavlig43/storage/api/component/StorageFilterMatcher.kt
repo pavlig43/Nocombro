@@ -12,12 +12,8 @@ internal object StorageFilterMatcher : FilterMatcher<StorageProductUi, StoragePr
         stateAny: TableFilterState<*>
     ): Boolean {
         return when (column) {
-            StorageProductField.EXPAND -> true
             StorageProductField.NAME -> matchesTextField(item.name, stateAny)
-            StorageProductField.BALANCE_BEFORE -> matchesIntField(item.balanceBeforeStart, stateAny)
-            StorageProductField.INCOMING -> matchesIntField(item.incoming, stateAny)
-            StorageProductField.OUTGOING -> matchesIntField(item.outgoing, stateAny)
-            StorageProductField.BALANCE_END -> matchesIntField(item.balanceOnEnd, stateAny)
+            else -> true
         }
     }
 }

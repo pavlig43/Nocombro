@@ -2,9 +2,11 @@ package ru.pavlig43.storage.api
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import kotlinx.collections.immutable.toImmutableList
 import ru.pavlig43.coreui.ErrorScreen
@@ -37,6 +39,9 @@ fun StorageScreen(
                 columns = StorageProductField.entries.toImmutableList(),
                 settings = tableSettings,
             )
+            LaunchedEffect(tableState) {
+                snapshotFlow { tableState.filters.toMap() }.collect { filters -> component.updateFilters(filters) }
+            }
             val tableData by component.tableData.collectAsState()
 
             StorageTable(

@@ -101,7 +101,7 @@ private fun ReadonlyTableColumnsBuilder<StorageProductUi, StorageProductField, S
             val padding = if (item.isProduct) 4.dp else 16.dp
             Text(item.name, modifier = Modifier.padding(start = padding, end = 8.dp))
         }
-        sortable()
+        filter(TableFilterType.TextTableFilter())
     }
 
 }
@@ -121,7 +121,6 @@ private fun ReadonlyTableColumnsBuilder<StorageProductUi, StorageProductField, S
                 modifier = Modifier.padding(start = padding, end = 12.dp)
             )
         }
-        sortable()
     }
 
 }
