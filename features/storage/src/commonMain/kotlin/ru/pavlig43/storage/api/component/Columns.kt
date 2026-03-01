@@ -1,4 +1,4 @@
-package ru.pavlig43.storage.api.column
+package ru.pavlig43.storage.api.component
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
@@ -9,7 +9,6 @@ import kotlinx.collections.immutable.ImmutableList
 import ru.pavlig43.coreui.tooltip.ToolTipIconButton
 import ru.pavlig43.coreui.DecimalFormat
 import ru.pavlig43.coreui.toStartDoubleFormat
-import ru.pavlig43.immutable.internal.column.readDecimalColumn
 import ru.pavlig43.storage.internal.model.StorageProductUi
 import ru.pavlig43.storage.internal.model.StorageTableData
 import ru.pavlig43.theme.Res
@@ -94,12 +93,12 @@ private fun ExpandedCell(
 
 private fun ReadonlyTableColumnsBuilder<StorageProductUi, StorageProductField, StorageTableData>.nameColumn(
 ) {
-    column(key = StorageProductField.NAME, valueOf = { it.name }) {
+    column(key = StorageProductField.NAME, valueOf = { it.itemName }) {
         title { "Имя" }
         autoWidth()
         cell { item, _ ->
             val padding = if (item.isProduct) 4.dp else 16.dp
-            Text(item.name, modifier = Modifier.padding(start = padding, end = 8.dp))
+            Text(item.itemName, modifier = Modifier.padding(start = padding, end = 8.dp))
         }
         filter(TableFilterType.TextTableFilter())
     }

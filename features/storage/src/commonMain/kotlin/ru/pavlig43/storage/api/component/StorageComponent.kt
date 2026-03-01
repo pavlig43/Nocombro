@@ -15,15 +15,12 @@ import ru.pavlig43.core.componentCoroutineScope
 import ru.pavlig43.corekoin.ComponentKoinContext
 import ru.pavlig43.database.data.storage.StorageProduct
 import ru.pavlig43.storage.api.StorageDependencies
-import ru.pavlig43.storage.api.column.StorageProductField
 import ru.pavlig43.storage.internal.di.StorageRepository
 import ru.pavlig43.storage.internal.di.createStorageModule
 import ru.pavlig43.storage.internal.model.StorageProductUi
 import ru.pavlig43.storage.internal.model.StorageTableData
 import ru.pavlig43.tablecore.manger.FilterManager
-import ru.pavlig43.tablecore.manger.SortManager
 import ua.wwind.table.filter.data.TableFilterState
-import ua.wwind.table.state.SortState
 import kotlin.collections.map
 
 class StorageComponent(
@@ -104,7 +101,8 @@ private fun StorageProduct.toUi(): List<StorageProductUi> {
     val productItem = StorageProductUi(
         productId = productId,
         itemId = productId,
-        name = productName,
+        productName = productName,
+        itemName = productName,
         balanceBeforeStart = balanceBeforeStart,
         incoming = incoming,
         outgoing = outgoing,
@@ -117,7 +115,8 @@ private fun StorageProduct.toUi(): List<StorageProductUi> {
         StorageProductUi(
             productId = productId,
             itemId = batch.batchId,
-            name = batch.batchName,
+            productName = this.productName,
+            itemName = batch.batchName,
             balanceBeforeStart = batch.balanceBeforeStart,
             incoming = batch.incoming,
             outgoing = batch.outgoing,
