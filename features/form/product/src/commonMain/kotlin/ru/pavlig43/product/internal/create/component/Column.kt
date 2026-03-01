@@ -1,8 +1,8 @@
 package ru.pavlig43.product.internal.create.component
 
 import kotlinx.collections.immutable.ImmutableList
-import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.coreui.DecimalFormat
+import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.mutable.api.column.decimalColumn
 import ru.pavlig43.mutable.api.column.writeDateColumn
 import ru.pavlig43.mutable.api.column.writeItemTypeColumn

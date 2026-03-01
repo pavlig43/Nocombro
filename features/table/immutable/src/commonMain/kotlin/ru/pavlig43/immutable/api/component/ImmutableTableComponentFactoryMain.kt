@@ -14,7 +14,6 @@ import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.database.data.document.Document
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductDeclarationOut
-import ru.pavlig43.database.data.storage.StorageProduct
 import ru.pavlig43.database.data.transact.Transact
 import ru.pavlig43.database.data.vendor.Vendor
 import ru.pavlig43.immutable.api.ImmutableTableDependencies

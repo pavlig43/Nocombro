@@ -1,7 +1,5 @@
 package ru.pavlig43.database.data.storage
 
-import ru.pavlig43.database.data.batch.MovementType
-
 data class StorageProduct(
     val productId: Int,
     val productName: String,

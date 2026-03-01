@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.datetime.LocalDateTime
+import kotlinx.serialization.Serializable
 import ru.pavlig43.core.DateTimeComponent
 import ru.pavlig43.core.MainTabComponent
 import ru.pavlig43.core.componentCoroutineScope
@@ -31,8 +32,6 @@ import ru.pavlig43.storage.internal.model.StorageProductUi
 import ru.pavlig43.storage.internal.model.StorageTableData
 import ru.pavlig43.tablecore.manger.FilterManager
 import ua.wwind.table.filter.data.TableFilterState
-import kotlinx.serialization.Serializable
-import kotlin.collections.map
 
 class StorageComponent(
     componentContext: ComponentContext,
@@ -145,8 +144,13 @@ class StorageComponent(
 
         val filtered = products.filter { item ->
             val matchesFilter = StorageFilterMatcher.matchesItem(item, filters)
+            val hasNegativeValues = item.balanceBeforeStart < 0 ||
+                                    item.incoming < 0 ||
+                                    item.outgoing < 0 ||
+                                    item.balanceOnEnd < 0
             val isVisible = when {
                 item.isProduct -> true
+                hasNegativeValues -> true  // Показывать партии с отрицательными значениями
                 else -> item.productId in expandedProductIds
             }
             matchesFilter && isVisible

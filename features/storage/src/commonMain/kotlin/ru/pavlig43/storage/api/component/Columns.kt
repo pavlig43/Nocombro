@@ -1,3 +1,4 @@
+@file:Suppress("MatchingDeclarationName")
 package ru.pavlig43.storage.api.component
 
 import androidx.compose.foundation.layout.padding
@@ -6,9 +7,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.ImmutableList
-import ru.pavlig43.coreui.tooltip.ToolTipIconButton
 import ru.pavlig43.coreui.DecimalFormat
 import ru.pavlig43.coreui.toStartDoubleFormat
+import ru.pavlig43.coreui.tooltip.ToolTipIconButton
 import ru.pavlig43.storage.internal.model.StorageProductUi
 import ru.pavlig43.storage.internal.model.StorageTableData
 import ru.pavlig43.theme.Res

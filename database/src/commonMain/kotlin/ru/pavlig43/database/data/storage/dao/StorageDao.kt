@@ -10,7 +10,6 @@ import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.format
 import ru.pavlig43.core.dateFormat
 import ru.pavlig43.core.mapParallel
-import ru.pavlig43.core.mapValues
 import ru.pavlig43.database.data.batch.MovementType
 import ru.pavlig43.database.data.batch.dao.MovementOut
 import ru.pavlig43.database.data.storage.StorageBatch
@@ -32,7 +31,7 @@ abstract class StorageDao {
     )
     internal abstract fun observeMovementsUntil(end: LocalDateTime): Flow<List<MovementOut>>
 
-
+    @Suppress("LongMethod")
     fun observeOnStorageBatches(
         start: LocalDateTime,
         end: LocalDateTime
@@ -51,67 +50,79 @@ abstract class StorageDao {
                                 .entries
                                 .sortedBy { it.key.dateBorn }
                                 .map { (batch, moves) ->
-                                val batchId = batch.id
-                                val batchName = "($batchId) ${batch.dateBorn.format(dateFormat)}"
+                                    val batchId = batch.id
+                                    val batchName =
+                                        "($batchId) ${batch.dateBorn.format(dateFormat)}"
 
-                                val (balanceBeforeStart, incoming, outgoing) = moves.fold(
-                                    Triple(
-                                        0,
-                                        0,
-                                        0
-                                    )
-                                ) { (accBefore, accIn, accOut), move ->
-                                    val count = move.movement.count
-                                    val type = move.movement.movementType
-                                    val dt = move.transaction.createdAt
-                                    when {
-                                        dt < start && type == MovementType.INCOMING -> Triple(
-                                            accBefore + count,
-                                            accIn,
-                                            accOut
+                                    val (balanceBeforeStart, incoming, outgoing) = moves.fold(
+                                        Triple(
+                                            0,
+                                            0,
+                                            0
                                         )
+                                    ) { (accBefore, accIn, accOut), move ->
+                                        val count = move.movement.count
+                                        val type = move.movement.movementType
+                                        val dt = move.transaction.createdAt
+                                        when {
+                                            dt < start && type == MovementType.INCOMING -> Triple(
+                                                accBefore + count,
+                                                accIn,
+                                                accOut
+                                            )
 
-                                        dt < start && type == MovementType.OUTGOING -> Triple(
-                                            accBefore - count,
-                                            accIn,
-                                            accOut
-                                        )
+                                            dt < start && type == MovementType.OUTGOING -> Triple(
+                                                accBefore - count,
+                                                accIn,
+                                                accOut
+                                            )
 
-                                        type == MovementType.INCOMING -> Triple(accBefore, accIn + count, accOut)
-                                        type == MovementType.OUTGOING -> Triple(accBefore, accIn, accOut + count)
-                                        else -> Triple(accBefore, accIn, accOut)
+                                            type == MovementType.INCOMING -> Triple(
+                                                accBefore,
+                                                accIn + count,
+                                                accOut
+                                            )
+
+                                            type == MovementType.OUTGOING -> Triple(
+                                                accBefore,
+                                                accIn,
+                                                accOut + count
+                                            )
+
+                                            else -> Triple(accBefore, accIn, accOut)
+                                        }
                                     }
+
+                                    StorageBatch(
+                                        batchId = batchId,
+                                        batchName = batchName,
+                                        balanceBeforeStart = balanceBeforeStart,
+                                        incoming = incoming,
+                                        outgoing = outgoing,
+                                        balanceOnEnd = balanceBeforeStart + incoming - outgoing
+                                    )
                                 }
 
-                                StorageBatch(
-                                    batchId = batchId,
-                                    batchName = batchName,
-                                    balanceBeforeStart = balanceBeforeStart,
-                                    incoming = incoming,
-                                    outgoing = outgoing,
-                                    balanceOnEnd = balanceBeforeStart + incoming - outgoing
-                                )
-                            }
+                            val totals =
+                                batches.fold(Triple(0, 0, 0)) { (accBefore, accIn, accOut), batch ->
+                                    Triple(
+                                        accBefore + batch.balanceBeforeStart,
+                                        accIn + batch.incoming,
+                                        accOut + batch.outgoing
+                                    )
+                                }
 
-                        val totals = batches.fold(Triple(0, 0, 0)) { (accBefore, accIn, accOut), batch ->
-                            Triple(
-                                accBefore + batch.balanceBeforeStart,
-                                accIn + batch.incoming,
-                                accOut + batch.outgoing
+                            StorageProduct(
+                                productId = productId,
+                                productName = productName,
+                                balanceBeforeStart = totals.first,
+                                incoming = totals.second,
+                                outgoing = totals.third,
+                                balanceOnEnd = totals.first + totals.second - totals.third,
+                                batches = batches
                             )
                         }
-
-                        StorageProduct(
-                            productId = productId,
-                            productName = productName,
-                            balanceBeforeStart = totals.first,
-                            incoming = totals.second,
-                            outgoing = totals.third,
-                            balanceOnEnd = totals.first + totals.second - totals.third,
-                            batches = batches
-                        )
-                    }
-                    .sortedBy { it.productName }
+                        .sortedBy { it.productName }
                 }
         }
     }

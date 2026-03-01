@@ -6,7 +6,6 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.minus
 import kotlinx.datetime.plus
-import ru.pavlig43.core.emptyDate
 import ru.pavlig43.core.getCurrentLocalDate
 import ru.pavlig43.database.data.batch.BatchBD
 import ru.pavlig43.database.data.batch.BatchMovement

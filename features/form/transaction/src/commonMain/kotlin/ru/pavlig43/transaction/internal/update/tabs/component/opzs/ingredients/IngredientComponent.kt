@@ -34,6 +34,7 @@ import ru.pavlig43.transaction.internal.update.tabs.component.opzs.ingredients.D
 import ru.pavlig43.transaction.internal.update.tabs.component.opzs.pf.PfUi
 import ua.wwind.table.ColumnSpec
 
+@Suppress("LongParameterList")
 internal class IngredientComponent(
     componentComponent: ComponentContext,
     private val transactionId: Int,
