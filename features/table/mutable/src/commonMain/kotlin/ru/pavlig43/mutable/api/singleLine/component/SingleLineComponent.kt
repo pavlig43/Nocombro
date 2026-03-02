@@ -57,7 +57,7 @@ abstract class SingleLineComponent<I : SingleItem, UI : ISingleLineTableUi, C>(
     )
 
 
-    fun onChangeItem1(updateItem: (UI) -> UI) {
+    fun onChangeItem(updateItem: (UI) -> UI) {
         val item = updateItem(item.value)
         _itemFields.update { listOf(item) }
         observeOnItem(item)

@@ -51,7 +51,7 @@ internal class CreateTransactionSingleLineComponent(
                     DateTimeComponent(
                         componentContext = context,
                         initDatetime = item.createdAt,
-                        onChangeDate = { newDate -> onChangeItem1 { it.copy(createdAt = newDate) } },
+                        onChangeDate = { newDate -> onChangeItem { it.copy(createdAt = newDate) } },
                         onDismissRequest = { dialogNavigation.dismiss() }
                     )
                 )
@@ -62,7 +62,7 @@ internal class CreateTransactionSingleLineComponent(
     override val columns: ImmutableList<ColumnSpec<TransactionEssentialsUi, TransactionField, Unit>> =
         createTransactionColumns0(
             onOpenCreatedAtDialog = { dialogNavigation.activate(DialogConfig.CreatedAt) },
-            onChangeItem = ::onChangeItem1
+            onChangeItem = ::onChangeItem
         )
 }
 

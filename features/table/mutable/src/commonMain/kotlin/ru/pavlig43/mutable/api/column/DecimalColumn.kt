@@ -27,6 +27,7 @@ fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.decimalColumn(
     headerText: String,
     decimalFormat: DecimalFormat,
     updateItem: (T, Int) -> Unit,
+    filterType: TableFilterType.NumberTableFilter<Int>?= null,
     isSortable: Boolean = true,
     footerValue: ((E) -> Int)? = null
 ) {
@@ -34,11 +35,10 @@ fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.decimalColumn(
         autoWidth(300.dp)
         header(headerText)
         align(Alignment.CenterStart)
-        filter(
-            TableFilterType.NumberTableFilter(
-                delegate = TableFilterType.NumberTableFilter.IntDelegate,
-            )
-        )
+        filterType?.let {
+            filter(it)
+        }
+
         cellForDecimalFormat(
             format = decimalFormat,
             getCount = { getValue(it) },
@@ -58,17 +58,21 @@ fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.decimalColumn(
         }
     }
 }
-
+@Suppress("LongParameterList")
 fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.readDecimalColumn(
     key: C,
     getValue: (T) -> Int,
     headerText: String,
     decimalFormat: DecimalFormat,
+    filterType: TableFilterType.NumberTableFilter<Int>?= null,
     isSortable: Boolean = true
 ) {
     column(key, valueOf = { getValue(it) }) {
 //        autoWidth(300.dp)
         header(headerText)
+        filterType?.let {
+            filter(it)
+        }
         align(Alignment.CenterStart)
         readNumberCell(format = decimalFormat, getCount = { getValue(it) })
         if (isSortable) {

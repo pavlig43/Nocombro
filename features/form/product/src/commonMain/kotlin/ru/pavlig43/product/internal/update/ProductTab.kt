@@ -15,4 +15,7 @@ internal sealed interface ProductTab {
 
     @Serializable
     data object Declaration : ProductTab
+
+    @Serializable
+    data object SafetyStock : ProductTab
 }

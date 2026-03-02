@@ -12,15 +12,18 @@ import ru.pavlig43.core.tabs.TabOpener
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.mutable.api.singleLine.component.SingleLineComponentFactory
+import ru.pavlig43.product.internal.di.SingleRepositoryType
 import ru.pavlig43.product.internal.di.UpdateCollectionRepositoryType
 import ru.pavlig43.product.internal.model.ProductEssentialsUi
 import ru.pavlig43.product.internal.update.ProductTabChild.Composition
 import ru.pavlig43.product.internal.update.ProductTabChild.Essentials
 import ru.pavlig43.product.internal.update.ProductTabChild.Files
+import ru.pavlig43.product.internal.update.ProductTabChild.SafetyStock
 import ru.pavlig43.product.internal.update.tabs.ProductFilesComponent
 import ru.pavlig43.product.internal.update.tabs.composition.CompositionComponent
 import ru.pavlig43.product.internal.update.tabs.declaration.ProductDeclarationComponent
 import ru.pavlig43.product.internal.update.tabs.essential.ProductUpdateSingleLineComponent
+import ru.pavlig43.product.internal.update.tabs.safety.SafetyStockComponent
 import ru.pavlig43.update.component.IItemFormTabsComponent
 import ru.pavlig43.update.component.getDefaultUpdateComponent
 
@@ -38,12 +41,15 @@ internal class ProductFormTabsComponent(
     override val transactionExecutor: TransactionExecutor = scope.get()
     private val coroutineScope = componentCoroutineScope()
 
+
+
     override val tabNavigationComponent: TabNavigationComponent<ProductTab, ProductTabChild> =
         TabNavigationComponent(
             componentContext = childContext("tab"),
             startConfigurations = listOf(
                 ProductTab.Essentials,
                 ProductTab.Files,
+                ProductTab.SafetyStock,
                 ProductTab.Declaration
             ),
             serializer = ProductTab.serializer(),
@@ -53,7 +59,7 @@ internal class ProductFormTabsComponent(
                         ProductUpdateSingleLineComponent(
                             componentContext = context,
                             productId = productId,
-                            updateRepository = scope.get(),
+                            updateRepository = scope.get(SingleRepositoryType.ESSENTIALS.qualifier),
                             componentFactory = componentFactory,
                             observeOnItem = observeOnProduct,
                             onSuccessInitData = ::onSuccessInitData
@@ -85,6 +91,14 @@ internal class ProductFormTabsComponent(
                             observableRepository = scope.get(),
                             tabOpener = tabOpener,
                             immutableTableDependencies = scope.get()
+                        )
+                    )
+
+                    ProductTab.SafetyStock -> SafetyStock(
+                        SafetyStockComponent(
+                            componentContext = context,
+                            productId = productId,
+                            updateRepository = scope.get(SingleRepositoryType.SAFETY.qualifier),
                         )
                     )
                 }
