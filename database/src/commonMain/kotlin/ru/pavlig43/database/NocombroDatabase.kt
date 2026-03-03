@@ -34,6 +34,7 @@ import ru.pavlig43.database.data.product.dao.CompositionDao
 import ru.pavlig43.database.data.product.dao.ProductDao
 import ru.pavlig43.database.data.product.dao.ProductDeclarationDao
 import ru.pavlig43.database.data.product.dao.SafetyStockDao
+import ru.pavlig43.database.data.safety.SafetyTableDao
 import ru.pavlig43.database.data.storage.dao.StorageDao
 import ru.pavlig43.database.data.transact.Transact
 import ru.pavlig43.database.data.transact.buy.BuyBDIn
@@ -108,6 +109,8 @@ abstract class NocombroDatabase : RoomDatabase() {
     abstract val ingredientDao: IngredientDao
 
     abstract val storageDao: StorageDao
+
+    abstract val safetyTableDao: SafetyTableDao
 }
 
 
