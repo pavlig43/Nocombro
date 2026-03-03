@@ -8,10 +8,10 @@ import org.koin.dsl.module
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.batch.BatchWithBalanceOut
 import ru.pavlig43.database.data.declaration.Declaration
-import ru.pavlig43.database.data.safety.SafetyTableItem
 import ru.pavlig43.database.data.document.Document
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductDeclarationOut
+import ru.pavlig43.database.data.safety.SafetyTableItem
 import ru.pavlig43.database.data.transact.Transact
 import ru.pavlig43.database.data.vendor.Vendor
 import ru.pavlig43.immutable.api.ImmutableTableDependencies
