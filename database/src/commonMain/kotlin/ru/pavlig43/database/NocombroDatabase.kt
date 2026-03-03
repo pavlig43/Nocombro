@@ -77,12 +77,7 @@ import ru.pavlig43.database.data.vendor.dao.VendorDao
         ExpenseBD::class,
 
     ],
-    version = 4,
-    autoMigrations = [
-        AutoMigration(from = 2, to = 3),
-        AutoMigration(from = 3, to = 4)
-    ]
-
+    version = 1,
 
 )
 @TypeConverters(Converters::class)

@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "636866b81bc1819ac7ac8f062191eea2",
+    "identityHash": "e804fa5453b1dfc498135ce974277f44",
     "entities": [
       {
         "tableName": "file",
@@ -198,7 +198,7 @@
       },
       {
         "tableName": "product",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`type` TEXT NOT NULL, `display_name` TEXT NOT NULL, `created_at` TEXT NOT NULL, `comment` TEXT NOT NULL, `price_for_sale` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`type` TEXT NOT NULL, `display_name` TEXT NOT NULL, `second_name` TEXT NOT NULL DEFAULT '', `created_at` TEXT NOT NULL, `comment` TEXT NOT NULL, `price_for_sale` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL)",
         "fields": [
           {
             "fieldPath": "type",
@@ -211,6 +211,13 @@
             "columnName": "display_name",
             "affinity": "TEXT",
             "notNull": true
+          },
+          {
+            "fieldPath": "secondName",
+            "columnName": "second_name",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
           },
           {
             "fieldPath": "createdAt",
@@ -391,6 +398,66 @@
             "onUpdate": "NO ACTION",
             "columns": [
               "declaration_id"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "safety_stock",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`product_id` INTEGER NOT NULL, `reorder_point` INTEGER NOT NULL, `order_quantity` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, FOREIGN KEY(`product_id`) REFERENCES `product`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "productId",
+            "columnName": "product_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "reorderPoint",
+            "columnName": "reorder_point",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "orderQuantity",
+            "columnName": "order_quantity",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_safety_stock_product_id",
+            "unique": false,
+            "columnNames": [
+              "product_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_safety_stock_product_id` ON `${TABLE_NAME}` (`product_id`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "product",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "product_id"
             ],
             "referencedColumns": [
               "id"
@@ -694,7 +761,7 @@
       },
       {
         "tableName": "sale",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`transaction_id` INTEGER NOT NULL, `movement_id` INTEGER NOT NULL, `price` INTEGER NOT NULL, `comment` TEXT NOT NULL, `client_id` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, FOREIGN KEY(`transaction_id`) REFERENCES `transact`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`movement_id`) REFERENCES `batch_movement`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION , FOREIGN KEY(`client_id`) REFERENCES `vendor`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`transaction_id` INTEGER NOT NULL, `movement_id` INTEGER NOT NULL, `price` INTEGER NOT NULL, `comment` TEXT NOT NULL, `client_id` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, FOREIGN KEY(`transaction_id`) REFERENCES `transact`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`movement_id`) REFERENCES `batch_movement`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION , FOREIGN KEY(`client_id`) REFERENCES `vendor`(`id`) ON UPDATE NO ACTION ON DELETE RESTRICT )",
         "fields": [
           {
             "fieldPath": "transactionId",
@@ -793,7 +860,7 @@
           },
           {
             "table": "vendor",
-            "onDelete": "NO ACTION",
+            "onDelete": "RESTRICT",
             "onUpdate": "NO ACTION",
             "columns": [
               "client_id"
@@ -938,7 +1005,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '636866b81bc1819ac7ac8f062191eea2')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'e804fa5453b1dfc498135ce974277f44')"
     ]
   }
 }
