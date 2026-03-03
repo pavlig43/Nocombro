@@ -113,6 +113,7 @@ internal class ProductDeclarationComponent(
         buildList {
             if (lst.isEmpty()) add("Добавьте хотя бы одну декларацию")
             if (lst.none { it.isActual }) add("Хотя бы одна декларация должна быть актуальной")
+            if (lst.map { it.vendorName }.toSet().size > 1) add("Все декларации должны быть от одного поставщика")
         }
     }
 }
