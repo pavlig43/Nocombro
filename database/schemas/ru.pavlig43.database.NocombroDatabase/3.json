@@ -1,8 +1,8 @@
 {
   "formatVersion": 1,
   "database": {
-    "version": 1,
-    "identityHash": "e804fa5453b1dfc498135ce974277f44",
+    "version": 3,
+    "identityHash": "f981f646462c935e29770e3c2d14bb2f",
     "entities": [
       {
         "tableName": "file",
@@ -398,66 +398,6 @@
             "onUpdate": "NO ACTION",
             "columns": [
               "declaration_id"
-            ],
-            "referencedColumns": [
-              "id"
-            ]
-          }
-        ]
-      },
-      {
-        "tableName": "safety_stock",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`product_id` INTEGER NOT NULL, `reorder_point` INTEGER NOT NULL, `order_quantity` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, FOREIGN KEY(`product_id`) REFERENCES `product`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
-        "fields": [
-          {
-            "fieldPath": "productId",
-            "columnName": "product_id",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "reorderPoint",
-            "columnName": "reorder_point",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "orderQuantity",
-            "columnName": "order_quantity",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "id",
-            "columnName": "id",
-            "affinity": "INTEGER",
-            "notNull": true
-          }
-        ],
-        "primaryKey": {
-          "autoGenerate": true,
-          "columnNames": [
-            "id"
-          ]
-        },
-        "indices": [
-          {
-            "name": "index_safety_stock_product_id",
-            "unique": false,
-            "columnNames": [
-              "product_id"
-            ],
-            "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_safety_stock_product_id` ON `${TABLE_NAME}` (`product_id`)"
-          }
-        ],
-        "foreignKeys": [
-          {
-            "table": "product",
-            "onDelete": "CASCADE",
-            "onUpdate": "NO ACTION",
-            "columns": [
-              "product_id"
             ],
             "referencedColumns": [
               "id"
@@ -1005,7 +945,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'e804fa5453b1dfc498135ce974277f44')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'f981f646462c935e29770e3c2d14bb2f')"
     ]
   }
 }

@@ -64,7 +64,7 @@ internal class CreateProductSingleLineComponent(
             onOpenDateDialog = {
                 dialogNavigation.activate(CreateDatePickerDialogConfig)
             },
-            onChangeItem = ::onChangeItem1
+            onChangeItem = ::onChangeItem
         )
 
     /**
@@ -80,7 +80,7 @@ internal class CreateProductSingleLineComponent(
             initDate = item.createdAt,
             onDismissRequest = { dialogNavigation.dismiss() },
             onChangeDate = { newDate ->
-                onChangeItem1 { it.copy(createdAt = newDate) }
+                onChangeItem { it.copy(createdAt = newDate) }
             }
         )
     }

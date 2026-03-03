@@ -50,7 +50,7 @@ internal class DeclarationUpdateSingleLineComponent(
             onOpenVendorDialog = { dialogNavigation.activate(UpdateDialogConfig.Vendor) },
             onOpenBornDateDialog = { dialogNavigation.activate(UpdateDialogConfig.Born) },
             onOpenBestBeforeDialog = { dialogNavigation.activate(UpdateDialogConfig.BestBefore) },
-            onChangeItem = ::onChangeItem1
+            onChangeItem = ::onChangeItem
         )
 
     private val dialogNavigation = SlotNavigation<UpdateDialogConfig>()
@@ -71,7 +71,7 @@ internal class DeclarationUpdateSingleLineComponent(
                     DateComponent(
                         componentContext = context,
                         initDate = item.bestBefore,
-                        onChangeDate = { newDate -> onChangeItem1 { it.copy(bestBefore = newDate) } },
+                        onChangeDate = { newDate -> onChangeItem { it.copy(bestBefore = newDate) } },
                         onDismissRequest = { dialogNavigation.dismiss() }
                     )
                 )
@@ -82,7 +82,7 @@ internal class DeclarationUpdateSingleLineComponent(
                     DateComponent(
                         componentContext = context,
                         initDate = item.bornDate,
-                        onChangeDate = { newDate -> onChangeItem1 { it.copy(bornDate = newDate) } },
+                        onChangeDate = { newDate -> onChangeItem { it.copy(bornDate = newDate) } },
                         onDismissRequest = { dialogNavigation.dismiss() }
                     )
                 )
@@ -92,7 +92,7 @@ internal class DeclarationUpdateSingleLineComponent(
                     componentContext = context,
                     immutableTableBuilderData = VendorImmutableTableBuilder(false),
                     onItemClick = { vendor ->
-                        onChangeItem1 { it.copy(vendorId = vendor.composeId, vendorName = vendor.displayName) }
+                        onChangeItem { it.copy(vendorId = vendor.composeId, vendorName = vendor.displayName) }
                         dialogNavigation.dismiss()
                     },
                     onCreate = { tabOpener.openVendorTab(0) },

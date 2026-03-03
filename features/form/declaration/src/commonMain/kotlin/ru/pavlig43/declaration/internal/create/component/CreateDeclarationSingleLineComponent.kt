@@ -59,7 +59,7 @@ internal class CreateDeclarationSingleLineComponent(
                         componentContext = context,
                         initDate = item.value.bestBefore,
                         onChangeDate = { newDate ->
-                            onChangeItem1 { it.copy(bestBefore = newDate) }
+                            onChangeItem { it.copy(bestBefore = newDate) }
                         },
                         onDismissRequest = { dialogNavigation.dismiss() }
                     )
@@ -72,7 +72,7 @@ internal class CreateDeclarationSingleLineComponent(
                     DateComponent(
                         componentContext = context,
                         initDate = item.bornDate,
-                        onChangeDate = { newDate -> onChangeItem1 { it.copy(bornDate = newDate) } },
+                        onChangeDate = { newDate -> onChangeItem { it.copy(bornDate = newDate) } },
                         onDismissRequest = { dialogNavigation.dismiss() }
                     )
                 )
@@ -83,7 +83,7 @@ internal class CreateDeclarationSingleLineComponent(
                     componentContext = context,
                     immutableTableBuilderData = VendorImmutableTableBuilder(false),
                     onItemClick = { vendor ->
-                        onChangeItem1 {
+                        onChangeItem {
                             it.copy(vendorId = vendor.composeId, vendorName = vendor.displayName)
                         }
                         dialogNavigation.dismiss()
@@ -101,7 +101,7 @@ internal class CreateDeclarationSingleLineComponent(
             onOpenVendorDialog = { dialogNavigation.activate(DialogConfig.Vendor) },
             onOpenBornDateDialog = { dialogNavigation.activate(DialogConfig.Born) },
             onOpenBestBeforeDialog = { dialogNavigation.activate(DialogConfig.BestBefore) },
-            onChangeItem = ::onChangeItem1
+            onChangeItem = ::onChangeItem
         )
 }
 

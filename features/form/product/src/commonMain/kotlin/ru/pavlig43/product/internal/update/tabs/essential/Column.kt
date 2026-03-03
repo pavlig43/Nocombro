@@ -38,6 +38,8 @@ internal fun createProductColumns1(
                 },
             )
 
+
+
             // Тип продукта
             readItemTypeColumn(
                 headerText = "Тип продукта",
@@ -61,6 +63,16 @@ internal fun createProductColumns1(
                 valueOf = { it.createdAt },
                 isSortable = false,
                 onOpenDateDialog = { onOpenDateDialog() }
+            )
+            // Второе название продукта
+            writeTextColumn(
+                headerText = "SN",
+                column = ProductField.SECOND_NAME,
+                valueOf = { it.secondName },
+                isSortable = false,
+                onChangeItem = { item, newValue ->
+                    onChangeItem { it.copy(secondName = newValue) }
+                },
             )
 
             // Комментарий

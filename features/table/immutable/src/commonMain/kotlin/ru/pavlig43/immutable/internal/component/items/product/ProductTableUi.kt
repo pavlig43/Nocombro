@@ -7,6 +7,7 @@ import ru.pavlig43.tablecore.model.IMultiLineTableUi
 data class ProductTableUi(
     override val composeId: Int,
     val displayName: String,
+    val secondName: String = "",
     val type: ProductType,
     val createdAt: LocalDate,
     val comment: String = "",

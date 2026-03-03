@@ -14,6 +14,7 @@ import ru.pavlig43.database.data.product.CompositionOut
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductDeclarationIn
 import ru.pavlig43.database.data.product.ProductDeclarationOut
+import ru.pavlig43.database.data.product.SafetyStock
 import ru.pavlig43.files.api.FilesDependencies
 import ru.pavlig43.flowImmutable.api.data.FlowMultilineRepository
 import ru.pavlig43.immutable.api.ImmutableTableDependencies
@@ -29,13 +30,15 @@ internal fun createProductFormModule(dependencies: ProductFormDependencies) = li
         single<FilesDependencies> { dependencies.filesDependencies }
         single<ImmutableTableDependencies> { dependencies.immutableTableDependencies }
         single<CreateSingleItemRepository<Product>> { ProductCreateRepository(get()) }
-        single<UpdateSingleLineRepository<Product>> { ProductUpdateRepository(get()) }
+        single<UpdateSingleLineRepository<Product>> (SingleRepositoryType.ESSENTIALS.qualifier){ ProductUpdateRepository(get()) }
 
         single<UpdateCollectionRepository<CompositionOut, CompositionIn>>(
             UpdateCollectionRepositoryType.Composition.qualifier
         ) { CompositionCollectionRepository(get()) }
 
         single<FlowMultilineRepository<ProductDeclarationOut, ProductDeclarationIn>> { ProductDeclarationRepository(get()) }
+
+        single<UpdateSingleLineRepository<SafetyStock>>(SingleRepositoryType.SAFETY.qualifier) { SafetyStockUpdateRepository(get()) }
     }
 )
 
@@ -93,7 +96,12 @@ private class CompositionCollectionRepository(
 }
 
 internal enum class UpdateCollectionRepositoryType {
-    Composition
+    Composition,
+
+}
+internal enum class SingleRepositoryType{
+    ESSENTIALS,
+    SAFETY
 }
 
 private class ProductDeclarationRepository(
@@ -120,5 +128,37 @@ private class ProductDeclarationRepository(
             delete = productDeclarationDao::deleteProductDeclarations,
             upsert = productDeclarationDao::upsertProductDeclarations
         )
+    }
+}
+
+internal class SafetyStockUpdateRepository(
+    db: NocombroDatabase
+) : UpdateSingleLineRepository<SafetyStock> {
+
+    private val dao = db.safetyStockDao
+
+    override suspend fun getInit(id: Int): Result<SafetyStock> {
+        return runCatching {
+            dao.getByProductId(id) ?: SafetyStock(
+                productId = id,
+                reorderPoint = 0,
+                orderQuantity = 0,
+                id = 0
+            )
+        }
+    }
+
+    override suspend fun update(changeSet: ChangeSet<SafetyStock>): Result<Unit> {
+        if (changeSet.old == changeSet.new) return Result.success(Unit)
+        return runCatching {
+            with(changeSet.new){
+                if (reorderPoint == 0 && orderQuantity == 0){
+                    dao.delete(this)
+                }
+                else{
+                    dao.upsert(this)
+                }
+            }
+        }
     }
 }

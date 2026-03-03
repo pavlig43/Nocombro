@@ -85,7 +85,7 @@ internal class PfComponent(
                             parentId = item.productId,
                         ),
                         onItemClick = { declaration ->
-                            onChangeItem1 {
+                            onChangeItem {
                                 it.copy(
                                     declarationId = declaration.declarationId,
                                     declarationName = declaration.displayName,
@@ -112,7 +112,7 @@ internal class PfComponent(
                         ),
                         onItemClick = { product ->
                             if (product.composeId != item.productId) {
-                                onChangeItem1 {
+                                onChangeItem {
                                     it.copy(
                                         productId = product.composeId,
                                         productName = product.displayName,
@@ -135,7 +135,7 @@ internal class PfComponent(
         createPfColumns(
             onOpenProductDialog = { dialogNavigation.activate(PfDialog.Product) },
             onOpenDeclarationDialog = { dialogNavigation.activate(PfDialog.Declaration) },
-            onChangeItem = ::onChangeItem1
+            onChangeItem = ::onChangeItem
         )
 
     override val errorMessages: Flow<List<String>> = item.map { item ->

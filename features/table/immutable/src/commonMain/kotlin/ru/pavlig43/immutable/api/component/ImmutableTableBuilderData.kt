@@ -4,6 +4,7 @@ import ru.pavlig43.database.data.document.DocumentType
 import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.database.data.transact.TransactionType
 import ru.pavlig43.immutable.internal.component.items.productDeclaration.ProductDeclarationTableUi
+import ru.pavlig43.immutable.internal.component.items.safety.SafetyTableUi
 import ru.pavlig43.tablecore.model.IMultiLineTableUi
 
 
@@ -75,3 +76,7 @@ data class BatchImmutableTableBuilder(
     override val withCheckbox: Boolean = false
 }
 
+class SafetyImmutableTableBuilder: ImmutableTableBuilderData<SafetyTableUi> {
+    override val tabTitle: String = "Нескончаемый"
+    override val withCheckbox: Boolean = false
+}

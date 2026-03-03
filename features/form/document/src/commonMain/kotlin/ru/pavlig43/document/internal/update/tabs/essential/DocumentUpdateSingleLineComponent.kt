@@ -53,7 +53,7 @@ internal class DocumentUpdateSingleLineComponent(
             onOpenDateDialog = {
                 dialogNavigation.activate(UpdateDatePickerDialogConfig)
             },
-            onChangeItem = ::onChangeItem1
+            onChangeItem = ::onChangeItem
         )
 
     /**
@@ -69,7 +69,7 @@ internal class DocumentUpdateSingleLineComponent(
             initDate = item.createdAt,
             onDismissRequest = { dialogNavigation.dismiss() },
             onChangeDate = { newDate ->
-                onChangeItem1 { it.copy(createdAt = newDate) }
+                onChangeItem { it.copy(createdAt = newDate) }
             }
         )
     }

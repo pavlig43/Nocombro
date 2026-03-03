@@ -23,6 +23,7 @@ fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.writeTextColumn(
     alignment: Alignment = Alignment.CenterStart
 ) {
     column(column, valueOf = valueOf) {
+        width(300.dp)
         autoWidth()
         header(headerText)
         align(alignment)

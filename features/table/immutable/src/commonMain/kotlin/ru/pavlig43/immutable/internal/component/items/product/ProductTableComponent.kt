@@ -34,6 +34,7 @@ private fun Product.toUi(): ProductTableUi {
     return ProductTableUi(
         composeId = id,
         displayName = displayName,
+        secondName = secondName,
         type = type,
         createdAt = createdAt,
         comment = comment,

@@ -10,6 +10,8 @@ import kotlin.time.ExperimentalTime
 internal data class ProductEssentialsUi(
     val displayName: String = "",
 
+    val secondName: String = "",
+
     val productType: ProductType? = null,
 
     val createdAt: LocalDate = getCurrentLocalDate(),
@@ -26,6 +28,7 @@ internal fun ProductEssentialsUi.toDto(): Product {
     return Product(
         type = productType ?: throw IllegalArgumentException("product type require"),
         displayName = displayName,
+        secondName = secondName,
         createdAt = createdAt,
         comment = comment,
         priceForSale = priceForSale,
@@ -36,6 +39,7 @@ internal fun ProductEssentialsUi.toDto(): Product {
 internal fun Product.toUi(): ProductEssentialsUi {
     return ProductEssentialsUi(
         displayName = displayName,
+        secondName = secondName,
         productType = type,
         createdAt = createdAt,
         comment = comment,

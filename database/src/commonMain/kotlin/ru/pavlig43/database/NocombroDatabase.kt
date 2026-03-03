@@ -28,9 +28,12 @@ import ru.pavlig43.database.data.files.FileDao
 import ru.pavlig43.database.data.product.CompositionIn
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductDeclarationIn
+import ru.pavlig43.database.data.product.SafetyStock
 import ru.pavlig43.database.data.product.dao.CompositionDao
 import ru.pavlig43.database.data.product.dao.ProductDao
 import ru.pavlig43.database.data.product.dao.ProductDeclarationDao
+import ru.pavlig43.database.data.product.dao.SafetyStockDao
+import ru.pavlig43.database.data.safety.SafetyTableDao
 import ru.pavlig43.database.data.storage.dao.StorageDao
 import ru.pavlig43.database.data.transact.Transact
 import ru.pavlig43.database.data.transact.buy.BuyBDIn
@@ -58,6 +61,7 @@ import ru.pavlig43.database.data.vendor.dao.VendorDao
         Product::class,
         CompositionIn::class,
         ProductDeclarationIn::class,
+        SafetyStock::class,
 
         BatchBD::class,
 
@@ -73,8 +77,7 @@ import ru.pavlig43.database.data.vendor.dao.VendorDao
         ExpenseBD::class,
 
     ],
-    version = 2,
-
+    version = 1,
 
 )
 @TypeConverters(Converters::class)
@@ -91,6 +94,7 @@ abstract class NocombroDatabase : RoomDatabase() {
     abstract val productDao: ProductDao
     abstract val productDeclarationDao: ProductDeclarationDao
     abstract val compositionDao: CompositionDao
+    abstract val safetyStockDao: SafetyStockDao
 
     abstract val transactionDao: TransactionDao
     abstract val batchDao: BatchDao
@@ -104,6 +108,8 @@ abstract class NocombroDatabase : RoomDatabase() {
     abstract val ingredientDao: IngredientDao
 
     abstract val storageDao: StorageDao
+
+    abstract val safetyTableDao: SafetyTableDao
 }
 
 

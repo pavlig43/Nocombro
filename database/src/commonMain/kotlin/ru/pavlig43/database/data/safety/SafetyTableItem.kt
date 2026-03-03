@@ -1,0 +1,11 @@
+package ru.pavlig43.database.data.safety
+
+
+data class SafetyTableItem(
+    val productId: Int,
+    val productName: String,
+    val vendorName: String,
+    val count: Int,
+    val reorderPoint: Int,
+    val orderQuantity: Int,
+)

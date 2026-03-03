@@ -5,6 +5,8 @@ package ru.pavlig43.product.internal
  */
 internal enum class ProductField {
     DISPLAY_NAME,
+    /** Второе название продукта */
+    SECOND_NAME,
     /** Тип продукта */
     PRODUCT_TYPE,
     /** Рекомендованная цена продажи */

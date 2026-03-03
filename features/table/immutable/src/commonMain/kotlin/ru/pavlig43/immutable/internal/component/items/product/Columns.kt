@@ -20,6 +20,7 @@ internal enum class ProductField {
 
     ID,
     NAME,
+    SECOND_NAME,
     TYPE,
     CREATED_AT,
     COMMENT,
@@ -44,6 +45,8 @@ internal fun createProductColumn(
                 filterType = TableFilterType.TextTableFilter()
             )
 
+
+
             readEnumColumn(
                 headerText = "Тип",
                 column = ProductField.TYPE,
@@ -60,6 +63,12 @@ internal fun createProductColumn(
                 column = ProductField.CREATED_AT,
                 valueOf = { it.createdAt },
                 filterType = TableFilterType.DateTableFilter()
+            )
+            readTextColumn(
+                headerText = "SN",
+                column = ProductField.SECOND_NAME,
+                valueOf = { it.secondName },
+                filterType = TableFilterType.TextTableFilter()
             )
 
             readTextColumn(
