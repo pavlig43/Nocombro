@@ -30,6 +30,9 @@ sealed interface MainTabConfig{
 
         @Serializable
         class TransactionListConfig:ItemListConfig
+
+        @Serializable
+        class SafetyListConfig:ItemListConfig
     }
 
 
@@ -49,6 +52,7 @@ sealed interface MainTabConfig{
 
         @Serializable
         class TransactionFormConfig(val id:Int):ItemFormConfig
+
     }
 
 }

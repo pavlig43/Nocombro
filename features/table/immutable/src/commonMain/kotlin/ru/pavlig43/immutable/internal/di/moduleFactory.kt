@@ -8,6 +8,7 @@ import org.koin.dsl.module
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.batch.BatchWithBalanceOut
 import ru.pavlig43.database.data.declaration.Declaration
+import ru.pavlig43.database.data.safety.SafetyTableItem
 import ru.pavlig43.database.data.document.Document
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductDeclarationOut
@@ -66,6 +67,9 @@ internal enum class ImmutableTableRepositoryType {
     /** Партии */
     BATCH,
 
+    /** Таблица безопасности запасов */
+    SAFETY,
+
 
 
 }
@@ -88,6 +92,7 @@ private fun createImmutableRepository(
     ImmutableTableRepositoryType.TRANSACTION -> TransactionRepository(db)
     ImmutableTableRepositoryType.PRODUCT_DECLARATION -> ProductDeclarationRepository(db)
     ImmutableTableRepositoryType.BATCH -> BatchRepository(db)
+    ImmutableTableRepositoryType.SAFETY -> SafetyRepository(db)
 }
 
 /**
@@ -214,3 +219,23 @@ private class BatchRepository(db: NocombroDatabase) :
     }
 }
 
+/**
+ * Репозиторий для работы с таблицей безопасности запасов.
+ *
+ * **Важно:** Удаление не поддерживается (возвращает success),
+ * так как это вычисляемые данные.
+ */
+private class SafetyRepository(db: NocombroDatabase) :
+    ImmutableListRepository<SafetyTableItem> {
+    private val dao = db.safetyTableDao
+    override suspend fun deleteByIds(ids: Set<Int>): Result<Unit> {
+        // удаление не поддерживается - это вычисляемые данные
+        return Result.success(Unit)
+    }
+
+    @Suppress("UNUSED_PARAMETER")
+    override fun observeOnItems(parentId: Int): Flow<Result<List<SafetyTableItem>>> {
+        return dao.observeOnSafetyTableItems().map { Result.success(it) }
+            .catch { emit(Result.failure(it)) }
+    }
+}
