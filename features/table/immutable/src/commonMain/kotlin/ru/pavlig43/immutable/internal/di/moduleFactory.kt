@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.map
 import org.koin.core.qualifier.qualifier
 import org.koin.dsl.module
 import ru.pavlig43.database.NocombroDatabase
+import ru.pavlig43.database.data.batch.BatchMovementWithBalance
 import ru.pavlig43.database.data.batch.BatchWithBalanceOut
 import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.database.data.document.Document
@@ -70,6 +71,9 @@ internal enum class ImmutableTableRepositoryType {
     /** Таблица безопасности запасов */
     SAFETY,
 
+    /** Движения партии */
+    BATCH_MOVEMENT,
+
 
 
 }
@@ -93,6 +97,7 @@ private fun createImmutableRepository(
     ImmutableTableRepositoryType.PRODUCT_DECLARATION -> ProductDeclarationRepository(db)
     ImmutableTableRepositoryType.BATCH -> BatchRepository(db)
     ImmutableTableRepositoryType.SAFETY -> SafetyRepository(db)
+    ImmutableTableRepositoryType.BATCH_MOVEMENT -> BatchMovementRepository(db)
 }
 
 /**
@@ -236,6 +241,29 @@ private class SafetyRepository(db: NocombroDatabase) :
     @Suppress("UNUSED_PARAMETER")
     override fun observeOnItems(parentId: Int): Flow<Result<List<SafetyTableItem>>> {
         return dao.observeOnSafetyTableItems().map { Result.success(it) }
+            .catch { emit(Result.failure(it)) }
+    }
+}
+
+/**
+ * Репозиторий для работы с движениями партии.
+ *
+ * **Важно:** Удаление не поддерживается (возвращает success),
+ * так как это таблица только для чтения.
+ */
+private class BatchMovementRepository(db: NocombroDatabase) :
+    ImmutableListRepository<BatchMovementWithBalance> {
+    private val dao = db.batchMovementDao
+    override suspend fun deleteByIds(ids: Set<Int>): Result<Unit> {
+        // удаление не поддерживается - это таблица только для чтения
+        return Result.success(Unit)
+    }
+
+    override fun observeOnItems(parentId: Int): Flow<Result<List<BatchMovementWithBalance>>> {
+        require(parentId != 0) {
+            "BatchMovementRepository requires non-zero parentId (batchId) for filtering movements by batch"
+        }
+        return dao.observeBatchMovementsWithBalance(parentId).map { Result.success(it) }
             .catch { emit(Result.failure(it)) }
     }
 }

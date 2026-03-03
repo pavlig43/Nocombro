@@ -3,6 +3,7 @@ package ru.pavlig43.immutable.api.component
 import ru.pavlig43.database.data.document.DocumentType
 import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.database.data.transact.TransactionType
+import ru.pavlig43.immutable.internal.component.items.batchMovement.BatchMovementTableUi
 import ru.pavlig43.immutable.internal.component.items.productDeclaration.ProductDeclarationTableUi
 import ru.pavlig43.immutable.internal.component.items.safety.SafetyTableUi
 import ru.pavlig43.tablecore.model.IMultiLineTableUi
@@ -78,5 +79,12 @@ data class BatchImmutableTableBuilder(
 
 class SafetyImmutableTableBuilder: ImmutableTableBuilderData<SafetyTableUi> {
     override val tabTitle: String = "Нескончаемый"
+    override val withCheckbox: Boolean = false
+}
+
+data class BatchMovementImmutableTableBuilder(
+    override val parentId: Int,
+    override val tabTitle: String
+): ImmutableTableBuilderData<BatchMovementTableUi> {
     override val withCheckbox: Boolean = false
 }

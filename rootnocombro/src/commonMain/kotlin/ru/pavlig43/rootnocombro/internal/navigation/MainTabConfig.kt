@@ -55,4 +55,7 @@ sealed interface MainTabConfig{
 
     }
 
+    @Serializable
+    class BatchMovementListConfig(val batchId: Int, val productName: String) : MainTabConfig
+
 }

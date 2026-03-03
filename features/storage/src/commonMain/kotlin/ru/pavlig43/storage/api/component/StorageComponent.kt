@@ -44,6 +44,7 @@ class StorageComponent(
         createStorageModule(dependencies)
     )
     private val storageRepository: StorageRepository = scope.get()
+    private val tabOpener = dependencies.tabOpener
 
     private val _model = MutableStateFlow(MainTabComponent.NavTabState("Склад"))
     override val model = _model.asStateFlow()
@@ -174,6 +175,19 @@ class StorageComponent(
 
     fun updateFilters(filters: Map<StorageProductField, TableFilterState<*>>) {
         filterManager.update(filters)
+    }
+
+    internal fun onRowClick(item: StorageProductUi) {
+        when {
+            item.isProduct -> {
+                // При клике на продукт можно открыть форму продукта (опционально)
+                // tabOpener.openProductTab(item.productId)
+            }
+            else -> {
+                // При клике на партию открываем таблицу движений партии
+                tabOpener.openBatchMovementTab(item.itemId, item.productName)
+            }
+        }
     }
 
 

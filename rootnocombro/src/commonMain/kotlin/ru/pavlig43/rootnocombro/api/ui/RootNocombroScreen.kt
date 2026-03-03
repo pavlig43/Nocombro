@@ -152,6 +152,9 @@ private fun MainTabChildFactory(mainTabChild: MainTabChild?) {
         is MainTabChild.SampleTableChild -> SampleTableScreen(mainTabChild.component)
 
         is MainTabChild.StorageChild -> StorageScreen(mainTabChild.component)
+
+        is MainTabChild.BatchMovementListChild ->
+            ImmutableTableScreen(mainTabChild.component)
     }
 }
 

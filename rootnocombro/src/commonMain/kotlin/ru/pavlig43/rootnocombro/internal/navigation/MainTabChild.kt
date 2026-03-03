@@ -30,4 +30,6 @@ internal sealed interface MainTabChild {
         class DeclarationFormChild(override val component: DeclarationFormComponent): ItemFormChild
         class TransactionFormChild(override val component: TransactionFormComponent): ItemFormChild
     }
+
+    class BatchMovementListChild(override val component: ImmutableTableComponentFactoryMain) : MainTabChild
 }

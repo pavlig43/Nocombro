@@ -9,9 +9,12 @@ import androidx.room.Transaction
 import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.datetime.format
+import ru.pavlig43.core.dateFormat
 import ru.pavlig43.core.mapParallel
 import ru.pavlig43.database.data.batch.BatchBD
 import ru.pavlig43.database.data.batch.BatchMovement
+import ru.pavlig43.database.data.batch.BatchMovementWithBalance
 import ru.pavlig43.database.data.batch.BatchOut
 import ru.pavlig43.database.data.batch.BatchWithBalanceOut
 import ru.pavlig43.database.data.batch.MovementType
@@ -91,7 +94,48 @@ abstract class BatchMovementDao {
     @Query("SELECT * FROM batch_movement WHERE batch_id = :batchId")
     abstract fun observeMovementsByBatchId(batchId: Int): Flow<List<BatchMovement>>
 
+    /**
+     * Получает движения для партии с сортировкой по дате транзакции
+     * и расчётом накопительного баланса.
+     */
+    @Transaction
+    @Query(
+        """
+        SELECT bm.* FROM batch_movement bm
+        INNER JOIN transact t ON bm.transaction_id = t.id
+        WHERE bm.batch_id = :batchId
+        ORDER BY t.created_at
+        """
+    )
+    internal abstract fun observeMovementsByBatchIdSorted(batchId: Int): Flow<List<MovementOut>>
 
+    fun observeBatchMovementsWithBalance(batchId: Int): Flow<List<BatchMovementWithBalance>> {
+        return observeMovementsByBatchIdSorted(batchId).map { movements ->
+            movements.fold(mutableListOf()) { acc, movementOut ->
+                val prevBalance = acc.lastOrNull()?.balanceOnEnd ?: 0
+                val incoming = if (movementOut.movement.movementType == MovementType.INCOMING)
+                    movementOut.movement.count else 0
+                val outgoing = if (movementOut.movement.movementType == MovementType.OUTGOING)
+                    movementOut.movement.count else 0
+
+                acc.add(
+                    BatchMovementWithBalance(
+                        movementId = movementOut.movement.id,
+                        batchId = movementOut.batchOut.batch.id,
+                        batchName = "(${movementOut.batchOut.batch.id}) ${movementOut.batchOut.batch.dateBorn.format(dateFormat)}",
+                        productName = movementOut.batchOut.product.displayName,
+                        movementDate = movementOut.transaction.createdAt,
+                        balanceBeforeStart = prevBalance,
+                        incoming = incoming,
+                        outgoing = outgoing,
+                        balanceOnEnd = prevBalance + incoming - outgoing,
+                        transactionId = movementOut.movement.transactionId
+                    )
+                )
+                acc
+            }
+        }
+    }
 
 }
 

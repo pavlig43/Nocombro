@@ -6,4 +6,5 @@ interface TabOpener {
     fun openVendorTab(id: Int)
     fun openDeclarationTab(id: Int)
     fun openTransactionTab(id: Int)
+    fun openBatchMovementTab(batchId: Int, productName: String)
 }

@@ -163,6 +163,7 @@ fun StorageScreen(
                 tableData = tableData,
                 columns = columns,
                 verticalState = verticalState,
+                onRowClick = component::onRowClick,
             )
         }
     }
@@ -175,6 +176,7 @@ private fun StorageTable(
     tableData: StorageTableData,
     columns: ImmutableList<ColumnSpec<StorageProductUi, StorageProductField, StorageTableData>>,
     verticalState: androidx.compose.foundation.lazy.LazyListState,
+    onRowClick: (StorageProductUi) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val horizontalState = rememberScrollState()
@@ -190,7 +192,7 @@ private fun StorageTable(
             state = state,
             columns = columns,
             tableData = tableData,
-            onRowClick = { },
+            onRowClick = onRowClick,
             strings = RussianStringProvider,
             customization = customization,
             verticalState = verticalState,
