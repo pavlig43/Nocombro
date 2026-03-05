@@ -65,7 +65,9 @@ import ua.wwind.table.ExperimentalTableApi
 import ua.wwind.table.Table
 import ua.wwind.table.config.TableCellContext
 import ua.wwind.table.config.TableCellStyle
+import ua.wwind.table.config.TableColors
 import ua.wwind.table.config.TableCustomization
+import ua.wwind.table.config.TableDefaults
 import ua.wwind.table.config.TableRowContext
 import ua.wwind.table.config.TableRowStyle
 import ua.wwind.table.config.TableSettings
@@ -170,6 +172,7 @@ fun StorageScreen(
 }
 
 @OptIn(ExperimentalTableApi::class)
+@Suppress("MagicNumber")
 @Composable
 private fun StorageTable(
     state: TableState<StorageProductField>,
@@ -198,6 +201,9 @@ private fun StorageTable(
             verticalState = verticalState,
             horizontalState = horizontalState,
             modifier = modifier,
+            colors = TableDefaults.colors(
+                headerContainerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+            ),
             border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
 
         )
