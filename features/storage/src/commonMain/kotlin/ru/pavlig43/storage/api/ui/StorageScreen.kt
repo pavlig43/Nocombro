@@ -48,11 +48,11 @@ import ru.pavlig43.coreui.DateTimePickerDialog
 import ru.pavlig43.coreui.ErrorScreen
 import ru.pavlig43.coreui.LoadingUi
 import ru.pavlig43.coreui.tooltip.ToolTipIconButton
-import ru.pavlig43.storage.api.component.DialogChild
-import ru.pavlig43.storage.api.component.LoadState
-import ru.pavlig43.storage.api.component.StorageComponent
-import ru.pavlig43.storage.api.component.StorageProductField
-import ru.pavlig43.storage.api.component.createStorageColumns
+import ru.pavlig43.storage.api.component.storage.DialogChild
+import ru.pavlig43.storage.api.component.storage.LoadState
+import ru.pavlig43.storage.api.component.storage.StorageComponent
+import ru.pavlig43.storage.api.component.storage.StorageProductField
+import ru.pavlig43.storage.api.component.storage.createStorageColumns
 import ru.pavlig43.storage.internal.model.StorageProductUi
 import ru.pavlig43.storage.internal.model.StorageTableData
 import ru.pavlig43.tablecore.ui.RussianStringProvider
@@ -65,7 +65,6 @@ import ua.wwind.table.ExperimentalTableApi
 import ua.wwind.table.Table
 import ua.wwind.table.config.TableCellContext
 import ua.wwind.table.config.TableCellStyle
-import ua.wwind.table.config.TableColors
 import ua.wwind.table.config.TableCustomization
 import ua.wwind.table.config.TableDefaults
 import ua.wwind.table.config.TableRowContext

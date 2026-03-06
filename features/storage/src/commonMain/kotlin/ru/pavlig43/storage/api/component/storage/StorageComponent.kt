@@ -1,4 +1,4 @@
-package ru.pavlig43.storage.api.component
+package ru.pavlig43.storage.api.component.storage
 
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
@@ -185,7 +185,12 @@ class StorageComponent(
             }
             else -> {
                 // При клике на партию открываем таблицу движений партии
-                tabOpener.openBatchMovementTab(item.itemId, item.productName)
+                tabOpener.openBatchMovementTab(
+                    batchId = item.itemId,
+                    productName = item.productName,
+                    start = dateTimePeriodForData.value.start,
+                    end = dateTimePeriodForData.value.end
+                )
             }
         }
     }

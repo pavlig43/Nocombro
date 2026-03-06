@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import org.koin.core.qualifier.qualifier
 import ru.pavlig43.core.MainTabComponent
 import ru.pavlig43.corekoin.ComponentKoinContext
-import ru.pavlig43.database.data.batch.BatchMovementWithBalance
+import ru.pavlig43.database.data.storage.BatchMovementWithBalanceBD
 import ru.pavlig43.database.data.batch.BatchWithBalanceOut
 import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.database.data.document.Document
@@ -21,7 +21,6 @@ import ru.pavlig43.database.data.vendor.Vendor
 import ru.pavlig43.immutable.api.ImmutableTableDependencies
 import ru.pavlig43.immutable.internal.component.ImmutableTableComponent
 import ru.pavlig43.immutable.internal.component.items.batch.BatchTableComponent
-import ru.pavlig43.immutable.internal.component.items.batchMovement.BatchMovementTableComponent
 import ru.pavlig43.immutable.internal.component.items.declaration.DeclarationTableComponent
 import ru.pavlig43.immutable.internal.component.items.document.DocumentTableComponent
 import ru.pavlig43.immutable.internal.component.items.product.ProductTableComponent
@@ -134,15 +133,6 @@ class ImmutableTableComponentFactoryMain(
                 ),
             )
 
-            is BatchMovementImmutableTableBuilder -> BatchMovementTableComponent(
-                componentContext = context,
-                tableBuilder = immutableTableBuilderData,
-                onCreate = onCreate,
-                onItemClick = onItemClick,
-                repository = scope.get<ImmutableListRepository<BatchMovementWithBalance>>(
-                    ImmutableTableRepositoryType.BATCH_MOVEMENT.qualifier
-                ),
-            )
 
 
         } as ImmutableTableComponent<*, I, *>

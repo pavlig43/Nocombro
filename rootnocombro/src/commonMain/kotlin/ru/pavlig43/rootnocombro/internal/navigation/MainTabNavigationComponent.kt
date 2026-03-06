@@ -10,7 +10,6 @@ import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.database.data.transact.TransactionType
 import ru.pavlig43.declaration.api.DeclarationFormComponent
 import ru.pavlig43.document.api.component.DocumentFormComponent
-import ru.pavlig43.immutable.api.component.BatchMovementImmutableTableBuilder
 import ru.pavlig43.immutable.api.component.DeclarationImmutableTableBuilder
 import ru.pavlig43.immutable.api.component.DocumentImmutableTableBuilder
 import ru.pavlig43.immutable.api.component.ImmutableTableBuilderData
@@ -22,17 +21,16 @@ import ru.pavlig43.immutable.api.component.VendorImmutableTableBuilder
 import ru.pavlig43.notification.api.component.NotificationComponent
 import ru.pavlig43.notification.api.model.NotificationItem
 import ru.pavlig43.product.api.component.ProductFormComponent
-import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.BatchMovementListChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ImmutableTableChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ItemFormChild.DeclarationFormChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ItemFormChild.DocumentFormChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ItemFormChild.ProductFormChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ItemFormChild.TransactionFormChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ItemFormChild.VendorFormChild
+import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.BatchMovementChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.NotificationChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.SampleTableChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.StorageChild
-import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.BatchMovementListConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemFormConfig.DeclarationFormConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemFormConfig.DocumentFormConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemFormConfig.ProductFormConfig
@@ -44,12 +42,13 @@ import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig.SafetyListConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig.TransactionListConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig.VendorListConfig
+import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.BatchMovementListConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.NotificationConfig
 import ru.pavlig43.rootnocombro.internal.navigation.drawer.component.DrawerComponent
 import ru.pavlig43.rootnocombro.internal.navigation.drawer.component.DrawerDestination
 import ru.pavlig43.sampletable.api.component.SampleTableComponentMain
 import ru.pavlig43.storage.api.StorageDependencies
-import ru.pavlig43.storage.api.component.StorageComponent
+import ru.pavlig43.storage.api.component.storage.StorageComponent
 import ru.pavlig43.tablecore.model.IMultiLineTableUi
 import ru.pavlig43.transaction.api.component.TransactionFormComponent
 import ru.pavlig43.vendor.api.component.VendorFormComponent
@@ -111,8 +110,8 @@ internal class MainTabNavigationComponent(
             tabNavigationComponent.addTab(TransactionFormConfig(id))
         }
 
-        override fun openBatchMovementTab(batchId: Int, productName: String) {
-            tabNavigationComponent.addTab(BatchMovementListConfig(batchId, productName))
+        override fun openBatchMovementTab(batchId: Int, productName: String, start: kotlinx.datetime.LocalDateTime, end: kotlinx.datetime.LocalDateTime) {
+            tabNavigationComponent.addTab(BatchMovementListConfig(batchId, productName, start, end))
         }
 
     }
@@ -148,6 +147,23 @@ internal class MainTabNavigationComponent(
                         )
                     }
 
+                    is MainTabConfig.BatchMovementListConfig -> {
+                        val storageDependencies = StorageDependencies(
+                            db = scope.get(),
+                            tabOpener = tabOpener
+                        )
+                        BatchMovementChild(
+                            ru.pavlig43.storage.api.component.batchMovement.BatchMovementComponent(
+                                componentContext = context,
+                                dependencies = storageDependencies,
+                                batchId = mainTabConfig.batchId,
+                                productName = mainTabConfig.productName,
+                                start = mainTabConfig.start,
+                                end = mainTabConfig.end
+                            )
+                        )
+                    }
+
                     is MainTabConfig.ItemListConfig -> createImmutableTableChild(
                         tabConfig = mainTabConfig,
                         context = context
@@ -155,11 +171,6 @@ internal class MainTabNavigationComponent(
 
 
                     is MainTabConfig.ItemFormConfig -> createItemFormChild(
-                        tabConfig = mainTabConfig,
-                        context = context
-                    )
-
-                    is MainTabConfig.BatchMovementListConfig -> createBatchMovementListChild(
                         tabConfig = mainTabConfig,
                         context = context
                     )
@@ -279,23 +290,6 @@ internal class MainTabNavigationComponent(
     }
 
 
-    private fun createBatchMovementListChild(
-        tabConfig: MainTabConfig.BatchMovementListConfig,
-        context: ComponentContext
-    ): BatchMovementListChild {
-        return BatchMovementListChild(
-            ImmutableTableComponentFactoryMain(
-                componentContext = context,
-                dependencies = scope.get(),
-                onCreate = { },
-                onItemClick = { tabOpener.openTransactionTab(it.composeId) },
-                immutableTableBuilderData = BatchMovementImmutableTableBuilder(
-                    parentId = tabConfig.batchId,
-                    tabTitle = tabConfig.productName
-                )
-            )
-        )
-    }
 }
 
 
