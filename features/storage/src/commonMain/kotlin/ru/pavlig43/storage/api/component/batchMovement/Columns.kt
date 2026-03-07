@@ -18,42 +18,47 @@ internal enum class BatchMovementField {
 }
 
 internal fun createBatchMovementColumns(
-): ImmutableList<ColumnSpec<BatchMovementTableUi, BatchMovementField, BatchMovementTableData>> {
+): ImmutableList<ColumnSpec<BatchMovementTableUi, BatchMovementField, Unit>> {
     val columns =
-        tableColumns<BatchMovementTableUi, BatchMovementField, BatchMovementTableData> {
+        tableColumns<BatchMovementTableUi, BatchMovementField, Unit> {
 
             readDateTimeColumn(
                 headerText = "Дата/время",
                 column = BatchMovementField.DATETIME,
-                valueOf = { it.movementDate }
+                valueOf = { it.movementDate },
+                isSortable = false
             )
 
             readDecimalColumn(
-                headerText = "До начала",
+                headerText = "Старт",
                 column = BatchMovementField.BALANCE_BEFORE,
                 valueOf = { it.balanceBeforeStart },
-                decimalFormat = DecimalFormat.Decimal3()
+                decimalFormat = DecimalFormat.Decimal3(),
+                isSortable = false
             )
 
             readDecimalColumn(
                 headerText = "Приход",
                 column = BatchMovementField.INCOMING,
                 valueOf = { it.incoming },
-                decimalFormat = DecimalFormat.Decimal3()
+                decimalFormat = DecimalFormat.Decimal3(),
+                isSortable = false
             )
 
             readDecimalColumn(
                 headerText = "Расход",
                 column = BatchMovementField.OUTGOING,
                 valueOf = { it.outgoing },
-                decimalFormat = DecimalFormat.Decimal3()
+                decimalFormat = DecimalFormat.Decimal3(),
+                isSortable = false
             )
 
             readDecimalColumn(
-                headerText = "В конце",
+                headerText = "Остаток",
                 column = BatchMovementField.BALANCE_END,
                 valueOf = { it.balanceOnEnd },
-                decimalFormat = DecimalFormat.Decimal3()
+                decimalFormat = DecimalFormat.Decimal3(),
+                isSortable = false
             )
         }
     return columns

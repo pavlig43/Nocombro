@@ -9,8 +9,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.Button
@@ -42,6 +42,7 @@ import ru.pavlig43.storage.api.component.batchMovement.BatchMovementInfo
 import ru.pavlig43.storage.api.component.batchMovement.BatchMovementLoadState
 import ru.pavlig43.storage.api.component.batchMovement.BatchMovementComponent
 import ru.pavlig43.storage.api.component.batchMovement.BatchMovementTableData
+import ru.pavlig43.storage.api.component.batchMovement.BatchMovementTableUi
 import ru.pavlig43.storage.api.component.batchMovement.DialogChild
 import ru.pavlig43.storage.api.component.batchMovement.createBatchMovementColumns
 import ru.pavlig43.tablecore.ui.RussianStringProvider
@@ -93,7 +94,6 @@ fun BatchMovementTableScreen(
                 endPeriod = dateTimePeriodForData.end.format(dateTimeFormat)
             )
 
-            val tableData = remember(state.info.movements) { BatchMovementTableData(state.info.movements) }
             val columns = remember { createBatchMovementColumns() }
             val tableState = rememberTableState(
                 columns = BatchMovementField.entries.toImmutableList()
@@ -102,7 +102,7 @@ fun BatchMovementTableScreen(
 
             BatchMovementTable(
                 state = tableState,
-                tableData = tableData,
+                items = state.info.movements,
                 columns = columns,
                 verticalState = verticalState,
                 onRowClick = component::onRowClick,
@@ -116,23 +116,23 @@ fun BatchMovementTableScreen(
 @Composable
 private fun BatchMovementTable(
     state: TableState<BatchMovementField>,
-    tableData: BatchMovementTableData,
-    columns: ImmutableList<ColumnSpec<ru.pavlig43.storage.api.component.batchMovement.BatchMovementTableUi, BatchMovementField, BatchMovementTableData>>,
-    verticalState: androidx.compose.foundation.lazy.LazyListState,
-    onRowClick: (ru.pavlig43.storage.api.component.batchMovement.BatchMovementTableUi) -> Unit,
+    items:List<BatchMovementTableUi>,
+    columns: ImmutableList<ColumnSpec<BatchMovementTableUi, BatchMovementField, Unit>>,
+    verticalState: LazyListState,
+    onRowClick: (BatchMovementTableUi) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val horizontalState = androidx.compose.foundation.rememberScrollState()
+    val horizontalState = rememberScrollState()
 
     Box(
         modifier = modifier.padding(start = 24.dp)
     ) {
         Table(
-            itemsCount = tableData.items.size,
-            itemAt = { index -> tableData.items.getOrNull(index) },
+            itemsCount = items.size,
+            itemAt = { index -> items.getOrNull(index) },
             state = state,
             columns = columns,
-            tableData = tableData,
+            tableData = Unit,
             onRowClick = onRowClick,
             strings = RussianStringProvider,
             verticalState = verticalState,
