@@ -20,7 +20,8 @@ internal fun <T : Any, C, E> ReadonlyTableColumnsBuilder<T, C, E>.readIsActualCo
     column: C,
     valueOf: (T) -> Boolean,
     filterType: TableFilterType.BooleanTableFilter? = null,
-    alignment: Alignment = Alignment.Center
+    alignment: Alignment = Alignment.Center,
+    isSortable: Boolean = true
 ) {
     column(column, valueOf = valueOf) {
         autoWidth(300.dp)
@@ -30,7 +31,9 @@ internal fun <T : Any, C, E> ReadonlyTableColumnsBuilder<T, C, E>.readIsActualCo
             filter(it)
         }
         readIsActualCell(valueOf = valueOf)
-        sortable()
+        if (isSortable){
+            sortable()
+        }
     }
 }
 

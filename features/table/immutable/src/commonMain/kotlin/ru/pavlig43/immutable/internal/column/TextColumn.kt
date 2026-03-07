@@ -16,6 +16,7 @@ fun <T : Any, C, E> ReadonlyTableColumnsBuilder<T, C, E>.readTextColumn(
     valueOf: (T) -> String,
     filterType: TableFilterType.TextTableFilter? = null ,
     align: Alignment = Alignment.CenterStart,
+    isSortable: Boolean = true
 ) {
     column(column, valueOf = valueOf) {
         autoWidth(300.dp)
@@ -25,7 +26,9 @@ fun <T : Any, C, E> ReadonlyTableColumnsBuilder<T, C, E>.readTextColumn(
             filter(it)
         }
         readTextCell(valueOf = valueOf)
-        sortable()
+        if (isSortable){
+            sortable()
+        }
     }
 }
 

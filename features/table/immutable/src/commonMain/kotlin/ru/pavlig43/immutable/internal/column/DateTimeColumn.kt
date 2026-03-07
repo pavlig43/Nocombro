@@ -17,7 +17,8 @@ fun <T : Any, C, E> ReadonlyTableColumnsBuilder<T, C, E>.readDateTimeColumn(
     headerText: String,
     column: C,
     valueOf: (T) -> LocalDateTime,
-    filterType: TableFilterType.DateTableFilter? = null
+    filterType: TableFilterType.DateTableFilter? = null,
+    isSortable: Boolean = true
 ) {
     column(column, valueOf = valueOf) {
         autoWidth(300.dp)
@@ -27,7 +28,10 @@ fun <T : Any, C, E> ReadonlyTableColumnsBuilder<T, C, E>.readDateTimeColumn(
             filter(it)
         }
         readDateTimeCell(valueOf = valueOf)
-        sortable()
+        if (isSortable){
+            sortable()
+        }
+
     }
 }
 

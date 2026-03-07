@@ -15,7 +15,8 @@ fun <T : Any, C, E, ENUM : Enum<ENUM>> ReadonlyTableColumnsBuilder<T, C, E>.read
     column: C,
     valueOf: (T) -> ENUM,
     filterType: TableFilterType.EnumTableFilter<ENUM>? = null,
-    getTitle: (ENUM) -> String = { it.toString() }
+    getTitle: (ENUM) -> String = { it.toString() },
+    isSortable: Boolean = true
 ) {
     column(column, valueOf = valueOf) {
         autoWidth(300.dp)
@@ -25,7 +26,9 @@ fun <T : Any, C, E, ENUM : Enum<ENUM>> ReadonlyTableColumnsBuilder<T, C, E>.read
             filter(it)
         }
         readEnumCell(valueOf = valueOf, getTitle = getTitle)
-        sortable()
+        if (isSortable){
+            sortable()
+        }
     }
 }
 

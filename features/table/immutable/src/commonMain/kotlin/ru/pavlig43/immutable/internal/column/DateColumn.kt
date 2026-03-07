@@ -17,7 +17,8 @@ fun <T : Any, C, E> ReadonlyTableColumnsBuilder<T, C, E>.readDateColumn(
     headerText: String,
     column: C,
     valueOf: (T) -> LocalDate,
-    filterType: TableFilterType.DateTableFilter? = null
+    filterType: TableFilterType.DateTableFilter? = null,
+    isSortable: Boolean = true
 ) {
     column(column, valueOf = valueOf) {
         autoWidth(300.dp)
@@ -27,7 +28,9 @@ fun <T : Any, C, E> ReadonlyTableColumnsBuilder<T, C, E>.readDateColumn(
             filter(it)
         }
         readDateCell(valueOf = valueOf)
-        sortable()
+        if (isSortable){
+            sortable()
+        }
     }
 }
 
