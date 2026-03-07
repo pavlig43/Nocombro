@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.format
 import org.jetbrains.compose.resources.painterResource
 import ru.pavlig43.core.dateTimeFormat
@@ -153,8 +154,8 @@ private fun BatchMovementTable(
 @Suppress("LongParameterList")
 @Composable
 private fun PeriodSelectorRow(
-    startDateTime: kotlinx.datetime.LocalDateTime,
-    endDateTime: kotlinx.datetime.LocalDateTime,
+    startDateTime: LocalDateTime,
+    endDateTime: LocalDateTime,
     onStartClick: () -> Unit,
     onEndClick: () -> Unit,
     onSearchNewData: () -> Unit,
@@ -220,7 +221,7 @@ private fun PeriodSelectorRow(
 @Composable
 private fun DateTimeRow(
     label: String,
-    dateTime: kotlinx.datetime.LocalDateTime,
+    dateTime: LocalDateTime,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
