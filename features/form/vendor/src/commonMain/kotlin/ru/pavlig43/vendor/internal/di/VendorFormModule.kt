@@ -33,7 +33,7 @@ private class VendorCreateRepository(db: NocombroDatabase) : CreateSingleItemRep
 }
 
 private class VendorUpdateRepository(
-    private val db: NocombroDatabase
+    db: NocombroDatabase
 ) : UpdateSingleLineRepository<Vendor> {
 
     private val dao = db.vendorDao

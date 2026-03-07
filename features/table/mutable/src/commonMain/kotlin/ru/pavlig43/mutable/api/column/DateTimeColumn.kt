@@ -11,8 +11,8 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.format
-import ru.pavlig43.core.dateTimeFormat
 import ru.pavlig43.coreui.tooltip.ToolTipIconButton
+import ru.pavlig43.datetime.dateTimeFormat
 import ru.pavlig43.theme.Res
 import ru.pavlig43.theme.clock
 import ua.wwind.table.EditableColumnBuilder

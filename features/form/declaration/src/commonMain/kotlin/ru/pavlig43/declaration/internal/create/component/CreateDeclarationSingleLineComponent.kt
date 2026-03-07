@@ -9,9 +9,9 @@ import com.arkivanov.decompose.router.slot.dismiss
 import com.arkivanov.decompose.value.Value
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.serialization.Serializable
-import ru.pavlig43.core.DateComponent
 import ru.pavlig43.core.tabs.TabOpener
 import ru.pavlig43.database.data.declaration.Declaration
+import ru.pavlig43.datetime.single.date.DateComponent
 import ru.pavlig43.declaration.internal.DeclarationField
 import ru.pavlig43.declaration.internal.model.DeclarationEssentialsUi
 import ru.pavlig43.declaration.internal.model.toDto

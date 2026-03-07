@@ -72,6 +72,7 @@ internal enum class ImmutableTableRepositoryType {
 
 
 
+
 }
 
 /**
@@ -239,3 +240,5 @@ private class SafetyRepository(db: NocombroDatabase) :
             .catch { emit(Result.failure(it)) }
     }
 }
+
+

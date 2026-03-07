@@ -1,4 +1,4 @@
-package ru.pavlig43.storage.api.component
+package ru.pavlig43.storage.api.component.storage
 
 import ru.pavlig43.storage.internal.model.StorageProductUi
 import ru.pavlig43.tablecore.utils.FilterMatcher

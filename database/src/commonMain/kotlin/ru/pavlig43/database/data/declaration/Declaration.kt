@@ -6,9 +6,9 @@ import androidx.room.ForeignKey
 import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import kotlinx.datetime.LocalDate
-import ru.pavlig43.core.getCurrentLocalDate
 import ru.pavlig43.core.model.SingleItem
 import ru.pavlig43.database.data.vendor.Vendor
+import ru.pavlig43.datetime.getCurrentLocalDate
 
 const val DECLARATIONS_TABLE_NAME = "declaration"
 

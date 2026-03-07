@@ -32,7 +32,7 @@ private class DocumentCreateRepository(db: NocombroDatabase) : CreateSingleItemR
 }
 
 private class DocumentUpdateRepository(
-    private val db: NocombroDatabase
+    db: NocombroDatabase
 ) : UpdateSingleLineRepository<Document> {
 
     private val dao = db.documentDao

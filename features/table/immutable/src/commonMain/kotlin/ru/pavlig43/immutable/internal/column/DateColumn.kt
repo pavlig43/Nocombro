@@ -7,7 +7,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.format
-import ru.pavlig43.core.dateFormat
+import ru.pavlig43.datetime.dateFormat
 import ua.wwind.table.ReadonlyColumnBuilder
 import ua.wwind.table.ReadonlyTableColumnsBuilder
 import ua.wwind.table.filter.data.TableFilterType
@@ -17,7 +17,8 @@ fun <T : Any, C, E> ReadonlyTableColumnsBuilder<T, C, E>.readDateColumn(
     headerText: String,
     column: C,
     valueOf: (T) -> LocalDate,
-    filterType: TableFilterType.DateTableFilter? = null
+    filterType: TableFilterType.DateTableFilter? = null,
+    isSortable: Boolean = true
 ) {
     column(column, valueOf = valueOf) {
         autoWidth(300.dp)
@@ -27,7 +28,9 @@ fun <T : Any, C, E> ReadonlyTableColumnsBuilder<T, C, E>.readDateColumn(
             filter(it)
         }
         readDateCell(valueOf = valueOf)
-        sortable()
+        if (isSortable){
+            sortable()
+        }
     }
 }
 

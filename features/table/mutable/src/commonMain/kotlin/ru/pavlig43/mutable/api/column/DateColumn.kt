@@ -10,8 +10,8 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.format
-import ru.pavlig43.core.dateFormat
 import ru.pavlig43.coreui.tooltip.ToolTipIconButton
+import ru.pavlig43.datetime.dateFormat
 import ru.pavlig43.theme.Res
 import ru.pavlig43.theme.calendar
 import ua.wwind.table.EditableColumnBuilder

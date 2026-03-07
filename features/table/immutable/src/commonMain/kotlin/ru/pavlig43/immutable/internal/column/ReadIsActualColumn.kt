@@ -15,12 +15,14 @@ import ua.wwind.table.ReadonlyColumnBuilder
 import ua.wwind.table.ReadonlyTableColumnsBuilder
 import ua.wwind.table.filter.data.TableFilterType
 
+@Suppress("LongParameterList")
 internal fun <T : Any, C, E> ReadonlyTableColumnsBuilder<T, C, E>.readIsActualColumn(
     headerText: String,
     column: C,
     valueOf: (T) -> Boolean,
     filterType: TableFilterType.BooleanTableFilter? = null,
-    alignment: Alignment = Alignment.Center
+    alignment: Alignment = Alignment.Center,
+    isSortable: Boolean = true
 ) {
     column(column, valueOf = valueOf) {
         autoWidth(300.dp)
@@ -30,7 +32,9 @@ internal fun <T : Any, C, E> ReadonlyTableColumnsBuilder<T, C, E>.readIsActualCo
             filter(it)
         }
         readIsActualCell(valueOf = valueOf)
-        sortable()
+        if (isSortable){
+            sortable()
+        }
     }
 }
 

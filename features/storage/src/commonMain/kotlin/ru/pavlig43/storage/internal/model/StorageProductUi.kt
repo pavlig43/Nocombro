@@ -11,6 +11,6 @@ internal data class StorageProductUi(
     val balanceOnEnd: Int,
     val isProduct: Boolean,
     val isExpanded: Boolean = false,
+    val batchId: Int = itemId,  // Для партий batchId = itemId, для продуктов itemId = productId
 )
-
 

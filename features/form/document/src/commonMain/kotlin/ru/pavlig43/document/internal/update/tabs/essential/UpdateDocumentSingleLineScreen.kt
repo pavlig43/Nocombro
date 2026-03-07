@@ -3,7 +3,7 @@ package ru.pavlig43.document.internal.update.tabs.essential
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
-import ru.pavlig43.coreui.DatePickerDialog
+import ru.pavlig43.datetime.single.date.DatePickerDialog
 import ru.pavlig43.mutable.api.singleLine.ui.SingleLineBlockScreen
 
 @Composable

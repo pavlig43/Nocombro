@@ -3,9 +3,11 @@ package ru.pavlig43.sampletable.app.components
 import androidx.compose.runtime.Composable
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
+import ru.pavlig43.sampletable.column.PersonColumn
 import ua.wwind.table.filter.data.TableFilterState
 import ua.wwind.table.format.FormatDialog
 import ua.wwind.table.format.FormatDialogSettings
+import ua.wwind.table.format.FormatFilterData
 import ua.wwind.table.format.data.TableFormatRule
 import ua.wwind.table.strings.DefaultStrings
 
@@ -13,25 +15,25 @@ import ua.wwind.table.strings.DefaultStrings
 @Composable
 fun ConditionalFormattingDialog(
     showDialog: Boolean,
-    rules: ImmutableList<TableFormatRule<ru.pavlig43.sampletable.column.PersonColumn, Map<ru.pavlig43.sampletable.column.PersonColumn, TableFilterState<*>>>>,
+    rules: ImmutableList<TableFormatRule<PersonColumn, Map<PersonColumn, TableFilterState<*>>>>,
     onRulesChanged: (
         ImmutableList<
             TableFormatRule<
-                    ru.pavlig43.sampletable.column.PersonColumn,
-                Map<ru.pavlig43.sampletable.column.PersonColumn, TableFilterState<*>>,
+                    PersonColumn,
+                Map<PersonColumn, TableFilterState<*>>,
             >,
         >,
     ) -> Unit,
     buildFormatFilterData: (
-        TableFormatRule<ru.pavlig43.sampletable.column.PersonColumn, Map<ru.pavlig43.sampletable.column.PersonColumn, TableFilterState<*>>>,
+        TableFormatRule<PersonColumn, Map<PersonColumn, TableFilterState<*>>>,
         (
             TableFormatRule<
-                    ru.pavlig43.sampletable.column.PersonColumn,
-                Map<ru.pavlig43.sampletable.column.PersonColumn, TableFilterState<*>>,
+                    PersonColumn,
+                Map<PersonColumn, TableFilterState<*>>,
             >,
         ) -> Unit,
     ) -> List<
-        ua.wwind.table.format.FormatFilterData<ru.pavlig43.sampletable.column.PersonColumn>,
+        FormatFilterData<PersonColumn>,
     >,
     onDismissRequest: () -> Unit,
 ) {
@@ -40,34 +42,34 @@ fun ConditionalFormattingDialog(
         rules = rules,
         onRulesChanged = onRulesChanged,
         getNewRule = { id ->
-            TableFormatRule.new<ru.pavlig43.sampletable.column.PersonColumn, Map<ru.pavlig43.sampletable.column.PersonColumn, TableFilterState<*>>>(
+            TableFormatRule.new<PersonColumn, Map<PersonColumn, TableFilterState<*>>>(
                 id,
                 emptyMap(),
             )
         },
         getTitle = { field ->
             when (field) {
-                ru.pavlig43.sampletable.column.PersonColumn.NAME -> "Name"
-                ru.pavlig43.sampletable.column.PersonColumn.AGE -> "Age"
-                ru.pavlig43.sampletable.column.PersonColumn.ACTIVE -> "Active"
-                ru.pavlig43.sampletable.column.PersonColumn.ID -> "ID"
-                ru.pavlig43.sampletable.column.PersonColumn.EMAIL -> "Email"
-                ru.pavlig43.sampletable.column.PersonColumn.CITY -> "City"
-                ru.pavlig43.sampletable.column.PersonColumn.COUNTRY -> "Country"
-                ru.pavlig43.sampletable.column.PersonColumn.DEPARTMENT -> "Department"
-                ru.pavlig43.sampletable.column.PersonColumn.POSITION -> "Position"
-                ru.pavlig43.sampletable.column.PersonColumn.MEGA_TYPE -> "Mega Type"
-                ru.pavlig43.sampletable.column.PersonColumn.SALARY -> "Salary"
-                ru.pavlig43.sampletable.column.PersonColumn.RATING -> "Rating"
-                ru.pavlig43.sampletable.column.PersonColumn.HIRE_DATE -> "Hire Date"
-                ru.pavlig43.sampletable.column.PersonColumn.NOTES -> "Notes"
-                ru.pavlig43.sampletable.column.PersonColumn.AGE_GROUP -> "Age group"
-                ru.pavlig43.sampletable.column.PersonColumn.EXPAND -> "Movements"
-                ru.pavlig43.sampletable.column.PersonColumn.SELECTION -> "Selection"
+                PersonColumn.NAME -> "Name"
+                PersonColumn.AGE -> "Age"
+                PersonColumn.ACTIVE -> "Active"
+                PersonColumn.ID -> "ID"
+                PersonColumn.EMAIL -> "Email"
+                PersonColumn.CITY -> "City"
+                PersonColumn.COUNTRY -> "Country"
+                PersonColumn.DEPARTMENT -> "Department"
+                PersonColumn.POSITION -> "Position"
+                PersonColumn.MEGA_TYPE -> "Mega Type"
+                PersonColumn.SALARY -> "Salary"
+                PersonColumn.RATING -> "Rating"
+                PersonColumn.HIRE_DATE -> "Hire Date"
+                PersonColumn.NOTES -> "Notes"
+                PersonColumn.AGE_GROUP -> "Age group"
+                PersonColumn.EXPAND -> "Movements"
+                PersonColumn.SELECTION -> "Selection"
             }
         },
         filters = buildFormatFilterData,
-        entries = ru.pavlig43.sampletable.column.PersonColumn.entries.toImmutableList(),
+        entries = PersonColumn.entries.toImmutableList(),
         key = Unit,
         strings = DefaultStrings,
         onDismissRequest = onDismissRequest,

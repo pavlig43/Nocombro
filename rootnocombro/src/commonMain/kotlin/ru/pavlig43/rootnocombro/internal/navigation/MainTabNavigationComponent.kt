@@ -2,6 +2,7 @@ package ru.pavlig43.rootnocombro.internal.navigation
 
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
+import kotlinx.datetime.LocalDateTime
 import org.koin.core.scope.Scope
 import ru.pavlig43.core.tabs.TabNavigationComponent
 import ru.pavlig43.core.tabs.TabOpener
@@ -21,6 +22,7 @@ import ru.pavlig43.immutable.api.component.VendorImmutableTableBuilder
 import ru.pavlig43.notification.api.component.NotificationComponent
 import ru.pavlig43.notification.api.model.NotificationItem
 import ru.pavlig43.product.api.component.ProductFormComponent
+import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.BatchMovementChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ImmutableTableChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ItemFormChild.DeclarationFormChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ItemFormChild.DocumentFormChild
@@ -30,6 +32,7 @@ import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ItemFormChild.V
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.NotificationChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.SampleTableChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.StorageChild
+import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.BatchMovementListConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemFormConfig.DeclarationFormConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemFormConfig.DocumentFormConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemFormConfig.ProductFormConfig
@@ -45,7 +48,9 @@ import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.NotificationCo
 import ru.pavlig43.rootnocombro.internal.navigation.drawer.component.DrawerComponent
 import ru.pavlig43.rootnocombro.internal.navigation.drawer.component.DrawerDestination
 import ru.pavlig43.sampletable.api.component.SampleTableComponentMain
-import ru.pavlig43.storage.api.component.StorageComponent
+import ru.pavlig43.storage.api.StorageDependencies
+import ru.pavlig43.storage.api.component.batchMovement.BatchMovementComponent
+import ru.pavlig43.storage.api.component.storage.StorageComponent
 import ru.pavlig43.tablecore.model.IMultiLineTableUi
 import ru.pavlig43.transaction.api.component.TransactionFormComponent
 import ru.pavlig43.vendor.api.component.VendorFormComponent
@@ -85,45 +90,7 @@ internal class MainTabNavigationComponent(
             DrawerDestination.Storage -> MainTabConfig.StorageConfig()
         }
 
-    val tabNavigationComponent: TabNavigationComponent<MainTabConfig, MainTabChild> =
-        TabNavigationComponent(
-            componentContext = childContext("tab"),
-            startConfigurations = listOf(
-                DocumentListConfig(),
-            ),
-            serializer = MainTabConfig.serializer(),
-            tabChildFactory = { context, mainTabConfig: MainTabConfig, onCloseTab: () -> Unit ->
-
-                when (mainTabConfig) {
-                    is NotificationConfig -> NotificationChild(notificationComponent)
-
-                    is MainTabConfig.SampleTableConfig -> SampleTableChild(
-                        SampleTableComponentMain(
-                            componentContext = context
-                        )
-                    )
-
-                    is MainTabConfig.StorageConfig -> StorageChild(
-                        StorageComponent(
-                            componentContext = context,
-                            dependencies = scope.get(),
-                        )
-                    )
-
-                    is MainTabConfig.ItemListConfig -> createImmutableTableChild(
-                        tabConfig = mainTabConfig,
-                        context = context
-                    )
-
-
-                    is MainTabConfig.ItemFormConfig -> createItemFormChild(
-                        tabConfig = mainTabConfig,
-                        context = context
-                    )
-
-                }
-            },
-        )
+    // Создаём tabOpener раньше, чем tabNavigationComponent
     private val tabOpener = object : TabOpener {
         override fun openDocumentTab(id: Int) {
             tabNavigationComponent.addTab(DocumentFormConfig(id))
@@ -145,7 +112,74 @@ internal class MainTabNavigationComponent(
             tabNavigationComponent.addTab(TransactionFormConfig(id))
         }
 
+        override fun openBatchMovementTab(batchId: Int, productName: String, start: LocalDateTime, end: LocalDateTime) {
+            tabNavigationComponent.addTab(BatchMovementListConfig(batchId, productName, start, end))
+        }
+
     }
+
+    val tabNavigationComponent: TabNavigationComponent<MainTabConfig, MainTabChild> =
+        TabNavigationComponent(
+            componentContext = childContext("tab"),
+            startConfigurations = listOf(
+                DocumentListConfig(),
+            ),
+            serializer = MainTabConfig.serializer(),
+            tabChildFactory = { context, mainTabConfig: MainTabConfig, onCloseTab: () -> Unit ->
+
+                when (mainTabConfig) {
+                    is NotificationConfig -> NotificationChild(notificationComponent)
+
+                    is MainTabConfig.SampleTableConfig -> SampleTableChild(
+                        SampleTableComponentMain(
+                            componentContext = context
+                        )
+                    )
+
+                    is MainTabConfig.StorageConfig -> {
+                        val storageDependencies = StorageDependencies(
+                            db = scope.get(),
+                            tabOpener = tabOpener
+                        )
+                        StorageChild(
+                            StorageComponent(
+                                componentContext = context,
+                                dependencies = storageDependencies,
+                            )
+                        )
+                    }
+
+                    is BatchMovementListConfig -> {
+                        val storageDependencies = StorageDependencies(
+                            db = scope.get(),
+                            tabOpener = tabOpener
+                        )
+                        BatchMovementChild(
+                            BatchMovementComponent(
+                                componentContext = context,
+                                dependencies = storageDependencies,
+                                batchId = mainTabConfig.batchId,
+                                productName = mainTabConfig.productName,
+                                initStart = mainTabConfig.start,
+                                initEnd = mainTabConfig.end,
+                            )
+                        )
+                    }
+
+                    is MainTabConfig.ItemListConfig -> createImmutableTableChild(
+                        tabConfig = mainTabConfig,
+                        context = context
+                    )
+
+
+                    is MainTabConfig.ItemFormConfig -> createItemFormChild(
+                        tabConfig = mainTabConfig,
+                        context = context
+                    )
+
+                }
+            },
+        )
 
     private fun openTabFromNotification(item: NotificationItem, id: Int) {
         when (item) {
@@ -256,6 +290,8 @@ internal class MainTabNavigationComponent(
             )
         }
     }
+
+
 }
 
 

@@ -1,4 +1,4 @@
-package ru.pavlig43.coreui
+package ru.pavlig43.datetime.single.date
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
@@ -21,9 +21,9 @@ import dev.darkokoa.datetimewheelpicker.core.format.MonthDisplayStyle
 import dev.darkokoa.datetimewheelpicker.core.format.dateFormatter
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.format
-import ru.pavlig43.core.DateComponent
-import ru.pavlig43.core.dateFormat
+import ru.pavlig43.coreui.ProjectDialog
 import ru.pavlig43.coreui.tooltip.ToolTipIconButton
+import ru.pavlig43.datetime.dateFormat
 import ru.pavlig43.theme.Res
 import ru.pavlig43.theme.calendar
 

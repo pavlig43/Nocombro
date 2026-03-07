@@ -10,6 +10,7 @@ kotlin{
     commonMainDependencies {
         implementation(projects.database)
         api(projects.features.table.core)
+        api(projects.datetime)
 
 
     }

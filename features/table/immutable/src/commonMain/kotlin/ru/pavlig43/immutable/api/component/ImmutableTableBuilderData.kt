@@ -80,3 +80,4 @@ class SafetyImmutableTableBuilder: ImmutableTableBuilderData<SafetyTableUi> {
     override val tabTitle: String = "Нескончаемый"
     override val withCheckbox: Boolean = false
 }
+

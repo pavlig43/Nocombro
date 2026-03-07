@@ -8,13 +8,13 @@ import androidx.room.Transaction
 import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
-import ru.pavlig43.core.getCurrentLocalDate
 import ru.pavlig43.core.mapValues
 import ru.pavlig43.database.data.common.NotificationDTO
 import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductDeclarationIn
 import ru.pavlig43.database.data.product.ProductDeclarationOut
+import ru.pavlig43.datetime.getCurrentLocalDate
 
 /**
  * DAO для работы со связями продуктов и деклараций.

@@ -61,6 +61,7 @@ root/
 | `.claude/rules/imports.md` | Любой код — без wildcard импортов |
 | `.claude/rules/agents.md` | Сложные задачи — делегируй экспертам |
 | `.claude/rules/find-src.md` | Поиск API библиотек — используй `./.claude/tools/find-src` |
+| `.claude/rules/compilation.md` | **ВАЖНО: НЕ компилируй и НЕ запускай код без разрешения** |
 
 ---
 
@@ -95,3 +96,9 @@ root/
 
 - **[MissingType] от room-schema-docs** — игнорируй, используй `--continue`
 - **Не могу найти API** — `./.claude/tools/find-src --content "ClassName"`
+
+---
+
+## ⛔ ВАЖНО
+
+**НЕ компилируй и НЕ запускай код без разрешения пользователя.** Слабый компьютер, долгая сборка.

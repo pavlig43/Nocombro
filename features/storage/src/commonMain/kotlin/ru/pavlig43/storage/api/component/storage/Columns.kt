@@ -1,5 +1,6 @@
 @file:Suppress("MatchingDeclarationName")
-package ru.pavlig43.storage.api.component
+
+package ru.pavlig43.storage.api.component.storage
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text

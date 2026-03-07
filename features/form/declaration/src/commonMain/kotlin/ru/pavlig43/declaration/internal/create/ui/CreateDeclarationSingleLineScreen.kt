@@ -3,7 +3,7 @@ package ru.pavlig43.declaration.internal.create.ui
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
-import ru.pavlig43.coreui.DatePickerDialog
+import ru.pavlig43.datetime.single.date.DatePickerDialog
 import ru.pavlig43.declaration.internal.create.component.CreateDeclarationSingleLineComponent
 import ru.pavlig43.declaration.internal.create.component.DialogChild
 import ru.pavlig43.immutable.api.ui.MBSImmutableTable

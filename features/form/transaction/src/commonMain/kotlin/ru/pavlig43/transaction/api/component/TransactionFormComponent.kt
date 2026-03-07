@@ -13,10 +13,10 @@ import kotlinx.coroutines.flow.update
 import kotlinx.serialization.Serializable
 import org.koin.core.scope.Scope
 import ru.pavlig43.core.MainTabComponent
-import ru.pavlig43.core.emptyDate
 import ru.pavlig43.core.tabs.TabOpener
 import ru.pavlig43.corekoin.ComponentKoinContext
 import ru.pavlig43.database.data.transact.Transact
+import ru.pavlig43.datetime.emptyDate
 import ru.pavlig43.mutable.api.singleLine.component.SingleLineComponentFactory
 import ru.pavlig43.transaction.api.TransactionFormDependencies
 import ru.pavlig43.transaction.internal.create.component.CreateTransactionSingleLineComponent

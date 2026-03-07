@@ -1,8 +1,8 @@
 package ru.pavlig43.database.data.transact.pf
 
 import kotlinx.datetime.LocalDate
-import ru.pavlig43.core.getCurrentLocalDate
 import ru.pavlig43.core.model.SingleItem
+import ru.pavlig43.datetime.getCurrentLocalDate
 
 /**
  * DTO для отображения полуфабриката в ОПЗС транзакции.
