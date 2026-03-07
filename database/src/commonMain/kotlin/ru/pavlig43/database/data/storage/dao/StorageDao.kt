@@ -112,7 +112,12 @@ abstract class StorageDao {
                                 outgoing = outgoing,
                                 balanceOnEnd = balanceBeforePeriod + incoming - outgoing
                             )
+                        }.filter { batch ->
+                            batch.incoming != 0 || batch.outgoing != 0 || batch.balanceOnEnd != 0
                         }
+
+                    // Пропускаем продукты без живых партий
+                    if (batches.isEmpty()) return@mapParallel null
 
                     val totals = batches.fold(Triple(0, 0, 0)) { acc, batch ->
                         Triple(
@@ -132,6 +137,7 @@ abstract class StorageDao {
                         batches = batches
                     )
                 }
+                .filterNotNull()
                 .sortedBy { it.productName }
         }
     }
