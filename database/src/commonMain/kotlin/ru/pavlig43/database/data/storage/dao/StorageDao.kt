@@ -75,16 +75,6 @@ abstract class StorageDao {
                             val batchId = batch.id
                             val batchName = "($batchId) ${batch.dateBorn.format(dateFormat)}"
 
-//                            // Сначала считаем полный баланс до каждой даты
-//                            val balanceBeforePeriod = moves
-//                                .filter { it.transaction.createdAt < start }
-//                                .fold(0) { acc, move ->
-//                                    val count = move.movement.count
-//                                    when (move.movement.movementType) {
-//                                        MovementType.INCOMING -> acc + count
-//                                        MovementType.OUTGOING -> acc - count
-//                                    }
-//                                }
                             val (balanceBeforePeriod, incoming, outgoing) = moves.fold(
                                 Triple(
                                     0,
@@ -188,43 +178,40 @@ abstract class StorageDao {
         end: LocalDateTime
     ): Flow<BatchMovementWithBalanceInfoBD> {
         return observeMovementsByBatchIdUntil(batchId, end).map { allMovements ->
-            val productName = allMovements.firstOrNull()?.batchOut?.product?.displayName ?: ""
+            val productName = allMovements.first().batchOut.product.displayName
 
-            // Считаем начальный баланс до start (не включая start)
-            val balanceBeforeStart = allMovements
-                .filter { it.transaction.createdAt < start }
-                .fold(0) { acc, move ->
+            val (before,inPeriod) = allMovements.partition { it.transaction.createdAt < start }
+            val balanceBeforeStart = before
+                .fold(0) { balance, move ->
                     val count = move.movement.count
                     when (move.movement.movementType) {
-                        MovementType.INCOMING -> acc + count
-                        MovementType.OUTGOING -> acc - count
+                        MovementType.INCOMING -> balance + count
+                        MovementType.OUTGOING -> balance - count
                     }
                 }
+            
 
             // Фильтруем движения в периоде (включая start) и считаем накопительный баланс
-            val movementsWithBalance = allMovements
-                .filter { it.transaction.createdAt >= start }
-                .fold(mutableListOf<Pair<Int, BatchMovementWithBalanceBD>>()) { acc, movementOut ->
-                    val prevBalance = acc.lastOrNull()?.first ?: balanceBeforeStart
-                    val dt = movementOut.transaction.createdAt
-                    val count = movementOut.movement.count
-                    val isIncoming = movementOut.movement.movementType == MovementType.INCOMING
-                    val incoming = if (isIncoming) count else 0
-                    val outgoing = if (!isIncoming) count else 0
-                    val balanceOnEnd = prevBalance + incoming - outgoing
+            var currentBalance = balanceBeforeStart
+            val movementsWithBalance = ArrayList<BatchMovementWithBalanceBD>(inPeriod.size)
 
-                    acc.add(
-                        balanceOnEnd to BatchMovementWithBalanceBD(
-                            movementDate = dt,
-                            balanceBeforeStart = prevBalance,
-                            incoming = incoming,
-                            outgoing = outgoing,
-                            balanceOnEnd = balanceOnEnd,
-                            transactionId = movementOut.movement.transactionId
-                        )
+            for (movementOut in inPeriod) {
+                val count = movementOut.movement.count
+                val incoming = if (movementOut.movement.movementType == MovementType.INCOMING) count else 0
+                val outgoing = count - incoming
+
+                movementsWithBalance.add(
+                    BatchMovementWithBalanceBD(
+                        movementDate = movementOut.transaction.createdAt,
+                        balanceBeforeStart = currentBalance,
+                        incoming = incoming,
+                        outgoing = outgoing,
+                        balanceOnEnd = currentBalance + incoming - outgoing,
+                        transactionId = movementOut.movement.transactionId
                     )
-                    acc
-                }
+                )
+                currentBalance += incoming - outgoing
+            }
 
             // Если нет движений в периоде, но есть начальный баланс - добавляем одну строку
             val result = if (movementsWithBalance.isEmpty() && balanceBeforeStart != 0) {
@@ -239,7 +226,7 @@ abstract class StorageDao {
                     )
                 )
             } else {
-                movementsWithBalance.map { it.second }
+                movementsWithBalance
             }
 
             BatchMovementWithBalanceInfoBD(
