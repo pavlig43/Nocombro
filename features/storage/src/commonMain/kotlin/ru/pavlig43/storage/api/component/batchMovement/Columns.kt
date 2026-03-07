@@ -6,7 +6,6 @@ import ru.pavlig43.coreui.DecimalFormat
 import ru.pavlig43.immutable.internal.column.readDateTimeColumn
 import ru.pavlig43.immutable.internal.column.readDecimalColumn
 import ua.wwind.table.ColumnSpec
-import ua.wwind.table.ReadonlyTableColumnsBuilder
 import ua.wwind.table.tableColumns
 
 internal enum class BatchMovementField {
@@ -64,6 +63,3 @@ internal fun createBatchMovementColumns(
     return columns
 }
 
-internal data class BatchMovementTableData(
-    val items: List<BatchMovementTableUi> = emptyList()
-)

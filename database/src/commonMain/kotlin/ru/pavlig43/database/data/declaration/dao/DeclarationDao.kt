@@ -7,11 +7,11 @@ import androidx.room.Query
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import ru.pavlig43.core.DateThreshold
 import ru.pavlig43.database.data.common.NotificationDTO
 import ru.pavlig43.database.data.common.isCanSaveWithName
 import ru.pavlig43.database.data.declaration.DECLARATIONS_TABLE_NAME
 import ru.pavlig43.database.data.declaration.Declaration
+import ru.pavlig43.datetime.DateThreshold
 
 @Dao
 interface DeclarationDao {

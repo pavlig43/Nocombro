@@ -11,6 +11,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.toImmutableList
+import ru.pavlig43.sampletable.column.createMovementColumns
+import ru.pavlig43.sampletable.model.Person
+import ru.pavlig43.sampletable.model.PersonMovementColumn
 import ua.wwind.table.ExperimentalTableApi
 import ua.wwind.table.Table
 import ua.wwind.table.config.RowHeightMode
@@ -23,13 +26,13 @@ import ua.wwind.table.strings.DefaultStrings
 @OptIn(ExperimentalTableApi::class)
 @Composable
 fun PersonMovementsSection(
-    person: ru.pavlig43.sampletable.model.Person,
+    person: Person,
     useCompactMode: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
     val columns =
         remember(useCompactMode) {
-            ru.pavlig43.sampletable.column.createMovementColumns(useCompactMode)
+            createMovementColumns(useCompactMode)
         }
     val movementSettings =
         remember {
@@ -48,7 +51,7 @@ fun PersonMovementsSection(
         }
     val movementState =
         rememberTableState(
-            columns = ru.pavlig43.sampletable.model.PersonMovementColumn.entries.toImmutableList(),
+            columns = PersonMovementColumn.entries.toImmutableList(),
             settings = movementSettings,
             dimensions = TableDefaults.compactDimensions(),
         )

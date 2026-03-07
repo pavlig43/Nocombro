@@ -46,7 +46,7 @@ internal fun IngredientScreen(
         baseRowStyle = { row ->
             if (row.item.productType in listOf(ProductType.FOOD_BASE, ProductType.FOOD_PF)) {
                 TableRowStyle(
-                    modifier = androidx.compose.ui.Modifier,
+                    modifier = Modifier,
                     contentColor = MaterialTheme.colorScheme.primaryContainer,
                     elevation = 2.dp,
                     shape = RoundedCornerShape(4.dp),

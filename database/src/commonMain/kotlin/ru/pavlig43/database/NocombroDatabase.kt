@@ -124,7 +124,7 @@ fun getNocombroDatabase(builder: RoomDatabase.Builder<NocombroDatabase>): Nocomb
         .setQueryCoroutineContext(Dispatchers.IO)
         .build()
     CoroutineScope(Dispatchers.IO).launch {
-        seedDatabase(database)
+//        seedDatabase(database)
     }
     return database
 }

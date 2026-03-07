@@ -1,9 +1,9 @@
 package ru.pavlig43.product.internal.model
 
 import kotlinx.datetime.LocalDate
-import ru.pavlig43.core.getCurrentLocalDate
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductType
+import ru.pavlig43.datetime.getCurrentLocalDate
 import ru.pavlig43.mutable.api.singleLine.model.ISingleLineTableUi
 import kotlin.time.ExperimentalTime
 

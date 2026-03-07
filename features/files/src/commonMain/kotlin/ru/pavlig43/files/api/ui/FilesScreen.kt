@@ -74,7 +74,7 @@ fun FilesScreen(
  * @param files Список отображаемых файлов типа [FileUi]
  * @param addPlatformFile Callback для добавления нового файла. Вызывается когда пользователь выбирает файл
  *                        и этот файл не является дубликатом существующего
- * @param calculateNocombroFileName Функция для вычисления имени файла .
+ * @param calculateNocombroFileName Функция для вычисления имени файла.
  *                                  Используется для проверки дубликатов
  * @param removeFile Callback для удаления файла из стэйта ui по его composeKey
  * @param retryLoadFile Callback для повторной загрузки файла по его composeKey (например, при ошибке загрузки)

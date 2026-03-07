@@ -196,7 +196,7 @@ private class RemindersCollectionRepository(
 
 
 private class ExpensesCollectionRepository(
-    private val db: NocombroDatabase
+    db: NocombroDatabase
 ) : UpdateCollectionRepository<ExpenseBD, ExpenseBD> {
 
     private val dao = db.expenseDao

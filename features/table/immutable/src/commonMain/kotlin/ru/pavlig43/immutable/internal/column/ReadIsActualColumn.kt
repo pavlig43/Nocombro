@@ -15,6 +15,7 @@ import ua.wwind.table.ReadonlyColumnBuilder
 import ua.wwind.table.ReadonlyTableColumnsBuilder
 import ua.wwind.table.filter.data.TableFilterType
 
+@Suppress("LongParameterList")
 internal fun <T : Any, C, E> ReadonlyTableColumnsBuilder<T, C, E>.readIsActualColumn(
     headerText: String,
     column: C,

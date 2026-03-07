@@ -8,8 +8,8 @@ import com.arkivanov.decompose.router.slot.dismiss
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.Serializable
-import ru.pavlig43.core.DateComponent
 import ru.pavlig43.database.data.document.Document
+import ru.pavlig43.datetime.single.date.DateComponent
 import ru.pavlig43.document.internal.DocumentField
 import ru.pavlig43.document.internal.model.DocumentEssentialsUi
 import ru.pavlig43.document.internal.model.toDto

@@ -2,6 +2,7 @@ package ru.pavlig43.rootnocombro.internal.navigation
 
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
+import kotlinx.datetime.LocalDateTime
 import org.koin.core.scope.Scope
 import ru.pavlig43.core.tabs.TabNavigationComponent
 import ru.pavlig43.core.tabs.TabOpener
@@ -21,16 +22,17 @@ import ru.pavlig43.immutable.api.component.VendorImmutableTableBuilder
 import ru.pavlig43.notification.api.component.NotificationComponent
 import ru.pavlig43.notification.api.model.NotificationItem
 import ru.pavlig43.product.api.component.ProductFormComponent
+import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.BatchMovementChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ImmutableTableChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ItemFormChild.DeclarationFormChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ItemFormChild.DocumentFormChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ItemFormChild.ProductFormChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ItemFormChild.TransactionFormChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ItemFormChild.VendorFormChild
-import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.BatchMovementChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.NotificationChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.SampleTableChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.StorageChild
+import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.BatchMovementListConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemFormConfig.DeclarationFormConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemFormConfig.DocumentFormConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemFormConfig.ProductFormConfig
@@ -42,12 +44,12 @@ import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig.SafetyListConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig.TransactionListConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig.VendorListConfig
-import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.BatchMovementListConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.NotificationConfig
 import ru.pavlig43.rootnocombro.internal.navigation.drawer.component.DrawerComponent
 import ru.pavlig43.rootnocombro.internal.navigation.drawer.component.DrawerDestination
 import ru.pavlig43.sampletable.api.component.SampleTableComponentMain
 import ru.pavlig43.storage.api.StorageDependencies
+import ru.pavlig43.storage.api.component.batchMovement.BatchMovementComponent
 import ru.pavlig43.storage.api.component.storage.StorageComponent
 import ru.pavlig43.tablecore.model.IMultiLineTableUi
 import ru.pavlig43.transaction.api.component.TransactionFormComponent
@@ -110,7 +112,7 @@ internal class MainTabNavigationComponent(
             tabNavigationComponent.addTab(TransactionFormConfig(id))
         }
 
-        override fun openBatchMovementTab(batchId: Int, productName: String, start: kotlinx.datetime.LocalDateTime, end: kotlinx.datetime.LocalDateTime) {
+        override fun openBatchMovementTab(batchId: Int, productName: String, start: LocalDateTime, end: LocalDateTime) {
             tabNavigationComponent.addTab(BatchMovementListConfig(batchId, productName, start, end))
         }
 
@@ -147,19 +149,19 @@ internal class MainTabNavigationComponent(
                         )
                     }
 
-                    is MainTabConfig.BatchMovementListConfig -> {
+                    is BatchMovementListConfig -> {
                         val storageDependencies = StorageDependencies(
                             db = scope.get(),
                             tabOpener = tabOpener
                         )
                         BatchMovementChild(
-                            ru.pavlig43.storage.api.component.batchMovement.BatchMovementComponent(
+                            BatchMovementComponent(
                                 componentContext = context,
                                 dependencies = storageDependencies,
                                 batchId = mainTabConfig.batchId,
                                 productName = mainTabConfig.productName,
-                                start = mainTabConfig.start,
-                                end = mainTabConfig.end
+                                initStart = mainTabConfig.start,
+                                initEnd = mainTabConfig.end,
                             )
                         )
                     }

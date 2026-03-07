@@ -33,6 +33,7 @@ ktor = "3.4.0"
 datetimeWheelPicker = "1.1.0"
 wwindTable = "1.7.13"
 collectionsImmutable = "0.4.0"
+roomSchemaDocs = "1.4.0"
 
 kermit = "2.0.8"
 logback = "1.5.32"
@@ -193,6 +194,7 @@ room = { id = "androidx.room", version.ref = "room" }
 sqldelight = { id = "app.cash.sqldelight", version.ref = "sqldelight" }
 buildkonfig = { id = "com.github.gmazzo.buildconfig", version.ref = "buildkonfig" }
 dokka ={id = "org.jetbrains.dokka",version.ref = "dokka"}
+roomSchemaDocs = {id = "jp.ntsk.room-schema-docs",version.ref = "roomSchemaDocs"}
 
 
 #build-logic

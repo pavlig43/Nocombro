@@ -75,7 +75,7 @@ private class ProductUpdateRepository(
 }
 
 private class CompositionCollectionRepository(
-    private val db: NocombroDatabase
+    db: NocombroDatabase
 ) : UpdateCollectionRepository<CompositionOut, CompositionIn> {
 
     private val dao = db.compositionDao

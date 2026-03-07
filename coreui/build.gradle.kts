@@ -12,5 +12,4 @@ plugins {
 commonMainDependencies {
     implementation(projects.core)
     implementation(projects.theme)
-    implementation(libs.datetime.wheel.picker)
 }

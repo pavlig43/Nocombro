@@ -32,10 +32,16 @@ import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.ComponentContext
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch
+import ru.pavlig43.sampletable.app.components.AppToolbar
+import ru.pavlig43.sampletable.app.components.ConditionalFormattingDialog
+import ru.pavlig43.sampletable.app.components.MainTable
 import ru.pavlig43.sampletable.app.components.SelectionActionBar
+import ru.pavlig43.sampletable.app.components.SettingsSidebar
 import ru.pavlig43.sampletable.column.PersonColumn
+import ru.pavlig43.sampletable.column.createTableColumns
 import ru.pavlig43.sampletable.model.Person
 import ru.pavlig43.sampletable.viewmodel.SampleUiEvent
+import ru.pavlig43.sampletable.viewmodel.SampleViewModel
 import ua.wwind.table.ExperimentalTableApi
 import ua.wwind.table.config.PinnedSide
 import ua.wwind.table.config.RowHeightMode
@@ -52,8 +58,8 @@ import ua.wwind.table.state.rememberTableState
 fun SampleApp(context: ComponentContext,modifier: Modifier = Modifier,) {
     var isDarkTheme by remember { mutableStateOf(false) }
 
-    val viewModel: ru.pavlig43.sampletable.viewmodel.SampleViewModel =
-        ru.pavlig43.sampletable.viewmodel.SampleViewModel(context)
+    val viewModel: SampleViewModel =
+        SampleViewModel(context)
 
     var useStripedRows by remember { mutableStateOf(true) }
     var showFastFilters by remember { mutableStateOf(true) }
@@ -100,7 +106,7 @@ fun SampleApp(context: ComponentContext,modifier: Modifier = Modifier,) {
     // Create columns with callbacks
     val columns =
         remember(useCompactMode) {
-            ru.pavlig43.sampletable.column.createTableColumns(
+            createTableColumns(
                 onToggleMovementExpanded = viewModel::toggleMovementExpanded,
                 onEvent = viewModel::onEvent,
                 useCompactMode = useCompactMode,
@@ -163,7 +169,7 @@ fun SampleApp(context: ComponentContext,modifier: Modifier = Modifier,) {
                                     bottomEnd = CornerSize(0.dp),
                                 ),
                         ) {
-                            ru.pavlig43.sampletable.app.components.SettingsSidebar(
+                            SettingsSidebar(
                                 isDarkTheme = isDarkTheme,
                                 onDarkThemeChange = { isDarkTheme = it },
                                 useStripedRows = useStripedRows,
@@ -210,13 +216,13 @@ fun SampleApp(context: ComponentContext,modifier: Modifier = Modifier,) {
                                     .windowInsetsPadding(WindowInsets.safeDrawing),
                         ) {
                             Column(modifier = Modifier.fillMaxSize()) {
-                                ru.pavlig43.sampletable.app.components.AppToolbar(
+                                AppToolbar(
                                     onSettingsClick = { scope.launch { drawerState.open() } },
                                 )
 
                                 HorizontalDivider()
 
-                                ru.pavlig43.sampletable.app.components.MainTable(
+                                MainTable(
                                     state = state,
                                     tableData = tableData,
                                     columns = columns,
@@ -233,14 +239,14 @@ fun SampleApp(context: ComponentContext,modifier: Modifier = Modifier,) {
                                     },
                                     onRowEditComplete = { rowIndex ->
                                         if (viewModel.validateEditedPerson()) {
-                                            viewModel.onEvent(ru.pavlig43.sampletable.viewmodel.SampleUiEvent.CompleteEditing)
+                                            viewModel.onEvent(SampleUiEvent.CompleteEditing)
                                             true
                                         } else {
                                             false
                                         }
                                     },
                                     onEditCancelled = { rowIndex ->
-                                        viewModel.onEvent(ru.pavlig43.sampletable.viewmodel.SampleUiEvent.CancelEditing)
+                                        viewModel.onEvent(SampleUiEvent.CancelEditing)
                                     },
                                     useCompactMode = useCompactMode,
                                     modifier = Modifier.padding(16.dp)
@@ -267,7 +273,7 @@ fun SampleApp(context: ComponentContext,modifier: Modifier = Modifier,) {
             }
         }
 
-        ru.pavlig43.sampletable.app.components.ConditionalFormattingDialog(
+        ConditionalFormattingDialog(
             showDialog = viewModel.showFormatDialog,
             rules = viewModel.rules,
             onRulesChanged = viewModel::updateRules,

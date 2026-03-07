@@ -1,8 +1,8 @@
 package ru.pavlig43.declaration.internal.model
 
 import kotlinx.datetime.LocalDate
-import ru.pavlig43.core.getCurrentLocalDate
 import ru.pavlig43.database.data.declaration.Declaration
+import ru.pavlig43.datetime.getCurrentLocalDate
 import ru.pavlig43.mutable.api.singleLine.model.ISingleLineTableUi
 import kotlin.time.ExperimentalTime
 

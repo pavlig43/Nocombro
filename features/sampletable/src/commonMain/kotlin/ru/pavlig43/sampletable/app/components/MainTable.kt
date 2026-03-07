@@ -12,6 +12,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import kotlinx.collections.immutable.ImmutableList
+import ru.pavlig43.sampletable.column.PersonColumn
+import ru.pavlig43.sampletable.model.Person
+import ru.pavlig43.sampletable.model.PersonTableData
 import ua.wwind.table.ColumnSpec
 import ua.wwind.table.EditableTable
 import ua.wwind.table.ExperimentalTableApi
@@ -24,13 +27,13 @@ import ua.wwind.table.strings.DefaultStrings
 @OptIn(ExperimentalTableApi::class)
 @Composable
 fun MainTable(
-    state: TableState<ru.pavlig43.sampletable.column.PersonColumn>,
-    tableData: ru.pavlig43.sampletable.model.PersonTableData,
-    columns: ImmutableList<ColumnSpec<ru.pavlig43.sampletable.model.Person, ru.pavlig43.sampletable.column.PersonColumn, ru.pavlig43.sampletable.model.PersonTableData>>,
-    customization: TableCustomization<ru.pavlig43.sampletable.model.Person, ru.pavlig43.sampletable.column.PersonColumn>,
-    onFiltersChanged: (Map<ru.pavlig43.sampletable.column.PersonColumn, TableFilterState<*>>) -> Unit,
-    onSortChanged: (SortState<ru.pavlig43.sampletable.column.PersonColumn>?) -> Unit,
-    onRowEditStart: (ru.pavlig43.sampletable.model.Person, Int) -> Unit,
+    state: TableState<PersonColumn>,
+    tableData: PersonTableData,
+    columns: ImmutableList<ColumnSpec<Person, PersonColumn, PersonTableData>>,
+    customization: TableCustomization<Person, PersonColumn>,
+    onFiltersChanged: (Map<PersonColumn, TableFilterState<*>>) -> Unit,
+    onSortChanged: (SortState<PersonColumn>?) -> Unit,
+    onRowEditStart: (Person, Int) -> Unit,
     onRowEditComplete: (Int) -> Boolean,
     onEditCancelled: (Int) -> Unit,
     useCompactMode: Boolean = false,

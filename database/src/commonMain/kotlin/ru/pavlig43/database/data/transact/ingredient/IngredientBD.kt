@@ -1,9 +1,9 @@
 package ru.pavlig43.database.data.transact.ingredient
 
 import kotlinx.datetime.LocalDate
-import ru.pavlig43.core.emptyDate
 import ru.pavlig43.core.model.CollectionObject
 import ru.pavlig43.database.data.product.ProductType
+import ru.pavlig43.datetime.emptyDate
 
 /**
  * DTO для отображения ингредиента в OPZS транзакции.

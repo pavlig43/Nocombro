@@ -1,5 +1,6 @@
 package ru.pavlig43.rootnocombro.internal.navigation
 
+import kotlinx.datetime.LocalDateTime
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -59,8 +60,8 @@ sealed interface MainTabConfig{
     class BatchMovementListConfig(
         val batchId: Int,
         val productName: String,
-        val start: kotlinx.datetime.LocalDateTime,
-        val end: kotlinx.datetime.LocalDateTime
+        val start: LocalDateTime,
+        val end: LocalDateTime
     ) : MainTabConfig
 
 }

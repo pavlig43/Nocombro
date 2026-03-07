@@ -10,8 +10,8 @@ import com.arkivanov.decompose.value.Value
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.Serializable
-import ru.pavlig43.core.DateTimeComponent
 import ru.pavlig43.database.data.transact.Transact
+import ru.pavlig43.datetime.single.datetime.DateTimeComponent
 import ru.pavlig43.mutable.api.singleLine.component.SingleLineComponentFactory
 import ru.pavlig43.mutable.api.singleLine.component.UpdateSingleLineComponent
 import ru.pavlig43.mutable.api.singleLine.data.UpdateSingleLineRepository

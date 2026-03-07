@@ -9,12 +9,9 @@ import androidx.room.Transaction
 import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import kotlinx.datetime.format
-import ru.pavlig43.core.dateFormat
 import ru.pavlig43.core.mapParallel
 import ru.pavlig43.database.data.batch.BatchBD
 import ru.pavlig43.database.data.batch.BatchMovement
-import ru.pavlig43.database.data.storage.BatchMovementWithBalanceBD
 import ru.pavlig43.database.data.batch.BatchOut
 import ru.pavlig43.database.data.batch.BatchWithBalanceOut
 import ru.pavlig43.database.data.batch.MovementType

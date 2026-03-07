@@ -9,7 +9,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import org.koin.core.qualifier.qualifier
 import ru.pavlig43.core.MainTabComponent
 import ru.pavlig43.corekoin.ComponentKoinContext
-import ru.pavlig43.database.data.storage.BatchMovementWithBalanceBD
 import ru.pavlig43.database.data.batch.BatchWithBalanceOut
 import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.database.data.document.Document

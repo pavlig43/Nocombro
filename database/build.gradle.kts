@@ -9,8 +9,8 @@ plugins {
     alias(libs.plugins.pavlig43.serialization)
     alias(libs.plugins.pavlig43.coroutines)
     alias(libs.plugins.pavlig43.testing)
+    alias(libs.plugins.roomSchemaDocs)
 
-    id("jp.ntsk.room-schema-docs")
 
 
 }
@@ -20,11 +20,11 @@ plugins {
 kotlin{
     commonMainDependencies {
         implementation(projects.core)
+        implementation(projects.datetime)
     }
 
 }
 
-// Configure room-schema-docs plugin
 roomSchemaDocs {
     schemaDirectory("$projectDir/schemas")
     outputDirectory("$projectDir/schemas-docs")

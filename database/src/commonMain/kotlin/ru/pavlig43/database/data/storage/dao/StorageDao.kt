@@ -9,7 +9,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.format
-import ru.pavlig43.core.dateFormat
 import ru.pavlig43.core.mapParallel
 import ru.pavlig43.database.data.batch.MovementType
 import ru.pavlig43.database.data.batch.dao.MovementOut
@@ -17,6 +16,7 @@ import ru.pavlig43.database.data.storage.BatchMovementWithBalanceBD
 import ru.pavlig43.database.data.storage.BatchMovementWithBalanceInfoBD
 import ru.pavlig43.database.data.storage.StorageBatch
 import ru.pavlig43.database.data.storage.StorageProduct
+import ru.pavlig43.datetime.dateFormat
 
 @Dao
 abstract class StorageDao {
@@ -54,6 +54,7 @@ abstract class StorageDao {
      * @param end Конец периода (включительно)
      * @return Flow со списком продуктов, отсортированных по названию
      */
+    @Suppress("LongMethod")
     fun observeOnStorageProduct(
         start: LocalDateTime,
         end: LocalDateTime

@@ -2,10 +2,6 @@ package ru.pavlig43.storage.api.component.storage
 
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
-import com.arkivanov.decompose.router.slot.SlotNavigation
-import com.arkivanov.decompose.router.slot.activate
-import com.arkivanov.decompose.router.slot.childSlot
-import com.arkivanov.decompose.router.slot.dismiss
 import com.arkivanov.essenty.instancekeeper.getOrCreate
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,14 +13,14 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.flow.update
-import kotlinx.datetime.LocalDateTime
 import kotlinx.serialization.Serializable
-import ru.pavlig43.core.DateTimeComponent
 import ru.pavlig43.core.MainTabComponent
 import ru.pavlig43.core.componentCoroutineScope
-import ru.pavlig43.core.getCurrentLocalDateTime
 import ru.pavlig43.corekoin.ComponentKoinContext
 import ru.pavlig43.database.data.storage.StorageProduct
+import ru.pavlig43.datetime.period.dateTime.DTPeriod
+import ru.pavlig43.datetime.period.dateTime.DateTimePeriodComponent
+import ru.pavlig43.datetime.single.datetime.DateTimeComponent
 import ru.pavlig43.storage.api.StorageDependencies
 import ru.pavlig43.storage.internal.di.StorageRepository
 import ru.pavlig43.storage.internal.di.createStorageModule
@@ -52,65 +48,16 @@ class StorageComponent(
 
     private val filterManager = FilterManager<StorageProductField>(childContext("filter"))
 
-    private val dialogNavigation = SlotNavigation<StorageDialog>()
-
-    internal val dialog = childSlot(
-        source = dialogNavigation,
-        key = "storage_dialog",
-        serializer = StorageDialog.serializer(),
-        handleBackButton = true,
-        childFactory = ::createDialogChild
+    internal val dTPeriodComponent = DateTimePeriodComponent(
+        componentContext = childContext("date_time_period"),
+        initDTPeriod = DTPeriod.now
     )
 
-    private val _dateTimePeriodUi = MutableStateFlow(DateTimePeriod())
-    internal val dateTimePeriodUi: StateFlow<DateTimePeriod> = _dateTimePeriodUi.asStateFlow()
-
-    private val _dateTimePeriodForData = MutableStateFlow(DateTimePeriod())
-    internal val dateTimePeriodForData = _dateTimePeriodForData.asStateFlow()
-
-
-
-    fun updateDateTimePeriod() {
-        _dateTimePeriodForData.update { _dateTimePeriodUi.value }
-    }
-
-    private fun createDialogChild(dialogConfig: StorageDialog, context: ComponentContext): DialogChild {
-        val currentPeriod = dateTimePeriodUi.value
-        return when (dialogConfig) {
-            is StorageDialog.StartDateTime -> {
-                DialogChild.DateTime(
-                    DateTimeComponent(
-                        componentContext = context,
-                        initDatetime = currentPeriod.start,
-                        onChangeDate = { newDateTime ->
-                            _dateTimePeriodUi.update { it.copy(start = newDateTime) }
-                        },
-                        onDismissRequest = { dialogNavigation.dismiss() }
-                    )
-                )
-            }
-            is StorageDialog.EndDateTime -> {
-                DialogChild.DateTime(
-                    DateTimeComponent(
-                        componentContext = context,
-                        initDatetime = currentPeriod.end,
-                        onChangeDate = { newDateTime ->
-                            _dateTimePeriodUi.update { it.copy(end = newDateTime) }
-                        },
-                        onDismissRequest = { dialogNavigation.dismiss() }
-                    )
-                )
-            }
-        }
-    }
-
-    fun openStartDateTimeDialog() = dialogNavigation.activate(StorageDialog.StartDateTime)
-    fun openEndDateTimeDialog() = dialogNavigation.activate(StorageDialog.EndDateTime)
 
     private val _products = MutableStateFlow<List<StorageProductUi>>(emptyList())
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    internal val loadState: StateFlow<LoadState> = _dateTimePeriodForData
+    internal val loadState: StateFlow<LoadState> = dTPeriodComponent.dateTimePeriodForData
         .transformLatest { dateTimePeriod ->
             emit(LoadState.Loading)
             storageRepository.observeOnStorageProducts(
@@ -188,8 +135,8 @@ class StorageComponent(
                 tabOpener.openBatchMovementTab(
                     batchId = item.itemId,
                     productName = item.productName,
-                    start = dateTimePeriodForData.value.start,
-                    end = dateTimePeriodForData.value.end
+                    start = dTPeriodComponent.dateTimePeriodForData.value.start,
+                    end = dTPeriodComponent.dateTimePeriodForData.value.start
                 )
             }
         }
@@ -238,10 +185,7 @@ private fun StorageProduct.toUi(): List<StorageProductUi> {
     return listOf(productItem) + batchItems
 }
 
-internal data class DateTimePeriod(
-    val start: LocalDateTime = getCurrentLocalDateTime(),
-    val end: LocalDateTime = getCurrentLocalDateTime()
-)
+
 
 @Serializable
 internal sealed interface StorageDialog {

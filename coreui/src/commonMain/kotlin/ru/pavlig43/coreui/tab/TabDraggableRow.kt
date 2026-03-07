@@ -14,6 +14,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -106,7 +107,7 @@ private fun rememberDragController(
             onReorder = onItemReordered
         )
     }
-    var countItems by remember { mutableStateOf(totalDraggableItems) }
+    var countItems by remember { mutableIntStateOf(totalDraggableItems) }
     LaunchedEffect(controller) {
         for (scrollDelta in controller.scrollChannel) {
             lazyListState.scrollBy(scrollDelta)

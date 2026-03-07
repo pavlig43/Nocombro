@@ -6,7 +6,6 @@ import kotlinx.coroutines.flow.map
 import org.koin.core.qualifier.qualifier
 import org.koin.dsl.module
 import ru.pavlig43.database.NocombroDatabase
-import ru.pavlig43.database.data.storage.BatchMovementWithBalanceBD
 import ru.pavlig43.database.data.batch.BatchWithBalanceOut
 import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.database.data.document.Document

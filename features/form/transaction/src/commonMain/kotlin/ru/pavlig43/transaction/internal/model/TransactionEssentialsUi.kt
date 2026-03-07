@@ -1,9 +1,9 @@
 package ru.pavlig43.transaction.internal.model
 
 import kotlinx.datetime.LocalDateTime
-import ru.pavlig43.core.getCurrentLocalDateTime
 import ru.pavlig43.database.data.transact.Transact
 import ru.pavlig43.database.data.transact.TransactionType
+import ru.pavlig43.datetime.getCurrentLocalDateTime
 import ru.pavlig43.mutable.api.singleLine.model.ISingleLineTableUi
 import kotlin.time.ExperimentalTime
 

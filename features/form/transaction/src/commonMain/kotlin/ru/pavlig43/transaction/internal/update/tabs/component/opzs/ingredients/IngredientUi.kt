@@ -1,8 +1,8 @@
 package ru.pavlig43.transaction.internal.update.tabs.component.opzs.ingredients
 
 import kotlinx.datetime.LocalDate
-import ru.pavlig43.core.emptyDate
 import ru.pavlig43.database.data.product.ProductType
+import ru.pavlig43.datetime.emptyDate
 import ru.pavlig43.tablecore.model.IMultiLineTableUi
 
 data class IngredientUi(
