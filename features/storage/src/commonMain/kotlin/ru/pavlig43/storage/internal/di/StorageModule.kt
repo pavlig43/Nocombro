@@ -24,7 +24,7 @@ class StorageRepository(
         start: LocalDateTime,
         end: LocalDateTime,
     ): Flow<Result<List<StorageProduct>>> {
-        return dao.observeOnStorageBatches(
+        return dao.observeOnStorageProduct(
             start = start,
             end = end
         ).map { Result.success(it) }

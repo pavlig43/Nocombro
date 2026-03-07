@@ -1,13 +1,11 @@
 package ru.pavlig43.database.data.storage.dao
 
 // Storage DAO для работы со складом
-import androidx.room.ColumnInfo
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.Transaction
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.format
@@ -20,114 +18,21 @@ import ru.pavlig43.database.data.storage.BatchMovementWithBalanceInfoBD
 import ru.pavlig43.database.data.storage.StorageBatch
 import ru.pavlig43.database.data.storage.StorageProduct
 
-private data class MovementBalanceCalculation(
-    val balanceBefore: Int,
-    val incoming: Int,
-    val outgoing: Int
-) {
-    companion object {
-        val ZERO = MovementBalanceCalculation(0, 0, 0)
-    }
-}
-
-/**
- * Результат запроса начального баланса партии.
- * Используется в Room для маппинга агрегатных запросов.
- */
-internal data class BatchBalanceBD(
-    @ColumnInfo("batch_id")
-    val batchId: Int,
-    val balance: Int
-)
-
-/**
- * Результат запроса начального баланса партии.
- * Используется для одиночной партии.
- */
-internal data class SingleBatchBalanceBD(
-    val balance: Int
-)
-
 @Dao
 abstract class StorageDao {
 
     /**
-     * Наблюдает за движениями партий в указанном временном диапазоне.
+     * Наблюдает за всеми движениями партий до указанной даты (включительно).
      */
     @Transaction
     @Query(
         """
         SELECT bm.* FROM batch_movement bm
         INNER JOIN transact t ON bm.transaction_id = t.id
-        WHERE t.created_at >= :start
-        AND t.created_at <= :end
+        WHERE t.created_at <= :end
     """
     )
-    internal abstract fun observeMovementsInRange(
-        start: LocalDateTime,
-        end: LocalDateTime
-    ): Flow<List<MovementOut>>
-
-    /**
-     * Наблюдает за начальным балансом всех партий до указанной даты.
-     *
-     * Для каждой партии рассчитывает баланс на основе всех движений до [start]:
-     * - INCOMING добавляется к балансу
-     * - OUTGOING вычитается из баланса
-     *
-     * @param start Дата, до которой учитываются движения (не включительно)
-     * @return Flow со списком пар [batchId, баланс]
-     */
-    @Transaction
-    @Query(
-        """
-        SELECT
-        bm.batch_id,
-        COALESCE(SUM(CASE WHEN bm.movement_type = 'INCOMING' THEN bm.count ELSE -bm.count END), 0) as balance
-        FROM batch_movement bm
-        INNER JOIN transact t ON bm.transaction_id = t.id
-        WHERE t.created_at < :start
-        GROUP BY bm.batch_id
-    """
-    )
-    internal abstract fun observeInitialBalanceForAllBatches(
-        start: LocalDateTime
-    ): Flow<List<BatchBalanceBD>>
-
-    /**
-     * Конвертирует список [BatchBalanceBD] в Map [batchId -> баланс].
-     */
-    private fun Flow<List<BatchBalanceBD>>.toBatchIdMap(): Flow<Map<Int, Int>> {
-        return map { list -> list.associate { it.batchId to it.balance } }
-    }
-
-    /**
-     * Конвертирует список [SingleBatchBalanceBD] в Int.
-     * Если список пуст, возвращает 0.
-     */
-    private fun Flow<List<SingleBatchBalanceBD>>.toInt(): Flow<Int> {
-        return map { list -> list.firstOrNull()?.balance ?: 0 }
-    }
-
-    /**
-     * Рассчитывает incoming/outgoing для списка движений.
-     *
-     * Применяется к списку движений, который уже отфильтрован по временному диапазону.
-     * Начальный баланс не рассчитывается — он берётся из [observeInitialBalanceForAllBatches].
-     *
-     * @return [MovementBalanceCalculation] с рассчитанными incoming/outgoing (balanceBefore = 0)
-     */
-    private fun List<MovementOut>.calculateMovementBalance(): MovementBalanceCalculation {
-        return fold(MovementBalanceCalculation.ZERO) { acc, move ->
-            val count = move.movement.count
-            val type = move.movement.movementType
-
-            when (type) {
-                MovementType.INCOMING -> acc.copy(incoming = acc.incoming + count)
-                MovementType.OUTGOING -> acc.copy(outgoing = acc.outgoing + count)
-            }
-        }
-    }
+    internal abstract fun observeMovementsUntil(end: LocalDateTime): Flow<List<MovementOut>>
 
     /**
      * Наблюдает за остатками на складе с разбивкой по продуктам и партиям.
@@ -141,75 +46,99 @@ abstract class StorageDao {
      * Для каждой партии продукта рассчитывает те же показатели.
      *
      * Архитектура:
-     * 1. SQL фильтрует движения по диапазону start..end
-     * 2. SQL рассчитывает начальный баланс до start
-     * 3. Kotlin суммирует incoming/outgoing для каждой партии
+     * 1. SQL получает все движения
+     * 2. Kotlin фильтрует по дате и рассчитывает баланс
+     * 3. Показывает партии с начальным балансом даже без движений в периоде
      *
      * @param start Начало периода (включительно для движений, не включительно для начального баланса)
      * @param end Конец периода (включительно)
      * @return Flow со списком продуктов, отсортированных по названию
      */
-    @Suppress("LongMethod")
-    fun observeOnStorageBatches(
+    fun observeOnStorageProduct(
         start: LocalDateTime,
         end: LocalDateTime
     ): Flow<List<StorageProduct>> {
-        require(start <= end) { "start must be before or equal to end, got start=$start, end=$end" }
-        return combine(
-            observeMovementsInRange(start, end),
-            observeInitialBalanceForAllBatches(start).toBatchIdMap()
-        ) { movementsInRange, initialBalances ->
-            // Группируем движения по продукту
-            movementsInRange
+        return observeMovementsUntil(end).map { fillList ->
+            fillList
                 .groupBy { it.batchOut.product }
-                .entries
-                .mapParallel(Dispatchers.Default) { (product, movementOuts) ->
-                    // Извлекаем информацию о продукте
+                .values
+                .mapParallel(Dispatchers.Default) { movementOuts ->
+                    val product = movementOuts.first().batchOut.product
                     val productId = product.id
                     val productName = product.displayName
 
-                    // Группируем движения по партиям и рассчитываем баланс для каждой
                     val batches = movementOuts
                         .groupBy { it.batchOut.batch }
                         .entries
                         .sortedBy { it.key.dateBorn }
-                        .map { (batch: ru.pavlig43.database.data.batch.BatchBD, moves) ->
+                        .map { (batch, moves) ->
                             val batchId = batch.id
-                            val batchName =
-                                "($batchId) ${batch.dateBorn.format(dateFormat)}"
+                            val batchName = "($batchId) ${batch.dateBorn.format(dateFormat)}"
 
-                            // Получаем начальный баланс из SQL запроса
-                            val balanceBeforeStart = initialBalances[batchId] ?: 0
-                            // Рассчитываем incoming/outgoing за период
-                            val calculation = moves.calculateMovementBalance()
+//                            // Сначала считаем полный баланс до каждой даты
+//                            val balanceBeforePeriod = moves
+//                                .filter { it.transaction.createdAt < start }
+//                                .fold(0) { acc, move ->
+//                                    val count = move.movement.count
+//                                    when (move.movement.movementType) {
+//                                        MovementType.INCOMING -> acc + count
+//                                        MovementType.OUTGOING -> acc - count
+//                                    }
+//                                }
+                            val (balanceBeforePeriod, incoming, outgoing) = moves.fold(
+                                Triple(
+                                    0,
+                                    0,
+                                    0
+                                )
+                            ) { (accBefore, accIn, accOut), move ->
+                                val count = move.movement.count
+                                val type = move.movement.movementType
+                                val dt = move.transaction.createdAt
+                                when {
+                                    dt < start && type == MovementType.INCOMING -> Triple(
+                                        accBefore + count,
+                                        accIn,
+                                        accOut
+                                    )
+
+                                    dt < start && type == MovementType.OUTGOING -> Triple(
+                                        accBefore - count,
+                                        accIn,
+                                        accOut
+                                    )
+
+                                    type == MovementType.INCOMING -> Triple(accBefore, accIn + count, accOut)
+                                    type == MovementType.OUTGOING -> Triple(accBefore, accIn, accOut + count)
+                                    else -> throw IllegalArgumentException("Недопустимая ветка")
+                                }
+                            }
 
                             StorageBatch(
                                 batchId = batchId,
                                 batchName = batchName,
-                                balanceBeforeStart = balanceBeforeStart,
-                                incoming = calculation.incoming,
-                                outgoing = calculation.outgoing,
-                                balanceOnEnd = balanceBeforeStart + calculation.incoming - calculation.outgoing
+                                balanceBeforeStart = balanceBeforePeriod,
+                                incoming = incoming,
+                                outgoing = outgoing,
+                                balanceOnEnd = balanceBeforePeriod + incoming - outgoing
                             )
                         }
 
-                    // Суммируем данные по всем партиям продукта
-                    val totals =
-                        batches.fold(MovementBalanceCalculation.ZERO) { acc, batch ->
-                            MovementBalanceCalculation(
-                                balanceBefore = acc.balanceBefore + batch.balanceBeforeStart,
-                                incoming = acc.incoming + batch.incoming,
-                                outgoing = acc.outgoing + batch.outgoing
-                            )
-                        }
+                    val totals = batches.fold(Triple(0, 0, 0)) { acc, batch ->
+                        Triple(
+                            acc.first + batch.balanceBeforeStart,
+                            acc.second + batch.incoming,
+                            acc.third + batch.outgoing
+                        )
+                    }
 
                     StorageProduct(
                         productId = productId,
                         productName = productName,
-                        balanceBeforeStart = totals.balanceBefore,
-                        incoming = totals.incoming,
-                        outgoing = totals.outgoing,
-                        balanceOnEnd = totals.balanceBefore + totals.incoming - totals.outgoing,
+                        balanceBeforeStart = totals.first,
+                        incoming = totals.second,
+                        outgoing = totals.third,
+                        balanceOnEnd = totals.first + totals.second - totals.third,
                         batches = batches
                     )
                 }
@@ -218,14 +147,7 @@ abstract class StorageDao {
     }
 
     /**
-     * Наблюдает за движениями конкретной партии в указанном диапазоне.
-     *
-     * Движения отсортированы по дате создания транзакции.
-     *
-     * @param batchId ID партии
-     * @param start Начало периода (включительно)
-     * @param end Конец периода (включительно)
-     * @return Flow со списком движений партии, отсортированных по дате
+     * Наблюдает за всеми движениями партии до указанной даты (включительно).
      */
     @Transaction
     @Query(
@@ -233,43 +155,14 @@ abstract class StorageDao {
         SELECT bm.* FROM batch_movement bm
         INNER JOIN transact t ON bm.transaction_id = t.id
         WHERE bm.batch_id = :batchId
-        AND t.created_at >= :start
         AND t.created_at <= :end
         ORDER BY t.created_at
         """
     )
-    internal abstract fun observeMovementsByBatchIdSorted(
+    internal abstract fun observeMovementsByBatchIdUntil(
         batchId: Int,
-        start: LocalDateTime,
         end: LocalDateTime
     ): Flow<List<MovementOut>>
-
-    /**
-     * Наблюдает за начальным балансом партии до указанной даты.
-     *
-     * Рассчитывает сумму всех движений партии до [start]:
-     * - INCOMING: +count
-     * - OUTGOING: -count
-     *
-     * @param batchId ID партии
-     * @param start Дата, до которой учитываются движения (не включительно)
-     * @return Flow с начальным балансом партии
-     */
-    @Transaction
-    @Query(
-        """
-        SELECT
-        COALESCE(SUM(CASE WHEN bm.movement_type = 'INCOMING' THEN bm.count ELSE -bm.count END), 0) as balance
-        FROM batch_movement bm
-        INNER JOIN transact t ON bm.transaction_id = t.id
-        WHERE bm.batch_id = :batchId
-        AND t.created_at < :start
-    """
-    )
-    internal abstract fun observeInitialBalanceForBatch(
-        batchId: Int,
-        start: LocalDateTime
-    ): Flow<List<SingleBatchBalanceBD>>
 
     /**
      * Наблюдает за движениями партии с накопительным балансом.
@@ -280,13 +173,13 @@ abstract class StorageDao {
      * - balanceOnEnd: баланс ПОСЛЕ этого движения
      *
      * Архитектура:
-     * 1. SQL фильтрует движения по диапазону start..end и сортирует по дате
-     * 2. SQL рассчитывает начальный баланс до [start]
-     * 3. Kotlin рассчитывает накопительный баланс для каждого движения
+     * 1. SQL получает все движения партии, отсортированные по дате
+     * 2. Kotlin фильтрует по дате и рассчитывает накопительный баланс
+     * 3. Показывает начальный баланс даже без движений в периоде
      *
      * @param batchId ID партии
      * @param start Начало периода (включительно для движений, не включительно для начального баланса)
-     * @param end Конец периода (включительно)
+     * @param end Конец периода (включительно) - не используется в SQL, только для понимания контекста
      * @return Flow с информацией о партии и списках движений с балансами
      */
     fun observeBatchMovementsWithBalance(
@@ -294,52 +187,67 @@ abstract class StorageDao {
         start: LocalDateTime,
         end: LocalDateTime
     ): Flow<BatchMovementWithBalanceInfoBD> {
-        require(start <= end) { "start must be before or equal to end, got start=$start, end=$end" }
-        return combine(
-            observeMovementsByBatchIdSorted(batchId, start, end),
-            observeInitialBalanceForBatch(batchId, start).toInt()
-        ) { movements, initialBalance ->
-            // Рассчитываем накопительный баланс для каждого движения
-            val movementsWithBalance = buildList {
-                var currentBalance = initialBalance
-                for (movementOut in movements) {
-                    val count = movementOut.movement.count
-                    val incoming = if (movementOut.movement.movementType == MovementType.INCOMING) count else 0
-                    val outgoing = if (movementOut.movement.movementType == MovementType.OUTGOING) count else 0
+        return observeMovementsByBatchIdUntil(batchId, end).map { allMovements ->
+            val productName = allMovements.firstOrNull()?.batchOut?.product?.displayName ?: ""
 
-                    add(
-                        BatchMovementWithBalanceBD(
-                            movementDate = movementOut.transaction.createdAt,
-                            balanceBeforeStart = currentBalance,
+            // Считаем начальный баланс до start (не включая start)
+            val balanceBeforeStart = allMovements
+                .filter { it.transaction.createdAt < start }
+                .fold(0) { acc, move ->
+                    val count = move.movement.count
+                    when (move.movement.movementType) {
+                        MovementType.INCOMING -> acc + count
+                        MovementType.OUTGOING -> acc - count
+                    }
+                }
+
+            // Фильтруем движения в периоде (включая start) и считаем накопительный баланс
+            val movementsWithBalance = allMovements
+                .filter { it.transaction.createdAt >= start }
+                .fold(mutableListOf<Pair<Int, BatchMovementWithBalanceBD>>()) { acc, movementOut ->
+                    val prevBalance = acc.lastOrNull()?.first ?: balanceBeforeStart
+                    val dt = movementOut.transaction.createdAt
+                    val count = movementOut.movement.count
+                    val isIncoming = movementOut.movement.movementType == MovementType.INCOMING
+                    val incoming = if (isIncoming) count else 0
+                    val outgoing = if (!isIncoming) count else 0
+                    val balanceOnEnd = prevBalance + incoming - outgoing
+
+                    acc.add(
+                        balanceOnEnd to BatchMovementWithBalanceBD(
+                            movementDate = dt,
+                            balanceBeforeStart = prevBalance,
                             incoming = incoming,
                             outgoing = outgoing,
-                            balanceOnEnd = currentBalance + incoming - outgoing,
+                            balanceOnEnd = balanceOnEnd,
                             transactionId = movementOut.movement.transactionId
                         )
                     )
-
-                    currentBalance += incoming - outgoing
+                    acc
                 }
-            }
 
-            // Извлекаем название продукта из первого движения
-            // Если движений нет, возвращаем пустой результат
-            if (movements.isEmpty()) {
-                return@combine BatchMovementWithBalanceInfoBD(
-                    batchId = batchId,
-                    productName = "",
-                    movements = emptyList()
+            // Если нет движений в периоде, но есть начальный баланс - добавляем одну строку
+            val result = if (movementsWithBalance.isEmpty() && balanceBeforeStart != 0) {
+                listOf(
+                    BatchMovementWithBalanceBD(
+                        movementDate = start,
+                        balanceBeforeStart = balanceBeforeStart,
+                        incoming = 0,
+                        outgoing = 0,
+                        balanceOnEnd = balanceBeforeStart,
+                        transactionId = allMovements.first().movement.transactionId
+                    )
                 )
+            } else {
+                movementsWithBalance.map { it.second }
             }
-
-            val firstMovement = movements.first()
-            val productName = firstMovement.batchOut.product.displayName
 
             BatchMovementWithBalanceInfoBD(
                 batchId = batchId,
                 productName = productName,
-                movements = movementsWithBalance
+                movements = result
             )
         }
     }
 }
+
