@@ -65,13 +65,6 @@ abstract class ProductDeclarationDao {
     @Transaction
     internal abstract fun observeOnProductDeclarationByIds(ids: List<Int>): Flow<List<InternalProductDeclaration>>
 
-    @Query("SELECT * FROM $DECLARATIONS_TABLE_NAME WHERE id in (:ids)")
-    internal abstract fun observeOnDeclarationByIds(ids: List<Int>): Flow<List<Declaration>>
-
-
-    fun observeOnProductDeclarationOutByIds(ids: List<Int>): Flow<List<ProductDeclarationOut>> {
-        return observeOnProductDeclarationByIds(ids).mapValues(InternalProductDeclaration::toProductDeclarationOut)
-    }
 
     fun observeOnProductDeclarationOut(productId: Int): Flow<List<ProductDeclarationOut>> {
         return observeOnProductDeclarationByProductId(productId).mapValues(InternalProductDeclaration::toProductDeclarationOut)
