@@ -72,7 +72,7 @@ abstract class FlowMultilineComponent<BdOUT: CollectionObject,BdIN:CollectionObj
     componentContext: ComponentContext,
     parentId: Int,
     getObservableId: (BdIN) -> Int,
-    mapper: BdOUT.(Int) -> UI,
+    mapperUi: BdOUT.(Int) -> UI,
     private val onRowClick: (UI) -> Unit,
     filterMatcher: FilterMatcher<UI, Column>,
     sortMatcher: SortMatcher<UI, Column>,
@@ -114,6 +114,8 @@ abstract class FlowMultilineComponent<BdOUT: CollectionObject,BdIN:CollectionObj
      */
     private val observableBDIn = MutableStateFlow<List<ObservableBDIn<BdIN>>>(emptyList())
 
+    private val observableBD = MutableStateFlow<List<BdIN>>(emptyList())
+
 
     /**
      * Компонент для загрузки начальных данных.
@@ -127,28 +129,40 @@ abstract class FlowMultilineComponent<BdOUT: CollectionObject,BdIN:CollectionObj
             repository.getInit(parentId)
         },
         onSuccessGetInitData = { lst ->
+            observableBD.update { lst }
             observableBDIn.update { lst.mapIndexed { index, bdIN -> ObservableBDIn(index + 1, bdIN) } }
         }
     )
-    /**
-     * StateFlow для отслеживания состояния загрузки элементов.
-     *
-     * Использует [flatMapLatest] для реактивного отслеживания изменений:
-     * - При изменении [observableBDIn] отменяется предыдущая подписка и создаётся новая
-     * - Репозиторий возвращает Flow с результатом или ошибкой
-     * - Результат трансформируется в UI модели через [mapper]
-     *
-     * Возможные состояния:
-     * - [ItemListState.Loading] - идёт загрузка
-     * - [ItemListState.Success] - данные успешно загружены
-     * - [ItemListState.Error] - произошла ошибка при загрузке
-     */
+
     @OptIn(ExperimentalCoroutinesApi::class)
     internal val itemListState = observableBDIn.flatMapLatest { bdINS ->
+        println("observ $bdINS")
+        val ids = bdINS.map { getObservableId(it.bdIn) }
+        println("ids $ids")
         repository.observeOnItemsByIds(bdINS.map { getObservableId(it.bdIn) })
     }.map { result ->
         result.fold(
-            onSuccess = { ItemListState.Success(it.mapIndexed { index, oUT -> mapper(oUT, index + 1) }) },
+            onSuccess = {
+
+                ItemListState.Success(it.mapIndexed { index, oUT -> mapperUi(oUT, index + 1) }) },
+            onFailure = { ItemListState.Error(it.message ?: "unknown error") }
+        )
+    }.stateIn(
+        coroutineScope,
+        SharingStarted.Eagerly,
+        ItemListState.Loading
+    )
+    @OptIn(ExperimentalCoroutinesApi::class)
+    internal val itemListState1 = observableBD.flatMapLatest { bdINS ->
+        println("observ $bdINS")
+        val ids = bdINS.map { getObservableId(it) }
+        println("ids $ids")
+        repository.observeOnItemsByIds(bdINS.map { getObservableId(it) })
+    }.map { result ->
+        result.fold(
+            onSuccess = {
+
+                ItemListState.Success(it.mapIndexed { index, oUT -> mapperUi(oUT, index + 1) }) },
             onFailure = { ItemListState.Error(it.message ?: "unknown error") }
         )
     }.stateIn(
@@ -167,10 +181,14 @@ abstract class FlowMultilineComponent<BdOUT: CollectionObject,BdIN:CollectionObj
      * @param bdIn Входная сущность для добавления
      */
     protected fun addParentBD(bdIn: BdIN) {
+        observableBD.update {
+            it + bdIn
+        }
         observableBDIn.update { lst ->
             val composeId = lst.maxOfOrNull { it.composeId }?.plus(1) ?: 1
             lst + ObservableBDIn(composeId, bdIn)
         }
+
     }
 
     /**

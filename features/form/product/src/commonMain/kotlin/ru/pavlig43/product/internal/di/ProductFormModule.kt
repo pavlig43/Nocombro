@@ -3,12 +3,14 @@ package ru.pavlig43.product.internal.di
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
+import org.koin.core.module.dsl.singleOf
 import org.koin.core.qualifier.qualifier
 import org.koin.dsl.module
 import ru.pavlig43.core.TransactionExecutor
 import ru.pavlig43.core.model.ChangeSet
 import ru.pavlig43.core.model.UpsertListChangeSet
 import ru.pavlig43.database.NocombroDatabase
+import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.database.data.product.CompositionIn
 import ru.pavlig43.database.data.product.CompositionOut
 import ru.pavlig43.database.data.product.Product
@@ -37,6 +39,7 @@ internal fun createProductFormModule(dependencies: ProductFormDependencies) = li
         ) { CompositionCollectionRepository(get()) }
 
         single<FlowMultilineRepository<ProductDeclarationOut, ProductDeclarationIn>> { ProductDeclarationRepository(get()) }
+        singleOf(::ProductDeclarationRepository1)
 
         single<UpdateSingleLineRepository<SafetyStock>>(SingleRepositoryType.SAFETY.qualifier) { SafetyStockUpdateRepository(get()) }
     }
@@ -109,6 +112,7 @@ private class ProductDeclarationRepository(
 ) : FlowMultilineRepository<ProductDeclarationOut, ProductDeclarationIn> {
 
     private val productDeclarationDao = db.productDeclarationDao
+    private val declarationDao = db.declarationDao
 
     override suspend fun getInit(parentId: Int): Result<List<ProductDeclarationIn>> {
         return runCatching {
@@ -160,5 +164,27 @@ internal class SafetyStockUpdateRepository(
                 }
             }
         }
+    }
+}
+internal class ProductDeclarationRepository1(
+    db: NocombroDatabase
+) {
+    private val productDeclarationDao = db.productDeclarationDao
+    private val declarationDao = db.declarationDao
+
+    suspend fun getInit(productId: Int): Result<List<ProductDeclarationIn>> {
+        return runCatching {
+            productDeclarationDao.getProductDeclarationIn(productId)
+        }
+    }
+    fun observeOnDeclarations(ids: List<Int>): Flow<List<Declaration>>{
+        return declarationDao.observeDeclarationsByIds(ids)
+    }
+    suspend fun update(changeSet: ChangeSet<List<ProductDeclarationIn>>): Result<Unit>{
+        return UpsertListChangeSet.update(
+            changeSet = changeSet,
+            delete = productDeclarationDao::deleteProductDeclarations,
+            upsert = productDeclarationDao::upsertProductDeclarations
+        )
     }
 }

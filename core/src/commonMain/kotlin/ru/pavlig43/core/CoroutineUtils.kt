@@ -61,3 +61,7 @@ public suspend fun <T, R> Iterable<T>.mapParallel(
 public inline fun <T, R> Flow<Iterable<T>>.mapValues(
     crossinline transform: (T) -> R
 ): Flow<List<R>> = map { it.map(transform) }
+
+public inline fun <T, R> Flow<Iterable<T>>.mapIndexedValues(
+    crossinline transform: (Int, T) -> R
+): Flow<List<R>> = map { it.mapIndexed(transform) }

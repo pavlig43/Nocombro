@@ -1,6 +1,7 @@
 package ru.pavlig43.notification.internal.data
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import ru.pavlig43.notification.api.model.NotificationItem
 import ru.pavlig43.notification.api.model.NotificationLevel
@@ -20,6 +21,6 @@ internal fun INotificationRepository.getNotificationBlock(): Flow<NotificationBl
             item = notificationItem,
             notificationList = it
         )
-    }
+    }.filter { it.notificationList.isNotEmpty() }
 }
 

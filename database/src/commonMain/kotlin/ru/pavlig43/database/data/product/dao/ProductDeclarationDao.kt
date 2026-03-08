@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import ru.pavlig43.core.mapValues
 import ru.pavlig43.database.data.common.NotificationDTO
+import ru.pavlig43.database.data.declaration.DECLARATIONS_TABLE_NAME
 import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductDeclarationIn
@@ -60,40 +61,18 @@ abstract class ProductDeclarationDao {
     @Transaction
     internal abstract fun observeOnProductDeclarationByProductId(productId: Int): Flow<List<InternalProductDeclaration>>
 
-    /**
-     * Создаёт Flow для отслеживания связей с указанными идентификаторами.
-     *
-     * Flow автоматически отправляет новые данные при изменении
-     * любой из отслеживаемых связей в БД.
-     *
-     * @param ids Список идентификаторов связей для отслеживания
-     * @return Flow со списком внутренних представлений связей
-     */
     @Query("SELECT * FROM product_declaration WHERE id IN (:ids)")
     @Transaction
     internal abstract fun observeOnProductDeclarationByIds(ids: List<Int>): Flow<List<InternalProductDeclaration>>
 
-    /**
-     * Создаёт Flow для отслеживания выходных данных связей по идентификаторам.
-     *
-     * Преобразует внутреннее представление в [ProductDeclarationOut]
-     * с вычислением флага актуальности.
-     *
-     * @param ids Список идентификаторов связей для отслеживания
-     * @return Flow со списком выходных данных
-     */
+    @Query("SELECT * FROM $DECLARATIONS_TABLE_NAME WHERE id in (:ids)")
+    internal abstract fun observeOnDeclarationByIds(ids: List<Int>): Flow<List<Declaration>>
+
+
     fun observeOnProductDeclarationOutByIds(ids: List<Int>): Flow<List<ProductDeclarationOut>> {
         return observeOnProductDeclarationByIds(ids).mapValues(InternalProductDeclaration::toProductDeclarationOut)
     }
 
-    /**
-     * Создаёт Flow для отслеживания всех выходных данных связей.
-     *
-     * Преобразует внутреннее представление в [ProductDeclarationOut]
-     * с вычислением флага актуальности.
-     *
-     * @return Flow со списком всех выходных данных
-     */
     fun observeOnProductDeclarationOut(productId: Int): Flow<List<ProductDeclarationOut>> {
         return observeOnProductDeclarationByProductId(productId).mapValues(InternalProductDeclaration::toProductDeclarationOut)
     }
