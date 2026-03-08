@@ -23,26 +23,22 @@ import ru.pavlig43.core.componentCoroutineScope
 import ru.pavlig43.core.model.ChangeSet
 import ru.pavlig43.core.tabs.TabOpener
 import ru.pavlig43.database.data.product.ProductDeclarationIn
-import ru.pavlig43.database.data.product.ProductDeclarationOut
-import ru.pavlig43.flowImmutable.api.data.FlowMultilineRepository
 import ru.pavlig43.immutable.api.ImmutableTableDependencies
 import ru.pavlig43.immutable.api.component.DeclarationImmutableTableBuilder
 import ru.pavlig43.immutable.api.component.MBSImmutableTableComponent
 import ru.pavlig43.immutable.internal.component.items.declaration.DeclarationTableUi
 import ru.pavlig43.loadinitdata.api.component.LoadInitDataComponent
-import ru.pavlig43.product.internal.di.ProductDeclarationRepository1
+import ru.pavlig43.product.internal.di.ProductDeclarationRepository
 import ru.pavlig43.tablecore.manger.SelectionManager
 import ru.pavlig43.tablecore.manger.SelectionUiEvent
 import ru.pavlig43.tablecore.model.TableData
 import ua.wwind.table.ColumnSpec
-import kotlin.collections.map
-import kotlin.collections.plus
 
 
 internal class ProductDeclarationComponent(
     componentContext: ComponentContext,
     productId: Int,
-    private val repository: ProductDeclarationRepository1,
+    private val repository: ProductDeclarationRepository,
     private val tabOpener: TabOpener,
     immutableTableDependencies: ImmutableTableDependencies,
 ) : ComponentContext by componentContext, FormTabComponent {

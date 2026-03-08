@@ -9,15 +9,13 @@ import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.ImmutableList
 import org.jetbrains.compose.resources.painterResource
 import ru.pavlig43.coreui.tooltip.ToolTipProject
-import ru.pavlig43.flowImmutable.api.component.FlowMultiLineEvent
-import ru.pavlig43.flowImmutable.api.component.column.idWithSelection
+
 import ru.pavlig43.tablecore.model.TableData
 import ru.pavlig43.tablecore.ui.createButtonNew
 import ru.pavlig43.theme.Res
 import ru.pavlig43.theme.check
 import ru.pavlig43.theme.close
 import ua.wwind.table.ColumnSpec
-import ua.wwind.table.filter.data.TableFilterType
 import ua.wwind.table.tableColumns
 
 internal enum class ProductDeclarationField {
@@ -35,6 +33,7 @@ internal fun createProductDeclarationColumn(
 
             column(ProductDeclarationField.SELECTION, valueOf = {it.composeId}){
                 width(48.dp)
+                align(Alignment.Center)
                 autoWidth(48.dp)
                 header {
                     createButtonNew {
@@ -48,20 +47,17 @@ internal fun createProductDeclarationColumn(
                 header("Декларация")
                 align(Alignment.Center)
                 cell { item, _ -> Text(item.declarationName) }
-                sortable()
             }
 
             column(ProductDeclarationField.VENDOR_NAME, valueOf = { it.vendorName }) {
                 header("Поставщик")
                 align(Alignment.Center)
                 cell { item, _ -> Text(item.vendorName) }
-                sortable()
             }
 
             column(ProductDeclarationField.IS_ACTUAL, valueOf = { it.isActual }) {
                 header("Актуальность")
                 align(Alignment.Center)
-                filter(TableFilterType.BooleanTableFilter())
                 cell { item, _ ->
                     ToolTipProject(
                         tooltipText = if (item.isActual) "Aктуальна" else "Срок истек",
@@ -74,7 +70,6 @@ internal fun createProductDeclarationColumn(
                         }
                     )
                 }
-                sortable()
             }
         }
     return columns
