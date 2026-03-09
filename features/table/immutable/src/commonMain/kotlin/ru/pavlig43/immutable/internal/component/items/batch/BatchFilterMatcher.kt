@@ -14,10 +14,10 @@ internal object BatchFilterMatcher : FilterMatcher<BatchTableUi, BatchField>() {
             when (column) {
                 BatchField.SELECTION -> true
                 BatchField.ID -> true
-                BatchField.BATCH_ID -> matchesTextField(item.batchId.toString(), stateAny)
+                BatchField.BATCH_ID -> matchesIntField(item.batchId, stateAny)
                 BatchField.VENDOR_NAME -> matchesTextField(item.vendorName, stateAny)
-                BatchField.COUNT -> matchesTextField(item.balance.toString(), stateAny)
-                BatchField.DATE_BORN -> matchesTextField(item.dateBorn.toString(), stateAny)
+                BatchField.COUNT -> matchesIntField(item.balance, stateAny)
+                BatchField.DATE_BORN -> matchesDateField(item.dateBorn, stateAny)
                 BatchField.PRODUCT_NAME -> matchesTextField(item.productName, stateAny)
             }
         return matches
