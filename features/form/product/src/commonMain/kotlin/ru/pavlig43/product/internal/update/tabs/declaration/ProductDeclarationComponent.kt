@@ -146,12 +146,15 @@ internal class ProductDeclarationComponent(
 
             is ProductDeclarationEvent.DeleteSelected -> {
                 productDeclarations.update { lst->
+                    val updatedList = lst - lst.filter { it.declarationId in selectionManager.selectedIds }.toSet()
                     selectionManager.clearSelected()
-                    lst - lst.filter { it.declarationId in selectionManager.selectedIds }.toSet()
+                    updatedList
                 }
             }
             is ProductDeclarationEvent.OpenDeclaration -> {tabOpener.openDeclarationTab(event.declarationId)}
-            is ProductDeclarationEvent.Selection -> { selectionManager.onEvent(event.selectionUiEvent) }
+            is ProductDeclarationEvent.Selection -> {
+                selectionManager.onEvent(event.selectionUiEvent)
+            }
         }
     }
 

@@ -31,7 +31,7 @@ internal class NotificationLevelComponent(
         require(arrayList.all { it.level == level }) {
             "В списке репозиториев затесался не с тем уровнем важности NotificationLevel"
         }
-        arrayList.toList()
+        arrayList.filter { it.notificationList.isNotEmpty() }.toList()
     }.stateIn(
         coroutineScope,
         SharingStarted.Lazily,
