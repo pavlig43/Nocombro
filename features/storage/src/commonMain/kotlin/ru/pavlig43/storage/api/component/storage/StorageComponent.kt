@@ -136,7 +136,7 @@ class StorageComponent(
                     batchId = item.itemId,
                     productName = item.productName,
                     start = dTPeriodComponent.dateTimePeriodForData.value.start,
-                    end = dTPeriodComponent.dateTimePeriodForData.value.start
+                    end = dTPeriodComponent.dateTimePeriodForData.value.end
                 )
             }
         }

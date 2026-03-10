@@ -5,6 +5,7 @@ package ru.pavlig43.transaction.internal.update.tabs.component.opzs.ingredients
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.datetime.format
 import ru.pavlig43.coreui.DecimalFormat
+import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.datetime.dateFormat
 import ru.pavlig43.mutable.api.column.decimalColumn
 import ru.pavlig43.mutable.api.column.idWithSelection
@@ -54,7 +55,10 @@ internal fun createIngredientColumns(
                 headerText = "Количество",
                 decimalFormat = DecimalFormat.Decimal3(),
                 updateItem = { item, count -> onEvent(MutableUiEvent.UpdateItem(item.copy(balance = count))) },
-                footerValue = { tableData -> tableData.displayedItems.sumOf { it.balance } }
+                footerValue = { tableData -> tableData.displayedItems
+                    .filter { it.productType == ProductType.FOOD_PF || it.productType == ProductType.FOOD_BASE }
+                    .sumOf {
+                    it.balance } }
             )
             textWithSearchIconColumn(
                 headerText = "Партия",
