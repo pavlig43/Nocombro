@@ -1,17 +1,12 @@
 @file:Suppress("MagicNumber")
 package ru.pavlig43.database
 
-import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.minus
-import kotlinx.datetime.plus
 import ru.pavlig43.database.data.batch.BatchBD
 import ru.pavlig43.database.data.batch.BatchMovement
 import ru.pavlig43.database.data.batch.MovementType
 import ru.pavlig43.database.data.declaration.Declaration
-import ru.pavlig43.database.data.document.Document
-import ru.pavlig43.database.data.document.DocumentType
 import ru.pavlig43.database.data.expense.ExpenseBD
 import ru.pavlig43.database.data.expense.ExpenseType
 import ru.pavlig43.database.data.files.FileBD
@@ -20,12 +15,13 @@ import ru.pavlig43.database.data.product.CompositionIn
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductDeclarationIn
 import ru.pavlig43.database.data.product.ProductType
+import ru.pavlig43.database.data.product.SafetyStock
 import ru.pavlig43.database.data.transact.Transact
 import ru.pavlig43.database.data.transact.TransactionType
 import ru.pavlig43.database.data.transact.buy.BuyBDIn
 import ru.pavlig43.database.data.transact.reminder.ReminderBD
+import ru.pavlig43.database.data.transact.sale.SaleBDIn
 import ru.pavlig43.database.data.vendor.Vendor
-import ru.pavlig43.datetime.getCurrentLocalDate
 import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalTime::class)
@@ -38,405 +34,375 @@ suspend fun seedDatabase(db: NocombroDatabase) {
         //
     }
 
-    // 1. ===
+    // === РЕАЛЬНЫЕ ДАННЫЕ ИЗ ДАМПА ===
+
+    // 1. VENDORS (7 записей)
     val vendors = listOf(
-        Vendor(displayName = "NOCOMBRO", comment = "", id = 1),
-        Vendor(displayName = "Стоинг", comment = "", id = 2),
-        Vendor(displayName = "Рустарк", comment = "", id = 3),
-        Vendor(displayName = "Агро-Союз", comment = "", id = 4),
-        Vendor(displayName = "Ingre", comment = "", id = 5)
+        Vendor(displayName = "Стоинг", comment = "", id = 1),
+        Vendor(displayName = "Ингремарт", comment = "", id = 2),
+        Vendor(displayName = "Рога и копыта", comment = "", id = 3),
+        Vendor(displayName = "Оптовик", comment = "", id = 4),
+        Vendor(displayName = "ИП Гармаш", comment = "", id = 5),
+        Vendor(displayName = "ОЗОН", comment = "", id = 6),
+        Vendor(displayName = "Высший Вкус", comment = "", id = 7)
     )
 
-    // 2. ===
+    // 2. PRODUCTS (5 записей)
     val products = listOf(
         Product(
             type = ProductType.FOOD_BASE,
             displayName = "Соль",
-            createdAt = getCurrentLocalDate(),
+            secondName = "",
+            createdAt = LocalDate(2025, 1, 7),
             comment = "",
-            id = 2
-        ),
-        Product(
-            type = ProductType.FOOD_PF,
-            displayName = "Баварские колбаски",
-            createdAt = getCurrentLocalDate(),
-            comment = "",
+            priceForSale = 3000,
             id = 1
         ),
         Product(
             type = ProductType.FOOD_BASE,
             displayName = "Декстроза",
-            createdAt = getCurrentLocalDate(),
+            secondName = "",
+            createdAt = LocalDate(2026, 3, 8),
             comment = "",
-            id = 3
+            priceForSale = 0,
+            id = 2
         ),
         Product(
-            type = ProductType.PACK,
-            displayName = "Пленка ПЭТ",
-            createdAt = getCurrentLocalDate(),
+            type = ProductType.FOOD_PF,
+            displayName = "Колбаски Баварские",
+            secondName = "",
+            createdAt = LocalDate(2026, 3, 8),
             comment = "",
-            id = 4
+            priceForSale = 120000,
+            id = 3
         ),
         Product(
             type = ProductType.FOOD_BASE,
-            displayName = "Ароматизатор мясо",
-            createdAt = getCurrentLocalDate(),
+            displayName = "Ароматизатор Перец",
+            secondName = "",
+            createdAt = LocalDate(2026, 3, 9),
             comment = "",
-            id = 5
-        )
-    )
-
-    // 3. ===
-    val declarations = listOf(
-        Declaration(
-            displayName = "Декларация ингре",
-            createdAt = getCurrentLocalDate(),
-            vendorId = 1,
-            vendorName = "Ингре",
-            bestBefore = getCurrentLocalDate().plus(10, DateTimeUnit.DAY),
-            id = 1,
-            observeFromNotification = true,
-            bornDate = getCurrentLocalDate().minus(5, DateTimeUnit.DAY)
-        ),
-        Declaration(
-            displayName = "Декларация стоинг",
-            createdAt = getCurrentLocalDate(),
-            vendorId = 2,
-            vendorName = "Стоинг",
-            bestBefore = getCurrentLocalDate().plus(10, DateTimeUnit.DAY),
-            id = 2,
-            observeFromNotification = true,
-            bornDate = getCurrentLocalDate().minus(5, DateTimeUnit.DAY)
-        ),
-        Declaration(
-            displayName = "Декларация рустарк",
-            createdAt = getCurrentLocalDate(),
-            vendorId = 3,
-            vendorName = "Рустарк",
-            bestBefore = getCurrentLocalDate().plus(10, DateTimeUnit.DAY),
-            id = 3,
-            observeFromNotification = true,
-            bornDate = getCurrentLocalDate().minus(5, DateTimeUnit.DAY)
-        ),
-        Declaration(
-            displayName = "Декларация агро",
-            createdAt = getCurrentLocalDate(),
-            vendorId = 4,
-            vendorName = "Агро-Союз",
-            bestBefore = getCurrentLocalDate().plus(10, DateTimeUnit.DAY),
-            id = 4,
-            observeFromNotification = false,
-            bornDate = getCurrentLocalDate().minus(5, DateTimeUnit.DAY)
-        ),
-        Declaration(
-            displayName = "Декларация фуд",
-            createdAt = getCurrentLocalDate(),
-            vendorId = 5,
-            vendorName = "ФудМастер",
-            bestBefore = getCurrentLocalDate().plus(10, DateTimeUnit.DAY),
-            id = 5,
-            observeFromNotification = true,
-            bornDate = getCurrentLocalDate().minus(5, DateTimeUnit.DAY)
-        )
-    )
-
-    // 4. ===
-    val documents = listOf(
-        Document(
-            displayName = "ГОСТ 12345-2000",
-            type = DocumentType.GOST,
-            createdAt = LocalDate(2026, 1, 15),
-            comment = "",
-            id = 1
-        ),
-        Document(
-            displayName = "Спецификация №001",
-            type = DocumentType.SPECIFICATION,
-            createdAt = LocalDate(2026, 2, 20),
-            comment = "",
-            id = 2
-        ),
-        Document(
-            displayName = "ГОСТ 54321-2018",
-            type = DocumentType.GOST,
-            createdAt = LocalDate(2026, 1, 10),
-            comment = "",
-            id = 3
-        ),
-        Document(
-            displayName = "Спецификация №002",
-            type = DocumentType.SPECIFICATION,
-            createdAt = LocalDate(2026, 1, 5),
-            comment = "",
+            priceForSale = 150000,
             id = 4
         ),
-        Document(
-            displayName = "ГОСТ 67890-2022",
-            type = DocumentType.GOST,
-            createdAt = LocalDate(2026, 2, 1),
+        Product(
+            type = ProductType.PACK,
+            displayName = "Пакет 3кг",
+            secondName = "",
+            createdAt = LocalDate(2026, 3, 9),
             comment = "",
+            priceForSale = 4500,
             id = 5
         )
     )
 
-    // 5. ===
+    // 3. DECLARATIONS (6 записей)
+    val declarations = listOf(
+        Declaration(
+            displayName = "Декларация Стоинг",
+            createdAt = LocalDate(2026, 3, 7),
+            vendorId = 1,
+            vendorName = "Стоинг",
+            bestBefore = LocalDate(2027, 3, 7),
+            id = 1,
+            observeFromNotification = true,
+            bornDate = LocalDate(2025, 3, 7)
+        ),
+        Declaration(
+            displayName = "Ингремарт",
+            createdAt = LocalDate(2026, 3, 8),
+            vendorId = 2,
+            vendorName = "Ингремарт",
+            bestBefore = LocalDate(2027, 3, 8),
+            id = 2,
+            observeFromNotification = true,
+            bornDate = LocalDate(2025, 2, 8)
+        ),
+        Declaration(
+            displayName = "Декл рога и копыта ",
+            createdAt = LocalDate(2026, 3, 8),
+            vendorId = 3,
+            vendorName = "Рога и копыта",
+            bestBefore = LocalDate(2021, 2, 8),
+            id = 3,
+            observeFromNotification = false,
+            bornDate = LocalDate(2025, 3, 8)
+        ),
+        Declaration(
+            displayName = "Оптовик",
+            createdAt = LocalDate(2026, 3, 8),
+            vendorId = 4,
+            vendorName = "Оптовик",
+            bestBefore = LocalDate(2028, 3, 8),
+            id = 4,
+            observeFromNotification = true,
+            bornDate = LocalDate(2025, 3, 8)
+        ),
+        Declaration(
+            displayName = "ИП Гармаш",
+            createdAt = LocalDate(2026, 3, 9),
+            vendorId = 5,
+            vendorName = "ИП Гармаш",
+            bestBefore = LocalDate(2028, 3, 9),
+            id = 5,
+            observeFromNotification = true,
+            bornDate = LocalDate(2025, 3, 9)
+        ),
+        Declaration(
+            displayName = "ОЗОН",
+            createdAt = LocalDate(2026, 3, 9),
+            vendorId = 6,
+            vendorName = "ОЗОН",
+            bestBefore = LocalDate(2028, 3, 9),
+            id = 6,
+            observeFromNotification = true,
+            bornDate = LocalDate(2026, 3, 9)
+        )
+    )
+
+    // 4. FILES (6 записей с заглушками вместо локальных путей)
     val files = listOf(
         FileBD(
             ownerId = 1,
-            ownerFileType = OwnerType.PRODUCT,
-            path = "/storage/images/salt.jpg",
+            ownerFileType = OwnerType.DECLARATION,
+            path = "/storage/declarations/1_decl.jpg",
             id = 1
         ),
         FileBD(
-            ownerId = 1,
+            ownerId = 2,
             ownerFileType = OwnerType.DECLARATION,
-            path = "/storage/docs/decl1.pdf",
+            path = "/storage/declarations/2_decl.jpg",
             id = 2
         ),
         FileBD(
             ownerId = 3,
-            ownerFileType = OwnerType.VENDOR,
-            path = "/storage/vendor/rustark_cert.pdf",
+            ownerFileType = OwnerType.DECLARATION,
+            path = "/storage/declarations/3_decl.jpg",
             id = 3
         ),
         FileBD(
-            ownerId = 1,
-            ownerFileType = OwnerType.DOCUMENT,
-            path = "/storage/docs/gost_12345.pdf",
+            ownerId = 4,
+            ownerFileType = OwnerType.DECLARATION,
+            path = "/storage/declarations/4_decl.jpg",
             id = 4
         ),
         FileBD(
-            ownerId = 2,
-            ownerFileType = OwnerType.PRODUCT,
-            path = "/storage/images/sausage.jpg",
+            ownerId = 5,
+            ownerFileType = OwnerType.DECLARATION,
+            path = "/storage/declarations/5_decl.jpg",
             id = 5
+        ),
+        FileBD(
+            ownerId = 6,
+            ownerFileType = OwnerType.DECLARATION,
+            path = "/storage/declarations/6_decl.jpg",
+            id = 6
         )
     )
 
-    // 6. ===
+    // 5. PRODUCT_DECLARATIONS (5 записей)
     val productDeclarations = listOf(
-        ProductDeclarationIn(productId = 2, declarationId = 1, id = 1),
+        ProductDeclarationIn(productId = 1, declarationId = 1, id = 1),
         ProductDeclarationIn(productId = 2, declarationId = 2, id = 2),
-        ProductDeclarationIn(productId = 2, declarationId = 3, id = 3),
-        ProductDeclarationIn(productId = 1, declarationId = 1, id = 4),
-        ProductDeclarationIn(productId = 5, declarationId = 4, id = 5)
+        ProductDeclarationIn(productId = 4, declarationId = 4, id = 3),
+        ProductDeclarationIn(productId = 5, declarationId = 6, id = 4),
+        ProductDeclarationIn(productId = 3, declarationId = 5, id = 5)
     )
 
-    // 7. ===
+    // 6. SAFETY_STOCK (5 записей)
+    val safetyStock = listOf(
+        SafetyStock(productId = 1, reorderPoint = 30000, orderQuantity = 30000, id = 1),
+        SafetyStock(productId = 2, reorderPoint = 50000, orderQuantity = 50000, id = 2),
+        SafetyStock(productId = 4, reorderPoint = 10000, orderQuantity = 10000, id = 3),
+        SafetyStock(productId = 5, reorderPoint = 1000000, orderQuantity = 1000000, id = 4),
+        SafetyStock(productId = 3, reorderPoint = 36000, orderQuantity = 12000, id = 5)
+    )
+
+    // 7. COMPOSITIONS (4 записи)
     val compositions = listOf(
-        CompositionIn(parentId = 1, productId = 2, count = 700, id = 1),
-        CompositionIn(parentId = 1, productId = 3, count = 250, id = 2),
-        CompositionIn(parentId = 1, productId = 5, count = 50, id = 3)
+        CompositionIn(parentId = 3, productId = 1, count = 450, id = 1),
+        CompositionIn(parentId = 3, productId = 2, count = 450, id = 2),
+        CompositionIn(parentId = 3, productId = 4, count = 100, id = 3),
+        CompositionIn(parentId = 3, productId = 5, count = 333, id = 4)
     )
 
-    // 8. ===
+    // 8. TRANSACTIONS (11 записей)
     val transactions = listOf(
         Transact(
             transactionType = TransactionType.BUY,
-            createdAt = LocalDateTime(2026, 1, 10, 9, 0),
+            createdAt = LocalDateTime(2026, 3, 6, 20, 17),
             comment = "",
             isCompleted = true,
             id = 1
         ),
         Transact(
             transactionType = TransactionType.BUY,
-            createdAt = LocalDateTime(2026, 1, 15, 10, 30),
+            createdAt = LocalDateTime(2026, 3, 10, 20, 18, 33, 96344400),
             comment = "",
             isCompleted = true,
             id = 2
         ),
         Transact(
             transactionType = TransactionType.BUY,
-            createdAt = LocalDateTime(2026, 1, 20, 11, 15),
+            createdAt = LocalDateTime(2026, 3, 2, 20, 4),
             comment = "",
             isCompleted = true,
             id = 3
         ),
         Transact(
-            transactionType = TransactionType.OPZS,
-            createdAt = LocalDateTime(2026, 2, 6, 10, 0),
+            transactionType = TransactionType.BUY,
+            createdAt = LocalDateTime(2026, 3, 10, 20, 19, 49, 312855600),
             comment = "",
             isCompleted = true,
             id = 4
         ),
         Transact(
-            transactionType = TransactionType.OPZS,
-            createdAt = LocalDateTime(2026, 2, 10, 10, 0),
+            transactionType = TransactionType.BUY,
+            createdAt = LocalDateTime(2026, 3, 7, 20, 20),
             comment = "",
             isCompleted = true,
             id = 5
         ),
         Transact(
-            transactionType = TransactionType.OPZS,
-            createdAt = LocalDateTime(2026, 2, 15, 10, 0),
+            transactionType = TransactionType.BUY,
+            createdAt = LocalDateTime(2026, 3, 10, 20, 21, 12, 142261800),
             comment = "",
             isCompleted = true,
             id = 6
         ),
         Transact(
-            transactionType = TransactionType.SALE,
-            createdAt = LocalDateTime(2026, 2, 20, 14, 0),
+            transactionType = TransactionType.BUY,
+            createdAt = LocalDateTime(2026, 3, 10, 20, 21, 40, 848346),
             comment = "",
             isCompleted = true,
             id = 7
         ),
         Transact(
-            transactionType = TransactionType.WRITE_OFF,
-            createdAt = LocalDateTime(2026, 2, 25, 9, 15),
+            transactionType = TransactionType.BUY,
+            createdAt = LocalDateTime(2026, 2, 10, 20, 22),
             comment = "",
-            isCompleted = false,
+            isCompleted = true,
             id = 8
+        ),
+        Transact(
+            transactionType = TransactionType.OPZS,
+            createdAt = LocalDateTime(2026, 3, 8, 20, 11),
+            comment = "",
+            isCompleted = true,
+            id = 9
+        ),
+        Transact(
+            transactionType = TransactionType.OPZS,
+            createdAt = LocalDateTime(2026, 3, 10, 20, 32, 55, 950382600),
+            comment = "",
+            isCompleted = true,
+            id = 10
+        ),
+        Transact(
+            transactionType = TransactionType.SALE,
+            createdAt = LocalDateTime(2026, 3, 10, 21, 35, 58, 794665500),
+            comment = "",
+            isCompleted = true,
+            id = 11
         )
     )
 
-    // 9. ===
+    // 9. BATCHES (10 записей)
     val batches = listOf(
-        BatchBD(productId = 2, dateBorn = LocalDate(2026, 1, 5), declarationId = 1, id = 1),
-        BatchBD(productId = 2, dateBorn = LocalDate(2026, 1, 6), declarationId = 1, id = 2),
-        BatchBD(productId = 2, dateBorn = LocalDate(2026, 1, 7), declarationId = 1, id = 3),
-        BatchBD(productId = 3, dateBorn = LocalDate(2026, 1, 8), declarationId = 1, id = 4),
-        BatchBD(productId = 3, dateBorn = LocalDate(2026, 1, 9), declarationId = 1, id = 5),
-        BatchBD(productId = 3, dateBorn = LocalDate(2026, 1, 10), declarationId = 1, id = 6),
-        BatchBD(productId = 5, dateBorn = LocalDate(2026, 1, 11), declarationId = 4, id = 7),
-        BatchBD(productId = 5, dateBorn = LocalDate(2026, 1, 12), declarationId = 4, id = 8),
-        BatchBD(productId = 5, dateBorn = LocalDate(2026, 1, 13), declarationId = 4, id = 9),
-        BatchBD(productId = 1, dateBorn = LocalDate(2026, 2, 6), declarationId = 1, id = 10),
-        BatchBD(productId = 1, dateBorn = LocalDate(2026, 2, 10), declarationId = 1, id = 11),
-        BatchBD(productId = 1, dateBorn = LocalDate(2026, 2, 15), declarationId = 1, id = 12)
+        BatchBD(productId = 1, dateBorn = LocalDate(2026, 2, 10), declarationId = 1, id = 1),
+        BatchBD(productId = 1, dateBorn = LocalDate(2026, 2, 10), declarationId = 1, id = 2),
+        BatchBD(productId = 4, dateBorn = LocalDate(2026, 2, 6), declarationId = 4, id = 3),
+        BatchBD(productId = 4, dateBorn = LocalDate(2026, 2, 18), declarationId = 4, id = 4),
+        BatchBD(productId = 5, dateBorn = LocalDate(2025, 12, 10), declarationId = 6, id = 5),
+        BatchBD(productId = 5, dateBorn = LocalDate(2026, 3, 10), declarationId = 6, id = 6),
+        BatchBD(productId = 2, dateBorn = LocalDate(2026, 2, 18), declarationId = 2, id = 7),
+        BatchBD(productId = 2, dateBorn = LocalDate(2026, 2, 11), declarationId = 2, id = 8),
+        BatchBD(productId = 3, dateBorn = LocalDate(2026, 3, 10), declarationId = 5, id = 9),
+        BatchBD(productId = 3, dateBorn = LocalDate(2026, 3, 10), declarationId = 5, id = 10)
     )
 
-    // 10. ===
+    // 10. BATCH_MOVEMENTS (22 записи)
     val batchMovements = listOf(
-        BatchMovement(batchId = 1, movementType = MovementType.INCOMING, count = 25000, transactionId = 1, id = 1),
-        BatchMovement(batchId = 2, movementType = MovementType.INCOMING, count = 30000, transactionId = 1, id = 2),
-        BatchMovement(batchId = 3, movementType = MovementType.INCOMING, count = 27500, transactionId = 1, id = 3),
-        BatchMovement(batchId = 4, movementType = MovementType.INCOMING, count = 22000, transactionId = 2, id = 4),
-        BatchMovement(batchId = 5, movementType = MovementType.INCOMING, count = 25000, transactionId = 2, id = 5),
-        BatchMovement(batchId = 6, movementType = MovementType.INCOMING, count = 24000, transactionId = 2, id = 6),
-        BatchMovement(batchId = 7, movementType = MovementType.INCOMING, count = 21000, transactionId = 3, id = 7),
-        BatchMovement(batchId = 8, movementType = MovementType.INCOMING, count = 23000, transactionId = 3, id = 8),
-        BatchMovement(batchId = 9, movementType = MovementType.INCOMING, count = 20050, transactionId = 3, id = 9),
-        BatchMovement(batchId = 10, movementType = MovementType.INCOMING, count = 25000, transactionId = 4, id = 10),
-        BatchMovement(batchId = 1, movementType = MovementType.OUTGOING, count = 17500, transactionId = 4, id = 11),
-        BatchMovement(batchId = 4, movementType = MovementType.OUTGOING, count = 6250, transactionId = 4, id = 12),
-        BatchMovement(batchId = 7, movementType = MovementType.OUTGOING, count = 1250, transactionId = 4, id = 13),
-        BatchMovement(batchId = 11, movementType = MovementType.INCOMING, count = 30000, transactionId = 5, id = 14),
-        BatchMovement(batchId = 2, movementType = MovementType.OUTGOING, count = 21000, transactionId = 5, id = 15),
-        BatchMovement(batchId = 5, movementType = MovementType.OUTGOING, count = 7500, transactionId = 5, id = 16),
-        BatchMovement(batchId = 8, movementType = MovementType.OUTGOING, count = 1500, transactionId = 5, id = 17),
-        BatchMovement(batchId = 12, movementType = MovementType.INCOMING, count = 22000, transactionId = 6, id = 18),
-        BatchMovement(batchId = 3, movementType = MovementType.OUTGOING, count = 15400, transactionId = 6, id = 19),
-        BatchMovement(batchId = 6, movementType = MovementType.OUTGOING, count = 5500, transactionId = 6, id = 20),
-        BatchMovement(batchId = 9, movementType = MovementType.OUTGOING, count = 1100, transactionId = 6, id = 21)
+        BatchMovement(batchId = 1, movementType = MovementType.INCOMING, count = 30000, transactionId = 1, id = 1),
+        BatchMovement(batchId = 2, movementType = MovementType.INCOMING, count = 50000, transactionId = 2, id = 2),
+        BatchMovement(batchId = 3, movementType = MovementType.INCOMING, count = 9000, transactionId = 3, id = 3),
+        BatchMovement(batchId = 4, movementType = MovementType.INCOMING, count = 9000, transactionId = 4, id = 4),
+        BatchMovement(batchId = 5, movementType = MovementType.INCOMING, count = 1000000, transactionId = 5, id = 5),
+        BatchMovement(batchId = 6, movementType = MovementType.INCOMING, count = 500000, transactionId = 6, id = 6),
+        BatchMovement(batchId = 7, movementType = MovementType.INCOMING, count = 100000, transactionId = 7, id = 7),
+        BatchMovement(batchId = 8, movementType = MovementType.INCOMING, count = 50000, transactionId = 8, id = 8),
+        BatchMovement(batchId = 9, movementType = MovementType.INCOMING, count = 36000, transactionId = 9, id = 9),
+        BatchMovement(batchId = 1, movementType = MovementType.OUTGOING, count = 16200, transactionId = 9, id = 10),
+        BatchMovement(batchId = 8, movementType = MovementType.OUTGOING, count = 16200, transactionId = 9, id = 11),
+        BatchMovement(batchId = 3, movementType = MovementType.OUTGOING, count = 3600, transactionId = 9, id = 12),
+        BatchMovement(batchId = 5, movementType = MovementType.OUTGOING, count = 12000, transactionId = 9, id = 13),
+        BatchMovement(batchId = 10, movementType = MovementType.INCOMING, count = 18000, transactionId = 10, id = 14),
+        BatchMovement(batchId = 1, movementType = MovementType.OUTGOING, count = 8100, transactionId = 10, id = 15),
+        BatchMovement(batchId = 8, movementType = MovementType.OUTGOING, count = 8100, transactionId = 10, id = 16),
+        BatchMovement(batchId = 3, movementType = MovementType.OUTGOING, count = 1800, transactionId = 10, id = 17),
+        BatchMovement(batchId = 5, movementType = MovementType.OUTGOING, count = 6000, transactionId = 10, id = 18),
+        BatchMovement(batchId = 10, movementType = MovementType.OUTGOING, count = 18000, transactionId = 11, id = 19),
+        BatchMovement(batchId = 9, movementType = MovementType.OUTGOING, count = 15000, transactionId = 11, id = 20),
+        BatchMovement(batchId = 10, movementType = MovementType.OUTGOING, count = 18000, transactionId = 11, id = 21),
+        BatchMovement(batchId = 9, movementType = MovementType.OUTGOING, count = 15000, transactionId = 11, id = 22)
     )
 
-    // 11. ===
+    // 11. BUYS (8 записей)
     val buys = listOf(
-        BuyBDIn(transactionId = 1, movementId = 1, price = 250000, comment = "", id = 1),
-        BuyBDIn(transactionId = 1, movementId = 2, price = 300000, comment = "", id = 2),
-        BuyBDIn(transactionId = 1, movementId = 3, price = 275000, comment = "", id = 3),
-        BuyBDIn(transactionId = 2, movementId = 4, price = 180000, comment = "", id = 4),
-        BuyBDIn(transactionId = 2, movementId = 5, price = 200000, comment = "", id = 5),
-        BuyBDIn(transactionId = 2, movementId = 6, price = 192000, comment = "", id = 6),
-        BuyBDIn(transactionId = 3, movementId = 7, price = 504000, comment = "", id = 7),
-        BuyBDIn(transactionId = 3, movementId = 8, price = 552000, comment = "", id = 8),
-        BuyBDIn(transactionId = 3, movementId = 9, price = 481200, comment = "", id = 9)
+        BuyBDIn(transactionId = 1, movementId = 1, price = 3000, comment = "", id = 1),
+        BuyBDIn(transactionId = 2, movementId = 2, price = 3500, comment = "", id = 2),
+        BuyBDIn(transactionId = 3, movementId = 3, price = 105000, comment = "", id = 3),
+        BuyBDIn(transactionId = 4, movementId = 4, price = 110000, comment = "", id = 4),
+        BuyBDIn(transactionId = 5, movementId = 5, price = 2855, comment = "", id = 5),
+        BuyBDIn(transactionId = 6, movementId = 6, price = 2260, comment = "", id = 6),
+        BuyBDIn(transactionId = 7, movementId = 7, price = 9235, comment = "", id = 7),
+        BuyBDIn(transactionId = 8, movementId = 8, price = 9530, comment = "", id = 8)
     )
 
-    // 12. ===
+    // 12. SALES (4 записи)
+    val sales = listOf(
+        SaleBDIn(transactionId = 11, movementId = 19, price = 120000, comment = "", clientId = 7, id = 1),
+        SaleBDIn(transactionId = 11, movementId = 20, price = 120000, comment = "", clientId = 7, id = 2),
+        SaleBDIn(transactionId = 11, movementId = 21, price = 120000, comment = "", clientId = 7, id = 3),
+        SaleBDIn(transactionId = 11, movementId = 22, price = 120000, comment = "", clientId = 7, id = 4)
+    )
+
+    // 13. REMINDERS (1 запись)
     val reminders = listOf(
         ReminderBD(
-            transactionId = 1,
-            text = "",
-            reminderDateTime = LocalDateTime(2026, 1, 11, 9, 0),
+            transactionId = 11,
+            text = "деньги",
+            reminderDateTime = LocalDateTime(2026, 4, 1, 0, 0),
             id = 1
-        ),
-        ReminderBD(
-            transactionId = 2,
-            text = "",
-            reminderDateTime = LocalDateTime(2026, 1, 16, 10, 0),
-            id = 2
-        ),
-        ReminderBD(
-            transactionId = 3,
-            text = "",
-            reminderDateTime = LocalDateTime(2026, 1, 21, 11, 0),
-            id = 3
-        ),
-        ReminderBD(
-            transactionId = 4,
-            text = "",
-            reminderDateTime = LocalDateTime(2026, 2, 7, 9, 0),
-            id = 4
-        ),
-        ReminderBD(
-            transactionId = 5,
-            text = "",
-            reminderDateTime = LocalDateTime(2026, 2, 11, 9, 0),
-            id = 5
         )
     )
 
-    // 13. ===
+    // 14. EXPENSES (1 запись)
     val expenses = listOf(
         ExpenseBD(
-            transactionId = 1,
-            expenseType = ExpenseType.TRANSPORT_DELIVERY,
-            amount = 5000,
-            expenseDateTime = LocalDateTime(2026, 1, 10, 10, 0),
+            transactionId = 11,
+            expenseType = ExpenseType.TRANSPORT_GASOLINE,
+            amount = 125230,
+            expenseDateTime = LocalDateTime(2026, 3, 10, 21, 35, 58, 794665500),
             comment = "",
             id = 1
-        ),
-        ExpenseBD(
-            transactionId = 2,
-            expenseType = ExpenseType.TRANSPORT_DELIVERY,
-            amount = 3500,
-            expenseDateTime = LocalDateTime(2026, 1, 15, 11, 0),
-            comment = "",
-            id = 2
-        ),
-        ExpenseBD(
-            transactionId = 3,
-            expenseType = ExpenseType.TRANSPORT_DELIVERY,
-            amount = 2000,
-            expenseDateTime = LocalDateTime(2026, 1, 20, 12, 0),
-            comment = "",
-            id = 3
-        ),
-        ExpenseBD(
-            transactionId = null,
-            expenseType = ExpenseType.STATIONERY,
-            amount = 1200,
-            expenseDateTime = LocalDateTime(2026, 2, 5, 10, 0),
-            comment = "",
-            id = 4
         )
     )
 
     // === ЗАПИСЬ В БАЗУ ===
 
-    //
     vendors.forEach { db.vendorDao.create(it) }
     products.forEach { db.productDao.create(it) }
-    documents.forEach { db.documentDao.create(it) }
     transactions.forEach { db.transactionDao.create(it) }
-
-    //
     declarations.forEach { db.declarationDao.create(it) }
     db.fileDao.upsertFiles(files)
-
-    //
     db.productDeclarationDao.upsertProductDeclarations(productDeclarations)
     db.compositionDao.upsertComposition(compositions)
-
-    //
+    safetyStock.forEach { db.safetyStockDao.upsert(it) }
     batches.forEach { db.batchDao.createBatch(it) }
-
-    //
     db.batchMovementDao.upsertMovements(batchMovements)
-
-    //
     buys.forEach { db.buyDao.upsertBuyBd(it) }
-    db.reminderDao.upsertAll(reminders)
+    sales.forEach { db.saleDao.upsertSaleBd(it) }
     db.expenseDao.upsertAll(expenses)
+    db.reminderDao.upsertAll(reminders)
 }
