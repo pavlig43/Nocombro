@@ -18,7 +18,6 @@ kotlin{
         implementation(projects.features.table.immutable)
         implementation(projects.features.table.mutable)
         implementation(projects.features.table.core)
-        implementation(projects.features.table.flowImmutable)
 
     }
 }

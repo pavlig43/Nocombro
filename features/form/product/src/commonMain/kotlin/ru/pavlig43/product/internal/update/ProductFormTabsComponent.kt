@@ -88,7 +88,7 @@ internal class ProductFormTabsComponent(
                         ProductDeclarationComponent(
                             componentContext = context,
                             productId = productId,
-                            observableRepository = scope.get(),
+                            repository = scope.get(),
                             tabOpener = tabOpener,
                             immutableTableDependencies = scope.get()
                         )

@@ -60,40 +60,11 @@ abstract class ProductDeclarationDao {
     @Transaction
     internal abstract fun observeOnProductDeclarationByProductId(productId: Int): Flow<List<InternalProductDeclaration>>
 
-    /**
-     * Создаёт Flow для отслеживания связей с указанными идентификаторами.
-     *
-     * Flow автоматически отправляет новые данные при изменении
-     * любой из отслеживаемых связей в БД.
-     *
-     * @param ids Список идентификаторов связей для отслеживания
-     * @return Flow со списком внутренних представлений связей
-     */
     @Query("SELECT * FROM product_declaration WHERE id IN (:ids)")
     @Transaction
     internal abstract fun observeOnProductDeclarationByIds(ids: List<Int>): Flow<List<InternalProductDeclaration>>
 
-    /**
-     * Создаёт Flow для отслеживания выходных данных связей по идентификаторам.
-     *
-     * Преобразует внутреннее представление в [ProductDeclarationOut]
-     * с вычислением флага актуальности.
-     *
-     * @param ids Список идентификаторов связей для отслеживания
-     * @return Flow со списком выходных данных
-     */
-    fun observeOnProductDeclarationOutByIds(ids: List<Int>): Flow<List<ProductDeclarationOut>> {
-        return observeOnProductDeclarationByIds(ids).mapValues(InternalProductDeclaration::toProductDeclarationOut)
-    }
 
-    /**
-     * Создаёт Flow для отслеживания всех выходных данных связей.
-     *
-     * Преобразует внутреннее представление в [ProductDeclarationOut]
-     * с вычислением флага актуальности.
-     *
-     * @return Flow со списком всех выходных данных
-     */
     fun observeOnProductDeclarationOut(productId: Int): Flow<List<ProductDeclarationOut>> {
         return observeOnProductDeclarationByProductId(productId).mapValues(InternalProductDeclaration::toProductDeclarationOut)
     }

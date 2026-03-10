@@ -1,7 +1,6 @@
 package ru.pavlig43.mutable.api.column
 
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -88,7 +87,6 @@ private fun <T : Any, C, E> EditableColumnBuilder<T, C, E>.writeTextCell(
             value = valueOf(item),
             onValueChange = { newValue -> onValueChange(item, newValue) },
             singleLine = singleLine,
-            keyboardActions = KeyboardActions(onDone = { onComplete() })
         )
     }
 }

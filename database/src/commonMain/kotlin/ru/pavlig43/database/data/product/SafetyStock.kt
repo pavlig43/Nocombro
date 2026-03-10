@@ -30,3 +30,4 @@ data class SafetyStock(
     @PrimaryKey(autoGenerate = true)
     override val id: Int = 0
 ): SingleItem
+

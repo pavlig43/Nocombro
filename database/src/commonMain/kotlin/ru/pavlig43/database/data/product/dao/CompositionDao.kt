@@ -58,10 +58,7 @@ abstract class CompositionDao {
         ) { products, compositions ->
             val productWithComposition = compositions.map { it.parentId }.toSet()
             products.filter {
-                it.type in arrayOf(
-                    ProductType.FOOD_BASE,
-                    ProductType.FOOD_PF
-                ) && it.id !in productWithComposition
+                it.type == ProductType.FOOD_PF && it.id !in productWithComposition
             }
                 .map { NotificationDTO(it.id, "В продукте ${it.displayName} нет состава") }
         }

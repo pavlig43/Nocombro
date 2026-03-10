@@ -48,24 +48,21 @@ internal fun createSafetyColumn(
                 headerText = "Остаток",
                 column = SafetyField.COUNT,
                 valueOf = { it.count },
-                decimalFormat = DecimalFormat.Decimal3(),
-                filterType = TableFilterType.NumberTableFilter(delegate = TableFilterType.NumberTableFilter.IntDelegate)
+                decimalFormat = DecimalFormat.Decimal3()
             )
 
             readDecimalColumn(
                 headerText = "Точка заказа",
                 column = SafetyField.REORDER_POINT,
                 valueOf = { it.reorderPoint },
-                decimalFormat = DecimalFormat.Decimal3(),
-                filterType = TableFilterType.NumberTableFilter(delegate = TableFilterType.NumberTableFilter.IntDelegate)
+                decimalFormat = DecimalFormat.Decimal3()
             )
 
             readDecimalColumn(
                 headerText = "Заказать",
                 column = SafetyField.ORDER_QUANTITY,
                 valueOf = { it.orderQuantity },
-                decimalFormat = DecimalFormat.Decimal3(),
-                filterType = TableFilterType.NumberTableFilter(delegate = TableFilterType.NumberTableFilter.IntDelegate)
+                decimalFormat = DecimalFormat.Decimal3()
             )
         }
     return columns

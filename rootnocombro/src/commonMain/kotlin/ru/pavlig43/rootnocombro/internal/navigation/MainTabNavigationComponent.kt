@@ -233,7 +233,7 @@ internal class MainTabNavigationComponent(
             ImmutableTableComponentFactoryMain(
                 componentContext = context,
                 dependencies = scope.get(),
-                onCreate = {  },
+                onCreate = { tabNavigationComponent.addTab(formConfig(0)) },
                 onItemClick = { tabNavigationComponent.addTab(formConfig(it.composeId)) },
                 immutableTableBuilderData = immutableTableBuilderData
             )
