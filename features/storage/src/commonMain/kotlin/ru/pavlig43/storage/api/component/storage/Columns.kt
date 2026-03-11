@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.ImmutableList
+import ru.pavlig43.core.model.DecimalData
 import ru.pavlig43.core.model.DecimalFormat
 import ru.pavlig43.core.model.toStartDoubleFormat
 import ru.pavlig43.coreui.tooltip.ToolTipIconButton
@@ -109,7 +110,7 @@ private fun ReadonlyTableColumnsBuilder<StorageProductUi, StorageProductField, S
 private fun ReadonlyTableColumnsBuilder<StorageProductUi, StorageProductField, StorageTableData>.decimalColumn(
     column:StorageProductField,
     title:String,
-    valueOf:(StorageProductUi)->Int,
+    valueOf:(StorageProductUi)-> DecimalData,
 ) {
 
     column(key = column, valueOf = valueOf) {
@@ -118,7 +119,7 @@ private fun ReadonlyTableColumnsBuilder<StorageProductUi, StorageProductField, S
         cell { item, _ ->
             val padding = if (item.isProduct) 8.dp else 20.dp
             Text(
-                text = valueOf(item).toStartDoubleFormat(DecimalFormat.Decimal3()),
+                text = valueOf(item).toStartDoubleFormat(),
                 modifier = Modifier.padding(start = padding, end = 12.dp)
             )
         }
