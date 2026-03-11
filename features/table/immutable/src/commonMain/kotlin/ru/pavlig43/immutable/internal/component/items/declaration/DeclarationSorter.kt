@@ -4,23 +4,21 @@ import ru.pavlig43.tablecore.utils.SortMatcher
 import ua.wwind.table.data.SortOrder
 import ua.wwind.table.state.SortState
 
-internal object DeclarationSorter: SortMatcher<DeclarationTableUi, DeclarationField> {
+internal object DeclarationSorter : SortMatcher<DeclarationTableUi, DeclarationField> {
     override fun sort(
         items: List<DeclarationTableUi>,
         sort: SortState<DeclarationField>?,
-    ): List<DeclarationTableUi>{
+    ): List<DeclarationTableUi> {
         if (sort == null) {
             return items
         }
 
         val sortedList =
             when (sort.column) {
-                DeclarationField.ID -> items.sortedBy { it.composeId }
                 DeclarationField.NAME -> items.sortedBy { it.displayName.lowercase() }
 
                 DeclarationField.VENDOR_NAME -> items.sortedBy { it.vendorName.lowercase() }
-                DeclarationField.BEST_BEFORE -> items.sortedBy { it.bestBefore }
-                                else -> items
+                else -> items
             }
         return if (sort.order == SortOrder.DESCENDING) {
             sortedList.asReversed()

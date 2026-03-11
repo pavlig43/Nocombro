@@ -11,8 +11,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import ru.pavlig43.coreui.DecimalFormat
-import ru.pavlig43.coreui.toStartDoubleFormat
+import ru.pavlig43.core.model.DecimalData
+import ru.pavlig43.core.model.DecimalFormat
+import ru.pavlig43.core.model.toStartDoubleFormat
 import ua.wwind.table.EditableColumnBuilder
 import ua.wwind.table.EditableTableColumnsBuilder
 import ua.wwind.table.component.TableCellTextFieldWithTooltipError
@@ -23,13 +24,12 @@ import kotlin.math.pow
 @Suppress("LongParameterList")
 fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.decimalColumn(
     key: C,
-    getValue: (T) -> Int,
+    getValue: (T) -> DecimalData,
     headerText: String,
-    decimalFormat: DecimalFormat,
-    updateItem: (T, Int) -> Unit,
+    updateItem: (T, DecimalData) -> Unit,
     filterType: TableFilterType.NumberTableFilter<Int>?= null,
     isSortable: Boolean = true,
-    footerValue: ((E) -> Int)? = null
+    footerValue: ((E) -> DecimalData)? = null
 ) {
     column(key, valueOf = { getValue(it) }) {
         autoWidth(300.dp)
@@ -40,7 +40,6 @@ fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.decimalColumn(
         }
 
         cellForDecimalFormat(
-            format = decimalFormat,
             getCount = { getValue(it) },
             saveInModel = updateItem
         )
@@ -48,7 +47,7 @@ fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.decimalColumn(
             footer { tableData ->
                 val accumValue = accumulateFunction(tableData)
                 Text(
-                    text = accumValue.toStartDoubleFormat(decimalFormat),
+                    text = accumValue.toStartDoubleFormat(),
                     modifier = Modifier.padding(horizontal = 8.dp)
                 )
             }
@@ -61,9 +60,8 @@ fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.decimalColumn(
 @Suppress("LongParameterList")
 fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.readDecimalColumn(
     key: C,
-    getValue: (T) -> Int,
+    getValue: (T) -> DecimalData,
     headerText: String,
-    decimalFormat: DecimalFormat,
     filterType: TableFilterType.NumberTableFilter<Int>?= null,
     isSortable: Boolean = true
 ) {
@@ -74,7 +72,7 @@ fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.readDecimalColumn(
             filter(it)
         }
         align(Alignment.CenterStart)
-        readNumberCell(format = decimalFormat, getCount = { getValue(it) })
+        readNumberCell( getCount = { getValue(it) })
         if (isSortable) {
             sortable()
         }
@@ -83,10 +81,9 @@ fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.readDecimalColumn(
 @Suppress("LongParameterList")
 fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.readDecimalColumnWithFooter(
     key: C,
-    getValue: (T) -> Int,
+    getValue: (T) -> DecimalData,
     headerText: String,
-    decimalFormat: DecimalFormat,
-    footerValue: (E) -> Int,
+    footerValue: (E) -> DecimalData,
     isSortable: Boolean = true
 ) {
     column(key, valueOf = { getValue(it) }) {
@@ -98,11 +95,11 @@ fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.readDecimalColumnWithFo
                 delegate = TableFilterType.NumberTableFilter.IntDelegate,
             )
         )
-        readNumberCell(format = decimalFormat, getCount = { getValue(it) })
+        readNumberCell( getCount = { getValue(it) })
         footer { tableData ->
             val accumValue = footerValue(tableData)
             Text(
-                text = accumValue.toStartDoubleFormat(decimalFormat),
+                text = accumValue.toStartDoubleFormat(),
                 modifier = Modifier.padding(horizontal = 8.dp)
             )
         }
@@ -113,27 +110,25 @@ fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.readDecimalColumnWithFo
 }
 
 private fun <T : Any, C, E> EditableColumnBuilder<T, C, E>.readNumberCell(
-    format: DecimalFormat,
-    getCount: (T) -> Int,
+    getCount: (T) -> DecimalData,
 ) {
     cell { item, _ ->
         LockText(
-            text = getCount(item).toStartDoubleFormat(format),
+            text = getCount(item).toStartDoubleFormat(),
             modifier = Modifier.padding(horizontal = 8.dp)
         )
     }
 }
 
 private fun <T : Any, C, E> EditableColumnBuilder<T, C, E>.cellForDecimalFormat(
-    format: DecimalFormat,
-    getCount: (T) -> Int,
-    saveInModel: (T, Int) -> Unit,
+    getCount: (T) -> DecimalData,
+    saveInModel: (T, DecimalData) -> Unit,
 
     ) {
     // Для отображения значения, когда оно не редактируется
     cell { item, _ ->
         Text(
-            text = getCount(item).toStartDoubleFormat(format),
+            text = getCount(item).toStartDoubleFormat(),
             modifier = Modifier.padding(horizontal = 8.dp)
         )
     }
@@ -141,11 +136,10 @@ private fun <T : Any, C, E> EditableColumnBuilder<T, C, E>.cellForDecimalFormat(
     editCell { item: T, tableData: E, onComplete: () -> Unit ->
 
         TableCellTextFieldNumber(
-            value = getCount(item),
+            data = getCount(item),
             saveInModel = {
                 saveInModel(item, it)
             },
-            decimalFormat = format,
             onComplete = onComplete,
         )
     }
@@ -158,9 +152,8 @@ private fun <T : Any, C, E> EditableColumnBuilder<T, C, E>.cellForDecimalFormat(
  */
 @Composable
 private fun TableCellTextFieldNumber(
-    value: Int,
-    saveInModel: (Int) -> Unit,
-    decimalFormat: DecimalFormat,
+    data: DecimalData,
+    saveInModel: (DecimalData) -> Unit,
     onComplete: () -> Unit,
     errorMessage: String = "",
 ) {
@@ -170,7 +163,7 @@ private fun TableCellTextFieldNumber(
     // значение нельзя привести к числовому формату то функция обновления не сработает
     var displayValue by remember {
         mutableStateOf(
-            value.takeIf { it != 0 }?.toStartDoubleFormat(decimalFormat) ?: ""
+            data.takeIf { it.value != 0 }?.toStartDoubleFormat() ?: ""
         )
     }
 
@@ -198,7 +191,7 @@ private fun TableCellTextFieldNumber(
              */
             val parts = result.split('.')
             val finalText = if (parts.size == 2) {
-                parts[0] + "." + parts[1].take(decimalFormat.countDecimal)
+                parts[0] + "." + parts[1].take(data.format.countDecimal)
             } else result
 
             displayValue = finalText
@@ -209,8 +202,8 @@ private fun TableCellTextFieldNumber(
             if (displayValue.toDoubleOrNull() != null) {
 
                 val intCount =
-                    (displayValue.toDouble() * 10.0.pow(decimalFormat.countDecimal)).toInt()
-                saveInModel(intCount)
+                    (displayValue.toDouble() * 10.0.pow(data.format.countDecimal)).toInt()
+                saveInModel(data.copy(value = intCount))
                 error = ""
             } else {
                 error = "Не число"

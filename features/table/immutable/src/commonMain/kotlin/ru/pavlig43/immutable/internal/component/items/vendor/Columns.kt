@@ -41,7 +41,8 @@ internal fun createVendorColumn(
                 headerText = "Комментарий",
                 column = VendorField.COMMENT,
                 valueOf = { it.comment },
-                filterType = TableFilterType.TextTableFilter()
+                filterType = TableFilterType.TextTableFilter(),
+                isSortable = false
             )
         }
     return columns

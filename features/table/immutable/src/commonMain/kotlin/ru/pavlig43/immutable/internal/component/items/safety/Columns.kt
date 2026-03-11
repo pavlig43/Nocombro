@@ -2,7 +2,6 @@
 package ru.pavlig43.immutable.internal.component.items.safety
 
 import kotlinx.collections.immutable.ImmutableList
-import ru.pavlig43.coreui.DecimalFormat
 import ru.pavlig43.immutable.internal.column.readDecimalColumn
 import ru.pavlig43.immutable.internal.column.readTextColumn
 import ru.pavlig43.tablecore.model.TableData
@@ -47,22 +46,19 @@ internal fun createSafetyColumn(
             readDecimalColumn(
                 headerText = "Остаток",
                 column = SafetyField.COUNT,
-                valueOf = { it.count },
-                decimalFormat = DecimalFormat.Decimal3()
+                valueOf = { it.count }
             )
 
             readDecimalColumn(
                 headerText = "Точка заказа",
                 column = SafetyField.REORDER_POINT,
-                valueOf = { it.reorderPoint },
-                decimalFormat = DecimalFormat.Decimal3()
+                valueOf = { it.reorderPoint }
             )
 
             readDecimalColumn(
                 headerText = "Заказать",
                 column = SafetyField.ORDER_QUANTITY,
-                valueOf = { it.orderQuantity },
-                decimalFormat = DecimalFormat.Decimal3()
+                valueOf = { it.orderQuantity }
             )
         }
     return columns

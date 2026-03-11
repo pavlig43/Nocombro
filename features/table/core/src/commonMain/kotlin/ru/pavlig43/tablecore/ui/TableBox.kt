@@ -49,7 +49,6 @@ fun <I : IMultiLineTableUi, C, E : TableData<I>> TableBox(
     val defaultTableSettings = TableSettings(
     stripedRows = true,
     autoApplyFilters = true,
-    showFastFilters = true,
     showActiveFiltersHeader = true,
     editingEnabled = true,
     rowHeightMode = RowHeightMode.Fixed,

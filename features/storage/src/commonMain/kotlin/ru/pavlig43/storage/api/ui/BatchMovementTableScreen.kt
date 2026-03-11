@@ -174,7 +174,7 @@ private class BatchMovementTableCustomization :
             BatchMovementField.BALANCE_END -> item.balanceOnEnd
             else -> null
         }
-        return if (cellValue != null && cellValue < 0) {
+        return if (cellValue != null && cellValue.value < 0) {
             TableCellStyle(
                 background = MaterialTheme.colorScheme.errorContainer,
                 contentColor = MaterialTheme.colorScheme.onErrorContainer

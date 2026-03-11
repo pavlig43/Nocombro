@@ -9,6 +9,8 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.Serializable
+import ru.pavlig43.core.model.DecimalData
+import ru.pavlig43.core.model.DecimalFormat
 import ru.pavlig43.core.tabs.TabOpener
 import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.database.data.transact.sale.SaleBDOut
@@ -72,7 +74,7 @@ internal class SaleComponent(
                                 saleUi.copy(
                                     productId = product.composeId,
                                     productName = product.displayName,
-                                    price = product.priceForSale
+                                    price = DecimalData(product.priceForSale, DecimalFormat.Decimal2)
                                 )
                             )
                         )
@@ -160,12 +162,12 @@ internal class SaleComponent(
             batchId = batchId,
             productId = productId,
             productName = productName,
-            count = count,
+            count = DecimalData(count, DecimalFormat.Decimal3),
             vendorName = vendorName,
             dateBorn = dateBorn,
             clientName = clientName,
             clientId = clientId,
-            price = price,
+            price = DecimalData(price, DecimalFormat.Decimal2),
             comment = comment,
             id = id
         )
@@ -173,10 +175,10 @@ internal class SaleComponent(
 
     override fun SaleUi.toBDIn(): SaleBDOut {
         return SaleBDOut(
-            count = count,
+            count = count.value,
             transactionId = transactionId,
             dateBorn = dateBorn,
-            price = price,
+            price = price.value,
             comment = comment,
             id = id,
             productId = productId,
@@ -195,9 +197,9 @@ internal class SaleComponent(
                 val place = "В строке ${saleUi.composeId + 1}"
                 if (saleUi.productId == 0) add("$place не указан продукт")
                 if (saleUi.batchId == 0) add("$place не выбрана партия")
-                if (saleUi.count == 0) add("$place количество равно 0")
+                if (saleUi.count.value == 0) add("$place количество равно 0")
                 if (saleUi.clientId == 0) add("$place не выбран клиент")
-                if (saleUi.price == 0) add("$place не выбрана цена")
+                if (saleUi.price.value == 0) add("$place не выбрана цена")
             }
         }
     }

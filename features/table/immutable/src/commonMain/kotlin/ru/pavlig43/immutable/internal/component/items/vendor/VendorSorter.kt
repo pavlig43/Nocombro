@@ -15,8 +15,7 @@ internal object VendorSorter: SortMatcher<VendorTableUi, VendorField> {
 
         val sortedList =
             when (sort.column) {
-                VendorField.ID -> items.sortedBy { it.composeId }
-                VendorField.COMMENT -> items.sortedBy { it.comment.lowercase() }
+                VendorField.NAME -> items.sortedBy { it.displayName }
                 else -> items
             }
         return if (sort.order == SortOrder.DESCENDING) {

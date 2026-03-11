@@ -162,4 +162,4 @@ ProductTab.MyEntity -> ProductTabChild.MyEntity(
 2. **SingleRepositoryType** для single-line репозиториев
 3. **Index = true** на внешнем ключе в Entity
 4. **toUi()/toDto()** методы для маппинга
-5. **Decimal3()** для чисел с форматированием
+5. **Decimal3** для чисел с форматированием

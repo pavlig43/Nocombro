@@ -9,6 +9,8 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.Serializable
+import ru.pavlig43.core.model.DecimalData
+import ru.pavlig43.core.model.DecimalFormat
 import ru.pavlig43.core.tabs.TabOpener
 import ru.pavlig43.database.data.product.CompositionIn
 import ru.pavlig43.database.data.product.CompositionOut
@@ -86,7 +88,7 @@ internal class CompositionComponent(
             productId = 0,
             productName = "",
             productType = null,
-            count = 0
+            count = DecimalData(0, DecimalFormat.Decimal3)
         )
     }
 
@@ -97,7 +99,7 @@ internal class CompositionComponent(
             productId = productId,
             productName = productName,
             productType = productType,
-            count = count
+            count = DecimalData(count, DecimalFormat.Decimal3)
         )
     }
 
@@ -106,7 +108,7 @@ internal class CompositionComponent(
             id = id,
             parentId = parentId,
             productId = productId,
-            count = count
+            count = count.value
         )
     }
 
@@ -117,7 +119,7 @@ internal class CompositionComponent(
                 if (item.productId == 0) {
                     add("В строке ${item.composeId} не указан продукт")
                 }
-                if (item.count == 0) {
+                if (item.count.value == 0) {
                     add("В строке ${item.composeId} не указано количество продукта")
                 }
             }
@@ -127,7 +129,7 @@ internal class CompositionComponent(
                     ProductType.FOOD_BASE,
                     ProductType.FOOD_PF
                 )
-            }.sumOf { it.count / 1000.0 }
+            }.sumOf { it.count.value / 1000.0 }
             if (totalSum != 1.0) {
                 add("Сумма в составе должна быть равна 1 кг (сейчас: ${totalSum}кг)")
             }

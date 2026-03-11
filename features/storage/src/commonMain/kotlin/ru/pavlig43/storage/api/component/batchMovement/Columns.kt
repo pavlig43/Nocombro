@@ -2,7 +2,6 @@
 package ru.pavlig43.storage.api.component.batchMovement
 
 import kotlinx.collections.immutable.ImmutableList
-import ru.pavlig43.coreui.DecimalFormat
 import ru.pavlig43.immutable.internal.column.readDateTimeColumn
 import ru.pavlig43.immutable.internal.column.readDecimalColumn
 import ua.wwind.table.ColumnSpec
@@ -32,7 +31,6 @@ internal fun createBatchMovementColumns(
                 headerText = "Старт",
                 column = BatchMovementField.BALANCE_BEFORE,
                 valueOf = { it.balanceBeforeStart },
-                decimalFormat = DecimalFormat.Decimal3(),
                 isSortable = false
             )
 
@@ -40,7 +38,6 @@ internal fun createBatchMovementColumns(
                 headerText = "Приход",
                 column = BatchMovementField.INCOMING,
                 valueOf = { it.incoming },
-                decimalFormat = DecimalFormat.Decimal3(),
                 isSortable = false
             )
 
@@ -48,7 +45,6 @@ internal fun createBatchMovementColumns(
                 headerText = "Расход",
                 column = BatchMovementField.OUTGOING,
                 valueOf = { it.outgoing },
-                decimalFormat = DecimalFormat.Decimal3(),
                 isSortable = false
             )
 
@@ -56,7 +52,6 @@ internal fun createBatchMovementColumns(
                 headerText = "Остаток",
                 column = BatchMovementField.BALANCE_END,
                 valueOf = { it.balanceOnEnd },
-                decimalFormat = DecimalFormat.Decimal3(),
                 isSortable = false
             )
         }

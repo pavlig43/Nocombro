@@ -61,7 +61,8 @@ internal fun createDeclarationColumn(
                 headerText = "Актуальность",
                 column = DeclarationField.IS_ACTUAL,
                 valueOf = { it.isActual },
-                filterType = TableFilterType.BooleanTableFilter()
+                filterType = TableFilterType.BooleanTableFilter(),
+                isSortable = false
             )
         }
     return columns

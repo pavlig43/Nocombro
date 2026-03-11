@@ -5,8 +5,8 @@ import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import ru.pavlig43.coreui.DecimalFormat
-import ru.pavlig43.coreui.toStartDoubleFormat
+import ru.pavlig43.core.model.DecimalData
+import ru.pavlig43.core.model.toStartDoubleFormat
 import ua.wwind.table.ReadonlyColumnBuilder
 import ua.wwind.table.ReadonlyTableColumnsBuilder
 import ua.wwind.table.filter.data.TableFilterType
@@ -17,8 +17,7 @@ import ua.wwind.table.filter.data.TableFilterType
 fun <T : Any, C, E> ReadonlyTableColumnsBuilder<T, C, E>.readDecimalColumn(
     headerText: String,
     column: C,
-    valueOf: (T) -> Int,
-    decimalFormat: DecimalFormat,
+    valueOf: (T) -> DecimalData,
     alignment: Alignment = Alignment.Center,
     textModifier: Modifier = Modifier.padding(horizontal = 12.dp),
     filterType: TableFilterType.NumberTableFilter<Int>? = null,
@@ -31,7 +30,7 @@ fun <T : Any, C, E> ReadonlyTableColumnsBuilder<T, C, E>.readDecimalColumn(
             filter(it)
         }
         align(alignment)
-        readDecimalCell(format = decimalFormat, getCount = valueOf,modifier = textModifier)
+        readDecimalCell(getCount = valueOf,modifier = textModifier)
         if (isSortable){
             sortable()
         }
@@ -39,13 +38,12 @@ fun <T : Any, C, E> ReadonlyTableColumnsBuilder<T, C, E>.readDecimalColumn(
 }
 
 private fun <T : Any, C, E> ReadonlyColumnBuilder<T, C, E>.readDecimalCell(
-    format: DecimalFormat,
-    getCount: (T) -> Int,
+    getCount: (T) -> DecimalData,
     modifier: Modifier
 ) {
     cell { item, _ ->
         Text(
-            text = getCount(item).toStartDoubleFormat(format),
+            text = getCount(item).toStartDoubleFormat(),
             modifier = modifier
         )
     }

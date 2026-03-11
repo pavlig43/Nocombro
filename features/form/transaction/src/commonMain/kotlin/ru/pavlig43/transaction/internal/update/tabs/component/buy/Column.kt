@@ -3,7 +3,8 @@
 package ru.pavlig43.transaction.internal.update.tabs.component.buy
 
 import kotlinx.collections.immutable.ImmutableList
-import ru.pavlig43.coreui.DecimalFormat
+import ru.pavlig43.core.model.DecimalData
+import ru.pavlig43.core.model.DecimalFormat
 import ru.pavlig43.mutable.api.column.decimalColumn
 import ru.pavlig43.mutable.api.column.idWithSelection
 import ru.pavlig43.mutable.api.column.readDecimalColumnWithFooter
@@ -61,16 +62,18 @@ internal fun createBuyColumn(
                 key = BuyField.COUNT,
                 getValue = { it.count },
                 headerText = "Количество",
-                decimalFormat = DecimalFormat.Decimal3(),
                 updateItem = { item, count -> onEvent(MutableUiEvent.UpdateItem(item.copy(count = count))) },
-                footerValue = { tableData -> tableData.displayedItems.sumOf { it.count } }
+                footerValue = { tableData ->
+                    tableData.displayedItems.fold(DecimalData(0, DecimalFormat.Decimal3)) { acc, item ->
+                        acc + item.count
+                    }
+                }
             )
 
             decimalColumn(
                 key = BuyField.PRICE,
                 getValue = { it.price },
                 headerText = "Цена",
-                decimalFormat = DecimalFormat.Decimal2(),
                 updateItem = { item, price -> onEvent(MutableUiEvent.UpdateItem(item.copy(price = price))) }
             )
 
@@ -78,8 +81,11 @@ internal fun createBuyColumn(
                 key = BuyField.SUM,
                 getValue = { it.sum },
                 headerText = "Сумма",
-                decimalFormat = DecimalFormat.Decimal2(),
-                footerValue = { tableData -> tableData.displayedItems.sumOf { it.sum } }
+                footerValue = { tableData ->
+                    tableData.displayedItems.fold(DecimalData(0, DecimalFormat.Decimal2)) { acc, item ->
+                        acc + item.sum
+                    }
+                }
             )
            readTextColumn(
                headerText = "Партия",
