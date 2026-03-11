@@ -2,6 +2,8 @@ package ru.pavlig43.immutable.internal.component.items.safety
 
 import com.arkivanov.decompose.ComponentContext
 import kotlinx.collections.immutable.ImmutableList
+import ru.pavlig43.core.model.DecimalData
+import ru.pavlig43.core.model.DecimalFormat
 import ru.pavlig43.database.data.safety.SafetyTableItem
 import ru.pavlig43.immutable.api.component.SafetyImmutableTableBuilder
 import ru.pavlig43.immutable.internal.component.ImmutableTableComponent
@@ -35,8 +37,8 @@ private fun SafetyTableItem.toUi(): SafetyTableUi {
         productId = productId,
         productName = productName,
         vendorName = vendorName,
-        count = count,
-        reorderPoint = reorderPoint,
-        orderQuantity = orderQuantity
+        count = DecimalData(count, DecimalFormat.Decimal3()),
+        reorderPoint = DecimalData(reorderPoint, DecimalFormat.Decimal3()),
+        orderQuantity = DecimalData(orderQuantity, DecimalFormat.Decimal3())
     )
 }

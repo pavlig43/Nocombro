@@ -27,9 +27,9 @@ sealed interface DecimalFormat {
     }
 }
 
-//@Suppress("MagicNumber")
-//fun Int.toStartDoubleFormat(decimalFormat: DecimalFormat): String {
-//    return (this / (10.0.pow(decimalFormat.countDecimal))).toString()
-//        .dropLastWhile { it == '0' }
-//        .run { if (last() == '.') dropLast(1) else this }
-//}
+@Suppress("MagicNumber")
+fun Int.toStartDoubleFormat(decimalFormat: DecimalFormat): String {
+    return (this / (10.0.pow(decimalFormat.countDecimal))).toString()
+        .dropLastWhile { it == '0' }
+        .run { if (last() == '.') dropLast(1) else this }
+}

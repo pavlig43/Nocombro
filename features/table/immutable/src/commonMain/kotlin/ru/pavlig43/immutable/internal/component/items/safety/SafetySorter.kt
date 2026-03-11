@@ -15,9 +15,9 @@ internal object SafetySorter : SortMatcher<SafetyTableUi, SafetyField> {
             SafetyField.ID -> items.sortedBy { it.composeId }
             SafetyField.PRODUCT_NAME -> items.sortedBy { it.productName.lowercase() }
             SafetyField.VENDOR_NAME -> items.sortedBy { it.vendorName.lowercase() }
-            SafetyField.COUNT -> items.sortedBy { it.count }
-            SafetyField.REORDER_POINT -> items.sortedBy { it.reorderPoint }
-            SafetyField.ORDER_QUANTITY -> items.sortedBy { it.orderQuantity }
+            SafetyField.COUNT -> items.sortedBy { it.count.value }
+            SafetyField.REORDER_POINT -> items.sortedBy { it.reorderPoint.value }
+            SafetyField.ORDER_QUANTITY -> items.sortedBy { it.orderQuantity.value }
         }
         return if (sort.order == SortOrder.DESCENDING) {
             sortedList.asReversed()

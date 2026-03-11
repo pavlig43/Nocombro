@@ -15,6 +15,8 @@ import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.format
 import ru.pavlig43.core.MainTabComponent
 import ru.pavlig43.core.componentCoroutineScope
+import ru.pavlig43.core.model.DecimalData
+import ru.pavlig43.core.model.DecimalFormat
 import ru.pavlig43.corekoin.ComponentKoinContext
 import ru.pavlig43.database.data.storage.BatchMovementWithBalanceInfoBD
 import ru.pavlig43.datetime.dateTimeFormat
@@ -95,10 +97,10 @@ private fun BatchMovementWithBalanceInfoBD.toLoadState(): BatchMovementLoadState
             movements = this.movements.map { movement ->
                 BatchMovementTableUi(
                     movementDate = movement.movementDate,
-                    balanceBeforeStart = movement.balanceBeforeStart,
-                    incoming = movement.incoming,
-                    outgoing = movement.outgoing,
-                    balanceOnEnd = movement.balanceOnEnd,
+                    balanceBeforeStart = DecimalData(movement.balanceBeforeStart, DecimalFormat.Decimal3()),
+                    incoming = DecimalData(movement.incoming, DecimalFormat.Decimal3()),
+                    outgoing = DecimalData(movement.outgoing, DecimalFormat.Decimal3()),
+                    balanceOnEnd = DecimalData(movement.balanceOnEnd, DecimalFormat.Decimal3()),
                     transactionId = movement.transactionId
                 )
             }
