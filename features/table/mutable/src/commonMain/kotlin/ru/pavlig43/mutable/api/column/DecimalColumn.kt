@@ -11,8 +11,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import ru.pavlig43.coreui.DecimalFormat
-import ru.pavlig43.coreui.toStartDoubleFormat
+import ru.pavlig43.core.model.DecimalFormat
+import ru.pavlig43.core.model.toStartDoubleFormat
 import ua.wwind.table.EditableColumnBuilder
 import ua.wwind.table.EditableTableColumnsBuilder
 import ua.wwind.table.component.TableCellTextFieldWithTooltipError

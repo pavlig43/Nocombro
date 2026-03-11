@@ -1,7 +1,7 @@
 package ru.pavlig43.product.internal.update.tabs.essential
 
 import kotlinx.collections.immutable.ImmutableList
-import ru.pavlig43.coreui.DecimalFormat
+import ru.pavlig43.core.model.DecimalFormat
 import ru.pavlig43.mutable.api.column.decimalColumn
 import ru.pavlig43.mutable.api.column.readItemTypeColumn
 import ru.pavlig43.mutable.api.column.writeDateColumn

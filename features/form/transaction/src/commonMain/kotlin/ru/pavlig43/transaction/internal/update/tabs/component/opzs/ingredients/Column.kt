@@ -4,7 +4,7 @@ package ru.pavlig43.transaction.internal.update.tabs.component.opzs.ingredients
 
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.datetime.format
-import ru.pavlig43.coreui.DecimalFormat
+import ru.pavlig43.core.model.DecimalFormat
 import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.datetime.dateFormat
 import ru.pavlig43.mutable.api.column.decimalColumn

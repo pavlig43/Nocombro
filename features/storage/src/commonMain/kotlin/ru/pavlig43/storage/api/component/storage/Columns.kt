@@ -8,8 +8,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.ImmutableList
-import ru.pavlig43.coreui.DecimalFormat
-import ru.pavlig43.coreui.toStartDoubleFormat
+import ru.pavlig43.core.model.DecimalFormat
+import ru.pavlig43.core.model.toStartDoubleFormat
 import ru.pavlig43.coreui.tooltip.ToolTipIconButton
 import ru.pavlig43.storage.internal.model.StorageProductUi
 import ru.pavlig43.storage.internal.model.StorageTableData

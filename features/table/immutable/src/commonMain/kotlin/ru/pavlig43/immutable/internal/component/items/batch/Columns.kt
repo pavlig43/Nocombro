@@ -2,7 +2,6 @@
 package ru.pavlig43.immutable.internal.component.items.batch
 
 import kotlinx.collections.immutable.ImmutableList
-import ru.pavlig43.coreui.DecimalFormat
 import ru.pavlig43.immutable.internal.column.idWithSelection
 import ru.pavlig43.immutable.internal.column.readDateColumn
 import ru.pavlig43.immutable.internal.column.readDecimalColumn
@@ -51,7 +50,6 @@ internal fun createBatchColumn(
                 headerText = "Остаток",
                 column = BatchField.COUNT,
                 valueOf = { it.balance },
-                decimalFormat = DecimalFormat.Decimal3(),
                 filterType = TableFilterType.NumberTableFilter(delegate = TableFilterType.NumberTableFilter.IntDelegate)
             )
 
