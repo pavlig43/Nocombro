@@ -5,6 +5,8 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.LocalDateTime
+import ru.pavlig43.core.model.DecimalData
+import ru.pavlig43.core.model.DecimalFormat
 import ru.pavlig43.database.data.expense.ExpenseBD
 import ru.pavlig43.mutable.api.multiLine.component.MutableTableComponent
 import ru.pavlig43.mutable.api.multiLine.data.UpdateCollectionRepository
@@ -36,7 +38,7 @@ internal class ExpensesComponent(
             id = 0,
             transactionId = transactionId,
             expenseType = null,
-            amount = 0,
+            amount = DecimalData(0, DecimalFormat.Decimal2()),
             expenseDateTime = getTransactionDateTime(),
             comment = ""
         )
@@ -48,7 +50,7 @@ internal class ExpensesComponent(
             id = id,
             transactionId = transactionId,
             expenseType = expenseType,
-            amount = amount,
+            amount = DecimalData(amount, DecimalFormat.Decimal2()),
             expenseDateTime = expenseDateTime,
             comment = comment
         )
@@ -58,7 +60,7 @@ internal class ExpensesComponent(
         return ExpenseBD(
             transactionId = transactionId,
             expenseType = expenseType?:throw IllegalArgumentException("Такой ошибки не может быть"),
-            amount = amount,
+            amount = amount.value,
             expenseDateTime = getTransactionDateTime(),
             comment = comment,
             id = id
@@ -69,7 +71,7 @@ internal class ExpensesComponent(
         buildList {
             lst.forEach { expenseUi ->
                 val place = "В строке ${expenseUi.composeId + 1}"
-                if (expenseUi.amount == 0) add("$place сумма равна 0")
+                if (expenseUi.amount.value == 0) add("$place сумма равна 0")
                 if (expenseUi.expenseType == null) add("$place не выбран тип расхода")
             }
         }

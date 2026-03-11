@@ -3,7 +3,6 @@ package ru.pavlig43.product.internal.update.tabs.composition
 
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
-import ru.pavlig43.core.model.DecimalFormat
 import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.mutable.api.column.decimalColumn
 import ru.pavlig43.mutable.api.column.idWithSelection
@@ -60,7 +59,6 @@ internal fun createCompositionColumn(
                 key = CompositionField.COUNT,
                 getValue = { it.count },
                 headerText = "Количество",
-                decimalFormat = DecimalFormat.Decimal3(),
                 updateItem = { item, count -> onEvent(MutableUiEvent.UpdateItem(item.copy(count = count))) },
 
             )

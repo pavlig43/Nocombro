@@ -17,6 +17,8 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
+import ru.pavlig43.core.model.DecimalData
+import ru.pavlig43.core.model.DecimalFormat
 import ru.pavlig43.core.tabs.TabOpener
 import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.database.data.transact.ingredient.IngredientBD
@@ -69,7 +71,7 @@ internal class IngredientComponent(
                         productId = pf.productId,
                         transactionId = transactionId,
 
-                        countPf = pf.count
+                        countPf = pf.count.value
                     )
                 },
                 handleSuccess = {
@@ -200,7 +202,7 @@ internal class IngredientComponent(
             productId = productId,
             productName = productName,
             vendorName = vendorName,
-            balance = count,
+            balance = DecimalData(count, DecimalFormat.Decimal3()),
             productType = productType,
             id = id
         )
@@ -211,7 +213,7 @@ internal class IngredientComponent(
             transactionId = transactionId,
             batchId = batchId,
             movementId = movementId,
-            count = balance,
+            count = balance.value,
             productId = productId,
             productName = productName,
             vendorName = vendorName,
@@ -227,7 +229,7 @@ internal class IngredientComponent(
                 val place = "В строке ${ingredientUi.composeId + 1}"
                 if (ingredientUi.productId == 0) add("$place не указан продукт")
                 if (ingredientUi.batchId == 0) add("$place не указан партия")
-                if (ingredientUi.balance == 0) add("$place количество равно 0")
+                if (ingredientUi.balance.value == 0) add("$place количество равно 0")
             }
         }
     }

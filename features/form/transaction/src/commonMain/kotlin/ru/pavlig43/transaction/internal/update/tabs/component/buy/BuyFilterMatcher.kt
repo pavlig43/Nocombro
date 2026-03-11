@@ -18,9 +18,9 @@ internal object BuyFilterMatcher: FilterMatcher<BuyUi, BuyField>() {
             BuyField.DECLARATION_NAME -> matchesTextField(item.declarationName,stateAny)
             BuyField.VENDOR_NAME -> matchesTextField(item.vendorName,stateAny)
             BuyField.DATE_BORN -> matchesDateField(item.dateBorn,stateAny)
-            BuyField.PRICE -> matchesIntField(item.price,stateAny)
+            BuyField.PRICE -> matchesIntField(item.price.value,stateAny)
             BuyField.COMMENT -> matchesTextField(item.comment,stateAny)
-            BuyField.COUNT -> matchesIntField(item.count,stateAny)
+            BuyField.COUNT -> matchesIntField(item.count.value,stateAny)
             else -> true
         }
         return matches

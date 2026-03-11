@@ -18,9 +18,9 @@ internal object SaleFilterMatcher : FilterMatcher<SaleUi, SaleField>() {
             SaleField.CLIENT_NAME -> matchesTextField(item.clientName, stateAny)
             SaleField.VENDOR_NAME -> matchesTextField(item.vendorName, stateAny)
             SaleField.DATE_BORN -> matchesDateField(item.dateBorn, stateAny)
-            SaleField.PRICE -> matchesIntField(item.price, stateAny)
+            SaleField.PRICE -> matchesIntField(item.price.value, stateAny)
             SaleField.COMMENT -> matchesTextField(item.comment, stateAny)
-            SaleField.COUNT -> matchesIntField(item.count, stateAny)
+            SaleField.COUNT -> matchesIntField(item.count.value, stateAny)
             SaleField.BATCH_ID -> matchesIntField(item.batchId, stateAny)
             else -> true
         }

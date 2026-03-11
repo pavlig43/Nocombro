@@ -4,7 +4,6 @@ package ru.pavlig43.transaction.internal.update.tabs.component.opzs.pf
 
 
 import kotlinx.collections.immutable.ImmutableList
-import ru.pavlig43.core.model.DecimalFormat
 import ru.pavlig43.mutable.api.column.decimalColumn
 import ru.pavlig43.mutable.api.column.readTextColumn
 import ru.pavlig43.mutable.api.column.textWithSearchIconColumn
@@ -58,7 +57,6 @@ internal fun createPfColumns(
                 getValue = { item -> item.count },
                 headerText = "Количество",
                 isSortable = false,
-                decimalFormat = DecimalFormat.Decimal3(),
                 updateItem = { item, count -> onChangeItem { it.copy(count = count) } }
             )
         }

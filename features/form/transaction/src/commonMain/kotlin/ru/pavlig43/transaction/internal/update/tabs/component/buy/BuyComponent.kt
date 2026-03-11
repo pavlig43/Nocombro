@@ -9,6 +9,8 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.Serializable
+import ru.pavlig43.core.model.DecimalData
+import ru.pavlig43.core.model.DecimalFormat
 import ru.pavlig43.core.tabs.TabOpener
 import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.database.data.transact.buy.BuyBDOut
@@ -145,12 +147,12 @@ internal class BuyComponent(
             batchId = batchId,
             productId = productId,
             productName = productName,
-            count = count,
+            count = DecimalData(count, DecimalFormat.Decimal3()),
             declarationId = declarationId,
             declarationName = declarationName,
             vendorName = vendorName,
             dateBorn = dateBorn,
-            price = price,
+            price = DecimalData(price, DecimalFormat.Decimal2()),
             comment = comment,
             id = id
         )
@@ -158,10 +160,10 @@ internal class BuyComponent(
 
     override fun BuyUi.toBDIn(): BuyBDOut {
         return BuyBDOut(
-            count = count,
+            count = count.value,
             transactionId = transactionId,
             dateBorn = dateBorn,
-            price = price,
+            price = price.value,
             comment = comment,
             id = id,
             productId = productId,
@@ -179,10 +181,10 @@ internal class BuyComponent(
             lst.forEach { buyUi ->
                 val place = "В строке ${buyUi.composeId + 1}"
                 if (buyUi.productId == 0)  add("$place не указан продукт")
-                if (buyUi.count == 0) add("$place количество равно 0")
+                if (buyUi.count.value == 0) add("$place количество равно 0")
                 if (buyUi.declarationId == 0) add("$place нет декларации")
                 if (buyUi.dateBorn == emptyDate) add(("$place не выбрана дата"))
-                if (buyUi.price == 0) add(("$place не выбрана цена"))
+                if (buyUi.price.value == 0) add(("$place не выбрана цена"))
             }
         }
     }

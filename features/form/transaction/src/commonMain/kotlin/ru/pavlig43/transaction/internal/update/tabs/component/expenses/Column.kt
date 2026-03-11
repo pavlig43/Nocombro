@@ -4,6 +4,7 @@ package ru.pavlig43.transaction.internal.update.tabs.component.expenses
 
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
+import ru.pavlig43.core.model.DecimalData
 import ru.pavlig43.core.model.DecimalFormat
 import ru.pavlig43.database.data.expense.ExpenseType
 import ru.pavlig43.mutable.api.column.decimalColumn
@@ -53,9 +54,12 @@ internal fun createExpensesColumns(
                 key = ExpensesField.AMOUNT,
                 getValue = { it.amount },
                 headerText = "Сумма (₽)",
-                decimalFormat = DecimalFormat.Decimal2(),
                 updateItem = { item, amount -> onEvent(MutableUiEvent.UpdateItem(item.copy(amount = amount))) },
-                footerValue = { tableData -> tableData.displayedItems.sumOf { it.amount } }
+                footerValue = { tableData ->
+                    tableData.displayedItems.fold(DecimalData(0, DecimalFormat.Decimal2())) { acc, item ->
+                        acc + item.amount
+                    }
+                }
             )
 
             // Комментарий

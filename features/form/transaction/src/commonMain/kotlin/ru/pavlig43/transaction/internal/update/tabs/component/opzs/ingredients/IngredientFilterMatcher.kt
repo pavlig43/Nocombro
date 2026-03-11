@@ -15,7 +15,7 @@ internal object IngredientFilterMatcher : FilterMatcher<IngredientUi, Ingredient
             IngredientField.COMPOSE_ID -> true
             IngredientField.PRODUCT_NAME -> matchesTextField(item.productName, stateAny)
             IngredientField.VENDOR_NAME -> matchesTextField(item.vendorName, stateAny)
-            IngredientField.COUNT -> matchesIntField(item.balance, stateAny)
+            IngredientField.COUNT -> matchesIntField(item.balance.value, stateAny)
             IngredientField.BATCH_NAME -> matchesIntField(item.batchId, stateAny)
         }
         return matches

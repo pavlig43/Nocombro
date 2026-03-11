@@ -1,7 +1,6 @@
 package ru.pavlig43.product.internal.create.component
 
 import kotlinx.collections.immutable.ImmutableList
-import ru.pavlig43.core.model.DecimalFormat
 import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.mutable.api.column.decimalColumn
 import ru.pavlig43.mutable.api.column.writeDateColumn
@@ -53,7 +52,6 @@ internal fun createProductColumns0(
                 key = ProductField.PRICE_FOR_SALE,
                 getValue = { it.priceForSale },
                 headerText = "Цена продажи (₽)",
-                decimalFormat = DecimalFormat.Decimal2(),
                 updateItem = { item, newPrice -> onChangeItem { it.copy(priceForSale = newPrice) } },
                 isSortable = false
             )
