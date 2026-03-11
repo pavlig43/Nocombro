@@ -111,7 +111,7 @@ private fun ReadonlyTableColumnsBuilder<StorageProductUi, StorageProductField, S
     column:StorageProductField,
     title:String,
     valueOf:(StorageProductUi)-> Int,
-    decimalFormat: DecimalFormat = DecimalFormat.Decimal3(),
+    decimalFormat: DecimalFormat = DecimalFormat.Decimal3,
 ) {
 
     column(key = column, valueOf = valueOf) {

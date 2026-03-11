@@ -74,7 +74,7 @@ internal class SaleComponent(
                                 saleUi.copy(
                                     productId = product.composeId,
                                     productName = product.displayName,
-                                    price = DecimalData(product.priceForSale, DecimalFormat.Decimal2())
+                                    price = DecimalData(product.priceForSale, DecimalFormat.Decimal2)
                                 )
                             )
                         )
@@ -162,12 +162,12 @@ internal class SaleComponent(
             batchId = batchId,
             productId = productId,
             productName = productName,
-            count = DecimalData(count, DecimalFormat.Decimal3()),
+            count = DecimalData(count, DecimalFormat.Decimal3),
             vendorName = vendorName,
             dateBorn = dateBorn,
             clientName = clientName,
             clientId = clientId,
-            price = DecimalData(price, DecimalFormat.Decimal2()),
+            price = DecimalData(price, DecimalFormat.Decimal2),
             comment = comment,
             id = id
         )

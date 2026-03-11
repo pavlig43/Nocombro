@@ -202,7 +202,7 @@ internal class IngredientComponent(
             productId = productId,
             productName = productName,
             vendorName = vendorName,
-            balance = DecimalData(count, DecimalFormat.Decimal3()),
+            balance = DecimalData(count, DecimalFormat.Decimal3),
             productType = productType,
             id = id
         )

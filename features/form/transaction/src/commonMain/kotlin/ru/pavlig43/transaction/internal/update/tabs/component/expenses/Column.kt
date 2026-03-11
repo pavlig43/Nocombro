@@ -56,7 +56,7 @@ internal fun createExpensesColumns(
                 headerText = "Сумма (₽)",
                 updateItem = { item, amount -> onEvent(MutableUiEvent.UpdateItem(item.copy(amount = amount))) },
                 footerValue = { tableData ->
-                    tableData.displayedItems.fold(DecimalData(0, DecimalFormat.Decimal2())) { acc, item ->
+                    tableData.displayedItems.fold(DecimalData(0, DecimalFormat.Decimal2)) { acc, item ->
                         acc + item.amount
                     }
                 }

@@ -40,12 +40,12 @@ sealed interface DecimalFormat {
     val countDecimal: Int
 
     @Suppress("MagicNumber")
-    class Decimal3 : DecimalFormat {
+    data object Decimal3 : DecimalFormat {
         override val countDecimal: Int = 3
     }
 
     @Suppress("MagicNumber")
-    class Decimal2 : DecimalFormat {
+    data object Decimal2 : DecimalFormat {
         override val countDecimal: Int = 2
     }
 }

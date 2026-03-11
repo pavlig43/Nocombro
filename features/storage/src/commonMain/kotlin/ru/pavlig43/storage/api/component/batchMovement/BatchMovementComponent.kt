@@ -97,10 +97,10 @@ private fun BatchMovementWithBalanceInfoBD.toLoadState(): BatchMovementLoadState
             movements = this.movements.map { movement ->
                 BatchMovementTableUi(
                     movementDate = movement.movementDate,
-                    balanceBeforeStart = DecimalData(movement.balanceBeforeStart, DecimalFormat.Decimal3()),
-                    incoming = DecimalData(movement.incoming, DecimalFormat.Decimal3()),
-                    outgoing = DecimalData(movement.outgoing, DecimalFormat.Decimal3()),
-                    balanceOnEnd = DecimalData(movement.balanceOnEnd, DecimalFormat.Decimal3()),
+                    balanceBeforeStart = DecimalData(movement.balanceBeforeStart, DecimalFormat.Decimal3),
+                    incoming = DecimalData(movement.incoming, DecimalFormat.Decimal3),
+                    outgoing = DecimalData(movement.outgoing, DecimalFormat.Decimal3),
+                    balanceOnEnd = DecimalData(movement.balanceOnEnd, DecimalFormat.Decimal3),
                     transactionId = movement.transactionId
                 )
             }

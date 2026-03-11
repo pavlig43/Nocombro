@@ -12,12 +12,12 @@ data class BuyUi(
     val id: Int,
     val productId: Int = 0,
     val productName: String = "",
-    val count: DecimalData = DecimalData(0, DecimalFormat.Decimal3()),
+    val count: DecimalData = DecimalData(0, DecimalFormat.Decimal3),
     val declarationId: Int = 0,
     val declarationName: String = "",
     val vendorName: String = "",
     val dateBorn: LocalDate = getCurrentLocalDate(),
-    val price: DecimalData = DecimalData(0, DecimalFormat.Decimal2()),
+    val price: DecimalData = DecimalData(0, DecimalFormat.Decimal2),
     val comment: String = "",
     val batchId: Int = 0,
     val movementId: Int = 0
@@ -25,6 +25,6 @@ data class BuyUi(
     val sum: DecimalData
         get() = DecimalData(
             (count.value.toLong() * price.value / 1000).toInt(),
-            DecimalFormat.Decimal2()
+            DecimalFormat.Decimal2
         )
 }

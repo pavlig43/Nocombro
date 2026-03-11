@@ -147,12 +147,12 @@ internal class BuyComponent(
             batchId = batchId,
             productId = productId,
             productName = productName,
-            count = DecimalData(count, DecimalFormat.Decimal3()),
+            count = DecimalData(count, DecimalFormat.Decimal3),
             declarationId = declarationId,
             declarationName = declarationName,
             vendorName = vendorName,
             dateBorn = dateBorn,
-            price = DecimalData(price, DecimalFormat.Decimal2()),
+            price = DecimalData(price, DecimalFormat.Decimal2),
             comment = comment,
             id = id
         )

@@ -23,8 +23,8 @@ internal fun SafetyStockUi.toDto(): SafetyStock {
 internal fun SafetyStock.toUi(): SafetyStockUi {
     return SafetyStockUi(
         productId = productId,
-        reorderPoint = DecimalData(reorderPoint, DecimalFormat.Decimal3()),
-        orderQuantity = DecimalData(orderQuantity, DecimalFormat.Decimal3()),
+        reorderPoint = DecimalData(reorderPoint, DecimalFormat.Decimal3),
+        orderQuantity = DecimalData(orderQuantity, DecimalFormat.Decimal3),
         id = id
     )
 }

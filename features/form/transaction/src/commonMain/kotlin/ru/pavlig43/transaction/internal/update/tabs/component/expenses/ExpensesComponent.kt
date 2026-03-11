@@ -38,7 +38,7 @@ internal class ExpensesComponent(
             id = 0,
             transactionId = transactionId,
             expenseType = null,
-            amount = DecimalData(0, DecimalFormat.Decimal2()),
+            amount = DecimalData(0, DecimalFormat.Decimal2),
             expenseDateTime = getTransactionDateTime(),
             comment = ""
         )
@@ -50,7 +50,7 @@ internal class ExpensesComponent(
             id = id,
             transactionId = transactionId,
             expenseType = expenseType,
-            amount = DecimalData(amount, DecimalFormat.Decimal2()),
+            amount = DecimalData(amount, DecimalFormat.Decimal2),
             expenseDateTime = expenseDateTime,
             comment = comment
         )

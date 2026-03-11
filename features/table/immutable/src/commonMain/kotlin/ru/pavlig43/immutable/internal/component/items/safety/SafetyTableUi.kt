@@ -8,8 +8,8 @@ data class SafetyTableUi(
     val productId: Int = 0,
     val productName: String = "",
     val vendorName: String = "",
-    val count: DecimalData = DecimalData(0, DecimalFormat.Decimal3()),
-    val reorderPoint: DecimalData = DecimalData(0, DecimalFormat.Decimal3()),
-    val orderQuantity: DecimalData = DecimalData(0, DecimalFormat.Decimal3()),
+    val count: DecimalData = DecimalData(0, DecimalFormat.Decimal3),
+    val reorderPoint: DecimalData = DecimalData(0, DecimalFormat.Decimal3),
+    val orderQuantity: DecimalData = DecimalData(0, DecimalFormat.Decimal3),
     override val composeId: Int = 0,
 ) : IMultiLineTableUi

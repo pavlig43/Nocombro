@@ -58,7 +58,7 @@ internal fun createIngredientColumns(
                 footerValue = { tableData ->
                     tableData.displayedItems
                         .filter { it.productType == ProductType.FOOD_PF || it.productType == ProductType.FOOD_BASE }
-                        .fold(DecimalData(0, DecimalFormat.Decimal3())) { acc, item ->
+                        .fold(DecimalData(0, DecimalFormat.Decimal3)) { acc, item ->
                             acc + item.balance
                         }
                 }

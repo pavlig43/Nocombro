@@ -18,5 +18,5 @@ data class IngredientUi(
     val productType: ProductType,
     val productName: String = "",
     val vendorName: String = "",
-    val balance: DecimalData = DecimalData(0, DecimalFormat.Decimal3()),
+    val balance: DecimalData = DecimalData(0, DecimalFormat.Decimal3),
 ) : IMultiLineTableUi

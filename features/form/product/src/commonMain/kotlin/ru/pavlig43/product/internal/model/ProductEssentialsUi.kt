@@ -20,7 +20,7 @@ internal data class ProductEssentialsUi(
 
     val comment: String = "",
 
-    val priceForSale: DecimalData = DecimalData(0, DecimalFormat.Decimal2()),
+    val priceForSale: DecimalData = DecimalData(0, DecimalFormat.Decimal2),
 
     val id: Int = 0,
 ) : ISingleLineTableUi
@@ -45,7 +45,7 @@ internal fun Product.toUi(): ProductEssentialsUi {
         productType = type,
         createdAt = createdAt,
         comment = comment,
-        priceForSale = DecimalData(priceForSale, DecimalFormat.Decimal2()),
+        priceForSale = DecimalData(priceForSale, DecimalFormat.Decimal2),
         id = id
     )
 }

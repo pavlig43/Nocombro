@@ -88,7 +88,7 @@ internal class CompositionComponent(
             productId = 0,
             productName = "",
             productType = null,
-            count = DecimalData(0, DecimalFormat.Decimal3())
+            count = DecimalData(0, DecimalFormat.Decimal3)
         )
     }
 
@@ -99,7 +99,7 @@ internal class CompositionComponent(
             productId = productId,
             productName = productName,
             productType = productType,
-            count = DecimalData(count, DecimalFormat.Decimal3())
+            count = DecimalData(count, DecimalFormat.Decimal3)
         )
     }
 

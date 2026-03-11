@@ -37,8 +37,8 @@ private fun SafetyTableItem.toUi(): SafetyTableUi {
         productId = productId,
         productName = productName,
         vendorName = vendorName,
-        count = DecimalData(count, DecimalFormat.Decimal3()),
-        reorderPoint = DecimalData(reorderPoint, DecimalFormat.Decimal3()),
-        orderQuantity = DecimalData(orderQuantity, DecimalFormat.Decimal3())
+        count = DecimalData(count, DecimalFormat.Decimal3),
+        reorderPoint = DecimalData(reorderPoint, DecimalFormat.Decimal3),
+        orderQuantity = DecimalData(orderQuantity, DecimalFormat.Decimal3)
     )
 }

@@ -36,8 +36,8 @@ private val safetyStockComponentFactory = SingleLineComponentFactory<SafetyStock
     initItem = SafetyStockUi(
         id = 0,
         productId = 0,
-        reorderPoint = DecimalData(0, DecimalFormat.Decimal3()),
-        orderQuantity = DecimalData(0, DecimalFormat.Decimal3())
+        reorderPoint = DecimalData(0, DecimalFormat.Decimal3),
+        orderQuantity = DecimalData(0, DecimalFormat.Decimal3)
     ),
     errorFactory = { safety ->
         buildList {

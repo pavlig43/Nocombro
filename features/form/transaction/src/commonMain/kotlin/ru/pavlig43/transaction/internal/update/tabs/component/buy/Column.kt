@@ -64,7 +64,7 @@ internal fun createBuyColumn(
                 headerText = "Количество",
                 updateItem = { item, count -> onEvent(MutableUiEvent.UpdateItem(item.copy(count = count))) },
                 footerValue = { tableData ->
-                    tableData.displayedItems.fold(DecimalData(0, DecimalFormat.Decimal3())) { acc, item ->
+                    tableData.displayedItems.fold(DecimalData(0, DecimalFormat.Decimal3)) { acc, item ->
                         acc + item.count
                     }
                 }
@@ -82,7 +82,7 @@ internal fun createBuyColumn(
                 getValue = { it.sum },
                 headerText = "Сумма",
                 footerValue = { tableData ->
-                    tableData.displayedItems.fold(DecimalData(0, DecimalFormat.Decimal2())) { acc, item ->
+                    tableData.displayedItems.fold(DecimalData(0, DecimalFormat.Decimal2)) { acc, item ->
                         acc + item.sum
                     }
                 }

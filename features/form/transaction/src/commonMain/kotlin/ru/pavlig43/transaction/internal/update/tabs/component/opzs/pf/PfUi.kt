@@ -15,7 +15,7 @@ data class PfUi(
     val declarationId: Int = 0,
     val declarationName: String = "",
     val vendorName: String = "",
-    val count: DecimalData = DecimalData(0, DecimalFormat.Decimal3()),
+    val count: DecimalData = DecimalData(0, DecimalFormat.Decimal3),
 ) : ISingleLineTableUi
 
 internal fun PfUi.toDto(getDateBorn:()-> LocalDate): PfBD = PfBD(
@@ -40,6 +40,6 @@ internal fun PfBD.toUi(transactionId: Int): PfUi = PfUi(
     declarationId = declarationId,
     declarationName = declarationName,
     vendorName = vendorName,
-    count = DecimalData(count, DecimalFormat.Decimal3()),
+    count = DecimalData(count, DecimalFormat.Decimal3),
 )
 
