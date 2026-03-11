@@ -5,7 +5,32 @@ import kotlin.math.pow
 data class DecimalData(
     val value: Int,
     val format: DecimalFormat
-)
+) : Comparable<DecimalData> {
+    override fun compareTo(other: DecimalData): Int {
+        require(format == other.format) {
+            "Cannot compare DecimalData with different formats: $format vs ${other.format}"
+        }
+        return value.compareTo(other.value)
+    }
+
+    operator fun plus(other: DecimalData): DecimalData {
+        require(format == other.format) {
+            "Cannot add DecimalData with different formats: $format vs ${other.format}"
+        }
+        return copy(value = value + other.value)
+    }
+
+    operator fun minus(other: DecimalData): DecimalData {
+        require(format == other.format) {
+            "Cannot subtract DecimalData with different formats: $format vs ${other.format}"
+        }
+        return copy(value = value - other.value)
+    }
+
+    operator fun times(multiplier: Int): DecimalData = copy(value = value * multiplier)
+
+    operator fun times(other: DecimalData): DecimalData = copy(value = value * other.value)
+}
 @Suppress("MagicNumber")
 fun DecimalData.toStartDoubleFormat(): String {
     return (value / (10.0.pow(format.countDecimal))).toString()
@@ -27,9 +52,3 @@ sealed interface DecimalFormat {
     }
 }
 
-@Suppress("MagicNumber")
-fun Int.toStartDoubleFormat(decimalFormat: DecimalFormat): String {
-    return (this / (10.0.pow(decimalFormat.countDecimal))).toString()
-        .dropLastWhile { it == '0' }
-        .run { if (last() == '.') dropLast(1) else this }
-}
