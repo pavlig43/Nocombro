@@ -28,8 +28,6 @@ data class DecimalData(
     }
 
     operator fun times(multiplier: Int): DecimalData = copy(value = value * multiplier)
-
-    operator fun times(other: DecimalData): DecimalData = copy(value = value * other.value)
 }
 @Suppress("MagicNumber")
 fun DecimalData.toStartDoubleFormat(): String {
