@@ -1,9 +1,7 @@
 package ru.pavlig43.database
 
-import androidx.room.ConstructedBy
 import androidx.room.Database
 import androidx.room.RoomDatabase
-import androidx.room.RoomDatabaseConstructor
 import androidx.room.TypeConverters
 import androidx.room.immediateTransaction
 import androidx.room.useWriterConnection
@@ -81,7 +79,6 @@ import ru.pavlig43.database.data.vendor.dao.VendorDao
 
 )
 @TypeConverters(Converters::class)
-@ConstructedBy(NocombroDatabaseConstructor::class)
 abstract class NocombroDatabase : RoomDatabase() {
 
     abstract val fileDao: FileDao
@@ -113,21 +110,7 @@ abstract class NocombroDatabase : RoomDatabase() {
 }
 
 
-@Suppress("NO_ACTUAL_FOR_EXPECT", "EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
-expect object NocombroDatabaseConstructor : RoomDatabaseConstructor<NocombroDatabase> {
-    override fun initialize(): NocombroDatabase
-}
 
-fun getNocombroDatabase(builder: RoomDatabase.Builder<NocombroDatabase>): NocombroDatabase {
-    val database = builder
-        .setDriver(BundledSQLiteDriver())
-        .setQueryCoroutineContext(Dispatchers.IO)
-        .build()
-    CoroutineScope(Dispatchers.IO).launch {
-        seedDatabase(database)
-    }
-    return database
-}
 
 
 
