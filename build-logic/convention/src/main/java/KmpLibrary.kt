@@ -21,6 +21,20 @@ class KmpLibrary : Plugin<Project> {
 
             kotlinMultiplatformConfig {
                 jvm("desktop")
+//                extensions.findByType(
+//                    KotlinMultiplatformAndroidLibraryTarget::class.java
+//                )?.apply {
+//                    namespace = "ru.pavlig43${project.path.replace(":", ".")}"
+//                    androidResources.enable = true
+//
+//
+//                    compileSdk = libs.versions.android.compileSdk.get().toInt()
+//                    minSdk = libs.versions.android.minSdk.get().toInt()
+//                    lint {
+//                        checkDependencies = true
+//                    }
+//                }
+
             }
 
         }
