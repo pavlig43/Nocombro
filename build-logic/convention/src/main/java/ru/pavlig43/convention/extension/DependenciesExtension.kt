@@ -19,7 +19,8 @@ fun Project.commonTestDependencies(block: KotlinDependencyHandler.() -> Unit) {
 
 fun Project.androidMainDependencies(block: KotlinDependencyHandler.() -> Unit) {
     kotlinMultiplatformConfig {
-        sourceSets.androidMain.dependencies(block)
+        // Android target may not exist in desktop-only modules
+        sourceSets.findByName("androidMain")?.dependencies(block)
     }
 }
 

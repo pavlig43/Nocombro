@@ -10,8 +10,8 @@ class KmpLibrary : Plugin<Project> {
     override fun apply(target: Project) {
         with(target) {
             apply(plugin = libs.plugins.kotlinMultiplatform.get().pluginId)
-             apply(plugin = libs.plugins.android.kotlin.multiplatform.library.get().pluginId)  // Experiment: remove Android plugin
-            apply (plugin = libs.plugins.dokka.get().pluginId)
+//             apply(plugin = libs.plugins.android.kotlin.multiplatform.library.get().pluginId)  // Experiment: remove Android plugin
+            apply(plugin = libs.plugins.dokka.get().pluginId)
 
 
             commonMainDependencies {
