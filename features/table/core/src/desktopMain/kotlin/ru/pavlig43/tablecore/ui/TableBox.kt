@@ -84,9 +84,3 @@ fun <I : IMultiLineTableUi, C, E : TableData<I>> TableBox(
 
 }
 
-@Composable
-expect fun BoxScope.ScrollBar(
-    verticalState: LazyListState,
-    horizontalState: ScrollState
-)
-
