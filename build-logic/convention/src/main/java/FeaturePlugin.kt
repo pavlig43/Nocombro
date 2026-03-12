@@ -1,7 +1,7 @@
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.apply
-import ru.pavlig43.convention.extension.commonMainDependencies
+import ru.pavlig43.convention.extension.desktopDependencies
 import ru.pavlig43.convention.extension.libs
 
 class FeaturePlugin:Plugin<Project> {
@@ -14,7 +14,7 @@ class FeaturePlugin:Plugin<Project> {
             apply(plugin = libs.plugins.pavlig43.compose.get().pluginId)
             apply(plugin = libs.plugins.pavlig43.decompose.get().pluginId)
 
-            commonMainDependencies {
+            desktopDependencies {
                 implementation(project(":core"))
                 implementation(project(":corekoin"))
                 implementation(project(":theme"))

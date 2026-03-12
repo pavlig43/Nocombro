@@ -1,9 +1,9 @@
-import ru.pavlig43.convention.extension.commonMainDependencies
+import ru.pavlig43.convention.extension.desktopDependencies
 
 plugins {
 
     alias(libs.plugins.pavlig43.kmplibrary)
-    
+
     alias(libs.plugins.pavlig43.koin)
     alias(libs.plugins.pavlig43.coroutines)
 
@@ -13,7 +13,7 @@ plugins {
 
 
 kotlin{
-    commonMainDependencies {
+    desktopDependencies {
         implementation(libs.datastore)
         implementation(libs.datastore.preferences)
         implementation(projects.core)
