@@ -25,64 +25,16 @@ UseCase: GenerateSalesReportUseCase, CalculateOpzsCostUseCase
   ↓
 Repository: CostCalculationRepository
   ↓
-DAO: TransactionDao, BuyDao, ExpenseDao, IngredientDao, BatchMovementDao
+DAO: CostCalculationDao (НОВЫЙ)
 ```
 
 ---
 
-## Этап 1: Расширения DAO
+## Этап 1: Создание CostCalculationDao
 
-### Файл: `database/src/commonMain/kotlin/ru/pavlig43/database/data/transact/dao/TransactionDao.kt`
+**Файл:** `database/src/desktopMain/kotlin/ru/pavlig43/database/data/costcalculation/dao/CostCalculationDao.kt`
 
-Добавить запрос:
-```kotlin
-@Query("""
-    SELECT * FROM transact
-    WHERE transaction_type = :type
-    AND created_at BETWEEN :start AND :end
-    ORDER BY created_at DESC
-""")
-suspend fun getTransactionsByTypeAndPeriod(
-    type: TransactionType,
-    start: LocalDateTime,
-    end: LocalDateTime
-): List<Transact>
-```
-
-### Файл: `database/src/commonMain/kotlin/ru/pavlig43/database/data/transact/buy/dao/BuyDao.kt`
-
-Добавить запрос:
-```kotlin
-@Query("""
-    SELECT b.price FROM buy_bd b
-    INNER JOIN batch_movement bm ON b.movement_id = bm.id
-    WHERE bm.batch_id = :batchId
-    LIMIT 1
-""")
-suspend fun getPriceByBatchId(batchId: Int): Int
-```
-
-### Файл: `database/src/commonMain/kotlin/ru/pavlig43/database/data/batch/dao/BatchMovementDao.kt`
-
-Добавить запросы:
-```kotlin
-@Query("""
-    SELECT * FROM batch_movement
-    WHERE transaction_id = :transactionId
-    AND movement_type = 'INCOMING'
-    LIMIT 1
-""")
-suspend fun getIncomingMovement(transactionId: Int): BatchMovement?
-
-@Query("""
-    SELECT t.id FROM transact t
-    INNER JOIN batch_movement bm ON t.id = bm.transaction_id
-    WHERE bm.batch_id = :batchId
-    AND t.transaction_type = 'OPZS'
-    LIMIT 1
-""")
-suspend fun getOpzsTransactionForBatch(batchId: Int): Int
-```
+Создать новый DAO для расчёта себестоимости.
 
 ---
 
