@@ -1,4 +1,5 @@
 import ru.pavlig43.convention.extension.commonMainDependencies
+import ru.pavlig43.convention.extension.desktopDependencies
 
 plugins {
     alias(libs.plugins.pavlig43.feature)
@@ -7,7 +8,7 @@ plugins {
 }
 
 kotlin {
-    commonMainDependencies {
+    desktopDependencies {
         implementation(projects.features.sign.root)
         implementation(projects.features.notification)
         implementation(projects.features.sampletable)
@@ -24,6 +25,5 @@ kotlin {
         implementation(projects.features.form.declaration)
         implementation(projects.features.form.transaction)
         implementation(projects.features.storage)
-
     }
 }

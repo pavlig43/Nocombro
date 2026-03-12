@@ -20,9 +20,9 @@ kotlin{
         implementation(libs.kermit)
         implementation(projects.rootnocombro)
         implementation(compose.desktop.currentOs)
-
     }
 }
+
 extensions.getByType<ComposeExtension>().extensions.configure<DesktopExtension> {
     application {
         this.mainClass = "ru.pavlig43.nocombro.MainKt"

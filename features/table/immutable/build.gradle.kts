@@ -1,4 +1,4 @@
-import ru.pavlig43.convention.extension.commonMainDependencies
+import ru.pavlig43.convention.extension.desktopDependencies
 
 plugins {
   alias(libs.plugins.pavlig43.feature)
@@ -7,7 +7,7 @@ plugins {
 
 
 kotlin{
-    commonMainDependencies {
+    desktopDependencies {
         implementation(projects.database)
         api(projects.features.table.core)
         api(projects.datetime)

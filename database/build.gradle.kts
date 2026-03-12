@@ -1,4 +1,4 @@
-import ru.pavlig43.convention.extension.commonMainDependencies
+import ru.pavlig43.convention.extension.desktopDependencies
 
 plugins {
 
@@ -18,9 +18,11 @@ plugins {
 
 
 kotlin{
-    commonMainDependencies {
+    desktopDependencies {
         implementation(projects.core)
         implementation(projects.datetime)
+        api(libs.androidx.room.runtime)
+        api(libs.androidx.sqlite.bundled)
     }
 
 }
