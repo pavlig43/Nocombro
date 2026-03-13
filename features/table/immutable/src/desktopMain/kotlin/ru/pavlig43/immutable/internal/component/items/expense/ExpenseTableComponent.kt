@@ -1,0 +1,43 @@
+package ru.pavlig43.immutable.internal.component.items.expense
+
+import com.arkivanov.decompose.ComponentContext
+import kotlinx.collections.immutable.ImmutableList
+import ru.pavlig43.core.model.DecimalData
+import ru.pavlig43.core.model.DecimalFormat
+import ru.pavlig43.database.data.expense.ExpenseWithTransaction
+import ru.pavlig43.immutable.api.component.ExpenseImmutableTableBuilder
+import ru.pavlig43.immutable.internal.component.ImmutableTableComponent
+import ru.pavlig43.immutable.internal.data.ImmutableListRepository
+import ru.pavlig43.tablecore.model.TableData
+import ua.wwind.table.ColumnSpec
+
+internal class ExpenseTableComponent(
+    componentContext: ComponentContext,
+    tableBuilder: ExpenseImmutableTableBuilder,
+    onCreate: () -> Unit,
+    onItemClick: (ExpenseTableUi) -> Unit,
+    repository: ImmutableListRepository<ExpenseWithTransaction>,
+) : ImmutableTableComponent<ExpenseWithTransaction, ExpenseTableUi, ExpenseField>(
+    componentContext = componentContext,
+    tableBuilder = tableBuilder,
+    onCreate = onCreate,
+    onItemClick = onItemClick,
+    mapper = ExpenseWithTransaction::toUi,
+    filterMatcher = ExpenseFilterMatcher,
+    sortMatcher = ExpenseSorter,
+    repository = repository,
+) {
+    override val columns: ImmutableList<ColumnSpec<ExpenseTableUi, ExpenseField, TableData<ExpenseTableUi>>> =
+        createExpenseColumn(::onEvent)
+}
+
+private fun ExpenseWithTransaction.toUi(): ExpenseTableUi {
+    return ExpenseTableUi(
+        composeId = expense.id,
+        expenseType = expense.expenseType,
+        amount = DecimalData(expense.amount, DecimalFormat.Decimal2),
+        expenseDateTime = expense.expenseDateTime,
+        comment = expense.comment,
+        transactionType = transaction?.transactionType
+    )
+}

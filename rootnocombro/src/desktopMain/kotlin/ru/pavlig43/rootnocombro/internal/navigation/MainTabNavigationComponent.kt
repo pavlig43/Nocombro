@@ -13,6 +13,7 @@ import ru.pavlig43.declaration.api.DeclarationFormComponent
 import ru.pavlig43.document.api.component.DocumentFormComponent
 import ru.pavlig43.immutable.api.component.DeclarationImmutableTableBuilder
 import ru.pavlig43.immutable.api.component.DocumentImmutableTableBuilder
+import ru.pavlig43.immutable.api.component.ExpenseImmutableTableBuilder
 import ru.pavlig43.immutable.api.component.ImmutableTableBuilderData
 import ru.pavlig43.immutable.api.component.ImmutableTableComponentFactoryMain
 import ru.pavlig43.immutable.api.component.ProductImmutableTableBuilder
@@ -40,6 +41,7 @@ import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemFormConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemFormConfig.VendorFormConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig.DeclarationListConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig.DocumentListConfig
+import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig.ExpenseListConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig.ProductListConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig.SafetyListConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig.TransactionListConfig
@@ -85,6 +87,7 @@ internal class MainTabNavigationComponent(
             DrawerDestination.VendorList -> VendorListConfig()
             DrawerDestination.DeclarationList -> DeclarationListConfig()
             DrawerDestination.ProductTransactionList -> TransactionListConfig()
+            DrawerDestination.ExpenseList -> ExpenseListConfig()
             DrawerDestination.Safety -> SafetyListConfig()
             DrawerDestination.SampleTable -> MainTabConfig.SampleTableConfig()
             DrawerDestination.Storage -> MainTabConfig.StorageConfig()
@@ -216,7 +219,24 @@ internal class MainTabNavigationComponent(
                 withCheckbox = true
             )
 
+            is ExpenseListConfig -> ExpenseImmutableTableBuilder(
+                withCheckbox = true
+            )
+
             is SafetyListConfig -> SafetyImmutableTableBuilder()
+        }
+
+        // Для расходов форма не создана - отключаем создание и редактирование
+        if (tabConfig is ExpenseListConfig) {
+            return ImmutableTableChild(
+                ImmutableTableComponentFactoryMain(
+                    componentContext = context,
+                    dependencies = scope.get(),
+                    onCreate = {},
+                    onItemClick = {},
+                    immutableTableBuilderData = immutableTableBuilderData
+                )
+            )
         }
 
         fun formConfig(id: Int) = when (tabConfig) {
@@ -226,8 +246,8 @@ internal class MainTabNavigationComponent(
             is ProductListConfig -> ProductFormConfig(id)
             is VendorListConfig -> VendorFormConfig(id)
             is TransactionListConfig -> TransactionFormConfig(id)
+            else -> ProductFormConfig(id)
         }
-
 
         return ImmutableTableChild(
             ImmutableTableComponentFactoryMain(

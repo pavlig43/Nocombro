@@ -4,9 +4,11 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import kotlinx.coroutines.flow.Flow
 import ru.pavlig43.database.data.expense.EXPENSE_TABLE_NAME
 import ru.pavlig43.database.data.expense.ExpenseBD
+import ru.pavlig43.database.data.expense.ExpenseWithTransaction
 
 @Dao
 interface ExpenseDao {
@@ -36,5 +38,12 @@ interface ExpenseDao {
      */
     @Query("SELECT * FROM $EXPENSE_TABLE_NAME ORDER BY expense_date_time DESC")
     suspend fun getAll(): List<ExpenseBD>
+
+    /**
+     * Получить все расходы с транзакциями (включая непривязанные)
+     */
+    @Transaction
+    @Query("SELECT * FROM $EXPENSE_TABLE_NAME ORDER BY expense_date_time DESC")
+    fun observeAllWithTransaction(): Flow<List<ExpenseWithTransaction>>
 
 }

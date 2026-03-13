@@ -12,6 +12,7 @@ import ru.pavlig43.corekoin.ComponentKoinContext
 import ru.pavlig43.database.data.batch.BatchWithBalanceOut
 import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.database.data.document.Document
+import ru.pavlig43.database.data.expense.ExpenseWithTransaction
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductDeclarationOut
 import ru.pavlig43.database.data.safety.SafetyTableItem
@@ -22,6 +23,7 @@ import ru.pavlig43.immutable.internal.component.ImmutableTableComponent
 import ru.pavlig43.immutable.internal.component.items.batch.BatchTableComponent
 import ru.pavlig43.immutable.internal.component.items.declaration.DeclarationTableComponent
 import ru.pavlig43.immutable.internal.component.items.document.DocumentTableComponent
+import ru.pavlig43.immutable.internal.component.items.expense.ExpenseTableComponent
 import ru.pavlig43.immutable.internal.component.items.product.ProductTableComponent
 import ru.pavlig43.immutable.internal.component.items.productDeclaration.ProductDeclarationTableComponent
 import ru.pavlig43.immutable.internal.component.items.safety.SafetyTableComponent
@@ -129,6 +131,16 @@ class ImmutableTableComponentFactoryMain(
                 onItemClick = onItemClick,
                 repository = scope.get<ImmutableListRepository<SafetyTableItem>>(
                     ImmutableTableRepositoryType.SAFETY.qualifier
+                ),
+            )
+
+            is ExpenseImmutableTableBuilder -> ExpenseTableComponent(
+                componentContext = context,
+                tableBuilder = immutableTableBuilderData,
+                onCreate = onCreate,
+                onItemClick = onItemClick as (ru.pavlig43.immutable.internal.component.items.expense.ExpenseTableUi) -> Unit,
+                repository = scope.get<ImmutableListRepository<ExpenseWithTransaction>>(
+                    ImmutableTableRepositoryType.EXPENSE.qualifier
                 ),
             )
 
