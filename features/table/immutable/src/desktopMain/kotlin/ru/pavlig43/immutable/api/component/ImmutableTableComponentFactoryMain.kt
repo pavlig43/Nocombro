@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import org.koin.core.qualifier.qualifier
 import ru.pavlig43.core.MainTabComponent
+import ru.pavlig43.core.tabs.TabOpener
 import ru.pavlig43.corekoin.ComponentKoinContext
 import ru.pavlig43.database.data.batch.BatchWithBalanceOut
 import ru.pavlig43.database.data.declaration.Declaration
@@ -38,7 +39,7 @@ class ImmutableTableComponentFactoryMain(
     componentContext: ComponentContext,
     dependencies: ImmutableTableDependencies,
     private val immutableTableBuilderData: ImmutableTableBuilderData<out IMultiLineTableUi>,
-    private val onCreate: () -> Unit,
+    private val tabOpener: TabOpener,
     private val onItemClick: (IMultiLineTableUi) -> Unit,
 ) : ComponentContext by componentContext, MainTabComponent {
     private val koinComponent = instanceKeeper.getOrCreate { ComponentKoinContext() }
@@ -60,8 +61,8 @@ class ImmutableTableComponentFactoryMain(
             is DocumentImmutableTableBuilder -> DocumentTableComponent(
                 componentContext = context,
                 tableBuilder = immutableTableBuilderData,
-                onCreate = onCreate,
                 onItemClick = onItemClick,
+                tabOpener = tabOpener,
                 repository = scope.get<ImmutableListRepository<Document>>(
                     ImmutableTableRepositoryType.DOCUMENT.qualifier
                 ),
@@ -70,8 +71,8 @@ class ImmutableTableComponentFactoryMain(
             is DeclarationImmutableTableBuilder -> DeclarationTableComponent(
                 componentContext = context,
                 tableBuilder = immutableTableBuilderData,
-                onCreate = onCreate,
                 onItemClick = onItemClick,
+                tabOpener = tabOpener,
                 repository = scope.get<ImmutableListRepository<Declaration>>(
                     ImmutableTableRepositoryType.DECLARATION.qualifier
                 ),
@@ -79,7 +80,7 @@ class ImmutableTableComponentFactoryMain(
             is ProductImmutableTableBuilder -> ProductTableComponent(
                 componentContext = context,
                 tableBuilder = immutableTableBuilderData,
-                onCreate = onCreate,
+                tabOpener = tabOpener,
                 onItemClick = onItemClick,
                 repository = scope.get<ImmutableListRepository<Product>>(
                     ImmutableTableRepositoryType.PRODUCT.qualifier
@@ -88,7 +89,7 @@ class ImmutableTableComponentFactoryMain(
             is TransactionImmutableTableBuilder -> TransactionTableComponent(
                 componentContext = context,
                 tableBuilder = immutableTableBuilderData,
-                onCreate = onCreate,
+                tabOpener = tabOpener,
                 onItemClick = onItemClick,
                 repository = scope.get<ImmutableListRepository<Transact>>(
                     ImmutableTableRepositoryType.TRANSACTION.qualifier
@@ -97,7 +98,7 @@ class ImmutableTableComponentFactoryMain(
             is VendorImmutableTableBuilder -> VendorTableComponent(
                 componentContext = context,
                 tableBuilder = immutableTableBuilderData,
-                onCreate = onCreate,
+                tabOpener = tabOpener,
                 onItemClick = onItemClick,
                 repository = scope.get<ImmutableListRepository<Vendor>>(
                     ImmutableTableRepositoryType.VENDOR.qualifier
@@ -107,7 +108,7 @@ class ImmutableTableComponentFactoryMain(
             is ProductDeclarationImmutableTableBuilder -> ProductDeclarationTableComponent(
                 componentContext = context,
                 tableBuilder = immutableTableBuilderData,
-                onCreate = onCreate,
+                tabOpener = tabOpener,
                 onItemClick = onItemClick,
                 repository = scope.get<ImmutableListRepository<ProductDeclarationOut>>(
                     ImmutableTableRepositoryType.PRODUCT_DECLARATION.qualifier
@@ -117,7 +118,7 @@ class ImmutableTableComponentFactoryMain(
             is BatchImmutableTableBuilder -> BatchTableComponent(
                 componentContext = context,
                 tableBuilder = immutableTableBuilderData,
-                onCreate = onCreate,
+                tabOpener = tabOpener,
                 onItemClick = onItemClick,
                 repository = scope.get<ImmutableListRepository<BatchWithBalanceOut>>(
                     ImmutableTableRepositoryType.BATCH.qualifier
@@ -127,7 +128,7 @@ class ImmutableTableComponentFactoryMain(
             is SafetyImmutableTableBuilder -> SafetyTableComponent(
                 componentContext = context,
                 tableBuilder = immutableTableBuilderData,
-                onCreate = onCreate,
+                tabOpener = tabOpener,
                 onItemClick = onItemClick,
                 repository = scope.get<ImmutableListRepository<SafetyTableItem>>(
                     ImmutableTableRepositoryType.SAFETY.qualifier
@@ -137,7 +138,7 @@ class ImmutableTableComponentFactoryMain(
             is ExpenseImmutableTableBuilder -> ExpenseTableComponent(
                 componentContext = context,
                 tableBuilder = immutableTableBuilderData,
-                onCreate = onCreate,
+                tabOpener = tabOpener,
                 onItemClick = onItemClick as (ru.pavlig43.immutable.internal.component.items.expense.ExpenseTableUi) -> Unit,
                 repository = scope.get<ImmutableListRepository<MainExpenseBD>>(
                     ImmutableTableRepositoryType.EXPENSE.qualifier

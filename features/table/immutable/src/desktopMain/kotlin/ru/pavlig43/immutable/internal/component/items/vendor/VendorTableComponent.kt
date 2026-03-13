@@ -2,6 +2,7 @@ package ru.pavlig43.immutable.internal.component.items.vendor
 
 import com.arkivanov.decompose.ComponentContext
 import kotlinx.collections.immutable.ImmutableList
+import ru.pavlig43.core.tabs.TabOpener
 import ru.pavlig43.database.data.vendor.Vendor
 import ru.pavlig43.immutable.api.component.VendorImmutableTableBuilder
 import ru.pavlig43.immutable.internal.component.ImmutableTableComponent
@@ -13,13 +14,13 @@ import ua.wwind.table.ColumnSpec
 internal class VendorTableComponent(
     componentContext: ComponentContext,
     tableBuilder: VendorImmutableTableBuilder,
-    onCreate: () -> Unit,
+    tabOpener: TabOpener,
     onItemClick: (VendorTableUi) -> Unit,
     repository: ImmutableListRepository<Vendor>,
 ) : ImmutableTableComponent<Vendor, VendorTableUi, VendorField>(
     componentContext = componentContext,
     tableBuilder = tableBuilder,
-    onCreate = onCreate,
+    onCreate = { tabOpener.openVendorTab(0) },
     onItemClick = onItemClick,
     mapper = { this.toUi() },
     filterMatcher = VendorFilterMatcher,
