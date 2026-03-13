@@ -8,10 +8,10 @@ import ru.pavlig43.database.data.transact.TransactionType
 import ru.pavlig43.tablecore.model.IMultiLineTableUi
 
 data class ExpenseTableUi(
-    val expenseType: ExpenseType = ExpenseType.STATIONERY,
-    val amount: DecimalData = DecimalData(0, DecimalFormat.Decimal2),
-    val expenseDateTime: LocalDateTime = LocalDateTime(2024, 1, 1, 0, 0),
-    val comment: String = "",
-    val transactionType: TransactionType? = null,
-    override val composeId: Int = 0,
+    val expenseType: ExpenseType,
+    val amount: DecimalData,
+    val expenseDateTime: LocalDateTime ,
+    val comment: String ,
+    val transactionType: TransactionType?,
+    override val composeId: Int,
 ) : IMultiLineTableUi

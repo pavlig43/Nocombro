@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.serialization.Serializable
 import ru.pavlig43.core.MainTabComponent
 import ru.pavlig43.core.componentCoroutineScope
+import ru.pavlig43.core.tabs.TabOpener
 import ru.pavlig43.corekoin.ComponentKoinContext
 import ru.pavlig43.database.data.storage.StorageProduct
 import ru.pavlig43.datetime.period.dateTime.DTPeriod
@@ -31,7 +32,8 @@ import ua.wwind.table.filter.data.TableFilterState
 
 class StorageComponent(
     componentContext: ComponentContext,
-    dependencies: StorageDependencies
+    dependencies: StorageDependencies,
+    private val tabOpener: TabOpener,
 
 ) : ComponentContext by componentContext, MainTabComponent {
 
@@ -40,7 +42,6 @@ class StorageComponent(
         createStorageModule(dependencies)
     )
     private val storageRepository: StorageRepository = scope.get()
-    private val tabOpener = dependencies.tabOpener
 
     private val _model = MutableStateFlow(MainTabComponent.NavTabState("Склад"))
     override val model = _model.asStateFlow()

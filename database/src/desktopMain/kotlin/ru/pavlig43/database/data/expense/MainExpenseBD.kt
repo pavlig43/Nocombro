@@ -4,7 +4,7 @@ import androidx.room.Embedded
 import androidx.room.Relation
 import ru.pavlig43.database.data.transact.Transact
 
-data class ExpenseWithTransaction(
+data class MainExpenseBD(
     @Embedded
     val expense: ExpenseBD,
 

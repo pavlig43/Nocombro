@@ -12,7 +12,7 @@ import ru.pavlig43.corekoin.ComponentKoinContext
 import ru.pavlig43.database.data.batch.BatchWithBalanceOut
 import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.database.data.document.Document
-import ru.pavlig43.database.data.expense.ExpenseWithTransaction
+import ru.pavlig43.database.data.expense.MainExpenseBD
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductDeclarationOut
 import ru.pavlig43.database.data.safety.SafetyTableItem
@@ -139,7 +139,7 @@ class ImmutableTableComponentFactoryMain(
                 tableBuilder = immutableTableBuilderData,
                 onCreate = onCreate,
                 onItemClick = onItemClick as (ru.pavlig43.immutable.internal.component.items.expense.ExpenseTableUi) -> Unit,
-                repository = scope.get<ImmutableListRepository<ExpenseWithTransaction>>(
+                repository = scope.get<ImmutableListRepository<MainExpenseBD>>(
                     ImmutableTableRepositoryType.EXPENSE.qualifier
                 ),
             )

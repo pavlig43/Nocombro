@@ -5,5 +5,4 @@ import ru.pavlig43.database.NocombroDatabase
 
 class StorageDependencies(
     val db: NocombroDatabase,
-    val tabOpener: TabOpener
 )

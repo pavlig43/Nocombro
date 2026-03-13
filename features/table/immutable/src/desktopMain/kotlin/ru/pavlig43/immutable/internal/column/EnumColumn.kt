@@ -13,7 +13,7 @@ import ua.wwind.table.filter.data.TableFilterType
 fun <T : Any, C, E, ENUM : Enum<ENUM>> ReadonlyTableColumnsBuilder<T, C, E>.readEnumColumn(
     headerText: String,
     column: C,
-    valueOf: (T) -> ENUM,
+    valueOf: (T) -> ENUM?,
     filterType: TableFilterType.EnumTableFilter<ENUM>? = null,
     getTitle: (ENUM) -> String = { it.toString() },
     isSortable: Boolean = true
@@ -26,19 +26,20 @@ fun <T : Any, C, E, ENUM : Enum<ENUM>> ReadonlyTableColumnsBuilder<T, C, E>.read
             filter(it)
         }
         readEnumCell(valueOf = valueOf, getTitle = getTitle)
-        if (isSortable){
+        if (isSortable) {
             sortable()
         }
     }
 }
 
 private fun <T : Any, C, E, ENUM : Enum<ENUM>> ReadonlyColumnBuilder<T, C, E>.readEnumCell(
-    valueOf: (T) -> ENUM,
+    valueOf: (T) -> ENUM?,
     getTitle: (ENUM) -> String
 ) {
     cell { item, _ ->
+
         Text(
-            text = getTitle(valueOf(item)),
+            text = valueOf(item)?.let { getTitle(it) } ?: "",
             modifier = Modifier.padding(horizontal = 12.dp)
         )
     }

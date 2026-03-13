@@ -18,7 +18,7 @@ internal object ExpenseSorter : SortMatcher<ExpenseTableUi, ExpenseField> {
             ExpenseField.AMOUNT -> items.sortedBy { it.amount.value }
             ExpenseField.EXPENSE_DATE_TIME -> items.sortedBy { it.expenseDateTime }
             ExpenseField.COMMENT -> items.sortedBy { it.comment }
-            ExpenseField.TRANSACTION_TYPE -> items.sortedBy { it.transactionType?.ordinal ?: Int.MAX_VALUE }
+            ExpenseField.TRANSACTION_TYPE -> items.sortedBy { it.transactionType }
             else -> items
         }
 

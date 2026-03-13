@@ -4,7 +4,7 @@ import com.arkivanov.decompose.ComponentContext
 import kotlinx.collections.immutable.ImmutableList
 import ru.pavlig43.core.model.DecimalData
 import ru.pavlig43.core.model.DecimalFormat
-import ru.pavlig43.database.data.expense.ExpenseWithTransaction
+import ru.pavlig43.database.data.expense.MainExpenseBD
 import ru.pavlig43.immutable.api.component.ExpenseImmutableTableBuilder
 import ru.pavlig43.immutable.internal.component.ImmutableTableComponent
 import ru.pavlig43.immutable.internal.data.ImmutableListRepository
@@ -16,13 +16,13 @@ internal class ExpenseTableComponent(
     tableBuilder: ExpenseImmutableTableBuilder,
     onCreate: () -> Unit,
     onItemClick: (ExpenseTableUi) -> Unit,
-    repository: ImmutableListRepository<ExpenseWithTransaction>,
-) : ImmutableTableComponent<ExpenseWithTransaction, ExpenseTableUi, ExpenseField>(
+    repository: ImmutableListRepository<MainExpenseBD>,
+) : ImmutableTableComponent<MainExpenseBD, ExpenseTableUi, ExpenseField>(
     componentContext = componentContext,
     tableBuilder = tableBuilder,
     onCreate = onCreate,
     onItemClick = onItemClick,
-    mapper = ExpenseWithTransaction::toUi,
+    mapper = MainExpenseBD::toUi,
     filterMatcher = ExpenseFilterMatcher,
     sortMatcher = ExpenseSorter,
     repository = repository,
@@ -31,7 +31,7 @@ internal class ExpenseTableComponent(
         createExpenseColumn(::onEvent)
 }
 
-private fun ExpenseWithTransaction.toUi(): ExpenseTableUi {
+private fun MainExpenseBD.toUi(): ExpenseTableUi {
     return ExpenseTableUi(
         composeId = expense.id,
         expenseType = expense.expenseType,

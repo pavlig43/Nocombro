@@ -17,6 +17,7 @@ import ru.pavlig43.core.MainTabComponent
 import ru.pavlig43.core.componentCoroutineScope
 import ru.pavlig43.core.model.DecimalData
 import ru.pavlig43.core.model.DecimalFormat
+import ru.pavlig43.core.tabs.TabOpener
 import ru.pavlig43.corekoin.ComponentKoinContext
 import ru.pavlig43.database.data.storage.BatchMovementWithBalanceInfoBD
 import ru.pavlig43.datetime.dateTimeFormat
@@ -30,6 +31,7 @@ class BatchMovementComponent(
     componentContext: ComponentContext,
     dependencies: StorageDependencies,
     private val batchId: Int,
+    private val tabOpener: TabOpener,
     productName: String,
     initStart: LocalDateTime,
     initEnd: LocalDateTime,
@@ -40,7 +42,6 @@ class BatchMovementComponent(
         createStorageModule(dependencies)
     )
     private val repository: StorageRepository = scope.get()
-    private val tabOpener = dependencies.tabOpener
 
     private val _model = MutableStateFlow(MainTabComponent.NavTabState("Движения: $productName"))
     override val model = _model.asStateFlow()

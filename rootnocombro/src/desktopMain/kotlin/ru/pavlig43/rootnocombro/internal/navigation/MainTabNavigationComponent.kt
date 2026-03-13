@@ -140,27 +140,21 @@ internal class MainTabNavigationComponent(
                     )
 
                     is MainTabConfig.StorageConfig -> {
-                        val storageDependencies = StorageDependencies(
-                            db = scope.get(),
-                            tabOpener = tabOpener
-                        )
                         StorageChild(
                             StorageComponent(
                                 componentContext = context,
-                                dependencies = storageDependencies,
+                                dependencies = scope.get(),
+                                tabOpener = tabOpener
                             )
                         )
                     }
 
                     is BatchMovementListConfig -> {
-                        val storageDependencies = StorageDependencies(
-                            db = scope.get(),
-                            tabOpener = tabOpener
-                        )
                         BatchMovementChild(
                             BatchMovementComponent(
                                 componentContext = context,
-                                dependencies = storageDependencies,
+                                dependencies = scope.get(),
+                                tabOpener = tabOpener,
                                 batchId = mainTabConfig.batchId,
                                 productName = mainTabConfig.productName,
                                 initStart = mainTabConfig.start,

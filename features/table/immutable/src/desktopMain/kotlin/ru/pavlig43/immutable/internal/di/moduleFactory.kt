@@ -9,7 +9,7 @@ import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.batch.BatchWithBalanceOut
 import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.database.data.document.Document
-import ru.pavlig43.database.data.expense.ExpenseWithTransaction
+import ru.pavlig43.database.data.expense.MainExpenseBD
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductDeclarationOut
 import ru.pavlig43.database.data.safety.SafetyTableItem
@@ -250,7 +250,7 @@ private class SafetyRepository(db: NocombroDatabase) :
  * Репозиторий для работы с расходами.
  */
 private class ExpenseRepository(db: NocombroDatabase) :
-    ImmutableListRepository<ExpenseWithTransaction> {
+    ImmutableListRepository<MainExpenseBD> {
     private val dao = db.expenseDao
 
     override suspend fun deleteByIds(ids: Set<Int>): Result<Unit> {
@@ -258,7 +258,7 @@ private class ExpenseRepository(db: NocombroDatabase) :
     }
 
     @Suppress("UNUSED_PARAMETER")
-    override fun observeOnItems(parentId: Int): Flow<Result<List<ExpenseWithTransaction>>> {
+    override fun observeOnItems(parentId: Int): Flow<Result<List<MainExpenseBD>>> {
         return dao.observeAllWithTransaction()
             .map { Result.success(it) }
             .catch { emit(Result.failure(it)) }
