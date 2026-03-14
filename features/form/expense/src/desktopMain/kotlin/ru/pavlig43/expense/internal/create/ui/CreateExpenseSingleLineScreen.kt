@@ -8,7 +8,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
-import ru.pavlig43.datetime.single.dateTime.DateTimePickerDialog
+import ru.pavlig43.datetime.single.datetime.DateTimePickerDialog
 import ru.pavlig43.expense.internal.create.component.CreateExpenseSingleLineComponent
 import ru.pavlig43.mutable.api.singleLine.ui.CreateSingleItemScreen
 

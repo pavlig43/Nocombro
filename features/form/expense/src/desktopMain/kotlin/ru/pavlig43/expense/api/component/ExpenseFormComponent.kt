@@ -45,7 +45,7 @@ class ExpenseFormComponent(
         errorFactory = { item: ExpenseEssentialsUi ->
             buildList {
                 if (item.expenseType == null) add("Тип расхода обязателен")
-                if (item.amount <= 0) add("Сумма должна быть больше 0")
+                if (item.amount.value <= 0) add("Сумма должна быть больше 0")
             }
         },
         mapperToUi = { toUi() }
