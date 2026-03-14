@@ -1,4 +1,4 @@
-package ru.pavlig43.expense.internal.component
+package ru.pavlig43.expense.internal.update
 
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
@@ -6,8 +6,8 @@ import org.koin.core.scope.Scope
 import ru.pavlig43.core.TransactionExecutor
 import ru.pavlig43.core.tabs.TabNavigationComponent
 import ru.pavlig43.database.data.expense.ExpenseBD
-import ru.pavlig43.expense.internal.component.tabs.files.ExpenseFilesComponent
 import ru.pavlig43.expense.internal.model.ExpenseEssentialsUi
+import ru.pavlig43.expense.internal.update.tabs.files.ExpenseFilesComponent
 import ru.pavlig43.expense.internal.update.tabs.essential.ExpenseUpdateSingleLineComponent
 import ru.pavlig43.mutable.api.singleLine.component.SingleLineComponentFactory
 import ru.pavlig43.update.component.IItemFormTabsComponent

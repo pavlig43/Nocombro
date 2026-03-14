@@ -20,7 +20,7 @@ import ru.pavlig43.expense.internal.create.component.CreateExpenseSingleLineComp
 import ru.pavlig43.expense.internal.di.createExpenseFormModule
 import ru.pavlig43.expense.internal.model.ExpenseEssentialsUi
 import ru.pavlig43.expense.internal.model.toUi
-import ru.pavlig43.expense.internal.component.ExpenseFormTabsComponent
+import ru.pavlig43.expense.internal.update.ExpenseFormTabsComponent
 import ru.pavlig43.mutable.api.singleLine.component.SingleLineComponentFactory
 
 class ExpenseFormComponent(

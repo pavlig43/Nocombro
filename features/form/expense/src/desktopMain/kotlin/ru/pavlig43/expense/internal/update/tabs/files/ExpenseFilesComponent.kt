@@ -1,4 +1,4 @@
-package ru.pavlig43.expense.internal.component.tabs.files
+package ru.pavlig43.expense.internal.update.tabs.files
 
 import com.arkivanov.decompose.ComponentContext
 import kotlinx.coroutines.flow.Flow

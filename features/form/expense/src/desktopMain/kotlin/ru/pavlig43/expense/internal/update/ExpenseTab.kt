@@ -1,4 +1,4 @@
-package ru.pavlig43.expense.internal.component
+package ru.pavlig43.expense.internal.update
 
 import kotlinx.serialization.Serializable
 
