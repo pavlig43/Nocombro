@@ -203,7 +203,7 @@ private fun TableCellTextFieldNumber(
 
                 val intCount =
                     (displayValue.toDouble() * 10.0.pow(data.format.countDecimal)).toInt()
-                saveInModel(data.copy(value = intCount))
+                saveInModel(data.copyValue(value = intCount))
                 error = ""
             } else {
                 error = "Не число"
