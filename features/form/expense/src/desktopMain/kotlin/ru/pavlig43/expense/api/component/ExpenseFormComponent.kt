@@ -4,7 +4,6 @@ import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.essenty.instancekeeper.getOrCreate
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
 import org.koin.core.scope.Scope
 import ru.pavlig43.core.MainTabComponent
 import ru.pavlig43.corekoin.ComponentKoinContext
@@ -15,6 +14,7 @@ import ru.pavlig43.expense.internal.component.ExpenseFormTabsComponent
 class ExpenseFormComponent(
     componentContext: ComponentContext,
     dependencies: ExpenseFormDependencies,
+    expenseId: Int,
 ) : ComponentContext by componentContext, MainTabComponent {
 
     private val koinContext = instanceKeeper.getOrCreate {
@@ -29,9 +29,7 @@ class ExpenseFormComponent(
     internal val expenseFormTabsComponent = ExpenseFormTabsComponent(
         componentContext = componentContext,
         scope = scope,
-        observeOnExpense = { expense ->
-            _model.update { MainTabComponent.NavTabState("Расходы") }
-        }
+        expenseId = expenseId
     )
 
 }

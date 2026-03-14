@@ -61,8 +61,8 @@ class ImmutableTableComponentFactoryMain(
             is DocumentImmutableTableBuilder -> DocumentTableComponent(
                 componentContext = context,
                 tableBuilder = immutableTableBuilderData,
-                onItemClick = onItemClick,
-                tabOpener = tabOpener,
+                onItemClick = { tabOpener.openDocumentTab(it.composeId) },
+                onCreate = {tabOpener.openDocumentTab(0)},
                 repository = scope.get<ImmutableListRepository<Document>>(
                     ImmutableTableRepositoryType.DOCUMENT.qualifier
                 ),

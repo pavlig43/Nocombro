@@ -117,12 +117,12 @@ internal class IngredientComponent(
                 MBSImmutableTableComponent<ProductTableUi>(
                     componentContext = context,
                     onDismissed = dialogNavigation::dismiss,
-                    onCreate = { tabOpener.openProductTab(0) },
                     dependencies = immutableTableDependencies,
                     immutableTableBuilderData = ProductImmutableTableBuilder(
                         fullListProductTypes = ProductType.entries,
                         withCheckbox = false
                     ),
+                    tabOpener = tabOpener,
                     onItemClick = { product ->
                         val ingredientUi =
                             itemList.value.first { it.composeId == dialogConfig.composeId }
@@ -145,11 +145,11 @@ internal class IngredientComponent(
                     MBSImmutableTableComponent<BatchTableUi>(
                         componentContext = context,
                         onDismissed = dialogNavigation::dismiss,
-                        onCreate = { tabOpener.openProductTab(0) },
                         dependencies = immutableTableDependencies,
                         immutableTableBuilderData = BatchImmutableTableBuilder(
                             parentId = dialogConfig.productId
                         ),
+                        tabOpener = tabOpener,
                         onItemClick = { batch ->
                             val ingredientUi =
                                 itemList.value.first { it.composeId == dialogConfig.composeId }

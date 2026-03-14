@@ -21,7 +21,7 @@ internal class ExpenseTableComponent(
 ) : ImmutableTableComponent<MainExpenseBD, ExpenseTableUi, ExpenseField>(
     componentContext = componentContext,
     tableBuilder = tableBuilder,
-    onCreate = { tabOpener.openTransactionTab(0) },
+    onCreate = { tabOpener.openExpenseFormTab(0) },
     onItemClick = onItemClick,
     mapper = MainExpenseBD::toUi,
     filterMatcher = ExpenseFilterMatcher,

@@ -6,8 +6,8 @@ import kotlinx.collections.immutable.toImmutableList
 import ru.pavlig43.sampletable.column.PersonColumn
 import ua.wwind.table.filter.data.TableFilterState
 import ua.wwind.table.format.FormatDialog
-import ua.wwind.table.format.FormatDialogSettings
 import ua.wwind.table.format.FormatFilterData
+import ua.wwind.table.format.data.FormatDialogSettings
 import ua.wwind.table.format.data.TableFormatRule
 import ua.wwind.table.strings.DefaultStrings
 

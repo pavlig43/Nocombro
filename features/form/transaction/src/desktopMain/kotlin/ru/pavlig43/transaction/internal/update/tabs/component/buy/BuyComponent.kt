@@ -71,11 +71,11 @@ internal class BuyComponent(
                 MBSImmutableTableComponent<ProductDeclarationTableUi>(
                     componentContext = context,
                     onDismissed = dialogNavigation::dismiss,
-                    onCreate = { tabOpener.openDeclarationTab(0) },
                     dependencies = immutableTableDependencies,
                     immutableTableBuilderData = ProductDeclarationImmutableTableBuilder(
                         parentId = dialogConfig.productId,
                     ),
+                    tabOpener = tabOpener,
                     onItemClick = { declaration ->
                         val buyUi = itemList.value.first { it.composeId == dialogConfig.composeId }
                         onEvent(
@@ -96,12 +96,12 @@ internal class BuyComponent(
                 MBSImmutableTableComponent<ProductTableUi>(
                     componentContext = context,
                     onDismissed = dialogNavigation::dismiss,
-                    onCreate = { tabOpener.openProductTab(0) },
                     dependencies = immutableTableDependencies,
                     immutableTableBuilderData = ProductImmutableTableBuilder(
                         fullListProductTypes = ProductType.entries,
                         withCheckbox = false
                     ),
+                    tabOpener = tabOpener,
                     onItemClick = { product ->
                         val buyUi = itemList.value.first { it.composeId == dialogConfig.composeId }
                         onEvent(

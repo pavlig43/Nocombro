@@ -52,12 +52,12 @@ internal class CompositionComponent(
         MBSImmutableTableComponent<ProductTableUi>(
             componentContext = context,
             onDismissed = dialogNavigation::dismiss,
-            onCreate = { tabOpener.openProductTab(0) },
             dependencies = immutableTableDependencies,
             immutableTableBuilderData = ProductImmutableTableBuilder(
                 fullListProductTypes = ProductType.entries,
                 withCheckbox = false
             ),
+            tabOpener = tabOpener,
             onItemClick = { product ->
                 val compositionUi = itemList.value.first { it.composeId == dialog.composeId }
                 onEvent(

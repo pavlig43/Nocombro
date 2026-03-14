@@ -96,30 +96,7 @@ abstract class FilterMatcher<I, C> {
             else -> true
         }
     }
-//    @Suppress("CyclomaticComplexMethod")
-//    protected fun matchesDecimalDataField(
-//        value: DecimalData,
-//        state: TableFilterState<*>,
-//    ): Boolean {
-//        val st = state as TableFilterState<DecimalData>
-//        val constraint = st.constraint ?: return true
-//
-//        return when (constraint) {
-//            FilterConstraint.GT -> value > (st.values?.getOrNull(0) ?: value)
-//            FilterConstraint.GTE -> value >= (st.values?.getOrNull(0) ?: value)
-//            FilterConstraint.LT -> value < (st.values?.getOrNull(0) ?: value)
-//            FilterConstraint.LTE -> value <= (st.values?.getOrNull(0) ?: value)
-//            FilterConstraint.EQUALS -> value == (st.values?.getOrNull(0) ?: value)
-//            FilterConstraint.NOT_EQUALS -> value != (st.values?.getOrNull(0) ?: value)
-//            FilterConstraint.BETWEEN -> {
-//                val from = st.values?.getOrNull(0) ?: value
-//                val to = st.values?.getOrNull(1) ?: value
-//                value in from..to
-//            }
-//
-//            else -> true
-//        }
-//    }
+
 
     fun <I>matchesTypeField(value: I, state: TableFilterState<*>,): Boolean {
         val constraint = state.constraint ?: return true

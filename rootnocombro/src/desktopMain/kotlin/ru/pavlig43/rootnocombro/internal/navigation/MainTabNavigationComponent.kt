@@ -11,6 +11,7 @@ import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.database.data.transact.TransactionType
 import ru.pavlig43.declaration.api.DeclarationFormComponent
 import ru.pavlig43.document.api.component.DocumentFormComponent
+import ru.pavlig43.expense.api.component.ExpenseFormComponent
 import ru.pavlig43.immutable.api.component.DeclarationImmutableTableBuilder
 import ru.pavlig43.immutable.api.component.DocumentImmutableTableBuilder
 import ru.pavlig43.immutable.api.component.ExpenseImmutableTableBuilder
@@ -27,6 +28,7 @@ import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.BatchMovementCh
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ImmutableTableChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ItemFormChild.DeclarationFormChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ItemFormChild.DocumentFormChild
+import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ItemFormChild.ExpenseFormChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ItemFormChild.ProductFormChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ItemFormChild.TransactionFormChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ItemFormChild.VendorFormChild
@@ -36,6 +38,7 @@ import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.StorageChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.BatchMovementListConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemFormConfig.DeclarationFormConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemFormConfig.DocumentFormConfig
+import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemFormConfig.ExpenseFormConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemFormConfig.ProductFormConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemFormConfig.TransactionFormConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemFormConfig.VendorFormConfig
@@ -117,6 +120,10 @@ internal class MainTabNavigationComponent(
 
         override fun openBatchMovementTab(batchId: Int, productName: String, start: LocalDateTime, end: LocalDateTime) {
             tabNavigationComponent.addTab(BatchMovementListConfig(batchId, productName, start, end))
+        }
+
+        override fun openExpenseFormTab(id: Int) {
+            tabNavigationComponent.addTab(ExpenseFormConfig(id))
         }
 
     }
@@ -220,18 +227,7 @@ internal class MainTabNavigationComponent(
             is SafetyListConfig -> SafetyImmutableTableBuilder()
         }
 
-        // Для расходов форма не создана - отключаем создание и редактирование
-        if (tabConfig is ExpenseListConfig) {
-            return ImmutableTableChild(
-                ImmutableTableComponentFactoryMain(
-                    componentContext = context,
-                    dependencies = scope.get(),
-                    onCreate = {},
-                    onItemClick = {},
-                    immutableTableBuilderData = immutableTableBuilderData
-                )
-            )
-        }
+
 
         fun formConfig(id: Int) = when (tabConfig) {
             is SafetyListConfig -> ProductFormConfig(id)
@@ -240,16 +236,16 @@ internal class MainTabNavigationComponent(
             is ProductListConfig -> ProductFormConfig(id)
             is VendorListConfig -> VendorFormConfig(id)
             is TransactionListConfig -> TransactionFormConfig(id)
-            else -> ProductFormConfig(id)
+            is ExpenseListConfig -> ExpenseFormConfig(id)
         }
 
         return ImmutableTableChild(
             ImmutableTableComponentFactoryMain(
                 componentContext = context,
                 dependencies = scope.get(),
-                onCreate = { tabNavigationComponent.addTab(formConfig(0)) },
                 onItemClick = { tabNavigationComponent.addTab(formConfig(it.composeId)) },
-                immutableTableBuilderData = immutableTableBuilderData
+                immutableTableBuilderData = immutableTableBuilderData,
+                tabOpener = tabOpener
             )
         )
     }
@@ -300,6 +296,14 @@ internal class MainTabNavigationComponent(
                     vendorId = tabConfig.id,
                     componentContext = context,
                     dependencies = scope.get()
+                )
+            )
+
+            is ExpenseFormConfig -> ExpenseFormChild(
+                ExpenseFormComponent(
+                    componentContext = context,
+                    dependencies = scope.get(),
+                    expenseId = tabConfig.id
                 )
             )
         }

@@ -3,44 +3,44 @@ package ru.pavlig43.expense.internal.di
 import org.koin.dsl.module
 import ru.pavlig43.core.TransactionExecutor
 import ru.pavlig43.core.model.ChangeSet
-import ru.pavlig43.core.model.UpsertListChangeSet
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.expense.ExpenseBD
-import ru.pavlig43.database.data.expense.dao.ExpenseDao
+import ru.pavlig43.database.data.expense.ExpenseType
+import ru.pavlig43.datetime.getCurrentLocalDateTime
 import ru.pavlig43.expense.api.ExpenseFormDependencies
-import ru.pavlig43.expense.internal.di.ExpenseStandaloneRepository
-import ru.pavlig43.mutable.api.multiLine.data.UpdateCollectionRepository
+import ru.pavlig43.mutable.api.singleLine.data.UpdateSingleLineRepository
 
 internal fun createExpenseFormModule(dependencies: ExpenseFormDependencies) = listOf(
     module {
         single<NocombroDatabase> { dependencies.db }
         single<TransactionExecutor> { dependencies.transactionExecutor }
-        single { dependencies.db.expenseDao }
-        single<UpdateCollectionRepository<ExpenseBD, ru.pavlig43.database.data.expense.ExpenseBD>> {
-            ExpenseStandaloneRepository(get())
-        }
+        single<UpdateSingleLineRepository<ExpenseBD>> { ExpenseRepository(get()) }
     }
 )
 
-internal class ExpenseStandaloneRepository(
+private class ExpenseRepository(
     db: NocombroDatabase
-) : UpdateCollectionRepository<ExpenseBD, ExpenseBD> {
+) : UpdateSingleLineRepository<ExpenseBD> {
 
     private val dao = db.expenseDao
-    override suspend fun getInit(id: Int): Result<List<ExpenseBD>> {
+    override suspend fun getInit(id: Int): Result<ExpenseBD> {
         return runCatching {
-            dao.getAll().filter { it.transactionId == null }
+            dao.getExpense(id)?: ExpenseBD(
+                transactionId = null,
+                expenseType = ExpenseType.TRANSPORT_GASOLINE,
+                amount = 0,
+                expenseDateTime = getCurrentLocalDateTime(),
+                comment = "",
+                id = 0
+            )
         }
     }
 
-    override suspend fun update(changeSet: ChangeSet<List<ExpenseBD>>): Result<Unit> {
-        return UpsertListChangeSet.update(
-            changeSet = changeSet,
-            delete = { ids -> dao.deleteByIds(ids) },
-            upsert = { expenses ->
-                val expensesWithNullId = expenses.map { it.copy(transactionId = null) }
-                dao.upsertAll(expensesWithNullId)
-            }
-        )
+    override suspend fun update(changeSet: ChangeSet<ExpenseBD>): Result<Unit> {
+        if (changeSet.old == changeSet.new) return Result.success(Unit)
+        return runCatching {
+            dao.updateExpense (changeSet.new)
+        }
     }
+
 }

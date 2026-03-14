@@ -5,15 +5,14 @@ import com.arkivanov.decompose.childContext
 import org.koin.core.scope.Scope
 import ru.pavlig43.core.TransactionExecutor
 import ru.pavlig43.core.tabs.TabNavigationComponent
-import ru.pavlig43.expense.api.model.ExpenseStandaloneUi
 import ru.pavlig43.expense.internal.component.tabs.table.TableComponent
 import ru.pavlig43.update.component.IItemFormTabsComponent
 import ru.pavlig43.update.component.getDefaultUpdateComponent
 
 internal class ExpenseFormTabsComponent(
     componentContext: ComponentContext,
+    expenseId: Int,
     scope: Scope,
-    observeOnExpense: (ExpenseStandaloneUi) -> Unit,
 ) : ComponentContext by componentContext,
     IItemFormTabsComponent<ExpenseTab, ExpenseTabChild> {
 
@@ -31,7 +30,8 @@ internal class ExpenseFormTabsComponent(
                     ExpenseTab.Expenses -> ExpenseTabChild.Expenses(
                         TableComponent(
                             componentContext = context,
-                            repository = scope.get()
+                            repository = scope.get(),
+                            expenseId = expenseId
                         )
                     )
                 }

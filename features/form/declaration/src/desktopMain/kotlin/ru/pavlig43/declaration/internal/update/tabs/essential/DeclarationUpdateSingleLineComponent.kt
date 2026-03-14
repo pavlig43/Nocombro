@@ -95,8 +95,8 @@ internal class DeclarationUpdateSingleLineComponent(
                         onChangeItem { it.copy(vendorId = vendor.composeId, vendorName = vendor.displayName) }
                         dialogNavigation.dismiss()
                     },
-                    onCreate = { tabOpener.openVendorTab(0) },
                     dependencies = immutableDependencies,
+                    tabOpener = tabOpener,
                     onDismissed = { dialogNavigation.dismiss() }
                 )
             )

@@ -25,6 +25,7 @@ import ru.pavlig43.core.tabs.TabNavigationComponent
 import ru.pavlig43.coreui.tab.TabLazyRowNavigationContent
 import ru.pavlig43.declaration.api.DeclarationFormScreen
 import ru.pavlig43.document.api.ui.DocumentFormScreen
+import ru.pavlig43.expense.api.ui.ExpenseStandaloneScreen
 import ru.pavlig43.immutable.api.ui.ImmutableTableScreen
 import ru.pavlig43.notification.api.ui.NotificationTabs
 import ru.pavlig43.product.api.ui.ProductFormScreen
@@ -146,6 +147,9 @@ private fun MainTabChildFactory(mainTabChild: MainTabChild?) {
 
         is MainTabChild.ItemFormChild.VendorFormChild ->
             VendorFormScreen(mainTabChild.component)
+
+        is MainTabChild.ItemFormChild.ExpenseFormChild ->
+            ExpenseStandaloneScreen(mainTabChild.component)
 
         is MainTabChild.NotificationChild ->
             NotificationTabs(mainTabChild.component)

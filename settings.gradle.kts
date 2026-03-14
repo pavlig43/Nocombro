@@ -59,6 +59,7 @@ include(
     ":features:form:vendor",
     ":features:form:declaration",
     ":features:form:transaction",
+    ":features:form:expense",
 )
 
 include(

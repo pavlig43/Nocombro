@@ -3,6 +3,7 @@ package ru.pavlig43.rootnocombro.internal.navigation
 import ru.pavlig43.core.MainTabComponent
 import ru.pavlig43.declaration.api.DeclarationFormComponent
 import ru.pavlig43.document.api.component.DocumentFormComponent
+import ru.pavlig43.expense.api.component.ExpenseFormComponent
 import ru.pavlig43.immutable.api.component.ImmutableTableComponentFactoryMain
 import ru.pavlig43.notification.api.component.NotificationComponent
 import ru.pavlig43.product.api.component.ProductFormComponent
@@ -32,5 +33,6 @@ internal sealed interface MainTabChild {
         class VendorFormChild(override val component: VendorFormComponent): ItemFormChild
         class DeclarationFormChild(override val component: DeclarationFormComponent): ItemFormChild
         class TransactionFormChild(override val component: TransactionFormComponent): ItemFormChild
+        class ExpenseFormChild(override val component: ExpenseFormComponent): ItemFormChild
     }
 }

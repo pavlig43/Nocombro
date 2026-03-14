@@ -61,12 +61,12 @@ internal class SaleComponent(
                 MBSImmutableTableComponent<ProductTableUi>(
                     componentContext = context,
                     onDismissed = dialogNavigation::dismiss,
-                    onCreate = { tabOpener.openProductTab(0) },
                     dependencies = immutableTableDependencies,
                     immutableTableBuilderData = ProductImmutableTableBuilder(
                         fullListProductTypes = ProductType.entries,
                         withCheckbox = false
                     ),
+                    tabOpener = tabOpener,
                     onItemClick = { product ->
                         val saleUi = itemList.value.first { it.composeId == dialogConfig.composeId }
                         onEvent(
@@ -87,11 +87,11 @@ internal class SaleComponent(
                 MBSImmutableTableComponent<BatchTableUi>(
                     componentContext = context,
                     onDismissed = dialogNavigation::dismiss,
-                    onCreate = { /* Batch создаётся автоматически */ },
                     dependencies = immutableTableDependencies,
                     immutableTableBuilderData = BatchImmutableTableBuilder(
                         parentId = dialogConfig.productId
                     ),
+                    tabOpener = tabOpener,
                     onItemClick = { batch ->
                         val saleUi = itemList.value.first { it.composeId == dialogConfig.composeId }
                         onEvent(
@@ -112,11 +112,11 @@ internal class SaleComponent(
                 MBSImmutableTableComponent<VendorTableUi>(
                     componentContext = context,
                     onDismissed = dialogNavigation::dismiss,
-                    onCreate = { tabOpener.openVendorTab(0) },
                     dependencies = immutableTableDependencies,
                     immutableTableBuilderData = VendorImmutableTableBuilder(
                         withCheckbox = false
                     ),
+                    tabOpener = tabOpener,
                     onItemClick = { vendor ->
                         val saleUi = itemList.value.first { it.composeId == dialogConfig.composeId }
                         onEvent(

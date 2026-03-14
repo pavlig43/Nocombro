@@ -2,6 +2,7 @@ package ru.pavlig43.immutable.internal.component.items.product
 
 import com.arkivanov.decompose.ComponentContext
 import kotlinx.collections.immutable.ImmutableList
+import ru.pavlig43.core.tabs.TabOpener
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.immutable.api.component.ProductImmutableTableBuilder
 import ru.pavlig43.immutable.internal.component.ImmutableTableComponent
@@ -12,13 +13,13 @@ import ua.wwind.table.ColumnSpec
 internal class ProductTableComponent(
     componentContext: ComponentContext,
     tableBuilder: ProductImmutableTableBuilder,
-    onCreate: () -> Unit,
+    tabOpener: TabOpener,
     onItemClick: (ProductTableUi) -> Unit,
     repository: ImmutableListRepository<Product>,
 ) : ImmutableTableComponent<Product, ProductTableUi, ProductField>(
     componentContext = componentContext,
     tableBuilder = tableBuilder,
-    onCreate = onCreate,
+    onCreate = {tabOpener.openProductTab(0)},
     onItemClick = onItemClick,
     mapper = { this.toUi() },
     filterMatcher = ProductFilterMatcher,
