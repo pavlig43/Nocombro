@@ -2,9 +2,9 @@ package ru.pavlig43.expense.internal.component
 
 import ru.pavlig43.core.FormTabChild
 import ru.pavlig43.expense.internal.component.tabs.files.ExpenseFilesComponent
-import ru.pavlig43.expense.internal.component.tabs.table.TableComponent
+import ru.pavlig43.expense.internal.update.tabs.essential.ExpenseUpdateSingleLineComponent
 
 internal sealed interface ExpenseTabChild : FormTabChild {
-    class Expenses(override val component: TableComponent) : ExpenseTabChild
+    class Essentials(override val component: ExpenseUpdateSingleLineComponent) : ExpenseTabChild
     class Files(override val component: ExpenseFilesComponent) : ExpenseTabChild
 }

@@ -44,6 +44,9 @@ interface ExpenseDao {
     @Upsert
     suspend fun updateExpense(expenseBD: ExpenseBD)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertExpense(expenseBD: ExpenseBD): Long
+
     /**
      * Получить все расходы (включая непривязанные) - синхронно
      */

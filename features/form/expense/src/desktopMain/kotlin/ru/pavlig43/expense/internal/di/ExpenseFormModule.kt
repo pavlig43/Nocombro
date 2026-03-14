@@ -9,6 +9,7 @@ import ru.pavlig43.database.data.expense.ExpenseType
 import ru.pavlig43.datetime.getCurrentLocalDateTime
 import ru.pavlig43.expense.api.ExpenseFormDependencies
 import ru.pavlig43.files.api.FilesDependencies
+import ru.pavlig43.mutable.api.singleLine.data.CreateSingleItemRepository
 import ru.pavlig43.mutable.api.singleLine.data.UpdateSingleLineRepository
 
 internal fun createExpenseFormModule(dependencies: ExpenseFormDependencies) = listOf(
@@ -17,6 +18,7 @@ internal fun createExpenseFormModule(dependencies: ExpenseFormDependencies) = li
         single<TransactionExecutor> { dependencies.transactionExecutor }
         single<FilesDependencies> { dependencies.filesDependencies }
         single<UpdateSingleLineRepository<ExpenseBD>> { ExpenseRepository(get()) }
+        single<CreateSingleItemRepository<ExpenseBD>> { CreateExpenseRepository(get()) }
     }
 )
 
@@ -45,4 +47,18 @@ private class ExpenseRepository(
         }
     }
 
+}
+
+private class CreateExpenseRepository(
+    db: NocombroDatabase
+) : CreateSingleItemRepository<ExpenseBD> {
+
+    private val dao = db.expenseDao
+
+    override suspend fun createEssential(item: ExpenseBD): Result<Int> {
+        return runCatching {
+            val id = dao.insertExpense(item)
+            id.toInt()
+        }
+    }
 }
