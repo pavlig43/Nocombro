@@ -8,12 +8,14 @@ import ru.pavlig43.database.data.expense.ExpenseBD
 import ru.pavlig43.database.data.expense.ExpenseType
 import ru.pavlig43.datetime.getCurrentLocalDateTime
 import ru.pavlig43.expense.api.ExpenseFormDependencies
+import ru.pavlig43.files.api.FilesDependencies
 import ru.pavlig43.mutable.api.singleLine.data.UpdateSingleLineRepository
 
 internal fun createExpenseFormModule(dependencies: ExpenseFormDependencies) = listOf(
     module {
         single<NocombroDatabase> { dependencies.db }
         single<TransactionExecutor> { dependencies.transactionExecutor }
+        single<FilesDependencies> { dependencies.filesDependencies }
         single<UpdateSingleLineRepository<ExpenseBD>> { ExpenseRepository(get()) }
     }
 )

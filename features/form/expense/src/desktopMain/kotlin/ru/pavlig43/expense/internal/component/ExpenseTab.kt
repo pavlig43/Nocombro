@@ -6,5 +6,5 @@ import kotlinx.serialization.Serializable
 internal enum class ExpenseTab {
     Expenses,
 
-//    Files
+    Files
 }

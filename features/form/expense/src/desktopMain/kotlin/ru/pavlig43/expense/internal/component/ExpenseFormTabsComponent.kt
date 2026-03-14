@@ -5,6 +5,7 @@ import com.arkivanov.decompose.childContext
 import org.koin.core.scope.Scope
 import ru.pavlig43.core.TransactionExecutor
 import ru.pavlig43.core.tabs.TabNavigationComponent
+import ru.pavlig43.expense.internal.component.tabs.files.ExpenseFilesComponent
 import ru.pavlig43.expense.internal.component.tabs.table.TableComponent
 import ru.pavlig43.update.component.IItemFormTabsComponent
 import ru.pavlig43.update.component.getDefaultUpdateComponent
@@ -22,7 +23,8 @@ internal class ExpenseFormTabsComponent(
         TabNavigationComponent(
             componentContext = childContext("tab"),
             startConfigurations = listOf(
-                ExpenseTab.Expenses
+                ExpenseTab.Expenses,
+                ExpenseTab.Files
             ),
             serializer = ExpenseTab.serializer(),
             tabChildFactory = { context, tabConfig: ExpenseTab, _: () -> Unit ->
@@ -32,6 +34,13 @@ internal class ExpenseFormTabsComponent(
                             componentContext = context,
                             repository = scope.get(),
                             expenseId = expenseId
+                        )
+                    )
+                    ExpenseTab.Files -> ExpenseTabChild.Files(
+                        ExpenseFilesComponent(
+                            componentContext = context,
+                            expenseId = expenseId,
+                            dependencies = scope.get()
                         )
                     )
                 }
