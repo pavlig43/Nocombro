@@ -4,8 +4,8 @@ package ru.pavlig43.immutable.internal.component.items.expense
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import ru.pavlig43.database.data.expense.ExpenseType
-import ru.pavlig43.database.data.transact.TransactionType
 import ru.pavlig43.immutable.internal.column.idWithSelection
+import ru.pavlig43.immutable.internal.column.readBooleanColumn
 import ru.pavlig43.immutable.internal.column.readDateTimeColumn
 import ru.pavlig43.immutable.internal.column.readDecimalColumn
 import ru.pavlig43.immutable.internal.column.readEnumColumn
@@ -22,8 +22,9 @@ internal enum class ExpenseField {
     EXPENSE_TYPE,
     AMOUNT,
     EXPENSE_DATE_TIME,
+    IS_MAIN,
     COMMENT,
-    TRANSACTION_TYPE
+
 }
 
 internal fun createExpenseColumn(
@@ -61,16 +62,13 @@ internal fun createExpenseColumn(
             valueOf = { it.expenseDateTime },
             filterType = TableFilterType.DateTableFilter()
         )
-        readEnumColumn(
-            headerText = "Тип транзакции",
-            column = ExpenseField.TRANSACTION_TYPE,
-            valueOf = {it.transactionType},
-            filterType = TableFilterType.EnumTableFilter(
-                options = TransactionType.entries.toImmutableList(),
-                getTitle = {it.displayName}
-            ),
-            getTitle = {it.displayName},
+        readBooleanColumn(
+            headerText = "Общие",
+            column = ExpenseField.IS_MAIN,
+            valueOf = {it.isMain},
+            filterType = TableFilterType.BooleanTableFilter(),
         )
+
 
         readTextColumn(
             headerText = "Комментарий",

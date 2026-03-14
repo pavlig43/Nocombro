@@ -2,7 +2,6 @@ package ru.pavlig43.tablecore.utils
 
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
-import ru.pavlig43.core.model.DecimalData
 import ua.wwind.table.filter.data.FilterConstraint
 import ua.wwind.table.filter.data.TableFilterState
 

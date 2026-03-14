@@ -21,6 +21,7 @@ import ru.pavlig43.immutable.api.component.ProductImmutableTableBuilder
 import ru.pavlig43.immutable.api.component.SafetyImmutableTableBuilder
 import ru.pavlig43.immutable.api.component.TransactionImmutableTableBuilder
 import ru.pavlig43.immutable.api.component.VendorImmutableTableBuilder
+import ru.pavlig43.immutable.internal.component.items.expense.ExpenseTableUi
 import ru.pavlig43.notification.api.component.NotificationComponent
 import ru.pavlig43.notification.api.model.NotificationItem
 import ru.pavlig43.product.api.component.ProductFormComponent
@@ -53,7 +54,6 @@ import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.NotificationCo
 import ru.pavlig43.rootnocombro.internal.navigation.drawer.component.DrawerComponent
 import ru.pavlig43.rootnocombro.internal.navigation.drawer.component.DrawerDestination
 import ru.pavlig43.sampletable.api.component.SampleTableComponentMain
-import ru.pavlig43.storage.api.StorageDependencies
 import ru.pavlig43.storage.api.component.batchMovement.BatchMovementComponent
 import ru.pavlig43.storage.api.component.storage.StorageComponent
 import ru.pavlig43.tablecore.model.IMultiLineTableUi
@@ -118,7 +118,12 @@ internal class MainTabNavigationComponent(
             tabNavigationComponent.addTab(TransactionFormConfig(id))
         }
 
-        override fun openBatchMovementTab(batchId: Int, productName: String, start: LocalDateTime, end: LocalDateTime) {
+        override fun openBatchMovementTab(
+            batchId: Int,
+            productName: String,
+            start: LocalDateTime,
+            end: LocalDateTime
+        ) {
             tabNavigationComponent.addTab(BatchMovementListConfig(batchId, productName, start, end))
         }
 
@@ -199,51 +204,59 @@ internal class MainTabNavigationComponent(
         context: ComponentContext
     ): ImmutableTableChild {
 
-        val immutableTableBuilderData: ImmutableTableBuilderData<out IMultiLineTableUi> = when (tabConfig) {
-            is DeclarationListConfig -> DeclarationImmutableTableBuilder(withCheckbox = true)
-            is DocumentListConfig -> DocumentImmutableTableBuilder(
-                fullListDocumentTypes = DocumentType.entries,
-                withCheckbox = true
-            )
+        val immutableTableBuilderData: ImmutableTableBuilderData<out IMultiLineTableUi> =
+            when (tabConfig) {
+                is DeclarationListConfig -> DeclarationImmutableTableBuilder(withCheckbox = true)
+                is DocumentListConfig -> DocumentImmutableTableBuilder(
+                    fullListDocumentTypes = DocumentType.entries,
+                    withCheckbox = true
+                )
 
-            is ProductListConfig -> ProductImmutableTableBuilder(
-                fullListProductTypes = ProductType.entries,
-                withCheckbox = true
-            )
+                is ProductListConfig -> ProductImmutableTableBuilder(
+                    fullListProductTypes = ProductType.entries,
+                    withCheckbox = true
+                )
 
-            is TransactionListConfig -> TransactionImmutableTableBuilder(
-                fullListTransactionTypes = TransactionType.entries,
-                withCheckbox = true
-            )
+                is TransactionListConfig -> TransactionImmutableTableBuilder(
+                    fullListTransactionTypes = TransactionType.entries,
+                    withCheckbox = true
+                )
 
-            is VendorListConfig -> VendorImmutableTableBuilder(
-                withCheckbox = true
-            )
+                is VendorListConfig -> VendorImmutableTableBuilder(
+                    withCheckbox = true
+                )
 
-            is ExpenseListConfig -> ExpenseImmutableTableBuilder(
-                withCheckbox = true
-            )
+                is ExpenseListConfig -> ExpenseImmutableTableBuilder(
+                    withCheckbox = true
+                )
 
-            is SafetyListConfig -> SafetyImmutableTableBuilder()
-        }
+                is SafetyListConfig -> SafetyImmutableTableBuilder()
+            }
 
 
-
-        fun formConfig(id: Int) = when (tabConfig) {
-            is SafetyListConfig -> ProductFormConfig(id)
-            is DeclarationListConfig -> DeclarationFormConfig(id)
-            is DocumentListConfig -> DocumentFormConfig(id)
-            is ProductListConfig -> ProductFormConfig(id)
-            is VendorListConfig -> VendorFormConfig(id)
-            is TransactionListConfig -> TransactionFormConfig(id)
-            is ExpenseListConfig -> ExpenseFormConfig(id)
+        fun <I : IMultiLineTableUi> onItemClick(item: I) = when (tabConfig) {
+            is SafetyListConfig -> tabOpener.openProductTab(item.composeId)
+            is DeclarationListConfig -> tabOpener.openDeclarationTab(item.composeId)
+            is DocumentListConfig -> tabOpener.openDocumentTab(item.composeId)
+            is ProductListConfig -> tabOpener.openProductTab(item.composeId)
+            is VendorListConfig -> tabOpener.openVendorTab(item.composeId)
+            is TransactionListConfig -> tabOpener.openTransactionTab(item.composeId)
+            is ExpenseListConfig -> {
+                val transactionId = (item as ExpenseTableUi).transactionId
+                if (transactionId != null) {
+                    tabOpener.openTransactionTab(transactionId)
+                } else
+                    tabOpener.openExpenseFormTab(
+                        item.composeId
+                    )
+            }
         }
 
         return ImmutableTableChild(
             ImmutableTableComponentFactoryMain(
                 componentContext = context,
                 dependencies = scope.get(),
-                onItemClick = { tabNavigationComponent.addTab(formConfig(it.composeId)) },
+                onItemClick = { onItemClick(it) },
                 immutableTableBuilderData = immutableTableBuilderData,
                 tabOpener = tabOpener
             )

@@ -2,7 +2,6 @@ package ru.pavlig43.storage.api.component.batchMovement
 
 import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.core.model.DecimalData
-import ru.pavlig43.core.model.DecimalFormat
 
 data class BatchMovementTableUi(
     val movementDate: LocalDateTime,

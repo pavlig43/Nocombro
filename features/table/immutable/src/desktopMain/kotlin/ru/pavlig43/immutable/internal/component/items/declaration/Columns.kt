@@ -4,7 +4,7 @@ package ru.pavlig43.immutable.internal.component.items.declaration
 import kotlinx.collections.immutable.ImmutableList
 import ru.pavlig43.immutable.internal.column.idWithSelection
 import ru.pavlig43.immutable.internal.column.readDateColumn
-import ru.pavlig43.immutable.internal.column.readIsActualColumn
+import ru.pavlig43.immutable.internal.column.readBooleanColumn
 import ru.pavlig43.immutable.internal.column.readTextColumn
 import ru.pavlig43.immutable.internal.component.ImmutableTableUiEvent
 import ru.pavlig43.tablecore.model.TableData
@@ -57,7 +57,7 @@ internal fun createDeclarationColumn(
                 filterType = TableFilterType.DateTableFilter()
             )
 
-            readIsActualColumn(
+            readBooleanColumn(
                 headerText = "Актуальность",
                 column = DeclarationField.IS_ACTUAL,
                 valueOf = { it.isActual },

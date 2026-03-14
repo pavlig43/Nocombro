@@ -1,4 +1,3 @@
-import ru.pavlig43.convention.extension.commonMainDependencies
 import ru.pavlig43.convention.extension.desktopDependencies
 
 plugins {

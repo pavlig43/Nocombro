@@ -14,8 +14,8 @@ import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import ru.pavlig43.expense.api.component.ExpenseFormComponent
-import ru.pavlig43.expense.internal.update.ExpenseTabChild
 import ru.pavlig43.expense.internal.create.ui.CreateExpenseSingleLineScreen
+import ru.pavlig43.expense.internal.update.ExpenseTabChild
 import ru.pavlig43.expense.internal.update.tabs.essential.UpdateExpenseSingleLineScreen
 import ru.pavlig43.files.api.ui.FilesScreen
 import ru.pavlig43.update.ui.FormTabsUi

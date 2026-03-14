@@ -38,6 +38,6 @@ private fun MainExpenseBD.toUi(): ExpenseTableUi {
         amount = DecimalData(expense.amount, DecimalFormat.Decimal2),
         expenseDateTime = expense.expenseDateTime,
         comment = expense.comment,
-        transactionType = transaction?.transactionType
+        transactionId = transaction?.id
     )
 }
