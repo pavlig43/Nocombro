@@ -4,7 +4,6 @@ import com.arkivanov.decompose.ComponentContext
 import kotlinx.collections.immutable.ImmutableList
 import ru.pavlig43.core.model.DecimalData
 import ru.pavlig43.core.model.DecimalFormat
-import ru.pavlig43.core.tabs.TabOpener
 import ru.pavlig43.database.data.batch.BatchWithBalanceOut
 import ru.pavlig43.immutable.api.component.BatchImmutableTableBuilder
 import ru.pavlig43.immutable.internal.component.ImmutableTableComponent
@@ -15,13 +14,13 @@ import ua.wwind.table.ColumnSpec
 internal class BatchTableComponent(
     componentContext: ComponentContext,
     tableBuilder: BatchImmutableTableBuilder,
-    tabOpener: TabOpener,
     onItemClick: (BatchTableUi) -> Unit,
+    onCreate: () -> Unit,
     repository: ImmutableListRepository<BatchWithBalanceOut>,
 ) : ImmutableTableComponent<BatchWithBalanceOut, BatchTableUi, BatchField>(
     componentContext = componentContext,
     tableBuilder = tableBuilder,
-    onCreate = { tabOpener.openTransactionTab(0) },
+    onCreate = onCreate,
     onItemClick = onItemClick,
     mapper = { this.toUi() },
     filterMatcher = BatchFilterMatcher,

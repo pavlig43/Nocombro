@@ -2,7 +2,6 @@ package ru.pavlig43.immutable.internal.component.items.transaction
 
 import com.arkivanov.decompose.ComponentContext
 import kotlinx.collections.immutable.ImmutableList
-import ru.pavlig43.core.tabs.TabOpener
 import ru.pavlig43.database.data.transact.Transact
 import ru.pavlig43.immutable.api.component.TransactionImmutableTableBuilder
 import ru.pavlig43.immutable.internal.component.ImmutableTableComponent
@@ -14,13 +13,13 @@ import ua.wwind.table.ColumnSpec
 internal class TransactionTableComponent(
     componentContext: ComponentContext,
     tableBuilder: TransactionImmutableTableBuilder,
-    tabOpener: TabOpener,
     onItemClick: (TransactionTableUi) -> Unit,
+    onCreate: () -> Unit,
     repository: ImmutableListRepository<Transact>,
 ) : ImmutableTableComponent<Transact, TransactionTableUi, TransactionField>(
     componentContext = componentContext,
     tableBuilder = tableBuilder,
-    onCreate = {tabOpener.openTransactionTab(0)},
+    onCreate = onCreate,
     onItemClick = onItemClick,
     mapper = { this.toUi() },
     filterMatcher = TransactionFilterMatcher,
