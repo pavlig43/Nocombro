@@ -12,7 +12,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import ru.pavlig43.core.model.DecimalData
-import ru.pavlig43.core.model.DecimalFormat
 import ru.pavlig43.core.model.toStartDoubleFormat
 import ua.wwind.table.EditableColumnBuilder
 import ua.wwind.table.EditableTableColumnsBuilder
@@ -22,14 +21,14 @@ import kotlin.math.pow
 
 
 @Suppress("LongParameterList")
-fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.decimalColumn(
+fun <T : Any, C, E,DECIMAL: DecimalData> EditableTableColumnsBuilder<T, C, E>.decimalColumn(
     key: C,
-    getValue: (T) -> DecimalData,
+    getValue: (T) -> DECIMAL,
     headerText: String,
-    updateItem: (T, DecimalData) -> Unit,
+    updateItem: (T, DECIMAL) -> Unit,
     filterType: TableFilterType.NumberTableFilter<Int>?= null,
     isSortable: Boolean = true,
-    footerValue: ((E) -> DecimalData)? = null
+    footerValue: ((E) -> DECIMAL)? = null
 ) {
     column(key, valueOf = { getValue(it) }) {
         autoWidth(300.dp)
@@ -120,9 +119,9 @@ private fun <T : Any, C, E> EditableColumnBuilder<T, C, E>.readNumberCell(
     }
 }
 
-private fun <T : Any, C, E> EditableColumnBuilder<T, C, E>.cellForDecimalFormat(
-    getCount: (T) -> DecimalData,
-    saveInModel: (T, DecimalData) -> Unit,
+private fun <T : Any, C, E,DECIMAL: DecimalData> EditableColumnBuilder<T, C, E>.cellForDecimalFormat(
+    getCount: (T) -> DECIMAL,
+    saveInModel: (T, DECIMAL) -> Unit,
 
     ) {
     // Для отображения значения, когда оно не редактируется
@@ -151,9 +150,9 @@ private fun <T : Any, C, E> EditableColumnBuilder<T, C, E>.cellForDecimalFormat(
  * колбэк берет это значение и сохраняет в модель как целочисленное(граммы или копейки)
  */
 @Composable
-private fun TableCellTextFieldNumber(
-    data: DecimalData,
-    saveInModel: (DecimalData) -> Unit,
+private fun<DECIMAL: DecimalData> TableCellTextFieldNumber(
+    data: DECIMAL,
+    saveInModel: (DECIMAL) -> Unit,
     onComplete: () -> Unit,
     errorMessage: String = "",
 ) {
@@ -191,7 +190,7 @@ private fun TableCellTextFieldNumber(
              */
             val parts = result.split('.')
             val finalText = if (parts.size == 2) {
-                parts[0] + "." + parts[1].take(data.format.countDecimal)
+                parts[0] + "." + parts[1].take(data.countDecimal)
             } else result
 
             displayValue = finalText
@@ -202,8 +201,8 @@ private fun TableCellTextFieldNumber(
             if (displayValue.toDoubleOrNull() != null) {
 
                 val intCount =
-                    (displayValue.toDouble() * 10.0.pow(data.format.countDecimal)).toInt()
-                saveInModel(data.copyValue(value = intCount))
+                    (displayValue.toDouble() * 10.0.pow(data.countDecimal)).toInt()
+                saveInModel(data.copyValue(value = intCount) as DECIMAL)
                 error = ""
             } else {
                 error = "Не число"

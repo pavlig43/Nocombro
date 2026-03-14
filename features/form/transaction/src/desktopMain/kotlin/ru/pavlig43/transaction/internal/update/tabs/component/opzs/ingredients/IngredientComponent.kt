@@ -17,8 +17,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
-import ru.pavlig43.core.model.DecimalData
-import ru.pavlig43.core.model.DecimalFormat
+import ru.pavlig43.core.model.DecimalData3
 import ru.pavlig43.core.tabs.TabOpener
 import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.database.data.transact.ingredient.IngredientBD
@@ -202,7 +201,7 @@ internal class IngredientComponent(
             productId = productId,
             productName = productName,
             vendorName = vendorName,
-            balance = DecimalData(count, DecimalFormat.Decimal3),
+            balance = DecimalData3(count),
             productType = productType,
             id = id
         )
