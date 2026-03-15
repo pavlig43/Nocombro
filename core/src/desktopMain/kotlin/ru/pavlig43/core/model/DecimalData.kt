@@ -11,6 +11,8 @@ data class DecimalData2(
 
     override fun copyValue(value: Int): DecimalData = copy(value = value)
 
+    override fun toString(): String = toStartDoubleFormat()
+
     operator fun plus(other: DecimalData2): DecimalData2 {
         require(other.countDecimal == countDecimal) { "Cannot add DecimalData with different decimal places" }
         return copy(value = value + other.value)
@@ -19,6 +21,7 @@ data class DecimalData2(
         require(other.countDecimal == countDecimal) { "Cannot subtract DecimalData with different decimal places" }
         return copy(value = value - other.value)
     }
+
     operator fun times(multiplier: Int): DecimalData2 = copy(value = value * multiplier)
 }
 data class DecimalData3(
@@ -27,6 +30,8 @@ data class DecimalData3(
     override val countDecimal: Int = 3
 
     override fun copyValue(value: Int): DecimalData = copy(value = value)
+
+    override fun toString(): String = toStartDoubleFormat()
 
     operator fun plus(other: DecimalData3): DecimalData3 {
         require(other.countDecimal == countDecimal) { "Cannot add DecimalData with different decimal places" }
@@ -72,9 +77,7 @@ abstract class DecimalData: Number(), Comparable<DecimalData> {
         return value.toByte()
     }
 
-    override fun toString(): String {
-        return "(decimal:$countDecimal) ${toStartDoubleFormat()}"
-    }
+
 
     override fun hashCode(): Int {
         var result = value

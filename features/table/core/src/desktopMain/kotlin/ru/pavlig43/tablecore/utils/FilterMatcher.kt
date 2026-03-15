@@ -3,8 +3,12 @@ package ru.pavlig43.tablecore.utils
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.core.model.DecimalData
+import ru.pavlig43.core.model.DecimalData2
+import ru.pavlig43.core.model.DecimalData3
+import ru.pavlig43.core.model.toStartDoubleFormat
 import ua.wwind.table.filter.data.FilterConstraint
 import ua.wwind.table.filter.data.TableFilterState
+import ua.wwind.table.filter.data.TableFilterType.NumberTableFilter.NumberFilterDelegate
 
 
 @Suppress("UNCHECKED_CAST")
@@ -159,10 +163,69 @@ abstract class FilterMatcher<I, C> {
         state: TableFilterState<*>,
     ): Boolean = matchesComparableField(value, state)
 
+    protected fun matchesDecimalField(
+        value: DecimalData,
+        state: TableFilterState<*>,
+    ): Boolean = matchesComparableField(value, state)
+
 
 
 
 }
+
+object DataDecimalDelegate2:NumberFilterDelegate<DecimalData2> {
+    override val regex: Regex
+        get() = Regex("^-?\\d*(\\.\\d{0,2})?$")
+    override val default: DecimalData2
+        get() = DecimalData2(0)
+
+    override fun parse(input: String): DecimalData2? {
+        val doubleValue = input.toDoubleOrNull() ?: return null
+        val intValue = (doubleValue * 100).toInt()
+        return DecimalData2(intValue)
+    }
+
+    override fun format(value: DecimalData2): String = value.toStartDoubleFormat()
+
+    override fun toSliderValue(value: DecimalData2): Float = (value.value / 100.0f)
+
+    override fun fromSliderValue(value: Float): DecimalData2 = DecimalData2((value * 100).toInt())
+
+    override fun compare(
+        a: DecimalData2,
+        b: DecimalData2
+    ): Boolean {
+        return a.value <= b.value
+    }
+
+}
+object DataDecimalDelegate3:NumberFilterDelegate<DecimalData3> {
+    override val regex: Regex
+        get() = Regex("^-?\\d*(\\.\\d{0,3})?$")
+    override val default: DecimalData3
+        get() = DecimalData3(0)
+
+    override fun parse(input: String): DecimalData3? {
+        val doubleValue = input.toDoubleOrNull() ?: return null
+        val intValue = (doubleValue * 1000).toInt()
+        return DecimalData3(intValue)
+    }
+
+    override fun format(value: DecimalData3): String = value.toStartDoubleFormat()
+
+    override fun toSliderValue(value: DecimalData3): Float = (value.value / 1000.0f)
+
+    override fun fromSliderValue(value: Float): DecimalData3 = DecimalData3((value * 1000).toInt())
+
+    override fun compare(
+        a: DecimalData3,
+        b: DecimalData3
+    ): Boolean {
+        return a.value <= b.value
+    }
+
+}
+//externalState?.values?.firstOrNull()?.let { filter.delegate.format(it) } ?: ""
 
 
 
