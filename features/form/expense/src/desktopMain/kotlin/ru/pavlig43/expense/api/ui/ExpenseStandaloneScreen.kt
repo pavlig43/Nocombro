@@ -39,8 +39,8 @@ fun ExpenseStandaloneScreen(
                 is ExpenseFormComponent.Child.Create -> CreateExpenseSingleLineScreen(instance.component)
                 is ExpenseFormComponent.Child.Update -> FormTabsUi(
                     component = instance.component,
-                    tabChildFactory = { child: ExpenseTabChild? ->
-                        ExpenseFormTabScreen(child)
+                    tabChildFactory = { expenseTabChild: ExpenseTabChild? ->
+                        ExpenseFormTabScreen(expenseTabChild)
                     }
                 )
             }

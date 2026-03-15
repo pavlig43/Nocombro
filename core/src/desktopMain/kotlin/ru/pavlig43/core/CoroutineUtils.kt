@@ -1,3 +1,4 @@
+@file:Suppress("NamedArguments")
 package ru.pavlig43.core
 
 import kotlinx.coroutines.CoroutineExceptionHandler

@@ -52,7 +52,7 @@ class ExpenseFormComponent(
     )
 
     private fun onChangeValueForMainTab(expense: ExpenseEssentialsUi) {
-        val title = "*Расход ${expense.expenseType?.displayName ?: ""}"
+        val title = "*Расход ${expense.expenseType?.displayName.orEmpty()}"
         val navTabState = MainTabComponent.NavTabState(title)
         _model.update { navTabState }
     }

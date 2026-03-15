@@ -148,7 +148,7 @@ private fun AddFileBody(
     ) {
 
         Row(
-            Modifier.fillMaxWidth().padding(start = 8.dp),
+            modifier = Modifier.fillMaxWidth().padding(start = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {

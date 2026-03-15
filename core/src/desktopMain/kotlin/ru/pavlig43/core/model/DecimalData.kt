@@ -27,6 +27,7 @@ data class DecimalData2(
 data class DecimalData3(
     override val value: Int
 ): DecimalData() {
+    @Suppress("MagicNumber")
     override val countDecimal: Int = 3
 
     override fun copyValue(value: Int): DecimalData = copy(value = value)

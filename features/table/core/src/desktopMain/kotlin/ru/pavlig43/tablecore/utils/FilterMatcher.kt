@@ -173,11 +173,13 @@ abstract class FilterMatcher<I, C> {
 
 }
 
+@Suppress("MagicNumber")
 object DataDecimalDelegate2:NumberFilterDelegate<DecimalData2> {
     override val regex: Regex
         get() = Regex("^-?\\d*(\\.\\d{0,2})?$")
     override val default: DecimalData2
         get() = DecimalData2(0)
+
 
     override fun parse(input: String): DecimalData2? {
         val doubleValue = input.toDoubleOrNull() ?: return null
@@ -199,6 +201,7 @@ object DataDecimalDelegate2:NumberFilterDelegate<DecimalData2> {
     }
 
 }
+@Suppress("MagicNumber")
 object DataDecimalDelegate3:NumberFilterDelegate<DecimalData3> {
     override val regex: Regex
         get() = Regex("^-?\\d*(\\.\\d{0,3})?$")

@@ -199,6 +199,7 @@ internal class MainTabNavigationComponent(
         }
     }
 
+    @Suppress("CyclomaticComplexMethod")
     private fun createImmutableTableChild(
         tabConfig: MainTabConfig.ItemListConfig,
         context: ComponentContext

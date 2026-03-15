@@ -144,7 +144,7 @@ private fun<DECIMAL: DecimalData> TableCellTextFieldNumber(
     // значение нельзя привести к числовому формату то функция обновления не сработает
     var displayValue by remember {
         mutableStateOf(
-            data.takeIf { it.value != 0 }?.toStartDoubleFormat() ?: ""
+            data.takeIf { it.value != 0 }?.toStartDoubleFormat().orEmpty()
         )
     }
 

@@ -152,10 +152,11 @@ internal sealed interface LoadState {
     data object Success : LoadState
 }
 
+@Suppress("UnusedPrivateMember")
 private fun List<StorageProduct>.toUi(): List<StorageProductUi> {
     return flatMap { it.toUi() }
 }
-
+@Suppress("UnusedPrivateMember")
 private fun StorageProduct.toUi(): List<StorageProductUi> {
     val productItem = StorageProductUi(
         productId = productId,

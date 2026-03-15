@@ -40,7 +40,7 @@ class LogoPassComponent(
 
     override val isValidLogin: StateFlow<Boolean> = _login.map { validateLogin(it) }
         .stateIn(
-            coroutineScope,
+            scope = coroutineScope,
             started = SharingStarted.Eagerly,
             initialValue = false
         )
@@ -55,14 +55,14 @@ class LogoPassComponent(
 
     override val isValidPassword: StateFlow<Boolean> = _password.map { validatePassword(it) }
         .stateIn(
-            coroutineScope,
+            scope = coroutineScope,
             started = SharingStarted.Eagerly,
             initialValue = false
         )
     override val isValidLogoPass: StateFlow<Boolean> =
         isValidLogin.combine(isValidPassword) { isValidLogin, isValidPassword -> isValidLogin && isValidPassword }
             .stateIn(
-                coroutineScope,
+                scope = coroutineScope,
                 started = SharingStarted.Eagerly,
                 initialValue = false
             )

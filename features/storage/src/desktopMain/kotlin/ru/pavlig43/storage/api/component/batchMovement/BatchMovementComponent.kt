@@ -26,6 +26,7 @@ import ru.pavlig43.storage.api.StorageDependencies
 import ru.pavlig43.storage.internal.di.StorageRepository
 import ru.pavlig43.storage.internal.di.createStorageModule
 
+@Suppress("LongParameterList")
 class BatchMovementComponent(
     componentContext: ComponentContext,
     dependencies: StorageDependencies,
@@ -89,7 +90,7 @@ internal sealed interface BatchMovementLoadState {
 
 
 private fun BatchMovementWithBalanceInfoBD.toLoadState(): BatchMovementLoadState {
-    val batchName = "(${this.batchId}) ${this.movements.firstOrNull()?.movementDate?.format(dateTimeFormat) ?: ""}"
+    val batchName = "(${this.batchId}) ${this.movements.firstOrNull()?.movementDate?.format(dateTimeFormat).orEmpty()}"
     return BatchMovementLoadState.Success(
         BatchMovementInfo(
             productName = this.productName,

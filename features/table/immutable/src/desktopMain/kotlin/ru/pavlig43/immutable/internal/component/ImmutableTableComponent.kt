@@ -98,9 +98,9 @@ internal abstract class ImmutableTableComponent<BD, UI : IMultiLineTableUi, Colu
             }
         }
     }.stateIn(
-        coroutineScope,
-        SharingStarted.Eagerly,
-        TableData(isSelectionMode = tableBuilder.withCheckbox)
+        scope = coroutineScope,
+        started = SharingStarted.Eagerly,
+        initialValue = TableData(isSelectionMode = tableBuilder.withCheckbox)
     )
 
     fun onEvent(event: ImmutableTableUiEvent) {
