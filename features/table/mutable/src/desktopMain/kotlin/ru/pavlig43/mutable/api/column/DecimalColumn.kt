@@ -1,3 +1,5 @@
+@file:Suppress("UNCHECKED_CAST")
+
 package ru.pavlig43.mutable.api.column
 
 import androidx.compose.foundation.layout.padding
