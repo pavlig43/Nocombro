@@ -5,8 +5,7 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.LocalDateTime
-import ru.pavlig43.core.model.DecimalData
-import ru.pavlig43.core.model.DecimalFormat
+import ru.pavlig43.core.model.DecimalData2
 import ru.pavlig43.database.data.expense.ExpenseBD
 import ru.pavlig43.mutable.api.multiLine.component.MutableTableComponent
 import ru.pavlig43.mutable.api.multiLine.data.UpdateCollectionRepository
@@ -38,7 +37,7 @@ internal class ExpensesComponent(
             id = 0,
             transactionId = transactionId,
             expenseType = null,
-            amount = DecimalData(0, DecimalFormat.Decimal2),
+            amount = DecimalData2(0),
             expenseDateTime = getTransactionDateTime(),
             comment = ""
         )
@@ -50,7 +49,7 @@ internal class ExpensesComponent(
             id = id,
             transactionId = transactionId,
             expenseType = expenseType,
-            amount = DecimalData(amount, DecimalFormat.Decimal2),
+            amount = DecimalData2(amount),
             expenseDateTime = expenseDateTime,
             comment = comment
         )

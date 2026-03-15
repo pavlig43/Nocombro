@@ -9,13 +9,13 @@ import ru.pavlig43.database.data.batch.BatchBD
 import ru.pavlig43.database.data.batch.BatchMovement
 
 @Dao
-abstract class BatchDao {
+interface BatchDao {
 
     @Update
-    abstract suspend fun updateBatch(batch: BatchBD)
+    suspend fun updateBatch(batch: BatchBD)
 
     @Insert
-    abstract suspend fun createBatch(batchBD: BatchBD): Long
+    suspend fun createBatch(batchBD: BatchBD): Long
 
 
     /**
@@ -24,5 +24,5 @@ abstract class BatchDao {
      * @return Flow со всеми движениями партий
      */
     @Query("SELECT * FROM batch_movement")
-    abstract fun observeAllMovements(): Flow<List<BatchMovement>>
+    fun observeAllMovements(): Flow<List<BatchMovement>>
 }

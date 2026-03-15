@@ -1,7 +1,6 @@
 package ru.pavlig43.product.internal.update.tabs.composition
 
 import ru.pavlig43.core.model.DecimalData
-import ru.pavlig43.core.model.DecimalFormat
 import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.tablecore.model.IMultiLineTableUi
 

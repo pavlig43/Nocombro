@@ -79,11 +79,11 @@ internal class PfComponent(
                     MBSImmutableTableComponent<ProductDeclarationTableUi>(
                         componentContext = context,
                         onDismissed = dialogNavigation::dismiss,
-                        onCreate = { tabOpener.openDeclarationTab(0) },
                         dependencies = immutableTableDependencies,
                         immutableTableBuilderData = ProductDeclarationImmutableTableBuilder(
                             parentId = item.productId,
                         ),
+                        tabOpener = tabOpener,
                         onItemClick = { declaration ->
                             onChangeItem {
                                 it.copy(
@@ -104,12 +104,12 @@ internal class PfComponent(
                     MBSImmutableTableComponent<ProductTableUi>(
                         componentContext = context,
                         onDismissed = dialogNavigation::dismiss,
-                        onCreate = { tabOpener.openProductTab(0) },
                         dependencies = immutableTableDependencies,
                         immutableTableBuilderData = ProductImmutableTableBuilder(
                             fullListProductTypes = ProductType.entries,
                             withCheckbox = false
                         ),
+                        tabOpener = tabOpener,
                         onItemClick = { product ->
                             if (product.composeId != item.productId) {
                                 onChangeItem {

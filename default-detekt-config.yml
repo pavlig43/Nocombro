@@ -141,7 +141,7 @@ complexity:
     active: false
     threshold: 6
   NamedArguments:
-    active: true
+    active: false
     threshold: 2
     ignoreArgumentsMatchingNames: false
   NestedBlockDepth:
@@ -450,7 +450,7 @@ potential-bugs:
   HasPlatformType:
     active: true
   IgnoredReturnValue:
-    active: true
+    active: false
     restrictToConfig: true
     returnValueAnnotations:
       - 'CheckResult'

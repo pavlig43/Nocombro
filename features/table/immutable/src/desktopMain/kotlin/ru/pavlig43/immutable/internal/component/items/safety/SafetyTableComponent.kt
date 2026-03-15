@@ -2,8 +2,7 @@ package ru.pavlig43.immutable.internal.component.items.safety
 
 import com.arkivanov.decompose.ComponentContext
 import kotlinx.collections.immutable.ImmutableList
-import ru.pavlig43.core.model.DecimalData
-import ru.pavlig43.core.model.DecimalFormat
+import ru.pavlig43.core.model.DecimalData3
 import ru.pavlig43.database.data.safety.SafetyTableItem
 import ru.pavlig43.immutable.api.component.SafetyImmutableTableBuilder
 import ru.pavlig43.immutable.internal.component.ImmutableTableComponent
@@ -14,8 +13,8 @@ import ua.wwind.table.ColumnSpec
 internal class SafetyTableComponent(
     componentContext: ComponentContext,
     tableBuilder: SafetyImmutableTableBuilder,
-    onCreate: () -> Unit,
     onItemClick: (SafetyTableUi) -> Unit,
+    onCreate: () -> Unit,
     repository: ImmutableListRepository<SafetyTableItem>,
 ) : ImmutableTableComponent<SafetyTableItem, SafetyTableUi, SafetyField>(
     componentContext = componentContext,
@@ -37,8 +36,8 @@ private fun SafetyTableItem.toUi(): SafetyTableUi {
         productId = productId,
         productName = productName,
         vendorName = vendorName,
-        count = DecimalData(count, DecimalFormat.Decimal3),
-        reorderPoint = DecimalData(reorderPoint, DecimalFormat.Decimal3),
-        orderQuantity = DecimalData(orderQuantity, DecimalFormat.Decimal3)
+        count = DecimalData3(count),
+        reorderPoint = DecimalData3(reorderPoint),
+        orderQuantity = DecimalData3(orderQuantity)
     )
 }

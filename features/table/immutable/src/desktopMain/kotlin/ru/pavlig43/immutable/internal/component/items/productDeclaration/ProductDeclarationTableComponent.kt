@@ -13,8 +13,8 @@ import ua.wwind.table.ColumnSpec
 internal class ProductDeclarationTableComponent(
     componentContext: ComponentContext,
     tableBuilder: ProductDeclarationImmutableTableBuilder,
-    onCreate: () -> Unit,
     onItemClick: (ProductDeclarationTableUi) -> Unit,
+    onCreate: () -> Unit,
     repository: ImmutableListRepository<ProductDeclarationOut>,
 ) : ImmutableTableComponent<ProductDeclarationOut, ProductDeclarationTableUi, ProductDeclarationField>(
     componentContext = componentContext,

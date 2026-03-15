@@ -13,8 +13,8 @@ import ua.wwind.table.ColumnSpec
 internal class TransactionTableComponent(
     componentContext: ComponentContext,
     tableBuilder: TransactionImmutableTableBuilder,
-    onCreate: () -> Unit,
     onItemClick: (TransactionTableUi) -> Unit,
+    onCreate: () -> Unit,
     repository: ImmutableListRepository<Transact>,
 ) : ImmutableTableComponent<Transact, TransactionTableUi, TransactionField>(
     componentContext = componentContext,

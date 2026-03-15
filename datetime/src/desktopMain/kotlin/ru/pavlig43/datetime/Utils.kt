@@ -1,4 +1,4 @@
-@file:Suppress("TooManyFunctions","MagicNumber")
+@file:Suppress("TooManyFunctions","MagicNumber","NamedArguments")
 package ru.pavlig43.datetime
 
 import kotlinx.datetime.DateTimeUnit

@@ -41,8 +41,8 @@ fun DocumentFormScreen(
                 is DocumentFormComponent.Child.Create -> CreateDocumentSingleLineScreen(instance.component)
                 is DocumentFormComponent.Child.Update -> FormTabsUi(
                     component = instance.component,
-                    tabChildFactory = { child: DocumentTabChild?->
-                        DocumentFormTabScreen(child)
+                    tabChildFactory = { docChild: DocumentTabChild?->
+                        DocumentFormTabScreen(docChild)
                     }
                 )
             }

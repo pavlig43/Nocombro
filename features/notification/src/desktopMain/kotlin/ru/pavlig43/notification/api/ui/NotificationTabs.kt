@@ -37,7 +37,7 @@ private fun NotificationTabsUi(
     modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier.fillMaxSize()
+        modifier = modifier.fillMaxSize()
             .padding(horizontal = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp)

@@ -16,7 +16,7 @@ import ua.wwind.table.ReadonlyTableColumnsBuilder
 import ua.wwind.table.filter.data.TableFilterType
 
 @Suppress("LongParameterList")
-internal fun <T : Any, C, E> ReadonlyTableColumnsBuilder<T, C, E>.readIsActualColumn(
+internal fun <T : Any, C, E> ReadonlyTableColumnsBuilder<T, C, E>.readBooleanColumn(
     headerText: String,
     column: C,
     valueOf: (T) -> Boolean,

@@ -9,8 +9,8 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.Serializable
-import ru.pavlig43.core.model.DecimalData
-import ru.pavlig43.core.model.DecimalFormat
+import ru.pavlig43.core.model.DecimalData2
+import ru.pavlig43.core.model.DecimalData3
 import ru.pavlig43.core.tabs.TabOpener
 import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.database.data.transact.buy.BuyBDOut
@@ -71,11 +71,11 @@ internal class BuyComponent(
                 MBSImmutableTableComponent<ProductDeclarationTableUi>(
                     componentContext = context,
                     onDismissed = dialogNavigation::dismiss,
-                    onCreate = { tabOpener.openDeclarationTab(0) },
                     dependencies = immutableTableDependencies,
                     immutableTableBuilderData = ProductDeclarationImmutableTableBuilder(
                         parentId = dialogConfig.productId,
                     ),
+                    tabOpener = tabOpener,
                     onItemClick = { declaration ->
                         val buyUi = itemList.value.first { it.composeId == dialogConfig.composeId }
                         onEvent(
@@ -96,12 +96,12 @@ internal class BuyComponent(
                 MBSImmutableTableComponent<ProductTableUi>(
                     componentContext = context,
                     onDismissed = dialogNavigation::dismiss,
-                    onCreate = { tabOpener.openProductTab(0) },
                     dependencies = immutableTableDependencies,
                     immutableTableBuilderData = ProductImmutableTableBuilder(
                         fullListProductTypes = ProductType.entries,
                         withCheckbox = false
                     ),
+                    tabOpener = tabOpener,
                     onItemClick = { product ->
                         val buyUi = itemList.value.first { it.composeId == dialogConfig.composeId }
                         onEvent(
@@ -147,12 +147,12 @@ internal class BuyComponent(
             batchId = batchId,
             productId = productId,
             productName = productName,
-            count = DecimalData(count, DecimalFormat.Decimal3),
+            count = DecimalData3(count),
             declarationId = declarationId,
             declarationName = declarationName,
             vendorName = vendorName,
             dateBorn = dateBorn,
-            price = DecimalData(price, DecimalFormat.Decimal2),
+            price = DecimalData2(price),
             comment = comment,
             id = id
         )

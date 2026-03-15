@@ -3,11 +3,11 @@
 package ru.pavlig43.transaction.internal.update.tabs.component.buy
 
 import kotlinx.collections.immutable.ImmutableList
-import ru.pavlig43.core.model.DecimalData
-import ru.pavlig43.core.model.DecimalFormat
+import ru.pavlig43.core.model.DecimalData2
+import ru.pavlig43.core.model.DecimalData3
 import ru.pavlig43.mutable.api.column.decimalColumn
 import ru.pavlig43.mutable.api.column.idWithSelection
-import ru.pavlig43.mutable.api.column.readDecimalColumnWithFooter
+import ru.pavlig43.mutable.api.column.readDecimalColumn
 import ru.pavlig43.mutable.api.column.readTextColumn
 import ru.pavlig43.mutable.api.column.textWithSearchIconColumn
 import ru.pavlig43.mutable.api.column.writeDateColumn
@@ -64,7 +64,7 @@ internal fun createBuyColumn(
                 headerText = "Количество",
                 updateItem = { item, count -> onEvent(MutableUiEvent.UpdateItem(item.copy(count = count))) },
                 footerValue = { tableData ->
-                    tableData.displayedItems.fold(DecimalData(0, DecimalFormat.Decimal3)) { acc, item ->
+                    tableData.displayedItems.fold(DecimalData3(0)) { acc, item ->
                         acc + item.count
                     }
                 }
@@ -77,12 +77,12 @@ internal fun createBuyColumn(
                 updateItem = { item, price -> onEvent(MutableUiEvent.UpdateItem(item.copy(price = price))) }
             )
 
-            readDecimalColumnWithFooter(
+            readDecimalColumn(
                 key = BuyField.SUM,
                 getValue = { it.sum },
                 headerText = "Сумма",
                 footerValue = { tableData ->
-                    tableData.displayedItems.fold(DecimalData(0, DecimalFormat.Decimal2)) { acc, item ->
+                    tableData.displayedItems.fold(DecimalData2(0)) { acc, item ->
                         acc + item.sum
                     }
                 }

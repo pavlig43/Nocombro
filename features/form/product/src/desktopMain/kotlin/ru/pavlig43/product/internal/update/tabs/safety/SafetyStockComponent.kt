@@ -3,8 +3,7 @@ package ru.pavlig43.product.internal.update.tabs.safety
 import com.arkivanov.decompose.ComponentContext
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.Flow
-import ru.pavlig43.core.model.DecimalData
-import ru.pavlig43.core.model.DecimalFormat
+import ru.pavlig43.core.model.DecimalData3
 import ru.pavlig43.database.data.product.SafetyStock
 import ru.pavlig43.mutable.api.singleLine.component.SingleLineComponentFactory
 import ru.pavlig43.mutable.api.singleLine.component.UpdateSingleLineComponent
@@ -36,8 +35,8 @@ private val safetyStockComponentFactory = SingleLineComponentFactory<SafetyStock
     initItem = SafetyStockUi(
         id = 0,
         productId = 0,
-        reorderPoint = DecimalData(0, DecimalFormat.Decimal3),
-        orderQuantity = DecimalData(0, DecimalFormat.Decimal3)
+        reorderPoint = DecimalData3(0),
+        orderQuantity = DecimalData3(0)
     ),
     errorFactory = { safety ->
         buildList {

@@ -67,8 +67,8 @@ fun <TabConfiguration : Any, TabChild : Any> TabLazyRowNavigationContent(
     val activeTab = children.selectedIndex?.let { children.items[it] }
     val key = activeTab?.keyHashString()
     val instance = activeTab?.instance
-    key?.let { key ->
-        holder.SaveableStateProvider(key) {
+    key?.let {
+        holder.SaveableStateProvider(it) {
             tabChildFactory(instance)
         }
     }
@@ -115,8 +115,8 @@ fun <TabConfiguration : Any, TabChild : Any> TabStaticNavigationContent(
     val activeTab = children.selectedIndex?.let { children.items[it] }
     val key = activeTab?.keyHashString()
     val instance = activeTab?.instance
-    key?.let { key ->
-        holder.SaveableStateProvider(key) {
+    key?.let {
+        holder.SaveableStateProvider(it) {
             tabChildFactory(instance)
         }
     }

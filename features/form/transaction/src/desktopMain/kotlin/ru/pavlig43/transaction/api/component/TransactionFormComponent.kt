@@ -56,7 +56,7 @@ class TransactionFormComponent(
     )
 
     private fun onChangeValueForMainTab(transaction: TransactionEssentialsUi) {
-        val title = "*Транзакция ${transaction.transactionType?.displayName ?: ""}"
+        val title = "*Транзакция ${transaction.transactionType?.displayName.orEmpty()}"
         _model.update { MainTabComponent.NavTabState(title) }
     }
 

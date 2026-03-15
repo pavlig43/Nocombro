@@ -211,7 +211,11 @@ private class DragController(
             reorderItems(currentIndex, targetItem)
         } else {
             // Нет цели - проверяем необходимость автоскролла
-            handleScroll(startPosition, endPosition, currentIndex)
+            handleScroll(
+                startPosition = startPosition,
+                endPosition = endPosition,
+                currentIndex = currentIndex
+            )
         }
     }
 
@@ -226,6 +230,7 @@ private class DragController(
         draggedItemIndex = targetIndex
         // "Скорректируй смещение так, чтобы элемент остался под пальцем,
         // но теперь относительно новой позиции в списке"
+        @Suppress("UnsafeCallOnNullableType")
         offset.snapTo(offset.value + draggedItemInfo!!.offset - targetItem.offset)
         draggedItemInfo = targetItem
     }

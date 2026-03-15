@@ -8,6 +8,7 @@ import ru.pavlig43.immutable.internal.column.readDecimalColumn
 import ru.pavlig43.immutable.internal.column.readTextColumn
 import ru.pavlig43.immutable.internal.component.ImmutableTableUiEvent
 import ru.pavlig43.tablecore.model.TableData
+import ru.pavlig43.tablecore.utils.DataDecimalDelegate3
 import ua.wwind.table.ColumnSpec
 import ua.wwind.table.filter.data.TableFilterType
 import ua.wwind.table.tableColumns
@@ -50,7 +51,7 @@ internal fun createBatchColumn(
                 headerText = "Остаток",
                 column = BatchField.COUNT,
                 valueOf = { it.balance },
-                filterType = TableFilterType.NumberTableFilter(delegate = TableFilterType.NumberTableFilter.IntDelegate)
+                filterType = TableFilterType.NumberTableFilter(delegate = DataDecimalDelegate3)
             )
 
             readDateColumn(

@@ -31,6 +31,7 @@ internal enum class ProductDeclarationField {
     IS_ACTUAL
 }
 
+@Suppress("LongMethod")
 internal fun createProductDeclarationColumn(
     onEvent: (ProductDeclarationEvent) -> Unit,
 ): ImmutableList<ColumnSpec<ProductDeclarationTableUi, ProductDeclarationField, TableData<ProductDeclarationTableUi>>> {

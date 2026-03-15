@@ -1,8 +1,7 @@
 package ru.pavlig43.product.internal.model
 
 import kotlinx.datetime.LocalDate
-import ru.pavlig43.core.model.DecimalData
-import ru.pavlig43.core.model.DecimalFormat
+import ru.pavlig43.core.model.DecimalData2
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.datetime.getCurrentLocalDate
@@ -20,7 +19,7 @@ internal data class ProductEssentialsUi(
 
     val comment: String = "",
 
-    val priceForSale: DecimalData = DecimalData(0, DecimalFormat.Decimal2),
+    val priceForSale: DecimalData2 = DecimalData2(0),
 
     val id: Int = 0,
 ) : ISingleLineTableUi
@@ -45,7 +44,7 @@ internal fun Product.toUi(): ProductEssentialsUi {
         productType = type,
         createdAt = createdAt,
         comment = comment,
-        priceForSale = DecimalData(priceForSale, DecimalFormat.Decimal2),
+        priceForSale = DecimalData2(priceForSale),
         id = id
     )
 }

@@ -13,8 +13,8 @@ import ua.wwind.table.ColumnSpec
 internal class VendorTableComponent(
     componentContext: ComponentContext,
     tableBuilder: VendorImmutableTableBuilder,
-    onCreate: () -> Unit,
     onItemClick: (VendorTableUi) -> Unit,
+    onCreate: () -> Unit,
     repository: ImmutableListRepository<Vendor>,
 ) : ImmutableTableComponent<Vendor, VendorTableUi, VendorField>(
     componentContext = componentContext,
