@@ -11,14 +11,17 @@ import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.database.data.transact.TransactionType
 import ru.pavlig43.declaration.api.DeclarationFormComponent
 import ru.pavlig43.document.api.component.DocumentFormComponent
+import ru.pavlig43.expense.api.component.ExpenseFormComponent
 import ru.pavlig43.immutable.api.component.DeclarationImmutableTableBuilder
 import ru.pavlig43.immutable.api.component.DocumentImmutableTableBuilder
+import ru.pavlig43.immutable.api.component.ExpenseImmutableTableBuilder
 import ru.pavlig43.immutable.api.component.ImmutableTableBuilderData
 import ru.pavlig43.immutable.api.component.ImmutableTableComponentFactoryMain
 import ru.pavlig43.immutable.api.component.ProductImmutableTableBuilder
 import ru.pavlig43.immutable.api.component.SafetyImmutableTableBuilder
 import ru.pavlig43.immutable.api.component.TransactionImmutableTableBuilder
 import ru.pavlig43.immutable.api.component.VendorImmutableTableBuilder
+import ru.pavlig43.immutable.internal.component.items.expense.ExpenseTableUi
 import ru.pavlig43.notification.api.component.NotificationComponent
 import ru.pavlig43.notification.api.model.NotificationItem
 import ru.pavlig43.product.api.component.ProductFormComponent
@@ -26,6 +29,7 @@ import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.BatchMovementCh
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ImmutableTableChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ItemFormChild.DeclarationFormChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ItemFormChild.DocumentFormChild
+import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ItemFormChild.ExpenseFormChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ItemFormChild.ProductFormChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ItemFormChild.TransactionFormChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ItemFormChild.VendorFormChild
@@ -35,11 +39,13 @@ import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.StorageChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.BatchMovementListConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemFormConfig.DeclarationFormConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemFormConfig.DocumentFormConfig
+import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemFormConfig.ExpenseFormConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemFormConfig.ProductFormConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemFormConfig.TransactionFormConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemFormConfig.VendorFormConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig.DeclarationListConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig.DocumentListConfig
+import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig.ExpenseListConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig.ProductListConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig.SafetyListConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig.TransactionListConfig
@@ -48,7 +54,6 @@ import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.NotificationCo
 import ru.pavlig43.rootnocombro.internal.navigation.drawer.component.DrawerComponent
 import ru.pavlig43.rootnocombro.internal.navigation.drawer.component.DrawerDestination
 import ru.pavlig43.sampletable.api.component.SampleTableComponentMain
-import ru.pavlig43.storage.api.StorageDependencies
 import ru.pavlig43.storage.api.component.batchMovement.BatchMovementComponent
 import ru.pavlig43.storage.api.component.storage.StorageComponent
 import ru.pavlig43.tablecore.model.IMultiLineTableUi
@@ -85,6 +90,7 @@ internal class MainTabNavigationComponent(
             DrawerDestination.VendorList -> VendorListConfig()
             DrawerDestination.DeclarationList -> DeclarationListConfig()
             DrawerDestination.ProductTransactionList -> TransactionListConfig()
+            DrawerDestination.ExpenseList -> ExpenseListConfig()
             DrawerDestination.Safety -> SafetyListConfig()
             DrawerDestination.SampleTable -> MainTabConfig.SampleTableConfig()
             DrawerDestination.Storage -> MainTabConfig.StorageConfig()
@@ -112,8 +118,17 @@ internal class MainTabNavigationComponent(
             tabNavigationComponent.addTab(TransactionFormConfig(id))
         }
 
-        override fun openBatchMovementTab(batchId: Int, productName: String, start: LocalDateTime, end: LocalDateTime) {
+        override fun openBatchMovementTab(
+            batchId: Int,
+            productName: String,
+            start: LocalDateTime,
+            end: LocalDateTime
+        ) {
             tabNavigationComponent.addTab(BatchMovementListConfig(batchId, productName, start, end))
+        }
+
+        override fun openExpenseFormTab(id: Int) {
+            tabNavigationComponent.addTab(ExpenseFormConfig(id))
         }
 
     }
@@ -137,27 +152,21 @@ internal class MainTabNavigationComponent(
                     )
 
                     is MainTabConfig.StorageConfig -> {
-                        val storageDependencies = StorageDependencies(
-                            db = scope.get(),
-                            tabOpener = tabOpener
-                        )
                         StorageChild(
                             StorageComponent(
                                 componentContext = context,
-                                dependencies = storageDependencies,
+                                dependencies = scope.get(),
+                                tabOpener = tabOpener
                             )
                         )
                     }
 
                     is BatchMovementListConfig -> {
-                        val storageDependencies = StorageDependencies(
-                            db = scope.get(),
-                            tabOpener = tabOpener
-                        )
                         BatchMovementChild(
                             BatchMovementComponent(
                                 componentContext = context,
-                                dependencies = storageDependencies,
+                                dependencies = scope.get(),
+                                tabOpener = tabOpener,
                                 batchId = mainTabConfig.batchId,
                                 productName = mainTabConfig.productName,
                                 initStart = mainTabConfig.start,
@@ -190,52 +199,67 @@ internal class MainTabNavigationComponent(
         }
     }
 
+    @Suppress("CyclomaticComplexMethod")
     private fun createImmutableTableChild(
         tabConfig: MainTabConfig.ItemListConfig,
         context: ComponentContext
     ): ImmutableTableChild {
 
-        val immutableTableBuilderData: ImmutableTableBuilderData<out IMultiLineTableUi> = when (tabConfig) {
-            is DeclarationListConfig -> DeclarationImmutableTableBuilder(withCheckbox = true)
-            is DocumentListConfig -> DocumentImmutableTableBuilder(
-                fullListDocumentTypes = DocumentType.entries,
-                withCheckbox = true
-            )
+        val immutableTableBuilderData: ImmutableTableBuilderData<out IMultiLineTableUi> =
+            when (tabConfig) {
+                is DeclarationListConfig -> DeclarationImmutableTableBuilder(withCheckbox = true)
+                is DocumentListConfig -> DocumentImmutableTableBuilder(
+                    fullListDocumentTypes = DocumentType.entries,
+                    withCheckbox = true
+                )
 
-            is ProductListConfig -> ProductImmutableTableBuilder(
-                fullListProductTypes = ProductType.entries,
-                withCheckbox = true
-            )
+                is ProductListConfig -> ProductImmutableTableBuilder(
+                    fullListProductTypes = ProductType.entries,
+                    withCheckbox = true
+                )
 
-            is TransactionListConfig -> TransactionImmutableTableBuilder(
-                fullListTransactionTypes = TransactionType.entries,
-                withCheckbox = true
-            )
+                is TransactionListConfig -> TransactionImmutableTableBuilder(
+                    fullListTransactionTypes = TransactionType.entries,
+                    withCheckbox = true
+                )
 
-            is VendorListConfig -> VendorImmutableTableBuilder(
-                withCheckbox = true
-            )
+                is VendorListConfig -> VendorImmutableTableBuilder(
+                    withCheckbox = true
+                )
 
-            is SafetyListConfig -> SafetyImmutableTableBuilder()
+                is ExpenseListConfig -> ExpenseImmutableTableBuilder(
+                    withCheckbox = true
+                )
+
+                is SafetyListConfig -> SafetyImmutableTableBuilder()
+            }
+
+
+        fun <I : IMultiLineTableUi> onItemClick(item: I) = when (tabConfig) {
+            is SafetyListConfig -> tabOpener.openProductTab(item.composeId)
+            is DeclarationListConfig -> tabOpener.openDeclarationTab(item.composeId)
+            is DocumentListConfig -> tabOpener.openDocumentTab(item.composeId)
+            is ProductListConfig -> tabOpener.openProductTab(item.composeId)
+            is VendorListConfig -> tabOpener.openVendorTab(item.composeId)
+            is TransactionListConfig -> tabOpener.openTransactionTab(item.composeId)
+            is ExpenseListConfig -> {
+                val transactionId = (item as ExpenseTableUi).transactionId
+                if (transactionId != null) {
+                    tabOpener.openTransactionTab(transactionId)
+                } else
+                    tabOpener.openExpenseFormTab(
+                        item.composeId
+                    )
+            }
         }
-
-        fun formConfig(id: Int) = when (tabConfig) {
-            is SafetyListConfig -> ProductFormConfig(id)
-            is DeclarationListConfig -> DeclarationFormConfig(id)
-            is DocumentListConfig -> DocumentFormConfig(id)
-            is ProductListConfig -> ProductFormConfig(id)
-            is VendorListConfig -> VendorFormConfig(id)
-            is TransactionListConfig -> TransactionFormConfig(id)
-        }
-
 
         return ImmutableTableChild(
             ImmutableTableComponentFactoryMain(
                 componentContext = context,
                 dependencies = scope.get(),
-                onCreate = { tabNavigationComponent.addTab(formConfig(0)) },
-                onItemClick = { tabNavigationComponent.addTab(formConfig(it.composeId)) },
-                immutableTableBuilderData = immutableTableBuilderData
+                onItemClick = { onItemClick(it) },
+                immutableTableBuilderData = immutableTableBuilderData,
+                tabOpener = tabOpener
             )
         )
     }
@@ -286,6 +310,14 @@ internal class MainTabNavigationComponent(
                     vendorId = tabConfig.id,
                     componentContext = context,
                     dependencies = scope.get()
+                )
+            )
+
+            is ExpenseFormConfig -> ExpenseFormChild(
+                ExpenseFormComponent(
+                    componentContext = context,
+                    dependencies = scope.get(),
+                    expenseId = tabConfig.id
                 )
             )
         }

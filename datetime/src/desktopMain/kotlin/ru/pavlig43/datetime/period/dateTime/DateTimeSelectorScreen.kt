@@ -126,7 +126,7 @@ private fun DateTimeSelectorScreen(
 }
 
 @Composable
-private fun DateTimeRow(
+fun DateTimeRow(
     label: String,
     dateTime: LocalDateTime,
     onClick: () -> Unit,

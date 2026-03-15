@@ -81,3 +81,8 @@ class SafetyImmutableTableBuilder: ImmutableTableBuilderData<SafetyTableUi> {
     override val withCheckbox: Boolean = false
 }
 
+data class ExpenseImmutableTableBuilder(
+    override val withCheckbox: Boolean
+) : ImmutableTableBuilderData<ru.pavlig43.immutable.internal.component.items.expense.ExpenseTableUi> {
+    override val tabTitle: String = "Расходы"
+}

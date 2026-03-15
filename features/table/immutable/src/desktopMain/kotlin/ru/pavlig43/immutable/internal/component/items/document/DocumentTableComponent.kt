@@ -14,7 +14,7 @@ import kotlin.time.ExperimentalTime
 internal class DocumentTableComponent(
     componentContext: ComponentContext,
     tableBuilder: DocumentImmutableTableBuilder,
-    onCreate: () -> Unit,
+    onCreate:() -> Unit,
     onItemClick: (DocumentTableUi) -> Unit,
     repository: ImmutableListRepository<Document>,
 ) : ImmutableTableComponent<Document, DocumentTableUi, DocumentField>(

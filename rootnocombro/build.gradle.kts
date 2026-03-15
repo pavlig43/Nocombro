@@ -1,4 +1,3 @@
-import ru.pavlig43.convention.extension.commonMainDependencies
 import ru.pavlig43.convention.extension.desktopDependencies
 
 plugins {
@@ -24,6 +23,7 @@ kotlin {
         implementation(projects.features.form.vendor)
         implementation(projects.features.form.declaration)
         implementation(projects.features.form.transaction)
+        implementation(projects.features.form.expense)
         implementation(projects.features.storage)
     }
 }

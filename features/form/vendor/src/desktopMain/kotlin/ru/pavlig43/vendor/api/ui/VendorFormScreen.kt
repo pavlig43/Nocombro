@@ -41,8 +41,8 @@ fun VendorFormScreen(
                 is VendorFormComponent.Child.Create -> CreateVendorSingleLineScreen(instance.component)
                 is VendorFormComponent.Child.Update -> FormTabsUi(
                     component = instance.component,
-                    tabChildFactory = { child: VendorTabChild? ->
-                        VendorFormTabScreen(child)
+                    tabChildFactory = { vendorChild: VendorTabChild? ->
+                        VendorFormTabScreen(vendorChild)
                     }
                 )
             }

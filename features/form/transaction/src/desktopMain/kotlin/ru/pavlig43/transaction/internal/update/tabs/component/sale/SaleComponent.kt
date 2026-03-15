@@ -9,8 +9,8 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.Serializable
-import ru.pavlig43.core.model.DecimalData
-import ru.pavlig43.core.model.DecimalFormat
+import ru.pavlig43.core.model.DecimalData2
+import ru.pavlig43.core.model.DecimalData3
 import ru.pavlig43.core.tabs.TabOpener
 import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.database.data.transact.sale.SaleBDOut
@@ -61,12 +61,12 @@ internal class SaleComponent(
                 MBSImmutableTableComponent<ProductTableUi>(
                     componentContext = context,
                     onDismissed = dialogNavigation::dismiss,
-                    onCreate = { tabOpener.openProductTab(0) },
                     dependencies = immutableTableDependencies,
                     immutableTableBuilderData = ProductImmutableTableBuilder(
                         fullListProductTypes = ProductType.entries,
                         withCheckbox = false
                     ),
+                    tabOpener = tabOpener,
                     onItemClick = { product ->
                         val saleUi = itemList.value.first { it.composeId == dialogConfig.composeId }
                         onEvent(
@@ -74,7 +74,7 @@ internal class SaleComponent(
                                 saleUi.copy(
                                     productId = product.composeId,
                                     productName = product.displayName,
-                                    price = DecimalData(product.priceForSale, DecimalFormat.Decimal2)
+                                    price = DecimalData2(product.priceForSale)
                                 )
                             )
                         )
@@ -87,11 +87,11 @@ internal class SaleComponent(
                 MBSImmutableTableComponent<BatchTableUi>(
                     componentContext = context,
                     onDismissed = dialogNavigation::dismiss,
-                    onCreate = { /* Batch создаётся автоматически */ },
                     dependencies = immutableTableDependencies,
                     immutableTableBuilderData = BatchImmutableTableBuilder(
                         parentId = dialogConfig.productId
                     ),
+                    tabOpener = tabOpener,
                     onItemClick = { batch ->
                         val saleUi = itemList.value.first { it.composeId == dialogConfig.composeId }
                         onEvent(
@@ -112,11 +112,11 @@ internal class SaleComponent(
                 MBSImmutableTableComponent<VendorTableUi>(
                     componentContext = context,
                     onDismissed = dialogNavigation::dismiss,
-                    onCreate = { tabOpener.openVendorTab(0) },
                     dependencies = immutableTableDependencies,
                     immutableTableBuilderData = VendorImmutableTableBuilder(
                         withCheckbox = false
                     ),
+                    tabOpener = tabOpener,
                     onItemClick = { vendor ->
                         val saleUi = itemList.value.first { it.composeId == dialogConfig.composeId }
                         onEvent(
@@ -162,12 +162,12 @@ internal class SaleComponent(
             batchId = batchId,
             productId = productId,
             productName = productName,
-            count = DecimalData(count, DecimalFormat.Decimal3),
+            count = DecimalData3(count),
             vendorName = vendorName,
             dateBorn = dateBorn,
             clientName = clientName,
             clientId = clientId,
-            price = DecimalData(price, DecimalFormat.Decimal2),
+            price = DecimalData2(price),
             comment = comment,
             id = id
         )

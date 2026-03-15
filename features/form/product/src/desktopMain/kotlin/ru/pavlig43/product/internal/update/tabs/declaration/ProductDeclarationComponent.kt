@@ -73,11 +73,11 @@ internal class ProductDeclarationComponent(
         MBSImmutableTableComponent<DeclarationTableUi>(
             componentContext = context,
             onDismissed = dialogNavigation::dismiss,
-            onCreate = { tabOpener.openDeclarationTab(0) },
             dependencies = immutableTableDependencies,
             immutableTableBuilderData = DeclarationImmutableTableBuilder(
                 withCheckbox = false
             ),
+            tabOpener = tabOpener,
             onItemClick = { dec: DeclarationTableUi ->
                 val declarationIn = ProductDeclarationIn(
                     productId = productId,

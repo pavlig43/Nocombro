@@ -17,8 +17,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
-import ru.pavlig43.core.model.DecimalData
-import ru.pavlig43.core.model.DecimalFormat
+import ru.pavlig43.core.model.DecimalData3
 import ru.pavlig43.core.tabs.TabOpener
 import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.database.data.transact.ingredient.IngredientBD
@@ -117,12 +116,12 @@ internal class IngredientComponent(
                 MBSImmutableTableComponent<ProductTableUi>(
                     componentContext = context,
                     onDismissed = dialogNavigation::dismiss,
-                    onCreate = { tabOpener.openProductTab(0) },
                     dependencies = immutableTableDependencies,
                     immutableTableBuilderData = ProductImmutableTableBuilder(
                         fullListProductTypes = ProductType.entries,
                         withCheckbox = false
                     ),
+                    tabOpener = tabOpener,
                     onItemClick = { product ->
                         val ingredientUi =
                             itemList.value.first { it.composeId == dialogConfig.composeId }
@@ -145,11 +144,11 @@ internal class IngredientComponent(
                     MBSImmutableTableComponent<BatchTableUi>(
                         componentContext = context,
                         onDismissed = dialogNavigation::dismiss,
-                        onCreate = { tabOpener.openProductTab(0) },
                         dependencies = immutableTableDependencies,
                         immutableTableBuilderData = BatchImmutableTableBuilder(
                             parentId = dialogConfig.productId
                         ),
+                        tabOpener = tabOpener,
                         onItemClick = { batch ->
                             val ingredientUi =
                                 itemList.value.first { it.composeId == dialogConfig.composeId }
@@ -202,7 +201,7 @@ internal class IngredientComponent(
             productId = productId,
             productName = productName,
             vendorName = vendorName,
-            balance = DecimalData(count, DecimalFormat.Decimal3),
+            balance = DecimalData3(count),
             productType = productType,
             id = id
         )

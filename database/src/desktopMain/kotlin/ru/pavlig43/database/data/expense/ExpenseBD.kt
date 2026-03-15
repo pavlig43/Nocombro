@@ -7,6 +7,7 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.core.model.CollectionObject
+import ru.pavlig43.core.model.SingleItem
 import ru.pavlig43.database.data.transact.Transact
 
 internal const val EXPENSE_TABLE_NAME = "expense"
@@ -58,4 +59,4 @@ data class ExpenseBD(
 
     @PrimaryKey(autoGenerate = true)
     override val id: Int = 0
-) : CollectionObject
+) : CollectionObject, SingleItem

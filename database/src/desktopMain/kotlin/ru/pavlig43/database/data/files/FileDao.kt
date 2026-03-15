@@ -6,18 +6,14 @@ import androidx.room.Upsert
 
 
 @Dao
-abstract class FileDao {
+interface FileDao {
     @Query("SELECT * FROM file WHERE owner_id = :ownerId AND owner_type =:ownerFileType")
-    abstract suspend fun getFiles(ownerId: Int,ownerFileType: OwnerType):List<FileBD>
+    suspend fun getFiles(ownerId: Int,ownerFileType: OwnerType):List<FileBD>
 
     @Upsert
-    abstract suspend fun upsertFiles(files:List<FileBD>)
+    suspend fun upsertFiles(files:List<FileBD>)
 
     @Query("DELETE FROM file WHERE id in(:ids)")
-    abstract suspend fun deleteFiles(ids:List<Int>)
-
-
-
-
+    suspend fun deleteFiles(ids:List<Int>)
 
 }

@@ -2,8 +2,7 @@ package ru.pavlig43.immutable.internal.component.items.batch
 
 import com.arkivanov.decompose.ComponentContext
 import kotlinx.collections.immutable.ImmutableList
-import ru.pavlig43.core.model.DecimalData
-import ru.pavlig43.core.model.DecimalFormat
+import ru.pavlig43.core.model.DecimalData3
 import ru.pavlig43.database.data.batch.BatchWithBalanceOut
 import ru.pavlig43.immutable.api.component.BatchImmutableTableBuilder
 import ru.pavlig43.immutable.internal.component.ImmutableTableComponent
@@ -14,8 +13,8 @@ import ua.wwind.table.ColumnSpec
 internal class BatchTableComponent(
     componentContext: ComponentContext,
     tableBuilder: BatchImmutableTableBuilder,
-    onCreate: () -> Unit,
     onItemClick: (BatchTableUi) -> Unit,
+    onCreate: () -> Unit,
     repository: ImmutableListRepository<BatchWithBalanceOut>,
 ) : ImmutableTableComponent<BatchWithBalanceOut, BatchTableUi, BatchField>(
     componentContext = componentContext,
@@ -38,7 +37,7 @@ private fun BatchWithBalanceOut.toUi(): BatchTableUi {
     return BatchTableUi(
         composeId = batchId,
         batchId = batchId,
-        balance = DecimalData(balance, DecimalFormat.Decimal3),
+        balance = DecimalData3(balance),
         productName = productName,
         vendorName = vendorName,
         dateBorn = dateBorn

@@ -12,8 +12,8 @@ import ua.wwind.table.ColumnSpec
 internal class ProductTableComponent(
     componentContext: ComponentContext,
     tableBuilder: ProductImmutableTableBuilder,
-    onCreate: () -> Unit,
     onItemClick: (ProductTableUi) -> Unit,
+    onCreate: () -> Unit,
     repository: ImmutableListRepository<Product>,
 ) : ImmutableTableComponent<Product, ProductTableUi, ProductField>(
     componentContext = componentContext,

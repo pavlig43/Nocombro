@@ -5,5 +5,6 @@ enum class OwnerType {
     PRODUCT,
     VENDOR,
     DOCUMENT,
-    TRANSACTION
+    TRANSACTION,
+    EXPENSE
 }

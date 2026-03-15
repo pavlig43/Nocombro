@@ -88,8 +88,8 @@ internal class CreateDeclarationSingleLineComponent(
                         }
                         dialogNavigation.dismiss()
                     },
-                    onCreate = { tabOpener.openVendorTab(0) },
                     dependencies = immutableDependencies,
+                    tabOpener = tabOpener,
                     onDismissed = { dialogNavigation.dismiss() }
                 )
             )

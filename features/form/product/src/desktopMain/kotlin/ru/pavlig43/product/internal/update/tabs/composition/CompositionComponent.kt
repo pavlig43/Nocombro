@@ -9,8 +9,7 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.Serializable
-import ru.pavlig43.core.model.DecimalData
-import ru.pavlig43.core.model.DecimalFormat
+import ru.pavlig43.core.model.DecimalData3
 import ru.pavlig43.core.tabs.TabOpener
 import ru.pavlig43.database.data.product.CompositionIn
 import ru.pavlig43.database.data.product.CompositionOut
@@ -52,12 +51,12 @@ internal class CompositionComponent(
         MBSImmutableTableComponent<ProductTableUi>(
             componentContext = context,
             onDismissed = dialogNavigation::dismiss,
-            onCreate = { tabOpener.openProductTab(0) },
             dependencies = immutableTableDependencies,
             immutableTableBuilderData = ProductImmutableTableBuilder(
                 fullListProductTypes = ProductType.entries,
                 withCheckbox = false
             ),
+            tabOpener = tabOpener,
             onItemClick = { product ->
                 val compositionUi = itemList.value.first { it.composeId == dialog.composeId }
                 onEvent(
@@ -88,7 +87,7 @@ internal class CompositionComponent(
             productId = 0,
             productName = "",
             productType = null,
-            count = DecimalData(0, DecimalFormat.Decimal3)
+            count = DecimalData3(0)
         )
     }
 
@@ -99,7 +98,7 @@ internal class CompositionComponent(
             productId = productId,
             productName = productName,
             productType = productType,
-            count = DecimalData(count, DecimalFormat.Decimal3)
+            count = DecimalData3(count)
         )
     }
 

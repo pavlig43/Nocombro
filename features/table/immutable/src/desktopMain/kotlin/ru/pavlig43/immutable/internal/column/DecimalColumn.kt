@@ -14,13 +14,13 @@ import ua.wwind.table.filter.data.TableFilterType
 
 
 @Suppress("LongParameterList")
-fun <T : Any, C, E> ReadonlyTableColumnsBuilder<T, C, E>.readDecimalColumn(
+fun <T : Any, C, E,DECIMAL: DecimalData> ReadonlyTableColumnsBuilder<T, C, E>.readDecimalColumn(
     headerText: String,
     column: C,
-    valueOf: (T) -> DecimalData,
+    valueOf: (T) -> DECIMAL,
     alignment: Alignment = Alignment.Center,
     textModifier: Modifier = Modifier.padding(horizontal = 12.dp),
-    filterType: TableFilterType.NumberTableFilter<Int>? = null,
+    filterType: TableFilterType.NumberTableFilter<DECIMAL>? = null,
     isSortable: Boolean = true
 ) {
     column(column, valueOf = { valueOf(it) }) {
@@ -37,8 +37,8 @@ fun <T : Any, C, E> ReadonlyTableColumnsBuilder<T, C, E>.readDecimalColumn(
     }
 }
 
-private fun <T : Any, C, E> ReadonlyColumnBuilder<T, C, E>.readDecimalCell(
-    getCount: (T) -> DecimalData,
+private fun <T : Any, C, E,DECIMAL: DecimalData> ReadonlyColumnBuilder<T, C, E>.readDecimalCell(
+    getCount: (T) -> DECIMAL,
     modifier: Modifier
 ) {
     cell { item, _ ->

@@ -9,4 +9,5 @@ interface TabOpener {
     fun openDeclarationTab(id: Int)
     fun openTransactionTab(id: Int)
     fun openBatchMovementTab(batchId: Int, productName: String, start: LocalDateTime, end: LocalDateTime)
+    fun openExpenseFormTab(id: Int)
 }

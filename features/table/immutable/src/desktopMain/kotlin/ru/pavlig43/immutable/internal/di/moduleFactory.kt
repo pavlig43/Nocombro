@@ -9,6 +9,7 @@ import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.batch.BatchWithBalanceOut
 import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.database.data.document.Document
+import ru.pavlig43.database.data.expense.MainExpenseBD
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductDeclarationOut
 import ru.pavlig43.database.data.safety.SafetyTableItem
@@ -70,6 +71,9 @@ internal enum class ImmutableTableRepositoryType {
     /** Таблица безопасности запасов */
     SAFETY,
 
+    /** Расходы */
+    EXPENSE,
+
 
 
 
@@ -94,6 +98,7 @@ private fun createImmutableRepository(
     ImmutableTableRepositoryType.PRODUCT_DECLARATION -> ProductDeclarationRepository(db)
     ImmutableTableRepositoryType.BATCH -> BatchRepository(db)
     ImmutableTableRepositoryType.SAFETY -> SafetyRepository(db)
+    ImmutableTableRepositoryType.EXPENSE -> ExpenseRepository(db)
 }
 
 /**
@@ -237,6 +242,25 @@ private class SafetyRepository(db: NocombroDatabase) :
     @Suppress("UNUSED_PARAMETER")
     override fun observeOnItems(parentId: Int): Flow<Result<List<SafetyTableItem>>> {
         return dao.observeOnSafetyTableItems().map { Result.success(it) }
+            .catch { emit(Result.failure(it)) }
+    }
+}
+
+/**
+ * Репозиторий для работы с расходами.
+ */
+private class ExpenseRepository(db: NocombroDatabase) :
+    ImmutableListRepository<MainExpenseBD> {
+    private val dao = db.expenseDao
+
+    override suspend fun deleteByIds(ids: Set<Int>): Result<Unit> {
+        return runCatching { dao.deleteByIds(ids.toList()) }
+    }
+
+    @Suppress("UNUSED_PARAMETER")
+    override fun observeOnItems(parentId: Int): Flow<Result<List<MainExpenseBD>>> {
+        return dao.observeAllWithTransaction()
+            .map { Result.success(it) }
             .catch { emit(Result.failure(it)) }
     }
 }
