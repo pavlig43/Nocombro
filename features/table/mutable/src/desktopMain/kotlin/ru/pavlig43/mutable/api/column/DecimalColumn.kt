@@ -26,7 +26,7 @@ fun <T : Any, C, E,DECIMAL: DecimalData> EditableTableColumnsBuilder<T, C, E>.de
     getValue: (T) -> DECIMAL,
     headerText: String,
     updateItem: (T, DECIMAL) -> Unit,
-    filterType: TableFilterType.NumberTableFilter<Int>?= null,
+    filterType: TableFilterType.NumberTableFilter<DECIMAL>?= null,
     isSortable: Boolean = true,
     footerValue: ((E) -> DECIMAL)? = null
 ) {
@@ -57,50 +57,30 @@ fun <T : Any, C, E,DECIMAL: DecimalData> EditableTableColumnsBuilder<T, C, E>.de
     }
 }
 @Suppress("LongParameterList")
-fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.readDecimalColumn(
+fun <T : Any, C, E, DECIMAL: DecimalData> EditableTableColumnsBuilder<T, C, E>.readDecimalColumn(
     key: C,
-    getValue: (T) -> DecimalData,
+    getValue: (T) -> DECIMAL,
     headerText: String,
-    filterType: TableFilterType.NumberTableFilter<Int>?= null,
-    isSortable: Boolean = true
-) {
-    column(key, valueOf = { getValue(it) }) {
-//        autoWidth(300.dp)
-        header(headerText)
-        filterType?.let {
-            filter(it)
-        }
-        align(Alignment.CenterStart)
-        readNumberCell( getCount = { getValue(it) })
-        if (isSortable) {
-            sortable()
-        }
-    }
-}
-@Suppress("LongParameterList")
-fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.readDecimalColumnWithFooter(
-    key: C,
-    getValue: (T) -> DecimalData,
-    headerText: String,
-    footerValue: (E) -> DecimalData,
+    footerValue: ((E) -> DECIMAL)? = null,
+    filterType: TableFilterType.NumberTableFilter<DECIMAL>?= null,
     isSortable: Boolean = true
 ) {
     column(key, valueOf = { getValue(it) }) {
         autoWidth(300.dp)
         header(headerText)
         align(Alignment.CenterStart)
-        filter(
-            TableFilterType.NumberTableFilter(
-                delegate = TableFilterType.NumberTableFilter.IntDelegate,
-            )
-        )
+        filterType?.let {
+            filter(it)
+        }
         readNumberCell( getCount = { getValue(it) })
-        footer { tableData ->
-            val accumValue = footerValue(tableData)
-            Text(
-                text = accumValue.toStartDoubleFormat(),
-                modifier = Modifier.padding(horizontal = 8.dp)
-            )
+        footerValue?.let { accumulateFunction ->
+            footer { tableData ->
+                val accumValue = accumulateFunction(tableData)
+                Text(
+                    text = accumValue.toStartDoubleFormat(),
+                    modifier = Modifier.padding(horizontal = 8.dp)
+                )
+            }
         }
         if (isSortable) {
             sortable()
