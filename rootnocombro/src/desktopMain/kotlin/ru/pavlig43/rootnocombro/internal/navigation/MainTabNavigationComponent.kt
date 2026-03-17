@@ -22,6 +22,7 @@ import ru.pavlig43.immutable.api.component.SafetyImmutableTableBuilder
 import ru.pavlig43.immutable.api.component.TransactionImmutableTableBuilder
 import ru.pavlig43.immutable.api.component.VendorImmutableTableBuilder
 import ru.pavlig43.immutable.internal.component.items.expense.ExpenseTableUi
+import ru.pavlig43.money.main.api.component.MainComponent
 import ru.pavlig43.notification.api.component.NotificationComponent
 import ru.pavlig43.notification.api.model.NotificationItem
 import ru.pavlig43.product.api.component.ProductFormComponent
@@ -33,6 +34,7 @@ import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ItemFormChild.E
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ItemFormChild.ProductFormChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ItemFormChild.TransactionFormChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ItemFormChild.VendorFormChild
+import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.MainMoneyChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.NotificationChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.SampleTableChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.StorageChild
@@ -50,6 +52,7 @@ import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig.SafetyListConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig.TransactionListConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig.VendorListConfig
+import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.MainMoneyConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.NotificationConfig
 import ru.pavlig43.rootnocombro.internal.navigation.drawer.component.DrawerComponent
 import ru.pavlig43.rootnocombro.internal.navigation.drawer.component.DrawerDestination
@@ -85,6 +88,7 @@ internal class MainTabNavigationComponent(
 
     private fun DrawerDestination.toTabConfig(): MainTabConfig =
         when (this) {
+            DrawerDestination.MainMoney -> MainMoneyConfig()
             DrawerDestination.DocumentList -> DocumentListConfig()
             DrawerDestination.ProductList -> ProductListConfig()
             DrawerDestination.VendorList -> VendorListConfig()
@@ -144,6 +148,12 @@ internal class MainTabNavigationComponent(
 
                 when (mainTabConfig) {
                     is NotificationConfig -> NotificationChild(notificationComponent)
+
+                    is MainMoneyConfig -> MainMoneyChild(
+                        MainComponent(
+                            componentContext = context
+                        )
+                    )
 
                     is MainTabConfig.SampleTableConfig -> SampleTableChild(
                         SampleTableComponentMain(

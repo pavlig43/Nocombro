@@ -63,6 +63,7 @@ include(
 )
 
 include(
+    ":features:money:main",
     ":features:money:profitability",
 )
 

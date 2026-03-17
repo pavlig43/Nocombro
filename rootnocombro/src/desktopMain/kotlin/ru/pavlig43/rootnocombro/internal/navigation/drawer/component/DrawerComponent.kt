@@ -27,6 +27,7 @@ internal class DrawerComponent(
 }
 
 enum class DrawerDestination(val title: String) {
+    MainMoney("Деньги"),
     DocumentList("Документы"),
     ProductList("Продукты"),
     VendorList("Поставщики"),

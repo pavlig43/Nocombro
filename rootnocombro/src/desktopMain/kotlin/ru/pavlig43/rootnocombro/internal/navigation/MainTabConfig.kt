@@ -10,6 +10,9 @@ sealed interface MainTabConfig{
     class NotificationConfig:MainTabConfig
 
     @Serializable
+    class MainMoneyConfig: MainTabConfig
+
+    @Serializable
     class SampleTableConfig: MainTabConfig
 
     @Serializable
