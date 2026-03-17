@@ -63,6 +63,10 @@ include(
 )
 
 include(
+    ":features:money:profitability",
+)
+
+include(
     ":features:manageitem:update",
     ":features:manageitem:loadinitdata",
 )
