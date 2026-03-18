@@ -19,6 +19,9 @@ sealed interface MainTabConfig{
     class StorageConfig: MainTabConfig
 
     @Serializable
+    class ProfitabilityConfig: MainTabConfig
+
+    @Serializable
     sealed interface ItemListConfig: MainTabConfig{
         @Serializable
         class DocumentListConfig : ItemListConfig

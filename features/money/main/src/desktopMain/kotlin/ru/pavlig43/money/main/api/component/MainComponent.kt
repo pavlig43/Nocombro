@@ -8,12 +8,13 @@ import ru.pavlig43.core.MainTabComponent
 
 class MainComponent(
     componentContext: ComponentContext,
+    private val onOpenProfitabilityTab: () -> Unit
 ) : ComponentContext by componentContext, MainTabComponent {
 
     private val _model = MutableStateFlow(MainTabComponent.NavTabState("Деньги"))
     override val model: StateFlow<MainTabComponent.NavTabState> = _model.asStateFlow()
 
     fun onProfitabilityClick() {
-        // Пустой колбэк для будущего использования
+        onOpenProfitabilityTab()
     }
 }

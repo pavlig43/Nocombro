@@ -26,5 +26,6 @@ kotlin {
         implementation(projects.features.form.expense)
         implementation(projects.features.storage)
         implementation(projects.features.money.main)
+        implementation(projects.features.money.profitability)
     }
 }

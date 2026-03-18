@@ -36,7 +36,8 @@ enum class DrawerDestination(val title: String) {
     ExpenseList("Расходы"),
     Safety("Нескончаемый"),
     SampleTable("Пример таблицы"),
-    Storage("Склад")
+    Storage("Склад"),
+    Profitability("Прибыльность")
 
 }
 

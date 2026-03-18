@@ -28,6 +28,7 @@ import ru.pavlig43.document.api.ui.DocumentFormScreen
 import ru.pavlig43.expense.api.ui.ExpenseStandaloneScreen
 import ru.pavlig43.immutable.api.ui.ImmutableTableScreen
 import ru.pavlig43.money.main.api.ui.MainScreen
+import ru.pavlig43.profitability.api.ui.ProfitabilityScreen
 import ru.pavlig43.notification.api.ui.NotificationTabs
 import ru.pavlig43.product.api.ui.ProductFormScreen
 import ru.pavlig43.rootnocombro.api.component.RootChild
@@ -159,6 +160,8 @@ private fun MainTabChildFactory(mainTabChild: MainTabChild?) {
         is MainTabChild.SampleTableChild -> SampleTableScreen(mainTabChild.component)
 
         is MainTabChild.StorageChild -> StorageScreen(mainTabChild.component)
+
+        is MainTabChild.ProfitabilityChild -> ProfitabilityScreen(mainTabChild.component)
 
         is MainTabChild.BatchMovementChild -> BatchMovementTableScreen(mainTabChild.component)
     }

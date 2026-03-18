@@ -8,6 +8,7 @@ import ru.pavlig43.immutable.api.component.ImmutableTableComponentFactoryMain
 import ru.pavlig43.money.main.api.component.MainComponent
 import ru.pavlig43.notification.api.component.NotificationComponent
 import ru.pavlig43.product.api.component.ProductFormComponent
+import ru.pavlig43.profitability.internal.component.ProfitabilityComponent
 import ru.pavlig43.sampletable.api.component.SampleTableComponent
 import ru.pavlig43.storage.api.component.batchMovement.BatchMovementComponent
 import ru.pavlig43.storage.api.component.storage.StorageComponent
@@ -24,6 +25,8 @@ internal sealed interface MainTabChild {
     class StorageChild(override val component: StorageComponent) : MainTabChild
 
     class MainMoneyChild(override val component: MainComponent) : MainTabChild
+
+    class ProfitabilityChild(override val component: ProfitabilityComponent) : MainTabChild
 
     class BatchMovementChild(override val component: BatchMovementComponent) : MainTabChild
 
