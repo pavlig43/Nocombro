@@ -7,7 +7,6 @@ plugins {
 kotlin {
     desktopDependencies {
         implementation(projects.database)
-        implementation(projects.core)
-        implementation(projects.coreui)
+        implementation(projects.datetime)
     }
 }

@@ -100,6 +100,21 @@ data class DTPeriod(
         val now: DTPeriod by lazy {
             DTPeriod(getCurrentLocalDateTime(), getCurrentLocalDateTime())
         }
+
+        val thisMonth: DTPeriod by lazy {
+            val now = getCurrentLocalDateTime()
+            val start = now.asStartOfMonth()
+            val end = LocalDateTime(
+                start.year,
+                start.month,
+                start.lengthOfMonth,
+                23,
+                59,
+                59,
+                999_999_999
+            )
+            DTPeriod(start, end)
+        }
     }
 
 }
