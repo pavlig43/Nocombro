@@ -12,7 +12,7 @@ class AnalyticMainComponent(
     private val tabOpener: TabOpener,
 ) : ComponentContext by componentContext, MainTabComponent {
 
-    private val _model = MutableStateFlow(MainTabComponent.NavTabState("Деньги"))
+    private val _model = MutableStateFlow(MainTabComponent.NavTabState("Аналитика"))
     override val model: StateFlow<MainTabComponent.NavTabState> = _model.asStateFlow()
 
     internal fun onOpenTab(item: ItemNavigation) {
