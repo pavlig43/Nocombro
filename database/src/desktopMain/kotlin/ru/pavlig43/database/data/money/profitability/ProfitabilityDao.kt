@@ -34,7 +34,7 @@ abstract class ProfitabilityDao {
         JOIN transact t ON s.transaction_id = t.id
         WHERE t.created_at >= :start AND t.created_at <= :end
     """)
-    abstract fun observeOnSale(start: LocalDateTime,end: LocalDateTime)
+    internal abstract fun observeOnSale(start: LocalDateTime,end: LocalDateTime): Flow<List<ProfitabilityBD>>
 }
 
 data class ProductSalesBD(
