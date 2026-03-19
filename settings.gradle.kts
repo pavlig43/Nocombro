@@ -63,8 +63,8 @@ include(
 )
 
 include(
-    ":features:money:main",
-    ":features:money:profitability",
+    ":features:analytic:main",
+    ":features:analytic:profitability",
 )
 
 include(

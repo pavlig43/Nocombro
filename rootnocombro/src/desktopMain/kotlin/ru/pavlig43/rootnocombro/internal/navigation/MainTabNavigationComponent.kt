@@ -22,7 +22,7 @@ import ru.pavlig43.immutable.api.component.SafetyImmutableTableBuilder
 import ru.pavlig43.immutable.api.component.TransactionImmutableTableBuilder
 import ru.pavlig43.immutable.api.component.VendorImmutableTableBuilder
 import ru.pavlig43.immutable.internal.component.items.expense.ExpenseTableUi
-import ru.pavlig43.money.main.api.component.MainComponent
+import ru.pavlig43.main.api.component.AnalyticMainComponent
 import ru.pavlig43.notification.api.component.NotificationComponent
 import ru.pavlig43.notification.api.model.NotificationItem
 import ru.pavlig43.product.api.component.ProductFormComponent
@@ -54,7 +54,7 @@ import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig.SafetyListConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig.TransactionListConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig.VendorListConfig
-import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.MainMoneyConfig
+import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.AnalyticConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.NotificationConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ProfitabilityConfig
 import ru.pavlig43.rootnocombro.internal.navigation.drawer.component.DrawerComponent
@@ -91,7 +91,7 @@ internal class MainTabNavigationComponent(
 
     private fun DrawerDestination.toTabConfig(): MainTabConfig =
         when (this) {
-            DrawerDestination.MainMoney -> MainMoneyConfig()
+            DrawerDestination.Analytic -> AnalyticConfig()
             DrawerDestination.DocumentList -> DocumentListConfig()
             DrawerDestination.ProductList -> ProductListConfig()
             DrawerDestination.VendorList -> VendorListConfig()
@@ -101,7 +101,6 @@ internal class MainTabNavigationComponent(
             DrawerDestination.Safety -> SafetyListConfig()
             DrawerDestination.SampleTable -> MainTabConfig.SampleTableConfig()
             DrawerDestination.Storage -> MainTabConfig.StorageConfig()
-            DrawerDestination.Profitability -> MainTabConfig.ProfitabilityConfig()
         }
 
     // Создаём tabOpener раньше, чем tabNavigationComponent
@@ -139,6 +138,10 @@ internal class MainTabNavigationComponent(
             tabNavigationComponent.addTab(ExpenseFormConfig(id))
         }
 
+        override fun openProfitabilityTab() {
+            tabNavigationComponent.addTab(ProfitabilityConfig())
+        }
+
     }
 
     val tabNavigationComponent: TabNavigationComponent<MainTabConfig, MainTabChild> =
@@ -153,10 +156,10 @@ internal class MainTabNavigationComponent(
                 when (mainTabConfig) {
                     is NotificationConfig -> NotificationChild(notificationComponent)
 
-                    is MainMoneyConfig -> MainMoneyChild(
-                        MainComponent(
+                    is AnalyticConfig -> MainMoneyChild(
+                        AnalyticMainComponent(
                             componentContext = context,
-                            onOpenProfitabilityTab = { tabNavigationComponent.addTab(ProfitabilityConfig()) }
+                            tabOpener = tabOpener,
                         )
                     )
 

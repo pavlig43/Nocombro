@@ -1,4 +1,4 @@
-package ru.pavlig43.money.main.api.ui
+package ru.pavlig43.main.api.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -11,11 +11,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import ru.pavlig43.money.main.api.component.MainComponent
+import ru.pavlig43.main.api.component.AnalyticMainComponent
+import ru.pavlig43.main.api.component.ItemNavigation
 
 @Composable
-fun MainScreen(
-    component: MainComponent,
+fun AnalyticMainScreen(
+    component: AnalyticMainComponent,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -24,14 +25,16 @@ fun MainScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically)
     ) {
         Text(
-            text = "Деньги",
+            text = "Аналитика",
             style = MaterialTheme.typography.headlineMedium
         )
-
-        TextButton(
-            onClick = component::onProfitabilityClick
-        ) {
-            Text("Прибыльность")
+        ItemNavigation.entries.forEach {
+            TextButton(
+                onClick = { component.onOpenTab(it) }
+            ) {
+                Text(it.title)
+            }
         }
     }
 }
+

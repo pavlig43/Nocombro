@@ -25,7 +25,8 @@ kotlin {
         implementation(projects.features.form.transaction)
         implementation(projects.features.form.expense)
         implementation(projects.features.storage)
-        implementation(projects.features.money.main)
-        implementation(projects.features.money.profitability)
+
+        implementation(projects.features.analytic.main)
+        implementation(projects.features.analytic.profitability)
     }
 }
