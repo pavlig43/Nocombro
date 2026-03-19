@@ -13,7 +13,7 @@ import ru.pavlig43.profitability.internal.model.ProfitabilityUi
 
 internal fun createModule(dependencies: ProfitabilityDependencies) = listOf(
     module {
-        single { dependencies }
+        single<NocombroDatabase> { dependencies.db }
         single { ProfitabilityRepository(get()) }
     }
 )

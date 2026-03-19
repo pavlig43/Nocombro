@@ -2,6 +2,7 @@
 
 package ru.pavlig43.profitability.internal.component
 
+import androidx.compose.material3.Text
 import kotlinx.collections.immutable.ImmutableList
 import ru.pavlig43.immutable.internal.column.readDecimalColumn
 import ru.pavlig43.immutable.internal.column.readTextColumn
@@ -40,6 +41,50 @@ internal fun createProfitabilityColumns(): ImmutableList<ColumnSpec<Profitabilit
                 delegate = DataDecimalDelegate3
             ),
         )
+
+        readDecimalColumn(
+            headerText = "Выручка",
+            column = ProfitabilityField.REVENUE,
+            valueOf = { it.revenue },
+        )
+
+        readDecimalColumn(
+            headerText = "Расходы",
+            column = ProfitabilityField.EXPENSES,
+            valueOf = { it.expenses },
+        )
+
+        readDecimalColumn(
+            headerText = "Расходы на кг",
+            column = ProfitabilityField.EXPENSES_ON_ONE_KG,
+            valueOf = { it.expensesOnOneKg },
+        )
+
+        readDecimalColumn(
+            headerText = "Прибыль",
+            column = ProfitabilityField.PROFIT,
+            valueOf = { it.profit },
+        )
+        column(
+            ProfitabilityField.MARGIN,
+            valueOf = { it.margin }
+        ) {
+            title { "Маржа" }
+            cell { item, tableData ->
+                Text(item.margin.toString())
+            }
+            filter(TableFilterType.NumberTableFilter(delegate = TableFilterType.NumberTableFilter.DoubleDelegate))
+        }
+        column(
+            ProfitabilityField.PROFITABILITY,
+            valueOf = { it.profitability }
+        ) {
+            title { "Рентабельность"}
+            cell { item, tableData ->
+                Text(item.profitability.toString())
+            }
+            filter(TableFilterType.NumberTableFilter(delegate = TableFilterType.NumberTableFilter.DoubleDelegate))
+        }
 
     }
 
