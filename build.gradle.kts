@@ -15,6 +15,7 @@ plugins {
     alias(libs.plugins.composeHotReload) apply false
     alias(libs.plugins.detekt) apply false
     alias(libs.plugins.dokka)
+    alias(libs.plugins.versions)
     alias(libs.plugins.roomSchemaDocs) apply false
 
 
