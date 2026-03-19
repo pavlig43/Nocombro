@@ -13,7 +13,7 @@ internal object ProfitabilitySorter : SortMatcher<ProfitabilityUi, Profitability
         if (sort == null) return items
 
         val sorted = when (sort.column) {
-            ProfitabilityField.NAME -> items.sortedBy { it.productName }
+            ProfitabilityField.PRODUCT_NAME -> items.sortedBy { it.productName }
             ProfitabilityField.QUANTITY -> items.sortedBy { it.quantity }
             ProfitabilityField.REVENUE -> items.sortedBy { it.revenue }
             ProfitabilityField.EXPENSES -> items.sortedBy { it.expenses }

@@ -14,7 +14,7 @@ internal object ProfitabilityFilterMatcher : FilterMatcher<ProfitabilityUi, Prof
     ): Boolean {
         return when (column) {
             ProfitabilityField.SELECTION -> true
-            ProfitabilityField.NAME -> matchesTextField(item.productName, state)
+            ProfitabilityField.PRODUCT_NAME -> matchesTextField(item.productName, state)
             else -> matchesDecimalField(
                 when (column) {
                     ProfitabilityField.QUANTITY -> DecimalData3(item.quantity)

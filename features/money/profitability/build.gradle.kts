@@ -12,5 +12,6 @@ kotlin {
         implementation(projects.database)
         implementation(projects.datetime)
         implementation(projects.features.table.core)
+        implementation(projects.features.table.immutable)
     }
 }
