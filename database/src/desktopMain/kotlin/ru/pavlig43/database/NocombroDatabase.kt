@@ -19,7 +19,7 @@ import ru.pavlig43.database.data.expense.ExpenseBD
 import ru.pavlig43.database.data.expense.dao.ExpenseDao
 import ru.pavlig43.database.data.files.FileBD
 import ru.pavlig43.database.data.files.FileDao
-import ru.pavlig43.database.data.money.profitability.ProfitabilityDao
+import ru.pavlig43.database.data.analytic.profitability.ProfitabilityDao
 import ru.pavlig43.database.data.product.CompositionIn
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductDeclarationIn
