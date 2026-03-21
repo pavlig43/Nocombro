@@ -22,9 +22,11 @@ import ru.pavlig43.immutable.api.component.SafetyImmutableTableBuilder
 import ru.pavlig43.immutable.api.component.TransactionImmutableTableBuilder
 import ru.pavlig43.immutable.api.component.VendorImmutableTableBuilder
 import ru.pavlig43.immutable.internal.component.items.expense.ExpenseTableUi
+import ru.pavlig43.main.api.component.AnalyticMainComponent
 import ru.pavlig43.notification.api.component.NotificationComponent
 import ru.pavlig43.notification.api.model.NotificationItem
 import ru.pavlig43.product.api.component.ProductFormComponent
+import ru.pavlig43.profitability.internal.component.ProfitabilityComponent
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.BatchMovementChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ImmutableTableChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ItemFormChild.DeclarationFormChild
@@ -33,7 +35,9 @@ import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ItemFormChild.E
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ItemFormChild.ProductFormChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ItemFormChild.TransactionFormChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ItemFormChild.VendorFormChild
+import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.MainMoneyChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.NotificationChild
+import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ProfitabilityChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.SampleTableChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.StorageChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.BatchMovementListConfig
@@ -50,7 +54,9 @@ import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig.SafetyListConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig.TransactionListConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig.VendorListConfig
+import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.AnalyticConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.NotificationConfig
+import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ProfitabilityConfig
 import ru.pavlig43.rootnocombro.internal.navigation.drawer.component.DrawerComponent
 import ru.pavlig43.rootnocombro.internal.navigation.drawer.component.DrawerDestination
 import ru.pavlig43.sampletable.api.component.SampleTableComponentMain
@@ -85,6 +91,7 @@ internal class MainTabNavigationComponent(
 
     private fun DrawerDestination.toTabConfig(): MainTabConfig =
         when (this) {
+            DrawerDestination.Analytic -> AnalyticConfig()
             DrawerDestination.DocumentList -> DocumentListConfig()
             DrawerDestination.ProductList -> ProductListConfig()
             DrawerDestination.VendorList -> VendorListConfig()
@@ -131,6 +138,10 @@ internal class MainTabNavigationComponent(
             tabNavigationComponent.addTab(ExpenseFormConfig(id))
         }
 
+        override fun openProfitabilityTab() {
+            tabNavigationComponent.addTab(ProfitabilityConfig())
+        }
+
     }
 
     val tabNavigationComponent: TabNavigationComponent<MainTabConfig, MainTabChild> =
@@ -145,6 +156,13 @@ internal class MainTabNavigationComponent(
                 when (mainTabConfig) {
                     is NotificationConfig -> NotificationChild(notificationComponent)
 
+                    is AnalyticConfig -> MainMoneyChild(
+                        AnalyticMainComponent(
+                            componentContext = context,
+                            tabOpener = tabOpener,
+                        )
+                    )
+
                     is MainTabConfig.SampleTableConfig -> SampleTableChild(
                         SampleTableComponentMain(
                             componentContext = context
@@ -157,6 +175,15 @@ internal class MainTabNavigationComponent(
                                 componentContext = context,
                                 dependencies = scope.get(),
                                 tabOpener = tabOpener
+                            )
+                        )
+                    }
+
+                    is ProfitabilityConfig -> {
+                        ProfitabilityChild(
+                            ProfitabilityComponent(
+                                componentContext = context,
+                                dependencies = scope.get()
                             )
                         )
                     }

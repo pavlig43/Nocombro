@@ -11,8 +11,10 @@ import kotlinx.coroutines.flow.update
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.format
 import kotlinx.serialization.Serializable
+import ru.pavlig43.datetime.asStartOfMonth
 import ru.pavlig43.datetime.dateTimeFormat
 import ru.pavlig43.datetime.getCurrentLocalDateTime
+import ru.pavlig43.datetime.lengthOfMonth
 import ru.pavlig43.datetime.single.datetime.DateTimeComponent
 
 class DateTimePeriodComponent(
@@ -99,6 +101,21 @@ data class DTPeriod(
     companion object{
         val now: DTPeriod by lazy {
             DTPeriod(getCurrentLocalDateTime(), getCurrentLocalDateTime())
+        }
+
+        val thisMonth: DTPeriod by lazy {
+            val now = getCurrentLocalDateTime()
+            val start = now.asStartOfMonth()
+            val end = LocalDateTime(
+                start.year,
+                start.month,
+                start.lengthOfMonth,
+                23,
+                59,
+                59,
+                999_999_999
+            )
+            DTPeriod(start, end)
         }
     }
 

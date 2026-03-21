@@ -168,6 +168,11 @@ abstract class FilterMatcher<I, C> {
         state: TableFilterState<*>,
     ): Boolean = matchesComparableField(value, state)
 
+    protected fun matchesDoubleField(
+        value: Double,
+        state: TableFilterState<*>,
+    ): Boolean = matchesComparableField(value, state)
+
 
 
 

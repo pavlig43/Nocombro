@@ -63,6 +63,11 @@ include(
 )
 
 include(
+    ":features:analytic:main",
+    ":features:analytic:profitability",
+)
+
+include(
     ":features:manageitem:update",
     ":features:manageitem:loadinitdata",
 )
