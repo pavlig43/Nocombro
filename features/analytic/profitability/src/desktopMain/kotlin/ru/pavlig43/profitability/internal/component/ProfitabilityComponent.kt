@@ -3,6 +3,7 @@ package ru.pavlig43.profitability.internal.component
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
 import com.arkivanov.essenty.instancekeeper.getOrCreate
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -44,6 +45,7 @@ class ProfitabilityComponent(
     private val filterManager = FilterManager<ProfitabilityField>(childContext("filter"))
     private val sortManager = SortManager<ProfitabilityField>(childContext("sort"))
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     internal val loadState: StateFlow<LoadState> = dateTimePeriodComponent.dateTimePeriodForData
         .transformLatest { dateTimePeriod ->
             emit(LoadState.Loading)
@@ -53,7 +55,7 @@ class ProfitabilityComponent(
             ).collect { result ->
                 emit(
                     result.fold(
-                        onSuccess = { LoadState.Success(it) },
+                        onSuccess = { LoadState.Success(emptyList()) }, //изменить
                         onFailure = { LoadState.Error(it.message ?: "") }
                     )
                 )

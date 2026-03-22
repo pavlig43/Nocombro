@@ -148,7 +148,7 @@ internal class MainTabNavigationComponent(
         TabNavigationComponent(
             componentContext = childContext("tab"),
             startConfigurations = listOf(
-                DocumentListConfig(),
+                ProfitabilityConfig(),
             ),
             serializer = MainTabConfig.serializer(),
             tabChildFactory = { context, mainTabConfig: MainTabConfig, onCloseTab: () -> Unit ->
