@@ -37,23 +37,29 @@ abstract class ProfitabilityDao {
     ): Flow<List<ProfitabilityBD>> {
         return observeOnSale(start, end).map { lst ->
             lst.groupBy { it.movementOut.batchOut.product.id }
-                .also {
-                    it.forEach { mp ->
-                        println(mp)
-                        println("___________________")
-                    }
-                }
                 .values.mapParallel(Dispatchers.IO) { sales ->
+                    val product = sales.first().movementOut.batchOut.product
+                    val productName = product.displayName
+                    val productId = product.id
+                    var quantity = 0
+                    var revenue = 0
+                    var expenses = 0
+                    var expensesOnOneKg = 0
+                    var profit = 0
+                    var margin = 0.0
+                    var profitability = 0.0
+
                     val details = sales.map { sale ->
+
                         ProfitabilityDetails(
                             contrAgentId = sale.client.id,
                             contrAgentName = sale.client.displayName,
                             date = sale.transaction.createdAt,
-                            quantity = sale.movementOut.movement.count,
-                            revenue = sale.sale.price,
-                            expenses = 0,
+                            quantity = sale.movementOut.movement.count.also { quantity += it },
+                            revenue = sale.sale.price.also { revenue += it },
+                            expenses = sale.expenses.sumOf { it.amount }.also { expenses += it },
                             expensesOnOneKg = 0,
-                            profit = 0,
+                            profit = revenue - expenses,
                             margin = 0.0,
                             profitability = 0.0
                         )
