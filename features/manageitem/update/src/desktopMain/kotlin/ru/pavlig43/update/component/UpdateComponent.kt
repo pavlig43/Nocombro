@@ -29,6 +29,7 @@ class UpdateComponent(
     componentContext: ComponentContext,
     private val onUpdateAllTabs: suspend () -> Result<Unit>,
     errorMessages: Flow<List<ErrorMessage>>,
+    private val postProcessAfterUpdate: suspend () -> Unit = {},
 ) : ComponentContext by componentContext {
     private val coroutineScope = componentCoroutineScope()
 
@@ -39,14 +40,17 @@ class UpdateComponent(
             emptyList()
         )
 
-     fun onUpdate() {
+    fun onUpdate() {
         _updateState.update { UpdateState.Loading }
         coroutineScope.launch {
-            val result = onUpdateAllTabs().fold(
-                onSuccess = { UpdateState.Success},
-                onFailure = { UpdateState.Error(it.message ?: "Неизвестная ошибка")}
+            val updateState = onUpdateAllTabs().fold(
+                onSuccess = {
+                    postProcessAfterUpdate()
+                    UpdateState.Success
+                },
+                onFailure = { UpdateState.Error(it.message ?: "Неизвестная ошибка") }
             )
-            _updateState.update { result }
+            _updateState.update { updateState }
         }
 
     }

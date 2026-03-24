@@ -27,3 +27,7 @@ data class BuyUi(
             (count.value.toLong() * price.value / 1000).toInt()
         )
 }
+data class BatchCostPriceUi(
+    val batchId: Int,
+    val costPricePerUnit: Int
+)
