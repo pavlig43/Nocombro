@@ -228,7 +228,7 @@ internal class IngredientComponent(
                 val place = "В строке ${ingredientUi.composeId + 1}"
                 if (ingredientUi.productId == 0) add("$place не указан продукт")
                 if (ingredientUi.batchId == 0) add("$place не указан партия")
-                if (ingredientUi.balance.value == 0) add("$place количество равно 0")
+                if (ingredientUi.balance.value == 0L) add("$place количество равно 0")
             }
         }
     }

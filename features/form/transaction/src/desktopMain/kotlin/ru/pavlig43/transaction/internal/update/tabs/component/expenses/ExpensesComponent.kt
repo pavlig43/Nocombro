@@ -70,7 +70,7 @@ internal class ExpensesComponent(
         buildList {
             lst.forEach { expenseUi ->
                 val place = "В строке ${expenseUi.composeId + 1}"
-                if (expenseUi.amount.value == 0) add("$place сумма равна 0")
+                if (expenseUi.amount.value == 0L) add("$place сумма равна 0")
                 if (expenseUi.expenseType == null) add("$place не выбран тип расхода")
             }
         }

@@ -44,12 +44,12 @@ class UpdateComponent(
         _updateState.update { UpdateState.Loading }
         coroutineScope.launch {
             val updateState = onUpdateAllTabs().fold(
-                onSuccess = {
-                    postProcessAfterUpdate()
-                    UpdateState.Success
-                },
+                onSuccess = { UpdateState.Success },
                 onFailure = { UpdateState.Error(it.message ?: "Неизвестная ошибка") }
             )
+            if (updateState is UpdateState.Success) {
+                postProcessAfterUpdate()
+            }
             _updateState.update { updateState }
         }
 

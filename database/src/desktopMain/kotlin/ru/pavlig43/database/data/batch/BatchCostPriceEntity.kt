@@ -27,5 +27,5 @@ data class BatchCostPriceEntity(
      * так как при распределении на 100 кг получается меньше 0.5 копеек на 1 грамм
      */
     @ColumnInfo(name = "cost_price_per_unit")
-    val costPricePerUnit: Int
+    val costPricePerUnit: Long
 )

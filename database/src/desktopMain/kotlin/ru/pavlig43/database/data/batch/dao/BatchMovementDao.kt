@@ -55,7 +55,7 @@ abstract class BatchMovementDao {
     fun observeBatchWithBalanceByProductId(productId: Int): Flow<List<BatchWithBalanceOut>> {
         return observeMovementsByProductId(productId).map { lst ->
             lst.groupBy { it.movement.batchId }.values.mapParallel { movements ->
-                val balance = movements.fold(0) { acc, out ->
+                val balance = movements.fold(0L) { acc, out ->
                     val movementType = out.movement.movementType
                     val count = out.movement.count
                     when (movementType) {

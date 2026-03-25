@@ -197,9 +197,9 @@ internal class SaleComponent(
                 val place = "В строке ${saleUi.composeId + 1}"
                 if (saleUi.productId == 0) add("$place не указан продукт")
                 if (saleUi.batchId == 0) add("$place не выбрана партия")
-                if (saleUi.count.value == 0) add("$place количество равно 0")
+                if (saleUi.count.value == 0L) add("$place количество равно 0")
                 if (saleUi.clientId == 0) add("$place не выбран клиент")
-                if (saleUi.price.value == 0) add("$place не выбрана цена")
+                if (saleUi.price.value == 0L) add("$place не выбрана цена")
             }
         }
     }

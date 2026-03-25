@@ -24,6 +24,6 @@ data class SaleUi(
 ) : IMultiLineTableUi {
     val sum: DecimalData2
         get() = DecimalData2(
-            (count.value.toLong() * price.value / 1000).toInt()
+            count.value * price.value / 1000
         )
 }

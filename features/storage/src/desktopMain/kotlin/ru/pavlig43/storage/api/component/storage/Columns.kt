@@ -109,7 +109,7 @@ private fun ReadonlyTableColumnsBuilder<StorageProductUi, StorageProductField, S
 private fun ReadonlyTableColumnsBuilder<StorageProductUi, StorageProductField, StorageTableData>.decimalColumn(
     column:StorageProductField,
     title:String,
-    valueOf:(StorageProductUi)-> Int,
+    valueOf:(StorageProductUi)-> Long,
 ) {
 
     column(key = column, valueOf = valueOf) {

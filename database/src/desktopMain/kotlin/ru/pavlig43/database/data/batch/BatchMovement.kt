@@ -32,7 +32,7 @@ data class BatchMovement(
     val movementType: MovementType,
 
     @ColumnInfo("count")
-    val count: Int,
+    val count: Long,
 
     @ColumnInfo("transaction_id", index = true)
     val transactionId: Int,

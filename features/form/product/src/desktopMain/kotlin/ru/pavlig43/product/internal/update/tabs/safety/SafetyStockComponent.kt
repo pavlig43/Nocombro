@@ -40,7 +40,7 @@ private val safetyStockComponentFactory = SingleLineComponentFactory<SafetyStock
     ),
     errorFactory = { safety ->
         buildList {
-            if (safety.reorderPoint.value == 0 && safety.orderQuantity.value != 0)  add("Мало вероятно что такой нескончаемый остаток")
+            if (safety.reorderPoint.value == 0L && safety.orderQuantity.value != 0L)  add("Мало вероятно что такой нескончаемый остаток")
         }
     },
     mapperToUi = { toUi() }

@@ -24,10 +24,10 @@ data class BuyUi(
 ) : IMultiLineTableUi {
     val sum: DecimalData2
         get() = DecimalData2(
-            (count.value.toLong() * price.value / 1000).toInt()
+            count.value * price.value / 1000
         )
 }
 data class BatchCostPriceUi(
     val batchId: Int,
-    val costPricePerUnit: Int
+    val costPricePerUnit: Long
 )

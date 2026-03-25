@@ -30,7 +30,7 @@ abstract class CompositionDao {
     suspend fun getIngredientsFromComposition(
         productId: Int,
         transactionId: Int,
-        countPf: Int
+        countPf: Long
     ): List<IngredientBD> {
         return getComposition(productId).map {
             it.toIngredients(transactionId, countPf)
@@ -89,7 +89,7 @@ private fun InternalComposition.toCompositionOut(): CompositionOut {
 }
 
 @Suppress("MagicNumber")
-private fun InternalComposition.toIngredients(transactionId: Int, countPf: Int): IngredientBD {
+private fun InternalComposition.toIngredients(transactionId: Int, countPf: Long): IngredientBD {
     return IngredientBD(
         transactionId = transactionId,
         batchId = 0,

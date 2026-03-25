@@ -88,7 +88,7 @@ abstract class SafetyTableDao {
 
 internal data class StorageProductNow(
     val productId: Int,
-    val count: Int
+    val count: Long
 )
 
 internal data class SafetyStockWithProduct(

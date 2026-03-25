@@ -123,7 +123,7 @@ internal class SafetyStockUpdateRepository(
         if (changeSet.old == changeSet.new) return Result.success(Unit)
         return runCatching {
             with(changeSet.new){
-                if (reorderPoint == 0 && orderQuantity == 0){
+                if (reorderPoint == 0L && orderQuantity == 0L){
                     dao.delete(this)
                 }
                 else{

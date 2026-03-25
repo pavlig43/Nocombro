@@ -43,7 +43,7 @@ data class ExpenseBD(
      * Сумма расхода в копейках
      */
     @ColumnInfo("amount")
-    val amount: Int,
+    val amount: Long,
 
     /**
      * Дата и время расхода

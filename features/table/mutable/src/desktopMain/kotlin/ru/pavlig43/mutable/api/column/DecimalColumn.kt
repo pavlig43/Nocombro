@@ -144,7 +144,7 @@ private fun<DECIMAL: DecimalData> TableCellTextFieldNumber(
     // значение нельзя привести к числовому формату то функция обновления не сработает
     var displayValue by remember {
         mutableStateOf(
-            data.takeIf { it.value != 0 }?.toStartDoubleFormat().orEmpty()
+            data.takeIf { it.value != 0L }?.toStartDoubleFormat().orEmpty()
         )
     }
 
@@ -183,7 +183,7 @@ private fun<DECIMAL: DecimalData> TableCellTextFieldNumber(
             if (displayValue.toDoubleOrNull() != null) {
 
                 val intCount =
-                    (displayValue.toDouble() * 10.0.pow(data.countDecimal)).toInt()
+                    (displayValue.toDouble() * 10.0.pow(data.countDecimal)).toLong()
                 saveInModel(data.copyValue(value = intCount) as DECIMAL)
                 error = ""
             } else {

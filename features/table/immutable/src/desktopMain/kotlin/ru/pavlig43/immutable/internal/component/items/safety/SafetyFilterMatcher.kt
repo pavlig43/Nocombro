@@ -13,9 +13,9 @@ internal object SafetyFilterMatcher : FilterMatcher<SafetyTableUi, SafetyField>(
             SafetyField.ID -> true
             SafetyField.PRODUCT_NAME -> matchesTextField(item.productName, stateAny)
             SafetyField.VENDOR_NAME -> matchesTextField(item.vendorName, stateAny)
-            SafetyField.COUNT -> matchesIntField(item.count.value, stateAny)
-            SafetyField.REORDER_POINT -> matchesIntField(item.reorderPoint.value, stateAny)
-            SafetyField.ORDER_QUANTITY -> matchesIntField(item.orderQuantity.value, stateAny)
+            SafetyField.COUNT -> matchesLongField(item.count.value, stateAny)
+            SafetyField.REORDER_POINT -> matchesLongField(item.reorderPoint.value, stateAny)
+            SafetyField.ORDER_QUANTITY -> matchesLongField(item.orderQuantity.value, stateAny)
         }
     }
 }

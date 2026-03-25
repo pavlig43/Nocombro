@@ -29,6 +29,7 @@ import ru.pavlig43.mutable.api.singleLine.data.UpdateSingleLineRepository
 import ru.pavlig43.transaction.api.TransactionFormDependencies
 import ru.pavlig43.transaction.internal.update.tabs.component.opzs.ingredients.FillIngredientsRepository
 import kotlin.math.roundToInt
+import kotlin.math.roundToLong
 
 internal fun createTransactionFormModule(dependencies: TransactionFormDependencies) = listOf(
     module {
@@ -396,7 +397,7 @@ internal class BatchCostRepository(
         val batchCostPriceEntities = buys.map { buyBDOut ->
             BatchCostPriceEntity(
                 batchId = buyBDOut.batchId,
-                costPricePerUnit = (buyBDOut.price * 1000 + expenseOnOneKg).roundToInt()
+                costPricePerUnit = (buyBDOut.price + expenseOnOneKg).roundToLong()
             )
         }
         batchCostDao.upsert(batchCostPriceEntities)
@@ -410,7 +411,7 @@ internal class BatchCostRepository(
             .associateBy { it.batchId }
 
         val totalCost = ingredients.sumOf { ingredient ->
-            val costPerKg = ingredientsCostMap[ingredient.movement.batchId]?.costPricePerUnit ?: 0
+            val costPerKg = ingredientsCostMap[ingredient.movement.batchId]?.costPricePerUnit ?: 0L
             (costPerKg * ingredient.movement.count) / 1000.0
         }
         val costPricePerKg = if (pfMovement.movement.count > 0) {
@@ -418,7 +419,7 @@ internal class BatchCostRepository(
         } else 0.0
 
         batchCostDao.upsert(listOf(
-            BatchCostPriceEntity(pfMovement.movement.batchId, costPricePerKg.roundToInt())
+            BatchCostPriceEntity(pfMovement.movement.batchId, costPricePerKg.roundToInt().toLong())
         ))
     }
 }

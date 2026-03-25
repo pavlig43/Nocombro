@@ -181,10 +181,10 @@ internal class BuyComponent(
             lst.forEach { buyUi ->
                 val place = "В строке ${buyUi.composeId + 1}"
                 if (buyUi.productId == 0)  add("$place не указан продукт")
-                if (buyUi.count.value == 0) add("$place количество равно 0")
+                if (buyUi.count.value == 0L) add("$place количество равно 0")
                 if (buyUi.declarationId == 0) add("$place нет декларации")
                 if (buyUi.dateBorn == emptyDate) add(("$place не выбрана дата"))
-                if (buyUi.price.value == 0) add(("$place не выбрана цена"))
+                if (buyUi.price.value == 0L) add(("$place не выбрана цена"))
             }
         }
     }
