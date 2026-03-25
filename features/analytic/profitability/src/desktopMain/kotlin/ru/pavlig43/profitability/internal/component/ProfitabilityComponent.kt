@@ -41,6 +41,9 @@ class ProfitabilityComponent(
     private val filterManager = FilterManager<ProfitabilityField>(childContext("filter"))
     private val sortManager = SortManager<ProfitabilityField>(childContext("sort"))
 
+    private val _expandedProducts = MutableSetFlow<Int>()
+    internal val expandedProducts: Set<Int> = _expandedProducts.value
+
     @OptIn(ExperimentalCoroutinesApi::class)
     internal val loadState: StateFlow<LoadState> = dateTimePeriodComponent.dateTimePeriodForData
         .transformLatest { dateTimePeriod ->
@@ -51,7 +54,7 @@ class ProfitabilityComponent(
             ).collect { result ->
                 emit(
                     result.fold(
-                        onSuccess = { LoadState.Success(it) }, //изменить
+                        onSuccess = { LoadState.Success(it) },
                         onFailure = { LoadState.Error(it.message ?: "") }
                     )
                 )
@@ -62,15 +65,18 @@ class ProfitabilityComponent(
     internal val tableData: StateFlow<ProfitabilityTableData> = combine(
         loadState,
         filterManager.filters,
-        sortManager.sort
-    ) { state, filters, sort ->
+        sortManager.sort,
+        _expandedProducts.asStateFlow()
+    ) { state, filters, sort, expandedIds ->
         when (state) {
             is LoadState.Loading, is LoadState.Error -> ProfitabilityTableData()
             is LoadState.Success -> {
                 val filtered = state.data.products.filter { item ->
                     ProfitabilityFilterMatcher.matchesItem(item, filters)
                 }
-                val displayedProducts = ProfitabilitySorter.sort(filtered, sort)
+                val displayedProducts = ProfitabilitySorter.sort(filtered, sort).map { product ->
+                    product.copy(expandedDetails = expandedIds.contains(product.productId))
+                }
                 ProfitabilityTableData(displayedProducts = displayedProducts)
             }
         }
@@ -83,10 +89,33 @@ class ProfitabilityComponent(
     fun updateSort(sort: SortState<ProfitabilityField>?) {
         sortManager.update(sort)
     }
+
+    fun onToggleDetailsExpanded(productId: Int) {
+        _expandedProducts.update { expandedIds ->
+            if (expandedIds.contains(productId)) {
+                expandedIds - productId
+            } else {
+                expandedIds + productId
+            }
+        }
+    }
 }
 
 internal sealed interface LoadState {
     data object Loading : LoadState
     data class Error(val message: String) : LoadState
     data class Success(val data: AllProfitability) : LoadState
+}
+
+private class MutableSetFlow<T>(
+    initial: Set<T> = emptySet()
+) {
+    private val _state = MutableStateFlow(initial)
+    val value: Set<T> get() = _state.value
+
+    fun update(update: (Set<T>) -> Set<T>) {
+        _state.value = update(_state.value)
+    }
+
+    fun asStateFlow(): StateFlow<Set<T>> = _state.asStateFlow()
 }

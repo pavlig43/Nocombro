@@ -19,6 +19,7 @@ internal object ProfitabilityFilterMatcher : FilterMatcher<ProfitabilityProduct,
             ProfitabilityField.PROFIT -> matchesDecimalField(item.profit,stateAny)
             ProfitabilityField.MARGIN -> matchesDoubleField(item.margin,stateAny)
             ProfitabilityField.PROFITABILITY ->  matchesDoubleField(item.profitability,stateAny)
+            else -> true
         }
     }
 }

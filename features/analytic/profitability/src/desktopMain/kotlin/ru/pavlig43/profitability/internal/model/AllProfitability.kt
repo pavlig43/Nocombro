@@ -19,7 +19,8 @@ internal data class ProfitabilityProduct(
     val profit: DecimalData2,
     val margin: Double,
     val profitability: Double,
-    val details: List<ProfitabilityBatchDetails>
+    val details: List<ProfitabilityBatchDetails>,
+    val expandedDetails: Boolean = false
 ): IMultiLineTableUi{
     override val composeId: Int
         get() = productId

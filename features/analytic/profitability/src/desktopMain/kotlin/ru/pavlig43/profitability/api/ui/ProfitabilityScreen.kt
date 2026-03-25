@@ -1,8 +1,15 @@
 package ru.pavlig43.profitability.api.ui
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -42,7 +49,11 @@ fun ProfitabilityScreen(component: ProfitabilityComponent) {
         is LoadState.Error -> ErrorScreen(state.message)
         is LoadState.Loading -> LoadingUi()
         is LoadState.Success -> {
-            val columns = remember { createProfitabilityColumns() }
+            val columns = remember {
+                createProfitabilityColumns(
+                    onToggleExpanded = { productId -> component.onToggleDetailsExpanded(productId) }
+                )
+            }
             val tableSettings = remember {
                 TableSettings(showActiveFiltersHeader = true)
             }
@@ -94,7 +105,24 @@ private fun ProfitabilityTable(
             colors = TableDefaults.colors(
                 headerContainerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
             ),
-            border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
+            border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary),
+            rowKey = { _, index -> index },
+            rowEmbedded = { _, product ->
+                val visible = product.expandedDetails
+                if (visible) {
+                    HorizontalDivider(
+                        thickness = state.dimensions.dividerThickness,
+                        modifier = Modifier.width(state.tableWidth)
+                    )
+                }
+                AnimatedVisibility(
+                    visible = visible,
+                    enter = expandVertically() + fadeIn(),
+                    exit = shrinkVertically() + fadeOut(),
+                ) {
+                    BatchDetailsTable(product = product)
+                }
+            },
         )
         ScrollBar(
             verticalState = verticalState,
