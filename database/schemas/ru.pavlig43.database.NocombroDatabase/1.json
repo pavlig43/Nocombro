@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "e804fa5453b1dfc498135ce974277f44",
+    "identityHash": "63bccdea0216885542acc0e6bb3baf1d",
     "entities": [
       {
         "tableName": "file",
@@ -546,6 +546,43 @@
         ]
       },
       {
+        "tableName": "batch_cost_price",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`batch_id` INTEGER NOT NULL, `cost_price_per_unit` INTEGER NOT NULL, PRIMARY KEY(`batch_id`), FOREIGN KEY(`batch_id`) REFERENCES `batch`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "batchId",
+            "columnName": "batch_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "costPricePerUnit",
+            "columnName": "cost_price_per_unit",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "batch_id"
+          ]
+        },
+        "foreignKeys": [
+          {
+            "table": "batch",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "batch_id"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
         "tableName": "batch_movement",
         "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`batch_id` INTEGER NOT NULL, `movement_type` TEXT NOT NULL, `count` INTEGER NOT NULL, `transaction_id` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, FOREIGN KEY(`batch_id`) REFERENCES `batch`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION , FOREIGN KEY(`transaction_id`) REFERENCES `transact`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
@@ -1005,7 +1042,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'e804fa5453b1dfc498135ce974277f44')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '63bccdea0216885542acc0e6bb3baf1d')"
     ]
   }
 }

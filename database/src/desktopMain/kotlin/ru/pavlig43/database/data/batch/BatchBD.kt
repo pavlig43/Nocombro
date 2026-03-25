@@ -54,5 +54,11 @@ data class BatchOut(
         parentColumn = "declaration_id",
         entityColumn = "id"
     )
-    val declaration: Declaration
+    val declaration: Declaration,
+    @Relation(
+        entity = BatchCostPriceEntity::class,
+        parentColumn = "id",
+        entityColumn = "batch_id"
+    )
+    val costPrice: BatchCostPriceEntity?  // null если нет себестоимости
 )

@@ -382,10 +382,8 @@ internal class BatchCostRepository(
         val transaction = transactionDao.getTransaction(transactionId)
         when(transaction.transactionType){
             TransactionType.BUY -> upsertBatchCostFromBuy(transactionId)
-            TransactionType.SALE -> return
-            TransactionType.OPZS -> TODO()
-            TransactionType.WRITE_OFF -> return
-            TransactionType.INVENTORY -> return
+            TransactionType.OPZS -> upsertBatchCostFromOpzs(transactionId)
+            else -> return
         }
     }
     private suspend fun upsertBatchCostFromBuy(transactionId: Int) {

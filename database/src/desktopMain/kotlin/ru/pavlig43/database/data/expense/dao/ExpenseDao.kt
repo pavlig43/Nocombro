@@ -7,6 +7,7 @@ import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
+import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.database.data.expense.EXPENSE_TABLE_NAME
 import ru.pavlig43.database.data.expense.ExpenseBD
 import ru.pavlig43.database.data.expense.MainExpenseBD
@@ -27,6 +28,17 @@ interface ExpenseDao {
      */
     @Query("SELECT * FROM $EXPENSE_TABLE_NAME WHERE transaction_id = :transactionId ORDER BY expense_date_time ASC")
     suspend fun getByTransactionId(transactionId: Int): List<ExpenseBD>
+
+    @Query(
+        """
+      SELECT * FROM $EXPENSE_TABLE_NAME
+      WHERE transaction_id IS NULL
+        AND expense_date_time >= :start
+        AND expense_date_time <= :end
+      ORDER BY expense_date_time ASC
+      """
+    )
+    fun observeMainExpense(start: LocalDateTime, end: LocalDateTime): Flow<List<ExpenseBD>>
 
     /**
      * Получить ВСЕ расходы (включая непривязанные к транзакции)

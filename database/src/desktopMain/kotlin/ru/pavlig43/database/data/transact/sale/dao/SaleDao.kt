@@ -36,7 +36,7 @@ abstract class SaleDao {
     abstract suspend fun getMovementIdsBySaleIds(ids: List<Int>): List<Int>
 }
 
-internal data class InternalSale(
+data class InternalSale(
     @Embedded
     val sale: SaleBDIn,
     @Relation(

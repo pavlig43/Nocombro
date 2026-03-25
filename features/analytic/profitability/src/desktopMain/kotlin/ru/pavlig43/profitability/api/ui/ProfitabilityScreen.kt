@@ -21,8 +21,8 @@ import ru.pavlig43.profitability.internal.component.LoadState
 import ru.pavlig43.profitability.internal.component.ProfitabilityComponent
 import ru.pavlig43.profitability.internal.component.ProfitabilityField
 import ru.pavlig43.profitability.internal.component.createProfitabilityColumns
+import ru.pavlig43.profitability.internal.model.ProfitabilityProduct
 import ru.pavlig43.profitability.internal.model.ProfitabilityTableData
-import ru.pavlig43.profitability.internal.model.ProfitabilityUi
 import ru.pavlig43.tablecore.ui.RussianStringProvider
 import ru.pavlig43.tablecore.ui.ScrollBar
 import ua.wwind.table.ColumnSpec
@@ -55,6 +55,7 @@ fun ProfitabilityScreen(component: ProfitabilityComponent) {
                     component.updateFilters(filters)
                 }
             }
+            LaunchedEffect(tableState) { snapshotFlow { tableState.sort }.collect { sort -> component.updateSort(sort) } }
             val tableData by component.tableData.collectAsState()
 
             ProfitabilityTable(
@@ -71,7 +72,7 @@ fun ProfitabilityScreen(component: ProfitabilityComponent) {
 private fun ProfitabilityTable(
     state: TableState<ProfitabilityField>,
     tableData: ProfitabilityTableData,
-    columns: ImmutableList<ColumnSpec<ru.pavlig43.profitability.internal.model.ProfitabilityUi, ProfitabilityField, ProfitabilityTableData>>,
+    columns: ImmutableList<ColumnSpec<ProfitabilityProduct, ProfitabilityField, ProfitabilityTableData>>,
     modifier: Modifier = Modifier
 ) {
     val verticalState = androidx.compose.foundation.lazy.rememberLazyListState()

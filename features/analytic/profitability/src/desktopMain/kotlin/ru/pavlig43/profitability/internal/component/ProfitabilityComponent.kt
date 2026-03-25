@@ -4,20 +4,16 @@ import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
 import com.arkivanov.essenty.instancekeeper.getOrCreate
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.transformLatest
+import kotlinx.coroutines.flow.*
 import ru.pavlig43.core.MainTabComponent
 import ru.pavlig43.core.componentCoroutineScope
 import ru.pavlig43.corekoin.ComponentKoinContext
 import ru.pavlig43.datetime.period.dateTime.DTPeriod
 import ru.pavlig43.datetime.period.dateTime.DateTimePeriodComponent
 import ru.pavlig43.profitability.api.ProfitabilityDependencies
+import ru.pavlig43.profitability.internal.di.ProfitabilityRepository
 import ru.pavlig43.profitability.internal.di.createModule
+import ru.pavlig43.profitability.internal.model.AllProfitability
 import ru.pavlig43.profitability.internal.model.ProfitabilityTableData
 import ru.pavlig43.tablecore.manger.FilterManager
 import ru.pavlig43.tablecore.manger.SortManager
@@ -38,7 +34,7 @@ class ProfitabilityComponent(
     )
     private val koinComponent = instanceKeeper.getOrCreate { ComponentKoinContext() }
     private val scope = koinComponent.getOrCreateKoinScope(createModule(dependencies))
-    private val repository = scope.get<ru.pavlig43.profitability.internal.di.ProfitabilityRepository>()
+    private val repository: ProfitabilityRepository = scope.get()
 
     private val coroutineScope = componentCoroutineScope()
 
@@ -55,7 +51,7 @@ class ProfitabilityComponent(
             ).collect { result ->
                 emit(
                     result.fold(
-                        onSuccess = { LoadState.Success(emptyList()) }, //изменить
+                        onSuccess = { LoadState.Success(it) }, //изменить
                         onFailure = { LoadState.Error(it.message ?: "") }
                     )
                 )
@@ -71,7 +67,7 @@ class ProfitabilityComponent(
         when (state) {
             is LoadState.Loading, is LoadState.Error -> ProfitabilityTableData()
             is LoadState.Success -> {
-                val filtered = state.data.filter { item ->
+                val filtered = state.data.products.filter { item ->
                     ProfitabilityFilterMatcher.matchesItem(item, filters)
                 }
                 val displayedProducts = ProfitabilitySorter.sort(filtered, sort)
@@ -92,5 +88,5 @@ class ProfitabilityComponent(
 internal sealed interface LoadState {
     data object Loading : LoadState
     data class Error(val message: String) : LoadState
-    data class Success(val data: List<ru.pavlig43.profitability.internal.model.ProfitabilityUi>) : LoadState
+    data class Success(val data: AllProfitability) : LoadState
 }
