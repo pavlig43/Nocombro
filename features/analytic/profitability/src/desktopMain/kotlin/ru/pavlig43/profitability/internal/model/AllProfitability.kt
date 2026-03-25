@@ -1,5 +1,6 @@
 package ru.pavlig43.profitability.internal.model
 
+import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.core.model.DecimalData2
 import ru.pavlig43.core.model.DecimalData3
@@ -29,7 +30,7 @@ internal data class ProfitabilityProduct(
 internal data class ProfitabilityBatchDetails(
     val contrAgentId: Int,
     val contrAgentName: String,
-    val date: LocalDateTime,
+    val date: LocalDate,
     val quantity: DecimalData3,
     val revenue: DecimalData2,
     val expenses: DecimalData2,

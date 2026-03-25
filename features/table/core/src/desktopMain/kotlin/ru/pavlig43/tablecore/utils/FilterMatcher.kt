@@ -100,6 +100,30 @@ abstract class FilterMatcher<I, C> {
             else -> true
         }
     }
+    @Suppress("CyclomaticComplexMethod")
+    protected fun matchesLongField(
+        value: Long,
+        state: TableFilterState<*>,
+    ): Boolean {
+        val st = state as TableFilterState<Long>
+        val constraint = st.constraint ?: return true
+
+        return when (constraint) {
+            FilterConstraint.GT -> value > (st.values?.getOrNull(0) ?: value)
+            FilterConstraint.GTE -> value >= (st.values?.getOrNull(0) ?: value)
+            FilterConstraint.LT -> value < (st.values?.getOrNull(0) ?: value)
+            FilterConstraint.LTE -> value <= (st.values?.getOrNull(0) ?: value)
+            FilterConstraint.EQUALS -> value == (st.values?.getOrNull(0) ?: value)
+            FilterConstraint.NOT_EQUALS -> value != (st.values?.getOrNull(0) ?: value)
+            FilterConstraint.BETWEEN -> {
+                val from = st.values?.getOrNull(0) ?: value
+                val to = st.values?.getOrNull(1) ?: value
+                value in from..to
+            }
+
+            else -> true
+        }
+    }
 
 
     fun <I>matchesTypeField(value: I, state: TableFilterState<*>,): Boolean {
@@ -188,15 +212,15 @@ object DataDecimalDelegate2:NumberFilterDelegate<DecimalData2> {
 
     override fun parse(input: String): DecimalData2? {
         val doubleValue = input.toDoubleOrNull() ?: return null
-        val intValue = (doubleValue * 100).toInt()
-        return DecimalData2(intValue)
+        val longValue = (doubleValue * 100).toLong()
+        return DecimalData2(longValue)
     }
 
     override fun format(value: DecimalData2): String = value.toStartDoubleFormat()
 
     override fun toSliderValue(value: DecimalData2): Float = (value.value / 100.0f)
 
-    override fun fromSliderValue(value: Float): DecimalData2 = DecimalData2((value * 100).toInt())
+    override fun fromSliderValue(value: Float): DecimalData2 = DecimalData2((value * 100).toLong())
 
     override fun compare(
         a: DecimalData2,
@@ -215,15 +239,15 @@ object DataDecimalDelegate3:NumberFilterDelegate<DecimalData3> {
 
     override fun parse(input: String): DecimalData3? {
         val doubleValue = input.toDoubleOrNull() ?: return null
-        val intValue = (doubleValue * 1000).toInt()
-        return DecimalData3(intValue)
+        val longValue = (doubleValue * 1000).toLong()
+        return DecimalData3(longValue)
     }
 
     override fun format(value: DecimalData3): String = value.toStartDoubleFormat()
 
     override fun toSliderValue(value: DecimalData3): Float = (value.value / 1000.0f)
 
-    override fun fromSliderValue(value: Float): DecimalData3 = DecimalData3((value * 1000).toInt())
+    override fun fromSliderValue(value: Float): DecimalData3 = DecimalData3((value * 1000).toLong())
 
     override fun compare(
         a: DecimalData3,

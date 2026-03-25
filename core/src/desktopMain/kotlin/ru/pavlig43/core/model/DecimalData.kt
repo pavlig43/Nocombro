@@ -5,11 +5,11 @@ import kotlin.math.pow
 
 
 data class DecimalData2(
-    override val value: Int
+    override val value: Long
 ): DecimalData() {
     override val countDecimal: Int = 2
 
-    override fun copyValue(value: Int): DecimalData = copy(value = value)
+    override fun copyValue(value: Long): DecimalData = copy(value = value)
 
     override fun toString(): String = toStartDoubleFormat()
 
@@ -25,12 +25,12 @@ data class DecimalData2(
     operator fun times(multiplier: Int): DecimalData2 = copy(value = value * multiplier)
 }
 data class DecimalData3(
-    override val value: Int
+    override val value: Long
 ): DecimalData() {
     @Suppress("MagicNumber")
     override val countDecimal: Int = 3
 
-    override fun copyValue(value: Int): DecimalData = copy(value = value)
+    override fun copyValue(value: Long): DecimalData = copy(value = value)
 
     override fun toString(): String = toStartDoubleFormat()
 
@@ -46,9 +46,9 @@ data class DecimalData3(
 }
 
 abstract class DecimalData: Number(), Comparable<DecimalData> {
-    abstract val value: Int
+    abstract val value: Long
     abstract val countDecimal: Int
-    abstract fun copyValue(value: Int): DecimalData
+    abstract fun copyValue(value: Long): DecimalData
     override fun compareTo(other: DecimalData): Int {
         return value.compareTo(other.value)
     }
@@ -63,11 +63,11 @@ abstract class DecimalData: Number(), Comparable<DecimalData> {
     }
 
     override fun toLong(): Long {
-        return value.toLong()
+        return value
     }
 
     override fun toInt(): Int {
-        return value
+        return value.toInt()
     }
 
     override fun toShort(): Short {
@@ -80,11 +80,7 @@ abstract class DecimalData: Number(), Comparable<DecimalData> {
 
 
 
-    override fun hashCode(): Int {
-        var result = value
-        result = 31 * result + countDecimal
-        return result
-    }
+    override fun hashCode(): Int = value.hashCode()
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

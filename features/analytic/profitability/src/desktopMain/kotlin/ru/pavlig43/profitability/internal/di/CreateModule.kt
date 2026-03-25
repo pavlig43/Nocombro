@@ -14,6 +14,7 @@ import ru.pavlig43.profitability.internal.model.AllProfitability
 import ru.pavlig43.profitability.internal.model.ProfitabilityBatchDetails
 import ru.pavlig43.profitability.internal.model.ProfitabilityProduct
 import kotlin.Int
+import kotlin.math.roundToInt
 
 internal fun createModule(dependencies: ProfitabilityDependencies) = listOf(
     module {
@@ -53,7 +54,10 @@ internal class ProfitabilityRepository(
                                 // Итого расходы( стоимость партий + расходы на продажу)
                                 val expenses = costPrice + expensesOnSale
 
-                                val revenue = sale.sale.price * saleQuantity
+                                val revenue = (sale.sale.price * (saleQuantity.toDouble()/1000)).roundToInt()
+                                println("saleQuantity: $saleQuantity")
+                                println("price ${sale.sale.price}")
+                                println("revenue: $revenue")
                                 val profit = revenue - expenses
                                 val expensesOnOneKg = (expenses * 1000 / saleQuantity.toDouble())
                                 val margin = profit.toDouble() / expenses * 100
@@ -62,7 +66,7 @@ internal class ProfitabilityRepository(
                                 ProfitabilityBatchDetails(
                                     contrAgentId = sale.client.id,
                                     contrAgentName = sale.client.displayName,
-                                    date = sale.transaction.createdAt,
+                                    date = sale.transaction.createdAt.date,
                                     quantity = saleQuantity.let {
                                         quantity += it
                                         DecimalData3(it)

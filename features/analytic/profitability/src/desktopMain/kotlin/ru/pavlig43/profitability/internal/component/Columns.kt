@@ -12,6 +12,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.ImmutableList
 import org.jetbrains.compose.resources.painterResource
+import ru.pavlig43.immutable.internal.column.readDateColumn
+import ru.pavlig43.immutable.internal.column.readDateTimeColumn
 import ru.pavlig43.immutable.internal.column.readDecimalColumn
 import ru.pavlig43.immutable.internal.column.readTextColumn
 import ru.pavlig43.profitability.internal.model.ProfitabilityBatchDetails
@@ -161,16 +163,12 @@ internal fun createBatchDetailsColumns(): ImmutableList<ColumnSpec<Profitability
             filterType = TableFilterType.TextTableFilter(),
         )
 
-        column(
-            BatchDetailsField.DATE,
-            valueOf = { it.date }
-        ) {
-            title { "Дата" }
-            cell { item, tableData ->
-                Text(item.date.toString())
-            }
-            filter(TableFilterType.TextTableFilter())
-        }
+        readDateColumn(
+            headerText = "Дата",
+            column = BatchDetailsField.DATE,
+            valueOf = { it.date },
+            filterType = TableFilterType.DateTableFilter(),
+        )
 
         readDecimalColumn(
             headerText = "Кол-во",

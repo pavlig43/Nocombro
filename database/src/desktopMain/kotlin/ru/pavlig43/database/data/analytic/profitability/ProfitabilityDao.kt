@@ -13,10 +13,12 @@ abstract class ProfitabilityDao {
     @Transaction
     @Query(
         """
-        SELECT * FROM sale s
-        JOIN transact t ON s.transaction_id = t.id
-        WHERE t.created_at >= :start AND t.created_at <= :end
-    """
+     SELECT * FROM sale
+     WHERE transaction_id IN (
+         SELECT id FROM transact
+         WHERE created_at >= :start AND created_at <= :end
+     )
+     """
     )
     abstract fun observeOnSale(
         start: LocalDateTime,
