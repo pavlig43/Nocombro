@@ -37,6 +37,19 @@ class KmpLibrary : Plugin<Project> {
 
             }
 
+            // Enable context parameters (Kotlin 2.3+ feature) for all targets
+            kotlinMultiplatformConfig {
+                targets.configureEach {
+                    compilations.configureEach {
+                        compileTaskProvider.configure {
+                            compilerOptions {
+                                freeCompilerArgs.add("-Xcontext-parameters")
+                            }
+                        }
+                    }
+                }
+            }
+
         }
     }
 }
