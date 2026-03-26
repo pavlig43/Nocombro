@@ -1,5 +1,6 @@
 package ru.pavlig43.core.model
 
+import java.text.DecimalFormat
 import kotlin.math.pow
 
 
@@ -91,11 +92,12 @@ abstract class DecimalData: Number(), Comparable<DecimalData> {
     }
 }
 
+private val formatter = DecimalFormat("#,##0.###")
+
 @Suppress("MagicNumber")
 fun DecimalData.toStartDoubleFormat(): String {
-    return (value / (10.0.pow(countDecimal))).toString()
-        .dropLastWhile { it == '0' }
-        .run { if (last() == '.') dropLast(1) else this }
+    val doubleValue = value / (10.0.pow(countDecimal))
+    return formatter.format(doubleValue)
 }
 
 

@@ -15,7 +15,7 @@ internal object ProfitabilityFilterMatcher : FilterMatcher<ProfitabilityProduct,
             ProfitabilityField.QUANTITY -> matchesDecimalField(item.quantity,stateAny)
             ProfitabilityField.REVENUE -> matchesDecimalField(item.revenue,stateAny)
             ProfitabilityField.EXPENSES -> matchesDecimalField(item.totalExpenses,stateAny)
-            ProfitabilityField.EXPENSES_ON_ONE_KG -> matchesDoubleField(item.expensesOnOneKg,stateAny)
+            ProfitabilityField.EXPENSES_ON_ONE_KG -> matchesDecimalField(item.expensesOnOneKg,stateAny)
             ProfitabilityField.PROFIT -> matchesDecimalField(item.profit,stateAny)
             ProfitabilityField.MARGIN -> matchesDoubleField(item.margin,stateAny)
             ProfitabilityField.PROFITABILITY ->  matchesDoubleField(item.profitability,stateAny)

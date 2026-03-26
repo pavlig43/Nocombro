@@ -66,7 +66,6 @@ internal class ProfitabilityRepository(
 
 
                             val batchesCost = sale.movementOut.batchOut.costPrice
-                            println(sale.movementOut.batchOut.costPrice)
 
 
                             val costPrice =
@@ -79,7 +78,7 @@ internal class ProfitabilityRepository(
                             val revenue =
                                 (sale.sale.price * (saleQuantity.toDouble() / 1000)).roundToLong()
                             val profit = revenue - expenses
-                            val expensesOnOneKg = (expenses * 1000 / saleQuantity.toDouble())
+                            val expensesOnOneKg = (expenses * 1000 / saleQuantity.toDouble()).roundToLong()
                             val margin = profit.toDouble() / expenses * 100
                             val profitability = profit.toDouble() / revenue * 100
 
@@ -99,7 +98,7 @@ internal class ProfitabilityRepository(
                                     productExpenses += it
                                     DecimalData2(it)
                                 },
-                                expensesOnOneKg = expensesOnOneKg,
+                                expensesOnOneKg = DecimalData2(expensesOnOneKg),
                                 profit = profit.let {
                                     totalProfit += it
                                     DecimalData2(it)
@@ -114,7 +113,7 @@ internal class ProfitabilityRepository(
                             quantity = DecimalData3(quantity),
                             revenue = DecimalData2(allRevenue),
                             totalExpenses = DecimalData2(productExpenses),
-                            expensesOnOneKg = 0.0,
+                            expensesOnOneKg = DecimalData2(0),
                             profit = DecimalData2(totalProfit),
                             margin = 0.0,
                             profitability = 0.0,
@@ -134,13 +133,13 @@ internal class ProfitabilityRepository(
 
                     // Пересчитываем показатели
                     val profit = product.revenue.value - totalExpenses
-                    val expensesOnOneKg = (totalExpenses.toDouble() * 1000) / product.quantity.value
+                    val expensesOnOneKg = ((totalExpenses.toDouble() * 1000) / product.quantity.value).roundToLong()
                     val margin = (profit.toDouble() / totalExpenses * 100)
                     val profitability = (profit.toDouble() / product.revenue.value * 100)
 
                     product.copy(
                         totalExpenses = DecimalData2(totalExpenses),
-                        expensesOnOneKg = expensesOnOneKg,
+                        expensesOnOneKg = DecimalData2(expensesOnOneKg),
                         profit = DecimalData2(profit),
                         margin = margin,
                         profitability = profitability

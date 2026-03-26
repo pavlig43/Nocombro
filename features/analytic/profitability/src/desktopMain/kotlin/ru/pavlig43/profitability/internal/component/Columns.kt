@@ -19,6 +19,7 @@ import ru.pavlig43.immutable.internal.column.readTextColumn
 import ru.pavlig43.profitability.internal.model.ProfitabilityBatchDetails
 import ru.pavlig43.profitability.internal.model.ProfitabilityProduct
 import ru.pavlig43.profitability.internal.model.ProfitabilityTableData
+import ru.pavlig43.tablecore.utils.DataDecimalDelegate2
 import ru.pavlig43.tablecore.utils.DataDecimalDelegate3
 import ru.pavlig43.theme.Res
 import ru.pavlig43.theme.arrow_downward
@@ -102,16 +103,14 @@ internal fun createProfitabilityColumns(
             valueOf = { it.totalExpenses },
         )
 
-        column(
-            ProfitabilityField.EXPENSES_ON_ONE_KG,
-            valueOf = { it.expensesOnOneKg }
-        ) {
-            title { "Расходы на кг" }
-            cell { item, tableData ->
-                Text(item.expensesOnOneKg.toString())
-            }
-            filter(TableFilterType.NumberTableFilter(delegate = TableFilterType.NumberTableFilter.DoubleDelegate))
-        }
+        readDecimalColumn(
+            headerText = "Расходы на кг",
+            column = ProfitabilityField.EXPENSES_ON_ONE_KG,
+            valueOf = { it.expensesOnOneKg },
+            filterType = TableFilterType.NumberTableFilter(
+                delegate = DataDecimalDelegate2
+            ),
+        )
 
         readDecimalColumn(
             headerText = "Прибыль",
@@ -124,7 +123,7 @@ internal fun createProfitabilityColumns(
         ) {
             title { "Маржа" }
             cell { item, tableData ->
-                Text(item.margin.toString())
+                Text( "%,.2f".format(item.margin))
             }
             filter(TableFilterType.NumberTableFilter(delegate = TableFilterType.NumberTableFilter.DoubleDelegate))
         }
@@ -135,7 +134,7 @@ internal fun createProfitabilityColumns(
         ) {
             title { "Рентабельность" }
             cell { item, tableData ->
-                Text(item.profitability.toString())
+                Text( "%,.2f".format(item.profitability))
             }
             filter(TableFilterType.NumberTableFilter(delegate = TableFilterType.NumberTableFilter.DoubleDelegate))
         }
@@ -190,17 +189,14 @@ internal fun createBatchDetailsColumns(): ImmutableList<ColumnSpec<Profitability
             column = BatchDetailsField.EXPENSES,
             valueOf = { it.expenses },
         )
-
-        column(
-            BatchDetailsField.EXPENSES_ON_ONE_KG,
-            valueOf = { it.expensesOnOneKg }
-        ) {
-            title { "Расходы на кг" }
-            cell { item, tableData ->
-                Text(item.expensesOnOneKg.toString())
-            }
-            filter(TableFilterType.NumberTableFilter(delegate = TableFilterType.NumberTableFilter.DoubleDelegate))
-        }
+        readDecimalColumn(
+            headerText = "Расходы на кг",
+            column = BatchDetailsField.EXPENSES_ON_ONE_KG,
+            valueOf = { it.expensesOnOneKg },
+            filterType = TableFilterType.NumberTableFilter(
+                delegate = DataDecimalDelegate2
+            ),
+        )
 
         readDecimalColumn(
             headerText = "Прибыль",
@@ -214,7 +210,7 @@ internal fun createBatchDetailsColumns(): ImmutableList<ColumnSpec<Profitability
         ) {
             title { "Маржа" }
             cell { item, tableData ->
-                Text(item.margin.toString())
+                Text( "%,.2f".format(item.margin))
             }
             filter(TableFilterType.NumberTableFilter(delegate = TableFilterType.NumberTableFilter.DoubleDelegate))
         }
@@ -225,7 +221,7 @@ internal fun createBatchDetailsColumns(): ImmutableList<ColumnSpec<Profitability
         ) {
             title { "Рентабельность" }
             cell { item, tableData ->
-                Text(item.profitability.toString())
+                Text( "%,.2f".format(item.profitability))
             }
             filter(TableFilterType.NumberTableFilter(delegate = TableFilterType.NumberTableFilter.DoubleDelegate))
         }

@@ -16,7 +16,7 @@ internal data class ProfitabilityProduct(
     val quantity: DecimalData3,
     val revenue: DecimalData2,
     val totalExpenses: DecimalData2,
-    val expensesOnOneKg: Double,
+    val expensesOnOneKg: DecimalData2,
     val profit: DecimalData2,
     val margin: Double,
     val profitability: Double,
@@ -34,7 +34,7 @@ internal data class ProfitabilityBatchDetails(
     val quantity: DecimalData3,
     val revenue: DecimalData2,
     val expenses: DecimalData2,
-    val expensesOnOneKg: Double,
+    val expensesOnOneKg: DecimalData2,
     val profit: DecimalData2,
     val margin: Double,
     val profitability: Double
