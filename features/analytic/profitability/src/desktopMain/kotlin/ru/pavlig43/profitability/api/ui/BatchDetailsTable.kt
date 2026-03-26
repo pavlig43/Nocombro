@@ -41,7 +41,6 @@ internal fun BatchDetailsTable(
             selectionMode = SelectionMode.None,
             rowHeightMode = RowHeightMode.Dynamic,
             enableDragToScroll = false,
-            showFooter = true,
         )
     }
     val tableState = rememberTableState(

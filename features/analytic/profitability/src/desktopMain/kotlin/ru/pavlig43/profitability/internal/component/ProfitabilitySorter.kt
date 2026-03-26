@@ -1,5 +1,6 @@
 package ru.pavlig43.profitability.internal.component
 
+import ru.pavlig43.profitability.internal.model.ProfitabilityBatchDetails
 import ru.pavlig43.profitability.internal.model.ProfitabilityProduct
 import ru.pavlig43.tablecore.utils.SortMatcher
 import ua.wwind.table.data.SortOrder
@@ -22,6 +23,27 @@ internal object ProfitabilitySorter : SortMatcher<ProfitabilityProduct, Profitab
             ProfitabilityField.MARGIN -> items.sortedBy { it.margin }
             ProfitabilityField.PROFITABILITY -> items.sortedBy { it.profitability }
             else -> items
+        }
+        return if (sort.order == SortOrder.DESCENDING) sorted.asReversed() else sorted
+    }
+}
+internal object ProfitabilityDetailSorter : SortMatcher<ProfitabilityBatchDetails, BatchDetailsField> {
+
+    override fun sort(
+        items: List<ProfitabilityBatchDetails>,
+        sort: SortState<BatchDetailsField>?
+    ): List<ProfitabilityBatchDetails> {
+        if (sort == null) return items
+        val sorted = when(sort.column){
+            BatchDetailsField.CONTRAGENT_NAME -> items.sortedBy { it.contrAgentName }
+            BatchDetailsField.DATE -> items.sortedBy { it.date }
+            BatchDetailsField.QUANTITY -> items.sortedBy { it.quantity }
+            BatchDetailsField.REVENUE -> items.sortedBy { it.revenue }
+            BatchDetailsField.EXPENSES -> items.sortedBy { it.expenses }
+            BatchDetailsField.EXPENSES_ON_ONE_KG -> items.sortedBy { it.expensesOnOneKg }
+            BatchDetailsField.PROFIT -> items.sortedBy { it.profit }
+            BatchDetailsField.MARGIN -> items.sortedBy { it.margin }
+            BatchDetailsField.PROFITABILITY -> items.sortedBy { it.profitability }
         }
         return if (sort.order == SortOrder.DESCENDING) sorted.asReversed() else sorted
     }

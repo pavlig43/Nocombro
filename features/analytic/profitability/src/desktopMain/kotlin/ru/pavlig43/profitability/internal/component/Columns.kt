@@ -12,6 +12,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.ImmutableList
 import kotlin.collections.flatMap
 import org.jetbrains.compose.resources.painterResource
+import ru.pavlig43.core.model.DecimalData2
 import ru.pavlig43.core.model.sumOfDecimal2
 import ru.pavlig43.core.model.sumOfDecimal3
 import ru.pavlig43.core.model.toStartDoubleFormat
@@ -161,27 +162,26 @@ internal fun createBatchDetailsColumns(): ImmutableList<ColumnSpec<Profitability
             headerText = "Контрагент",
             column = BatchDetailsField.CONTRAGENT_NAME,
             valueOf = { it.contrAgentName },
-            filterType = TableFilterType.TextTableFilter(),
+//            filterType = TableFilterType.TextTableFilter(),
+            isSortable = false
         )
 
         readDateColumn(
             headerText = "Дата",
             column = BatchDetailsField.DATE,
             valueOf = { it.date },
-            filterType = TableFilterType.DateTableFilter(),
+//            filterType = TableFilterType.DateTableFilter(),
+            isSortable = false
         )
 
         readDecimalColumn(
             headerText = "Кол-во",
             column = BatchDetailsField.QUANTITY,
             valueOf = { it.quantity },
-            filterType = TableFilterType.NumberTableFilter(
-                delegate = DataDecimalDelegate3
-            ),
-            footerContent = { tableData ->
-                val sum = tableData.displayedProducts.sumOfDecimal3 { it.quantity }
-                Text(sum.toStartDoubleFormat())
-            }
+//            filterType = TableFilterType.NumberTableFilter(
+//                delegate = DataDecimalDelegate3
+//            ),
+            isSortable = false
 
         )
 
@@ -189,38 +189,30 @@ internal fun createBatchDetailsColumns(): ImmutableList<ColumnSpec<Profitability
             headerText = "Выручка",
             column = BatchDetailsField.REVENUE,
             valueOf = { it.revenue },
-            footerContent = { tableData ->
-                val sum = tableData.displayedProducts.flatMap { it.details }.sumOfDecimal2 { details -> details.revenue }
-                Text(sum.toStartDoubleFormat())
-            }
+            isSortable = false
         )
 
         readDecimalColumn(
             headerText = "Расходы",
             column = BatchDetailsField.EXPENSES,
             valueOf = { it.expenses },
-            footerContent = { tableData ->
-                val sum = tableData.displayedProducts.flatMap { it.details }.sumOfDecimal2 { details -> details.expenses }
-                Text(sum.toStartDoubleFormat())
-            }
+            isSortable = false
         )
         readDecimalColumn(
             headerText = "Расходы на кг",
             column = BatchDetailsField.EXPENSES_ON_ONE_KG,
             valueOf = { it.expensesOnOneKg },
-            filterType = TableFilterType.NumberTableFilter(
-                delegate = DataDecimalDelegate2
-            ),
+//            filterType = TableFilterType.NumberTableFilter(
+//                delegate = DataDecimalDelegate2
+//            ),
+            isSortable = false
         )
 
         readDecimalColumn(
             headerText = "Прибыль",
             column = BatchDetailsField.PROFIT,
             valueOf = { it.profit },
-            footerContent = { tableData ->
-                val sum = tableData.displayedProducts.flatMap { it.details }.sumOfDecimal2 { details -> details.profit }
-                Text(sum.toStartDoubleFormat())
-            }
+            isSortable = false
         )
 
         column(
@@ -231,7 +223,8 @@ internal fun createBatchDetailsColumns(): ImmutableList<ColumnSpec<Profitability
             cell { item, tableData ->
                 Text("%,.2f".format(item.margin))
             }
-            filter(TableFilterType.NumberTableFilter(delegate = TableFilterType.NumberTableFilter.DoubleDelegate))
+//            filter(TableFilterType.NumberTableFilter(delegate = TableFilterType.NumberTableFilter.DoubleDelegate))
+
         }
 
         column(
@@ -242,6 +235,7 @@ internal fun createBatchDetailsColumns(): ImmutableList<ColumnSpec<Profitability
             cell { item, tableData ->
                 Text("%,.2f".format(item.profitability))
             }
-            filter(TableFilterType.NumberTableFilter(delegate = TableFilterType.NumberTableFilter.DoubleDelegate))
+//            filter(TableFilterType.NumberTableFilter(delegate = TableFilterType.NumberTableFilter.DoubleDelegate))
+
         }
     }
