@@ -10,7 +10,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.ImmutableList
+import kotlin.collections.flatMap
 import org.jetbrains.compose.resources.painterResource
+import ru.pavlig43.core.model.sumOfDecimal2
 import ru.pavlig43.core.model.sumOfDecimal3
 import ru.pavlig43.core.model.toStartDoubleFormat
 import ru.pavlig43.immutable.internal.column.readDateColumn
@@ -187,12 +189,20 @@ internal fun createBatchDetailsColumns(): ImmutableList<ColumnSpec<Profitability
             headerText = "Выручка",
             column = BatchDetailsField.REVENUE,
             valueOf = { it.revenue },
+            footerContent = { tableData ->
+                val sum = tableData.displayedProducts.flatMap { it.details }.sumOfDecimal2 { details -> details.revenue }
+                Text(sum.toStartDoubleFormat())
+            }
         )
 
         readDecimalColumn(
             headerText = "Расходы",
             column = BatchDetailsField.EXPENSES,
             valueOf = { it.expenses },
+            footerContent = { tableData ->
+                val sum = tableData.displayedProducts.flatMap { it.details }.sumOfDecimal2 { details -> details.expenses }
+                Text(sum.toStartDoubleFormat())
+            }
         )
         readDecimalColumn(
             headerText = "Расходы на кг",
@@ -207,6 +217,10 @@ internal fun createBatchDetailsColumns(): ImmutableList<ColumnSpec<Profitability
             headerText = "Прибыль",
             column = BatchDetailsField.PROFIT,
             valueOf = { it.profit },
+            footerContent = { tableData ->
+                val sum = tableData.displayedProducts.flatMap { it.details }.sumOfDecimal2 { details -> details.profit }
+                Text(sum.toStartDoubleFormat())
+            }
         )
 
         column(
