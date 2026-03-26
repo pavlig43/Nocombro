@@ -176,6 +176,10 @@ internal fun createBatchDetailsColumns(): ImmutableList<ColumnSpec<Profitability
             filterType = TableFilterType.NumberTableFilter(
                 delegate = DataDecimalDelegate3
             ),
+            footerContent = {tableData ->
+            val sum: DecimalData3 = tableData.displayedProducts.sumOf { it.quantity }
+            }
+
         )
 
         readDecimalColumn(
