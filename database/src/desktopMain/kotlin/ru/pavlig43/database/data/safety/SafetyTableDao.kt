@@ -91,14 +91,6 @@ internal data class StorageProductNow(
     val count: Long
 )
 
-internal data class SafetyStockWithProduct(
-    @Embedded
-    val safetyStock: SafetyStock,
-
-    @Relation(parentColumn = "product_id", entityColumn = "id")
-    val product: Product
-)
-
 internal data class SafetyStockWithProductAndDeclaration(
     @Embedded
     val safetyStock: SafetyStock,
