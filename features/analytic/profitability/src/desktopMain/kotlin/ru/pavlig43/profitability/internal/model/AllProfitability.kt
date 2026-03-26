@@ -7,7 +7,7 @@ import ru.pavlig43.core.model.DecimalData3
 import ru.pavlig43.tablecore.model.IMultiLineTableUi
 
 internal data class AllProfitability(
-    val mainExpenses: Int,
+    val mainExpenses: DecimalData2,
     val products: List<ProfitabilityProduct>
 )
 internal data class ProfitabilityProduct(

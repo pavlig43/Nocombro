@@ -42,7 +42,6 @@ class ProfitabilityComponent(
     private val sortManager = SortManager<ProfitabilityField>(childContext("sort"))
 
     private val _expandedProducts = MutableSetFlow<Int>()
-    internal val expandedProducts: Set<Int> = _expandedProducts.value
 
     @OptIn(ExperimentalCoroutinesApi::class)
     internal val loadState: StateFlow<LoadState> = dateTimePeriodComponent.dateTimePeriodForData

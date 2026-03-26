@@ -126,7 +126,7 @@ internal class ProfitabilityRepository(
                 val productsWithMainExpenses = products.map { product ->
                     // Распределяем общие расходы пропорционально quantity
                     val mainExpenseShare =
-                        (totalMainExpenses * product.quantity.value) / totalQuantity
+                        ( totalMainExpenses * product.quantity.value) / totalQuantity
 
                     // Итого расходы с учётом общих
                     val totalExpenses = product.totalExpenses.value + mainExpenseShare
@@ -146,7 +146,7 @@ internal class ProfitabilityRepository(
                     )
                 }
                 AllProfitability(
-                    mainExpenses = totalMainExpenses.toInt(), products = productsWithMainExpenses
+                    mainExpenses = DecimalData2(totalMainExpenses), products = productsWithMainExpenses
                 )
             }
 

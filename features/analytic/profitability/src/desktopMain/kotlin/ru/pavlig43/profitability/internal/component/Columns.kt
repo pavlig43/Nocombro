@@ -10,7 +10,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.ImmutableList
-import kotlin.collections.flatMap
 import org.jetbrains.compose.resources.painterResource
 import ru.pavlig43.core.model.DecimalData2
 import ru.pavlig43.core.model.sumOfDecimal2
@@ -92,18 +91,33 @@ internal fun createProfitabilityColumns(
             filterType = TableFilterType.NumberTableFilter(
                 delegate = DataDecimalDelegate3
             ),
+            footerContent = { tableData ->
+                val sum = tableData.displayedProducts.sumOfDecimal3 { it.quantity }
+                Text(sum.toStartDoubleFormat())
+            }
         )
 
         readDecimalColumn(
             headerText = "Выручка",
             column = ProfitabilityField.REVENUE,
             valueOf = { it.revenue },
+            footerContent = { tableData ->
+                val sum = tableData.displayedProducts.sumOfDecimal2 { it.revenue }
+                Text(sum.toStartDoubleFormat())
+            }
         )
 
         readDecimalColumn(
             headerText = "Расходы",
             column = ProfitabilityField.EXPENSES,
+            filterType = TableFilterType.NumberTableFilter(
+                delegate = DataDecimalDelegate2
+            ),
             valueOf = { it.totalExpenses },
+            footerContent = { tableData ->
+                val sum = tableData.displayedProducts.sumOfDecimal2 { it.totalExpenses }
+                Text(sum.toStartDoubleFormat())
+            }
         )
 
         readDecimalColumn(
@@ -113,12 +127,20 @@ internal fun createProfitabilityColumns(
             filterType = TableFilterType.NumberTableFilter(
                 delegate = DataDecimalDelegate2
             ),
-        )
+
+            )
 
         readDecimalColumn(
             headerText = "Прибыль",
             column = ProfitabilityField.PROFIT,
             valueOf = { it.profit },
+            filterType = TableFilterType.NumberTableFilter(
+                delegate = DataDecimalDelegate2
+            ),
+            footerContent = { tableData ->
+                val sum = tableData.displayedProducts.sumOfDecimal2 { it.profit }
+                Text(sum.toStartDoubleFormat())
+            }
         )
         column(
             ProfitabilityField.MARGIN,
@@ -128,7 +150,19 @@ internal fun createProfitabilityColumns(
             cell { item, tableData ->
                 Text("%,.2f".format(item.margin))
             }
+            sortable()
             filter(TableFilterType.NumberTableFilter(delegate = TableFilterType.NumberTableFilter.DoubleDelegate))
+            footer { tableData ->
+                val totalProfit = tableData.displayedProducts.sumOfDecimal2 { it.profit }
+                val totalExpenses = tableData.displayedProducts.sumOfDecimal2 { it.totalExpenses }
+                val text = if (totalExpenses != DecimalData2(0)) {
+                    val value = (totalProfit.toDouble() / totalExpenses.toDouble()) * 100
+                    "%,.2f".format(value)
+                } else {
+                    ""
+                }
+                Text(text)
+            }
         }
 
         column(
@@ -139,7 +173,19 @@ internal fun createProfitabilityColumns(
             cell { item, tableData ->
                 Text("%,.2f".format(item.profitability))
             }
+            sortable()
             filter(TableFilterType.NumberTableFilter(delegate = TableFilterType.NumberTableFilter.DoubleDelegate))
+            footer { tableData ->
+                val totalProfit = tableData.displayedProducts.sumOfDecimal2 { it.profit }
+                val totalRevenue = tableData.displayedProducts.sumOfDecimal2 { it.revenue }
+                val text = if (totalRevenue != DecimalData2(0)) {
+                    val value = (totalProfit.toDouble() / totalRevenue.toDouble()) * 100
+                    "%,.2f".format(value)
+                } else {
+                    ""
+                }
+                Text(text)
+            }
         }
 
     }
