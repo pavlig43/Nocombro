@@ -1,3 +1,4 @@
+@file:Suppress("MagicNumber")
 package ru.pavlig43.profitability.internal.component
 
 import androidx.compose.foundation.layout.Box
@@ -42,7 +43,7 @@ enum class ProfitabilityField {
     MARGIN,
     PROFITABILITY
 }
-
+@Suppress("LongMethod")
 internal fun createProfitabilityColumns(
     onToggleExpanded: (productId: Int) -> Unit
 ): ImmutableList<ColumnSpec<ProfitabilityProduct, ProfitabilityField, ProfitabilityTableData>> =
@@ -202,6 +203,7 @@ enum class BatchDetailsField {
     PROFITABILITY
 }
 
+@Suppress("LongMethod")
 internal fun createBatchDetailsColumns(): ImmutableList<ColumnSpec<ProfitabilityBatchDetails, BatchDetailsField, ProfitabilityTableData>> =
     tableColumns {
         readTextColumn(

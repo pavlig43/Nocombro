@@ -1,3 +1,4 @@
+@file:Suppress("MagicNumber")
 package ru.pavlig43.transaction.internal.di
 
 import org.koin.core.module.dsl.singleOf
@@ -28,7 +29,6 @@ import ru.pavlig43.mutable.api.singleLine.data.CreateSingleItemRepository
 import ru.pavlig43.mutable.api.singleLine.data.UpdateSingleLineRepository
 import ru.pavlig43.transaction.api.TransactionFormDependencies
 import ru.pavlig43.transaction.internal.update.tabs.component.opzs.ingredients.FillIngredientsRepository
-import kotlin.math.roundToInt
 import kotlin.math.roundToLong
 
 internal fun createTransactionFormModule(dependencies: TransactionFormDependencies) = listOf(
@@ -404,7 +404,8 @@ internal class BatchCostRepository(
     }
     private suspend fun upsertBatchCostFromOpzs(transactionId: Int){
         val (pf,ingredients) = batchMovementDao.getByTransactionId(transactionId).partition { it.movement.movementType == MovementType.INCOMING }
-        val pfMovement = pf.firstOrNull() ?: return
+        if (pf.isEmpty()) return
+        val pfMovement = pf.first()
         val ingredientsCostMap = ingredients
             .map { it.movement.batchId }
             .let { batchCostDao.getBatchesCostPriceByIds(it) }
@@ -417,9 +418,8 @@ internal class BatchCostRepository(
         val costPricePerKg = if (pfMovement.movement.count > 0) {
             (totalCost / pfMovement.movement.count.toDouble()) * 1000
         } else 0.0
-
         batchCostDao.upsert(listOf(
-            BatchCostPriceEntity(pfMovement.movement.batchId, costPricePerKg.roundToInt().toLong())
+            BatchCostPriceEntity(pfMovement.movement.batchId, costPricePerKg.roundToLong())
         ))
     }
 }

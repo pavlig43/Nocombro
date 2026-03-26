@@ -1,3 +1,4 @@
+@file:Suppress("MagicNumber")
 package ru.pavlig43.profitability.internal.di
 
 import kotlinx.coroutines.Dispatchers
@@ -27,7 +28,7 @@ internal class ProfitabilityRepository(
     private val dao = db.profitabilityDao
     private val expenseDao = db.expenseDao
 
-
+@Suppress("LongMethod")
     fun observeOnProducts(
         start: LocalDateTime,
         end: LocalDateTime
@@ -72,14 +73,14 @@ internal class ProfitabilityRepository(
                                 (batchesCost?.costPricePerUnit ?: 0) * saleQuantity / 1000
 
                             // Итого расходы( стоимость партий + расходы на продажу)
-                            val expenses =
+                            val itemExpenses =
                                 (costPrice + expenseOnOneRowInSale).roundToLong()
 
                             val revenue =
                                 (sale.sale.price * (saleQuantity.toDouble() / 1000)).roundToLong()
-                            val profit = revenue - expenses
-                            val expensesOnOneKg = (expenses * 1000 / saleQuantity.toDouble()).roundToLong()
-                            val margin = profit.toDouble() / expenses * 100
+                            val profit = revenue - itemExpenses
+                            val expensesOnOneKg = (itemExpenses * 1000 / saleQuantity.toDouble()).roundToLong()
+                            val margin = profit.toDouble() / itemExpenses * 100
                             val profitability = profit.toDouble() / revenue * 100
 
                             ProfitabilityBatchDetails(
@@ -94,7 +95,7 @@ internal class ProfitabilityRepository(
                                     allRevenue += it
                                     DecimalData2(it)
                                 },
-                                expenses = expenses.let {
+                                expenses = itemExpenses.let {
                                     productExpenses += it
                                     DecimalData2(it)
                                 },

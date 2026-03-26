@@ -11,7 +11,7 @@ import ua.wwind.table.filter.data.TableFilterState
 import ua.wwind.table.filter.data.TableFilterType.NumberTableFilter.NumberFilterDelegate
 
 
-@Suppress("UNCHECKED_CAST")
+@Suppress("UNCHECKED_CAST","TooManyFunctions")
 /**
  * @param I сам объект (какой-нибудь ITableUi)
  * @param C sealed который содержит названия колонок

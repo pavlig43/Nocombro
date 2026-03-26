@@ -73,7 +73,7 @@ abstract class SafetyTableDao {
                     SafetyTableItem(
                         productId = product.id,
                         productName = product.displayName,
-                        vendorName = declaration?.vendorName ?: "",
+                        vendorName = declaration?.vendorName.orEmpty(),
                         count = currentCount,
                         reorderPoint = safety.reorderPoint,
                         orderQuantity = safety.orderQuantity

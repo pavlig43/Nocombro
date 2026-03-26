@@ -65,6 +65,7 @@ abstract class FilesComponent(
         }
     }
 
+    @Suppress("RedundantSuspendModifier")
     private suspend fun saveFileInNocombro(fileUi: FileUi) {
         val calculateNocombroFileName = calculateNocombroFileName(fileUi.platformFile)
         val nocombroFile = PlatformFile(FileKit.filesDir, calculateNocombroFileName)

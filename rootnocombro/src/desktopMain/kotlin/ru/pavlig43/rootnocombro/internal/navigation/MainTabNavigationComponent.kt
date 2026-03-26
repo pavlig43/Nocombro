@@ -40,6 +40,7 @@ import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.NotificationChi
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ProfitabilityChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.SampleTableChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.StorageChild
+import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.AnalyticConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.BatchMovementListConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemFormConfig.DeclarationFormConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemFormConfig.DocumentFormConfig
@@ -54,7 +55,6 @@ import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig.SafetyListConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig.TransactionListConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig.VendorListConfig
-import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.AnalyticConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.NotificationConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ProfitabilityConfig
 import ru.pavlig43.rootnocombro.internal.navigation.drawer.component.DrawerComponent

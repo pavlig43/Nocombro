@@ -1,7 +1,6 @@
 package ru.pavlig43.profitability.internal.model
 
 import kotlinx.datetime.LocalDate
-import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.core.model.DecimalData2
 import ru.pavlig43.core.model.DecimalData3
 import ru.pavlig43.tablecore.model.IMultiLineTableUi

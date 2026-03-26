@@ -11,8 +11,6 @@ import ru.pavlig43.core.TransactionExecutor
 import ru.pavlig43.core.componentCoroutineScope
 import ru.pavlig43.core.tabs.TabNavigationComponent
 import ru.pavlig43.core.tabs.TabOpener
-import ru.pavlig43.database.NocombroDatabase
-import ru.pavlig43.database.data.batch.BatchCostPriceEntity
 import ru.pavlig43.database.data.transact.Transact
 import ru.pavlig43.database.data.transact.TransactionType
 import ru.pavlig43.mutable.api.singleLine.component.SingleLineComponentFactory
@@ -31,7 +29,6 @@ import ru.pavlig43.transaction.internal.update.tabs.essential.TransactionUpdateS
 import ru.pavlig43.update.component.IItemFormTabsComponent
 import ru.pavlig43.update.component.UpdateComponent
 import ru.pavlig43.update.component.getDefaultUpdateComponent
-import kotlin.math.roundToInt
 
 @Suppress("LongParameterList")
 internal class TransactionFormTabsComponent(

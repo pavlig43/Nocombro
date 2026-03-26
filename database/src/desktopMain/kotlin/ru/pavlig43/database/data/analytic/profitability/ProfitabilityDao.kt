@@ -8,7 +8,7 @@ import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.database.data.transact.sale.dao.InternalSale
 
 @Dao
-abstract class ProfitabilityDao {
+interface ProfitabilityDao {
 
     @Transaction
     @Query(
@@ -20,7 +20,7 @@ abstract class ProfitabilityDao {
      )
      """
     )
-    abstract fun observeOnSale(
+    fun observeOnSale(
         start: LocalDateTime,
         end: LocalDateTime
     ): Flow<List<InternalSale>>

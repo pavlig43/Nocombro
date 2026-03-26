@@ -1,7 +1,6 @@
 package ru.pavlig43.database.data.batch.dao
 
 import androidx.room.Dao
-import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Upsert
 import ru.pavlig43.database.data.batch.BatchCostPriceEntity
