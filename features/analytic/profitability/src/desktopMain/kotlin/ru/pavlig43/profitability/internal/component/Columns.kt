@@ -2,7 +2,6 @@ package ru.pavlig43.profitability.internal.component
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -12,8 +11,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.ImmutableList
 import org.jetbrains.compose.resources.painterResource
+import ru.pavlig43.core.model.sumOfDecimal3
+import ru.pavlig43.core.model.toStartDoubleFormat
 import ru.pavlig43.immutable.internal.column.readDateColumn
-import ru.pavlig43.immutable.internal.column.readDateTimeColumn
 import ru.pavlig43.immutable.internal.column.readDecimalColumn
 import ru.pavlig43.immutable.internal.column.readTextColumn
 import ru.pavlig43.profitability.internal.model.ProfitabilityBatchDetails
@@ -123,7 +123,7 @@ internal fun createProfitabilityColumns(
         ) {
             title { "Маржа" }
             cell { item, tableData ->
-                Text( "%,.2f".format(item.margin))
+                Text("%,.2f".format(item.margin))
             }
             filter(TableFilterType.NumberTableFilter(delegate = TableFilterType.NumberTableFilter.DoubleDelegate))
         }
@@ -134,7 +134,7 @@ internal fun createProfitabilityColumns(
         ) {
             title { "Рентабельность" }
             cell { item, tableData ->
-                Text( "%,.2f".format(item.profitability))
+                Text("%,.2f".format(item.profitability))
             }
             filter(TableFilterType.NumberTableFilter(delegate = TableFilterType.NumberTableFilter.DoubleDelegate))
         }
@@ -176,8 +176,9 @@ internal fun createBatchDetailsColumns(): ImmutableList<ColumnSpec<Profitability
             filterType = TableFilterType.NumberTableFilter(
                 delegate = DataDecimalDelegate3
             ),
-            footerContent = {tableData ->
-            val sum: DecimalData3 = tableData.displayedProducts.sumOf { it.quantity }
+            footerContent = { tableData ->
+                val sum = tableData.displayedProducts.sumOfDecimal3 { it.quantity }
+                Text(sum.toStartDoubleFormat())
             }
 
         )
@@ -214,7 +215,7 @@ internal fun createBatchDetailsColumns(): ImmutableList<ColumnSpec<Profitability
         ) {
             title { "Маржа" }
             cell { item, tableData ->
-                Text( "%,.2f".format(item.margin))
+                Text("%,.2f".format(item.margin))
             }
             filter(TableFilterType.NumberTableFilter(delegate = TableFilterType.NumberTableFilter.DoubleDelegate))
         }
@@ -225,7 +226,7 @@ internal fun createBatchDetailsColumns(): ImmutableList<ColumnSpec<Profitability
         ) {
             title { "Рентабельность" }
             cell { item, tableData ->
-                Text( "%,.2f".format(item.profitability))
+                Text("%,.2f".format(item.profitability))
             }
             filter(TableFilterType.NumberTableFilter(delegate = TableFilterType.NumberTableFilter.DoubleDelegate))
         }

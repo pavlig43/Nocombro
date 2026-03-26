@@ -99,6 +99,20 @@ fun DecimalData.toStartDoubleFormat(): String {
     val doubleValue = value / (10.0.pow(countDecimal))
     return formatter.format(doubleValue)
 }
+inline fun <T> Iterable<T>.sumOfDecimal2(selector: (T) -> DecimalData2): DecimalData2 {
+    var sum: DecimalData2 = DecimalData2(0)
+    for (element in this) {
+        sum += selector(element)
+    }
+    return sum
+}
+inline fun <T> Iterable<T>.sumOfDecimal3(selector: (T) -> DecimalData3): DecimalData3 {
+    var sum: DecimalData3 = DecimalData3(0)
+    for (element in this) {
+        sum += selector(element)
+    }
+    return sum
+}
 
 
 

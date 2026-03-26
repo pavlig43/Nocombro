@@ -1,7 +1,9 @@
 package ru.pavlig43.immutable.internal.column
 
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -21,7 +23,8 @@ fun <T : Any, C, E,DECIMAL: DecimalData> ReadonlyTableColumnsBuilder<T, C, E>.re
     alignment: Alignment = Alignment.Center,
     textModifier: Modifier = Modifier.padding(horizontal = 12.dp),
     filterType: TableFilterType.NumberTableFilter<DECIMAL>? = null,
-    isSortable: Boolean = true
+    isSortable: Boolean = true,
+    footerContent: @Composable (BoxScope.(E) -> Unit)? = null
 ) {
     column(column, valueOf = { valueOf(it) }) {
         autoWidth(300.dp)
@@ -33,6 +36,9 @@ fun <T : Any, C, E,DECIMAL: DecimalData> ReadonlyTableColumnsBuilder<T, C, E>.re
         readDecimalCell(getCount = valueOf,modifier = textModifier)
         if (isSortable){
             sortable()
+        }
+        footerContent?.let {
+            footer(it)
         }
     }
 }
