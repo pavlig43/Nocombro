@@ -42,7 +42,7 @@ abstract class BatchMovementDao {
 
     @Query("SELECT * FROM batch_movement WHERE transaction_id = :transactionId")
     @Transaction
-    internal abstract suspend fun getByTransactionId(transactionId: Int): List<MovementOut>
+    abstract suspend fun getByTransactionId(transactionId: Int): List<MovementOut>
 
     @Transaction
     @Query("SELECT * FROM batch_movement WHERE batch_id IN (SELECT id FROM batch WHERE product_id = :productId)")
@@ -55,7 +55,7 @@ abstract class BatchMovementDao {
     fun observeBatchWithBalanceByProductId(productId: Int): Flow<List<BatchWithBalanceOut>> {
         return observeMovementsByProductId(productId).map { lst ->
             lst.groupBy { it.movement.batchId }.values.mapParallel { movements ->
-                val balance = movements.fold(0) { acc, out ->
+                val balance = movements.fold(0L) { acc, out ->
                     val movementType = out.movement.movementType
                     val count = out.movement.count
                     when (movementType) {
@@ -92,7 +92,7 @@ abstract class BatchMovementDao {
  * @property movement Движение партии
  * @property batchOut Связанная партия с продуктом
  */
-internal data class MovementOut(
+data class MovementOut(
     @Embedded
     val movement: BatchMovement,
     @Relation(

@@ -1,3 +1,4 @@
+@file:Suppress("MagicNumber")
 package ru.pavlig43.transaction.internal.di
 
 import org.koin.core.module.dsl.singleOf
@@ -8,10 +9,12 @@ import ru.pavlig43.core.model.ChangeSet
 import ru.pavlig43.core.model.UpsertListChangeSet
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.batch.BatchBD
+import ru.pavlig43.database.data.batch.BatchCostPriceEntity
 import ru.pavlig43.database.data.batch.BatchMovement
 import ru.pavlig43.database.data.batch.MovementType
 import ru.pavlig43.database.data.expense.ExpenseBD
 import ru.pavlig43.database.data.transact.Transact
+import ru.pavlig43.database.data.transact.TransactionType
 import ru.pavlig43.database.data.transact.buy.BuyBDIn
 import ru.pavlig43.database.data.transact.buy.BuyBDOut
 import ru.pavlig43.database.data.transact.ingredient.IngredientBD
@@ -26,6 +29,7 @@ import ru.pavlig43.mutable.api.singleLine.data.CreateSingleItemRepository
 import ru.pavlig43.mutable.api.singleLine.data.UpdateSingleLineRepository
 import ru.pavlig43.transaction.api.TransactionFormDependencies
 import ru.pavlig43.transaction.internal.update.tabs.component.opzs.ingredients.FillIngredientsRepository
+import kotlin.math.roundToLong
 
 internal fun createTransactionFormModule(dependencies: TransactionFormDependencies) = listOf(
     module {
@@ -52,6 +56,7 @@ internal fun createTransactionFormModule(dependencies: TransactionFormDependenci
         }
         single<UpdateSingleLineRepository<PfBD>>(UpdateSingleLineRepositoryType.PF.qualifier) { PfUpdateRepository(get()) }
         singleOf(::FillIngredientsRepository)
+        singleOf(::BatchCostRepository)
     }
 )
 
@@ -361,6 +366,61 @@ private class SaleCollectionRepository(
             )
             saleDao.upsertSaleBd(saleBdIn)
         }
+    }
+}
+internal class BatchCostRepository(
+    db: NocombroDatabase
+){
+    private val batchCostDao = db.batchCostDao
+    private val transactionDao = db.transactionDao
+
+    private val buyDao = db.buyDao
+
+    private val batchMovementDao = db.batchMovementDao
+
+    private val expenseDao = db.expenseDao
+    suspend fun updateBatchCost(transactionId: Int) {
+        val transaction = transactionDao.getTransaction(transactionId)
+        when(transaction.transactionType){
+            TransactionType.BUY -> upsertBatchCostFromBuy(transactionId)
+            TransactionType.OPZS -> upsertBatchCostFromOpzs(transactionId)
+            else -> return
+        }
+    }
+    private suspend fun upsertBatchCostFromBuy(transactionId: Int) {
+        val buys = buyDao.getBuysWithDetails(transactionId)
+        val expenses = expenseDao.getByTransactionId(transactionId)
+        val transactionExpenses = expenses.sumOf { it.amount }
+
+        val quantityAmount = buys.sumOf { it.count }
+        val expenseOnOneKg = (transactionExpenses / quantityAmount.toDouble()) * 1000
+        val batchCostPriceEntities = buys.map { buyBDOut ->
+            BatchCostPriceEntity(
+                batchId = buyBDOut.batchId,
+                costPricePerUnit = (buyBDOut.price + expenseOnOneKg).roundToLong()
+            )
+        }
+        batchCostDao.upsert(batchCostPriceEntities)
+    }
+    private suspend fun upsertBatchCostFromOpzs(transactionId: Int){
+        val (pf,ingredients) = batchMovementDao.getByTransactionId(transactionId).partition { it.movement.movementType == MovementType.INCOMING }
+        if (pf.isEmpty()) return
+        val pfMovement = pf.first()
+        val ingredientsCostMap = ingredients
+            .map { it.movement.batchId }
+            .let { batchCostDao.getBatchesCostPriceByIds(it) }
+            .associateBy { it.batchId }
+
+        val totalCost = ingredients.sumOf { ingredient ->
+            val costPerKg = ingredientsCostMap[ingredient.movement.batchId]?.costPricePerUnit ?: 0L
+            (costPerKg * ingredient.movement.count) / 1000.0
+        }
+        val costPricePerKg = if (pfMovement.movement.count > 0) {
+            (totalCost / pfMovement.movement.count.toDouble()) * 1000
+        } else 0.0
+        batchCostDao.upsert(listOf(
+            BatchCostPriceEntity(pfMovement.movement.batchId, costPricePerKg.roundToLong())
+        ))
     }
 }
 

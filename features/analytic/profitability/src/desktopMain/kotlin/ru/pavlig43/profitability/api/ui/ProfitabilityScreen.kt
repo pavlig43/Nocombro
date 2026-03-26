@@ -1,9 +1,17 @@
 package ru.pavlig43.profitability.api.ui
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -14,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
+import ru.pavlig43.core.model.toStartDoubleFormat
 import ru.pavlig43.coreui.ErrorScreen
 import ru.pavlig43.coreui.LoadingUi
 import ru.pavlig43.datetime.period.dateTime.DateTimeSelectorScreen
@@ -21,8 +30,8 @@ import ru.pavlig43.profitability.internal.component.LoadState
 import ru.pavlig43.profitability.internal.component.ProfitabilityComponent
 import ru.pavlig43.profitability.internal.component.ProfitabilityField
 import ru.pavlig43.profitability.internal.component.createProfitabilityColumns
+import ru.pavlig43.profitability.internal.model.ProfitabilityProduct
 import ru.pavlig43.profitability.internal.model.ProfitabilityTableData
-import ru.pavlig43.profitability.internal.model.ProfitabilityUi
 import ru.pavlig43.tablecore.ui.RussianStringProvider
 import ru.pavlig43.tablecore.ui.ScrollBar
 import ua.wwind.table.ColumnSpec
@@ -42,9 +51,16 @@ fun ProfitabilityScreen(component: ProfitabilityComponent) {
         is LoadState.Error -> ErrorScreen(state.message)
         is LoadState.Loading -> LoadingUi()
         is LoadState.Success -> {
-            val columns = remember { createProfitabilityColumns() }
+            val columns = remember {
+                createProfitabilityColumns(
+                    onToggleExpanded = { productId -> component.onToggleDetailsExpanded(productId) }
+                )
+            }
             val tableSettings = remember {
-                TableSettings(showActiveFiltersHeader = true)
+                TableSettings(
+                    showActiveFiltersHeader = true,
+                    showFooter = true
+                    )
             }
             val tableState = rememberTableState(
                 columns = ProfitabilityField.entries.toImmutableList(),
@@ -55,7 +71,10 @@ fun ProfitabilityScreen(component: ProfitabilityComponent) {
                     component.updateFilters(filters)
                 }
             }
+            LaunchedEffect(tableState) { snapshotFlow { tableState.sort }.collect { sort -> component.updateSort(sort) } }
             val tableData by component.tableData.collectAsState()
+            val mainExpenses = state.data.mainExpenses
+            Text("Общие расходы за этот период составили ${mainExpenses.toStartDoubleFormat()}",Modifier.padding(start = 24.dp))
 
             ProfitabilityTable(
                 state = tableState,
@@ -71,7 +90,7 @@ fun ProfitabilityScreen(component: ProfitabilityComponent) {
 private fun ProfitabilityTable(
     state: TableState<ProfitabilityField>,
     tableData: ProfitabilityTableData,
-    columns: ImmutableList<ColumnSpec<ru.pavlig43.profitability.internal.model.ProfitabilityUi, ProfitabilityField, ProfitabilityTableData>>,
+    columns: ImmutableList<ColumnSpec<ProfitabilityProduct, ProfitabilityField, ProfitabilityTableData>>,
     modifier: Modifier = Modifier
 ) {
     val verticalState = androidx.compose.foundation.lazy.rememberLazyListState()
@@ -93,7 +112,24 @@ private fun ProfitabilityTable(
             colors = TableDefaults.colors(
                 headerContainerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
             ),
-            border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
+            border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary),
+            rowKey = { _, index -> index },
+            rowEmbedded = { _, product ->
+                val visible = product.expandedDetails
+                if (visible) {
+                    HorizontalDivider(
+                        thickness = state.dimensions.dividerThickness,
+                        modifier = Modifier.width(state.tableWidth)
+                    )
+                }
+                AnimatedVisibility(
+                    visible = visible,
+                    enter = expandVertically() + fadeIn(),
+                    exit = shrinkVertically() + fadeOut(),
+                ) {
+                    BatchDetailsTable(product = product)
+                }
+            },
         )
         ScrollBar(
             verticalState = verticalState,

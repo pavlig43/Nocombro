@@ -6,8 +6,11 @@ import androidx.room.TypeConverters
 import androidx.room.immediateTransaction
 import androidx.room.useWriterConnection
 import ru.pavlig43.core.TransactionExecutor
+import ru.pavlig43.database.data.analytic.profitability.ProfitabilityDao
 import ru.pavlig43.database.data.batch.BatchBD
+import ru.pavlig43.database.data.batch.BatchCostPriceEntity
 import ru.pavlig43.database.data.batch.BatchMovement
+import ru.pavlig43.database.data.batch.dao.BatchCostDao
 import ru.pavlig43.database.data.batch.dao.BatchDao
 import ru.pavlig43.database.data.batch.dao.BatchMovementDao
 import ru.pavlig43.database.data.common.Converters
@@ -19,7 +22,6 @@ import ru.pavlig43.database.data.expense.ExpenseBD
 import ru.pavlig43.database.data.expense.dao.ExpenseDao
 import ru.pavlig43.database.data.files.FileBD
 import ru.pavlig43.database.data.files.FileDao
-import ru.pavlig43.database.data.analytic.profitability.ProfitabilityDao
 import ru.pavlig43.database.data.product.CompositionIn
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductDeclarationIn
@@ -59,6 +61,7 @@ import ru.pavlig43.database.data.vendor.dao.VendorDao
         SafetyStock::class,
 
         BatchBD::class,
+        BatchCostPriceEntity::class,
 
         BatchMovement::class,
 
@@ -92,6 +95,7 @@ abstract class NocombroDatabase : RoomDatabase() {
 
     abstract val transactionDao: TransactionDao
     abstract val batchDao: BatchDao
+    abstract val batchCostDao: BatchCostDao
 
     abstract val batchMovementDao: BatchMovementDao
     abstract val buyDao: BuyDao

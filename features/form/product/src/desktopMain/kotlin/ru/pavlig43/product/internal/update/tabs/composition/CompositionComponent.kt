@@ -118,7 +118,7 @@ internal class CompositionComponent(
                 if (item.productId == 0) {
                     add("В строке ${item.composeId} не указан продукт")
                 }
-                if (item.count.value == 0) {
+                if (item.count.value == 0L) {
                     add("В строке ${item.composeId} не указано количество продукта")
                 }
             }

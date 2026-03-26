@@ -4,5 +4,5 @@ import androidx.compose.runtime.Immutable
 
 @Immutable
 internal data class ProfitabilityTableData(
-    val displayedProducts: List<ProfitabilityUi> = emptyList()
+    val displayedProducts: List<ProfitabilityProduct> = emptyList()
 )

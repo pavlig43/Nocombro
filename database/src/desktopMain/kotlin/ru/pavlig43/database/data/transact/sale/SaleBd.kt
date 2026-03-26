@@ -43,7 +43,7 @@ data class SaleBDIn(
     val movementId: Int,
 
     @ColumnInfo("price")
-    val price: Int, // Цена в копейках
+    val price: Long, // Цена в копейках
 
     @ColumnInfo("comment")
     val comment: String,
@@ -77,7 +77,7 @@ data class SaleBDIn(
  */
 data class SaleBDOut(
     val transactionId: Int,
-    val count: Int,
+    val count: Long,
     val batchId: Int,
     val movementId: Int,
     val productId: Int,
@@ -86,7 +86,7 @@ data class SaleBDOut(
     val dateBorn: LocalDate,
     val clientName: String,
     val clientId: Int,
-    val price: Int,
+    val price: Long,
     val comment: String,
     override val id: Int
 ) : CollectionObject

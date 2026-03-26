@@ -103,6 +103,7 @@ data class DTPeriod(
             DTPeriod(getCurrentLocalDateTime(), getCurrentLocalDateTime())
         }
 
+        @Suppress("MagicNumber")
         val thisMonth: DTPeriod by lazy {
             val now = getCurrentLocalDateTime()
             val start = now.asStartOfMonth()

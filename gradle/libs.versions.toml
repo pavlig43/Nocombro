@@ -44,7 +44,7 @@ sqldelight-wasm-driver = "2.1.0-wasm"
 turbine = "1.2.1"
 versionCode = "1"
 versionName = "1.0.0"
-wwindTable = "1.7.15"
+wwindTable = "1.8.1"
 
 
 

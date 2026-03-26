@@ -14,6 +14,7 @@ import ru.pavlig43.core.tabs.TabOpener
 import ru.pavlig43.database.data.transact.Transact
 import ru.pavlig43.database.data.transact.TransactionType
 import ru.pavlig43.mutable.api.singleLine.component.SingleLineComponentFactory
+import ru.pavlig43.transaction.internal.di.BatchCostRepository
 import ru.pavlig43.transaction.internal.di.UpdateCollectionRepositoryType
 import ru.pavlig43.transaction.internal.di.UpdateSingleLineRepositoryType
 import ru.pavlig43.transaction.internal.model.TransactionEssentialsUi
@@ -47,7 +48,6 @@ internal class TransactionFormTabsComponent(
     private val pfFlow = MutableStateFlow(PfUi())
 
 
-
     private fun observeOnTransaction(transaction: TransactionEssentialsUi) {
         observeOnItem(transaction)
         essentialsFields.update { transaction }
@@ -58,16 +58,18 @@ internal class TransactionFormTabsComponent(
         coroutineScope.launch {
             when (transaction.transactionType) {
                 TransactionType.BUY -> {
-                    tabNavigationComponent.addTab(1,TransactionTab.Buy)
+                    tabNavigationComponent.addTab(1, TransactionTab.Buy)
                     tabNavigationComponent.onSelectTab(1)
                 }
+
                 TransactionType.SALE -> {
                     tabNavigationComponent.addTab(1, TransactionTab.Sale)
                     tabNavigationComponent.onSelectTab(1)
                 }
+
                 TransactionType.OPZS -> {
-                    tabNavigationComponent.addTab(1,TransactionTab.Pf)
-                    tabNavigationComponent.addTab(2,TransactionTab.Ingredients)
+                    tabNavigationComponent.addTab(1, TransactionTab.Pf)
+                    tabNavigationComponent.addTab(2, TransactionTab.Ingredients)
                     tabNavigationComponent.onSelectTab(1)
                 }
 
@@ -148,7 +150,7 @@ internal class TransactionFormTabsComponent(
                                 ),
                                 tabOpener = tabOpener,
                                 getDateBorn = { essentialsFields.value.createdAt.date },
-                                observeOnItem = {newPf-> pfFlow.update { newPf } },
+                                observeOnItem = { newPf -> pfFlow.update { newPf } },
                                 onSuccessInitData = { newPf: PfUi ->
                                     pfFlow.update { newPf }
                                 },
@@ -173,7 +175,11 @@ internal class TransactionFormTabsComponent(
                 }
             }
         )
-
+    private val batchCostRepository: BatchCostRepository = scope.get()
     override val updateComponent: UpdateComponent =
-        getDefaultUpdateComponent(componentContext)
+        getDefaultUpdateComponent(
+            componentContext = componentContext,
+            postProcessAfterUpdate = { batchCostRepository.updateBatchCost(transactionId) }
+        )
 }
+

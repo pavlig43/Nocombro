@@ -4,10 +4,10 @@ import kotlinx.datetime.LocalDateTime
 
 data class BatchMovementWithBalanceBD(
     val movementDate: LocalDateTime,
-    val balanceBeforeStart: Int,
-    val incoming: Int,
-    val outgoing: Int,
-    val balanceOnEnd: Int,
+    val balanceBeforeStart: Long,
+    val incoming: Long,
+    val outgoing: Long,
+    val balanceOnEnd: Long,
     val transactionId: Int,
 )
 

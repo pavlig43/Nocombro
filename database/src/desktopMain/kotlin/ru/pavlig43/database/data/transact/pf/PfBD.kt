@@ -12,7 +12,7 @@ data class PfBD(
     val transactionId: Int = 0,
     val batchId: Int = 0,
     val movementId: Int = 0,
-    val count: Int = 0,
+    val count: Long = 0,
     val productId: Int = 0,
     val productName: String = "",
     val declarationId: Int = 0,

@@ -8,6 +8,7 @@ import androidx.room.Transaction
 import androidx.room.Upsert
 import ru.pavlig43.database.data.batch.BatchMovement
 import ru.pavlig43.database.data.batch.dao.MovementOut
+import ru.pavlig43.database.data.expense.ExpenseBD
 import ru.pavlig43.database.data.transact.Transact
 import ru.pavlig43.database.data.transact.sale.SALE_TABLE_NAME
 import ru.pavlig43.database.data.transact.sale.SaleBDIn
@@ -35,7 +36,7 @@ abstract class SaleDao {
     abstract suspend fun getMovementIdsBySaleIds(ids: List<Int>): List<Int>
 }
 
-internal data class InternalSale(
+data class InternalSale(
     @Embedded
     val sale: SaleBDIn,
     @Relation(
@@ -55,7 +56,13 @@ internal data class InternalSale(
         parentColumn = "client_id",
         entityColumn = "id"
     )
-    val client: Vendor
+    val client: Vendor,
+    @Relation(
+        entity = ExpenseBD::class,
+        parentColumn = "transaction_id",
+        entityColumn = "transaction_id"
+    )
+    val expenses: List<ExpenseBD>
 )
 
 

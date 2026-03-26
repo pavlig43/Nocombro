@@ -78,9 +78,9 @@ abstract class StorageDao {
 
                             val (balanceBeforePeriod, incoming, outgoing) = moves.fold(
                                 Triple(
-                                    0,
-                                    0,
-                                    0
+                                    0L,
+                                    0L,
+                                    0L
                                 )
                             ) { (accBefore, accIn, accOut), move ->
                                 val count = move.movement.count
@@ -114,13 +114,13 @@ abstract class StorageDao {
                                 balanceOnEnd = balanceBeforePeriod + incoming - outgoing
                             )
                         }.filter { batch ->
-                            batch.incoming != 0 || batch.outgoing != 0 || batch.balanceOnEnd != 0
+                            batch.incoming != 0L || batch.outgoing != 0L || batch.balanceOnEnd != 0L
                         }
 
                     // Пропускаем продукты без живых партий
                     if (batches.isEmpty()) return@mapParallel null
 
-                    val totals = batches.fold(Triple(0, 0, 0)) { acc, batch ->
+                    val totals = batches.fold(Triple(0L, 0L, 0L)) { acc, batch ->
                         Triple(
                             acc.first + batch.balanceBeforeStart,
                             acc.second + batch.incoming,
@@ -189,7 +189,7 @@ abstract class StorageDao {
 
             val (before,inPeriod) = allMovements.partition { it.transaction.createdAt < start }
             val balanceBeforeStart = before
-                .fold(0) { balance, move ->
+                .fold(0L) { balance, move ->
                     val count = move.movement.count
                     when (move.movement.movementType) {
                         MovementType.INCOMING -> balance + count
@@ -221,13 +221,13 @@ abstract class StorageDao {
             }
 
             // Если нет движений в периоде, но есть начальный баланс - добавляем одну строку
-            val result = if (movementsWithBalance.isEmpty() && balanceBeforeStart != 0) {
+            val result = if (movementsWithBalance.isEmpty() && balanceBeforeStart != 0L) {
                 listOf(
                     BatchMovementWithBalanceBD(
                         movementDate = start,
                         balanceBeforeStart = balanceBeforeStart,
-                        incoming = 0,
-                        outgoing = 0,
+                        incoming = 0L,
+                        outgoing = 0L,
                         balanceOnEnd = balanceBeforeStart,
                         transactionId = allMovements.first().movement.transactionId
                     )

@@ -34,7 +34,7 @@ private fun MainExpenseBD.toUi(): ExpenseTableUi {
     return ExpenseTableUi(
         composeId = expense.id,
         expenseType = expense.expenseType,
-        amount = DecimalData2(expense.amount),
+        amount = DecimalData2(expense.amount.toLong()),
         expenseDateTime = expense.expenseDateTime,
         comment = expense.comment,
         transactionId = transaction?.id

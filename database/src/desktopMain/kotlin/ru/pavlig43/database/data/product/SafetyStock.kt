@@ -22,10 +22,10 @@ data class SafetyStock(
     val productId: Int,
 
     @ColumnInfo("reorder_point")
-    val reorderPoint: Int,
+    val reorderPoint: Long,
 
     @ColumnInfo("order_quantity")
-    val orderQuantity: Int,
+    val orderQuantity: Long,
 
     @PrimaryKey(autoGenerate = true)
     override val id: Int = 0

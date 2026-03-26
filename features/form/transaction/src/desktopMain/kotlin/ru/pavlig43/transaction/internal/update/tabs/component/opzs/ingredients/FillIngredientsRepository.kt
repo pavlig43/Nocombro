@@ -8,7 +8,7 @@ internal class FillIngredientsRepository(
 ) {
     private val compositionDao = db.compositionDao
 
-    suspend fun getIngredientsFromComposition(productId: Int,transactionId: Int,countPf: Int): Result<List<IngredientBD>> {
+    suspend fun getIngredientsFromComposition(productId: Int,transactionId: Int,countPf: Long): Result<List<IngredientBD>> {
         return runCatching {
             compositionDao.getIngredientsFromComposition(productId,transactionId,countPf)
         }

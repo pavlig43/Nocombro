@@ -14,7 +14,7 @@ data class IngredientBD(
     val batchId: Int = 0,
     val dateBorn: LocalDate = emptyDate,
     val movementId: Int = 0,
-    val count: Int = 0,
+    val count: Long = 0,
     val productType: ProductType,
     val productId: Int = 0,
     val productName: String = "",

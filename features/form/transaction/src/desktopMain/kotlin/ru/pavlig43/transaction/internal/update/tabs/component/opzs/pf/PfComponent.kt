@@ -32,7 +32,7 @@ private fun factory(transactionId: Int) = SingleLineComponentFactory<PfBD, PfUi>
         buildList {
             val place = "Полуфабрикат"
             if (item.productId == 0) add("$place не указан продукт")
-            if (item.count.value == 0) add("$place количество равно 0")
+            if (item.count.value == 0L) add("$place количество равно 0")
             if (item.declarationId == 0) add("$place нет декларации")
         }
     },
@@ -142,7 +142,7 @@ internal class PfComponent(
         buildList {
             val place = "Полуфабрикат"
             if (item.productId == 0) add("$place не указан продукт")
-            if (item.count.value == 0) add("$place количество равно 0")
+            if (item.count.value == 0L) add("$place количество равно 0")
             if (item.declarationId == 0) add("$place нет декларации")
         }
     }

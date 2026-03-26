@@ -73,7 +73,7 @@ abstract class SafetyTableDao {
                     SafetyTableItem(
                         productId = product.id,
                         productName = product.displayName,
-                        vendorName = declaration?.vendorName ?: "",
+                        vendorName = declaration?.vendorName.orEmpty(),
                         count = currentCount,
                         reorderPoint = safety.reorderPoint,
                         orderQuantity = safety.orderQuantity
@@ -88,15 +88,7 @@ abstract class SafetyTableDao {
 
 internal data class StorageProductNow(
     val productId: Int,
-    val count: Int
-)
-
-internal data class SafetyStockWithProduct(
-    @Embedded
-    val safetyStock: SafetyStock,
-
-    @Relation(parentColumn = "product_id", entityColumn = "id")
-    val product: Product
+    val count: Long
 )
 
 internal data class SafetyStockWithProductAndDeclaration(

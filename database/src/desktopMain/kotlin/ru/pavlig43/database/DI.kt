@@ -25,7 +25,7 @@ fun getNocombroDatabase(): NocombroDatabase {
         .setQueryCoroutineContext(Dispatchers.IO)
         .build()
     CoroutineScope(Dispatchers.IO).launch {
-        seedDatabase(database)
+//        seedDatabase(database)
     }
     return database
 }

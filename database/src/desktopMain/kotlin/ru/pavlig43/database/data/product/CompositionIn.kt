@@ -34,7 +34,7 @@ data class CompositionIn(
     @ColumnInfo("product_id", index = true)
     val productId: Int,
 
-    val count: Int,
+    val count: Long,
 ) : CollectionObject
 
 data class CompositionOut(
@@ -42,7 +42,7 @@ data class CompositionOut(
     val productId: Int,
     val productName: String,
     val productType: ProductType,
-    val count: Int,
+    val count: Long,
 ): CollectionObject
 
 
