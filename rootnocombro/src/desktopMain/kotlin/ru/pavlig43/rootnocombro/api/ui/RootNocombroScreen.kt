@@ -1,5 +1,6 @@
 package ru.pavlig43.rootnocombro.api.ui
 
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
@@ -16,6 +17,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.Child
 import com.arkivanov.decompose.extensions.compose.stack.Children
@@ -99,7 +106,17 @@ fun RootNocombroScreen(rootNocombroComponent: RootNocombroComponent) {
                             },
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Column(Modifier.fillMaxSize()) {
+                            Column(
+                                Modifier.fillMaxSize()
+                                    .onKeyEvent { keyEvent ->
+                                        if (keyEvent.key == Key.Escape && keyEvent.type == KeyEventType.KeyDown) {
+                                            println("Escape pressed")
+                                            tabNavigationComponent.onCloseCurrentTab()
+                                            true
+                                        } else {
+                                            false
+                                        }
+                                    }) {
                                 TabLazyRowNavigationContent(
                                     navigationComponent = tabNavigationComponent,
                                     tabContent = { index, mainTabChild, modifier, isSelected, isDragging, onClose ->
@@ -112,7 +129,11 @@ fun RootNocombroScreen(rootNocombroComponent: RootNocombroComponent) {
                                             onSelect = { tabNavigationComponent.onSelectTab(index) },
                                         )
                                     },
-                                    tabChildFactory = { mainTabChild -> MainTabChildFactory(mainTabChild) }
+                                    tabChildFactory = { mainTabChild ->
+                                        MainTabChildFactory(
+                                            mainTabChild
+                                        )
+                                    }
                                 )
                             }
                         }
@@ -126,6 +147,7 @@ fun RootNocombroScreen(rootNocombroComponent: RootNocombroComponent) {
     }
 
 }
+
 @Suppress("CyclomaticComplexMethod")
 @Composable
 private fun MainTabChildFactory(mainTabChild: MainTabChild?) {

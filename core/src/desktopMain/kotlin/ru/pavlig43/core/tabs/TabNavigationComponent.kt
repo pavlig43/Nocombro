@@ -120,7 +120,10 @@ class TabNavigationComponent<TabConfiguration : Any, out TabChild : Any>(
         val index = tabChildren.value.items.indexOfFirst { it.configuration === tabConfiguration }
         onTabCloseClicked(index)
     }
-
+    fun onCloseCurrentTab(){
+        val currentIndex = tabChildren.value.selectedIndex?:return
+        onTabCloseClicked(currentIndex)
+    }
     fun onTabCloseClicked(index: Int) {
 
         navigation.navigate { state ->
