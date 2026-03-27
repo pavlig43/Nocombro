@@ -36,8 +36,8 @@ private fun SafetyTableItem.toUi(): SafetyTableUi {
         productId = productId,
         productName = productName,
         vendorName = vendorName,
-        count = DecimalData3(count.toLong()),
-        reorderPoint = DecimalData3(reorderPoint.toLong()),
-        orderQuantity = DecimalData3(orderQuantity.toLong())
+        count = DecimalData3(count),
+        reorderPoint = DecimalData3(reorderPoint),
+        orderQuantity = DecimalData3(orderQuantity)
     )
 }
