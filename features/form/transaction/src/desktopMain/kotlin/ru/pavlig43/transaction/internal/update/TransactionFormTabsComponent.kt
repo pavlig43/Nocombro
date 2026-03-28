@@ -59,11 +59,13 @@ internal class TransactionFormTabsComponent(
             when (transaction.transactionType) {
                 TransactionType.BUY -> {
                     tabNavigationComponent.addTab(1, TransactionTab.Buy)
+                  tabNavigationComponent.addTab(2, TransactionTab.Expenses)
                     tabNavigationComponent.onSelectTab(1)
                 }
 
                 TransactionType.SALE -> {
                     tabNavigationComponent.addTab(1, TransactionTab.Sale)
+                    tabNavigationComponent.addTab(2, TransactionTab.Expenses)
                     tabNavigationComponent.onSelectTab(1)
                 }
 
@@ -86,7 +88,6 @@ internal class TransactionFormTabsComponent(
             componentContext = childContext("tab"),
             startConfigurations = listOf(
                 TransactionTab.Essentials,
-                TransactionTab.Expenses,
                 TransactionTab.Reminders
             ),
             serializer = TransactionTab.serializer(),
