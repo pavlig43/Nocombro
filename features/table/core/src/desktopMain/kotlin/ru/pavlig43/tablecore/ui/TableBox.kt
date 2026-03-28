@@ -52,8 +52,8 @@ fun <I : IMultiLineTableUi, C, E : TableData<I>> TableBox(
     showActiveFiltersHeader = true,
     editingEnabled = true,
     rowHeightMode = RowHeightMode.Fixed,
-    showFooter = false,
-    enableTextSelection = false,
+    showFooter = true,
+    enableTextSelection = true,
     selectionMode = SelectionMode.Multiple,
     pinnedColumnsCount = 0
     )

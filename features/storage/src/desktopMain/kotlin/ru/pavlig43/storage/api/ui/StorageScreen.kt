@@ -84,6 +84,7 @@ fun StorageScreen(
             val tableSettings = remember {
                 TableSettings(
                     showActiveFiltersHeader = true,
+                    enableTextSelection = true
                 )
             }
             val tableState = rememberTableState(
