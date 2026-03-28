@@ -1,4 +1,5 @@
 @file:Suppress("MagicNumber")
+
 package ru.pavlig43.transaction.internal.di
 
 import org.koin.core.module.dsl.singleOf
@@ -38,7 +39,11 @@ internal fun createTransactionFormModule(dependencies: TransactionFormDependenci
         single<FilesDependencies> { dependencies.filesDependencies }
         single<ImmutableTableDependencies> { dependencies.immutableTableDependencies }
         single<CreateSingleItemRepository<Transact>> { TransactionCreateRepository(get()) }
-        single<UpdateSingleLineRepository<Transact>>(UpdateSingleLineRepositoryType.TRANSACTION.qualifier) { TransactionUpdateRepository(get()) }
+        single<UpdateSingleLineRepository<Transact>>(UpdateSingleLineRepositoryType.TRANSACTION.qualifier) {
+            TransactionUpdateRepository(
+                get()
+            )
+        }
         single<UpdateCollectionRepository<BuyBDOut, BuyBDOut>>(UpdateCollectionRepositoryType.BUY.qualifier) {
             BuyCollectionRepository(get())
         }
@@ -48,13 +53,19 @@ internal fun createTransactionFormModule(dependencies: TransactionFormDependenci
         single<UpdateCollectionRepository<ExpenseBD, ExpenseBD>>(UpdateCollectionRepositoryType.EXPENSES.qualifier) {
             ExpensesCollectionRepository(get())
         }
-        single<UpdateCollectionRepository<IngredientBD, IngredientBD>>(UpdateCollectionRepositoryType.INGREDIENTS.qualifier) {
+        single<UpdateCollectionRepository<IngredientBD, IngredientBD>>(
+            UpdateCollectionRepositoryType.INGREDIENTS.qualifier
+        ) {
             IngredientsCollectionRepository(get())
         }
         single<UpdateCollectionRepository<SaleBDOut, SaleBDOut>>(UpdateCollectionRepositoryType.SALE.qualifier) {
             SaleCollectionRepository(get())
         }
-        single<UpdateSingleLineRepository<PfBD>>(UpdateSingleLineRepositoryType.PF.qualifier) { PfUpdateRepository(get()) }
+        single<UpdateSingleLineRepository<PfBD>>(UpdateSingleLineRepositoryType.PF.qualifier) {
+            PfUpdateRepository(
+                get()
+            )
+        }
         singleOf(::FillIngredientsRepository)
         singleOf(::BatchCostRepository)
     }
@@ -131,23 +142,24 @@ private class BuyCollectionRepository(
             upsert = ::upsertAllEntity
         )
     }
-    private suspend fun deleteBuysWithMovement(buyIds:List<Int>){
+
+    private suspend fun deleteBuysWithMovement(buyIds: List<Int>) {
         val movementIds = buyDao.getMovementIdsByBuyIds(buyIds)
         buyDao.deleteByIds(buyIds)
         movementDao.deleteByIds(movementIds)
     }
+
     private suspend fun upsertAllEntity(buys: List<BuyBDOut>) {
-        buys.forEach {buy->
+        buys.forEach { buy ->
             val batch = BatchBD(
                 id = buy.batchId,
                 productId = buy.productId,
                 dateBorn = buy.dateBorn,
                 declarationId = buy.declarationId
             )
-            val batchId = if (batch.id == 0){
+            val batchId = if (batch.id == 0) {
                 batchDao.createBatch(batch).toInt()
-            }
-            else{
+            } else {
                 batchDao.updateBatch(batch)
                 batch.id
             }
@@ -158,10 +170,9 @@ private class BuyCollectionRepository(
                 transactionId = buy.transactionId,
                 id = buy.movementId
             )
-            val movementId = if (movement.id == 0){
+            val movementId = if (movement.id == 0) {
                 movementDao.createMovement(movement).toInt()
-            }
-            else{
+            } else {
                 movementDao.upsertMovement(movement)
                 movement.id
             }
@@ -297,7 +308,6 @@ private class IngredientsCollectionRepository(
 
     private suspend fun upsertIngredients(ingredients: List<IngredientBD>) {
         ingredients.map { ingredient ->
-
             BatchMovement(
                 batchId = ingredient.batchId,
                 movementType = MovementType.OUTGOING,
@@ -368,9 +378,10 @@ private class SaleCollectionRepository(
         }
     }
 }
+
 internal class BatchCostRepository(
     db: NocombroDatabase
-){
+) {
     private val batchCostDao = db.batchCostDao
     private val transactionDao = db.transactionDao
 
@@ -381,12 +392,13 @@ internal class BatchCostRepository(
     private val expenseDao = db.expenseDao
     suspend fun updateBatchCost(transactionId: Int) {
         val transaction = transactionDao.getTransaction(transactionId)
-        when(transaction.transactionType){
+        when (transaction.transactionType) {
             TransactionType.BUY -> upsertBatchCostFromBuy(transactionId)
             TransactionType.OPZS -> upsertBatchCostFromOpzs(transactionId)
             else -> return
         }
     }
+
     private suspend fun upsertBatchCostFromBuy(transactionId: Int) {
         val buys = buyDao.getBuysWithDetails(transactionId)
         val expenses = expenseDao.getByTransactionId(transactionId)
@@ -402,8 +414,10 @@ internal class BatchCostRepository(
         }
         batchCostDao.upsert(batchCostPriceEntities)
     }
-    private suspend fun upsertBatchCostFromOpzs(transactionId: Int){
-        val (pf,ingredients) = batchMovementDao.getByTransactionId(transactionId).partition { it.movement.movementType == MovementType.INCOMING }
+
+    private suspend fun upsertBatchCostFromOpzs(transactionId: Int) {
+        val (pf, ingredients) = batchMovementDao.getByTransactionId(transactionId)
+            .partition { it.movement.movementType == MovementType.INCOMING }
         if (pf.isEmpty()) return
         val pfMovement = pf.first()
         val ingredientsCostMap = ingredients
@@ -418,9 +432,11 @@ internal class BatchCostRepository(
         val costPricePerKg = if (pfMovement.movement.count > 0) {
             (totalCost / pfMovement.movement.count.toDouble()) * 1000
         } else 0.0
-        batchCostDao.upsert(listOf(
-            BatchCostPriceEntity(pfMovement.movement.batchId, costPricePerKg.roundToLong())
-        ))
+        batchCostDao.upsert(
+            listOf(
+                BatchCostPriceEntity(pfMovement.movement.batchId, costPricePerKg.roundToLong())
+            )
+        )
     }
 }
 

@@ -3,6 +3,7 @@ package ru.pavlig43.mutable.api.multiLine.component
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
@@ -29,7 +30,7 @@ import ua.wwind.table.state.SortState
 
 abstract class MutableTableComponent<BDOut : CollectionObject, BDIn : CollectionObject, UI : IMultiLineTableUi, C>(
     componentContext: ComponentContext,
-    parentId: Int,
+    private val parentId: Int,
     override val title: String,
     sortMatcher: SortMatcher<UI, C>,
     filterMatcher: FilterMatcher<UI, C>,
@@ -60,6 +61,10 @@ abstract class MutableTableComponent<BDOut : CollectionObject, BDIn : Collection
             _itemList.update { lst }
         }
     )
+
+    override suspend fun refreshDataAfterUpsert() {
+        initDataComponent.retryLoadInitData()
+    }
     protected val selectionManager =
         SelectionManager(
             childContext("selection")

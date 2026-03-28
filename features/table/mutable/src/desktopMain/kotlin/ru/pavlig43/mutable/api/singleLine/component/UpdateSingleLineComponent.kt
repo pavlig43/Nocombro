@@ -24,6 +24,9 @@ abstract class UpdateSingleLineComponent<I : SingleItem, T : ISingleLineTableUi,
     onSuccessInitData = onSuccessInitData
 ), FormTabComponent {
     override val title: String = "Основная информация"
+    override suspend fun refreshDataAfterUpsert() {
+        initDataComponent.retryLoadInitData()
+    }
 
     override suspend fun onUpdate(): Result<Unit> {
         val old = initDataComponent.firstData.value?.mapperToDTO()

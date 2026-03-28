@@ -25,5 +25,8 @@ interface FormTabChild {
 interface FormTabComponent {
     val title: String
     suspend fun onUpdate(): Result<Unit>
+
+    suspend fun refreshDataAfterUpsert()
+
     val errorMessages: Flow<List<String>>
 }

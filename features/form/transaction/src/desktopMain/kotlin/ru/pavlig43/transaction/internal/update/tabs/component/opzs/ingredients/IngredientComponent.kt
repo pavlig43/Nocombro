@@ -221,14 +221,25 @@ internal class IngredientComponent(
         )
     }
 
+    override suspend fun refreshDataAfterUpsert() {
+        initDataComponent.retryLoadInitData()
+    }
+
     override val errorMessages: Flow<List<String>> = itemList.map { lst ->
         buildList {
             if (lst.isEmpty()) add("Не указаны ингредиенты")
+            val duplicateBatches = lst
+                .groupBy { it.batchId }
+                .filter { it.key != 0 && it.value.size > 1 }
+                .keys
             lst.forEach { ingredientUi ->
                 val place = "В строке ${ingredientUi.composeId + 1}"
                 if (ingredientUi.productId == 0) add("$place не указан продукт")
                 if (ingredientUi.batchId == 0) add("$place не указан партия")
                 if (ingredientUi.balance.value == 0L) add("$place количество равно 0")
+                if (ingredientUi.batchId in duplicateBatches) {
+                    add("$place партия уже указана")
+                }
             }
         }
     }

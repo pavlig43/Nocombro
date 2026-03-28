@@ -54,18 +54,30 @@ interface IItemFormTabsComponent<TabConfiguration : Any, TabChild : FormTabChild
                 it.toList().flatten()
             }
         }
+
     suspend fun update(): Result<Unit> {
-        val blocks =
-            tabNavigationComponent.tabChildren.map { children ->
-                children.items.map { child -> suspend { child.instance.component.onUpdate() } }
+        val allFormChild = tabNavigationComponent.tabChildren.map { children ->
+            children.items.map { childCreated -> childCreated.instance.component }
+        }
+        val blocks = allFormChild.map { value ->
+            value.map { tab ->
+                suspend { tab.onUpdate() }
             }
-        return transactionExecutor.transaction(blocks.value)
+        }
+        val result = transactionExecutor.transaction(blocks.value)
+        if (result.isSuccess) {
+            allFormChild.value.forEach {
+                it.refreshDataAfterUpsert()
+            }
+        }
+        return result
     }
 }
-fun IItemFormTabsComponent<*,*>.getDefaultUpdateComponent(
+
+fun IItemFormTabsComponent<*, *>.getDefaultUpdateComponent(
     componentContext: ComponentContext,
     postProcessAfterUpdate: suspend () -> Unit = {},
-    ): UpdateComponent {
+): UpdateComponent {
     return UpdateComponent(
         componentContext = componentContext.childContext("update"),
         onUpdateAllTabs = { update() },
