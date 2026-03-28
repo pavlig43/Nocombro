@@ -169,7 +169,6 @@ private fun StorageTable(
             customization = customization,
             verticalState = verticalState,
             horizontalState = horizontalState,
-            modifier = modifier,
             colors = TableDefaults.colors(
                 headerContainerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
             ),

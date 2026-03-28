@@ -55,7 +55,10 @@ internal class SaleComponent(
     )
 
     @Suppress("LongMethod")
-    private fun createDialogChild(dialogConfig: SaleDialog, context: ComponentContext): DialogChild {
+    private fun createDialogChild(
+        dialogConfig: SaleDialog,
+        context: ComponentContext
+    ): DialogChild {
         return when (dialogConfig) {
             is SaleDialog.Product -> DialogChild.ImmutableMBS(
                 MBSImmutableTableComponent<ProductTableUi>(
@@ -193,6 +196,9 @@ internal class SaleComponent(
 
     override val errorMessages: Flow<List<String>> = itemList.map { lst ->
         buildList {
+            if (lst.map { it.clientId }.toSet().size != 1) {
+                add("Клиенты должны быть одинаковы")
+            }
             lst.forEach { saleUi ->
                 val place = "В строке ${saleUi.composeId + 1}"
                 if (saleUi.productId == 0) add("$place не указан продукт")
