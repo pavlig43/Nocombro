@@ -24,5 +24,11 @@ enum class ExpenseType : ItemType {
     },
     COMMISSION {
         override val displayName: String = "Откаты"
+    },
+    DIVIDENDS{
+        override val displayName: String = "Дивиденды"
+    },
+    OTHER{
+        override val displayName: String = "Прочее"
     }
 }
