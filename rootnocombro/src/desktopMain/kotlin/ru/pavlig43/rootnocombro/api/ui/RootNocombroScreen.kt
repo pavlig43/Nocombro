@@ -1,34 +1,21 @@
 package ru.pavlig43.rootnocombro.api.ui
 
-import androidx.compose.foundation.focusable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBars
-import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.Surface
 import androidx.compose.material3.rememberDrawerState
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.KeyEventType
-import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.onKeyEvent
-import androidx.compose.ui.input.key.onPreviewKeyEvent
-import androidx.compose.ui.input.key.type
+import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.Child
 import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import kotlinx.coroutines.launch
 import ru.pavlig43.core.tabs.TabNavigationComponent
+import ru.pavlig43.coreui.KeyEventHandler
+import ru.pavlig43.coreui.isEscKeyUp
 import ru.pavlig43.coreui.tab.TabLazyRowNavigationContent
 import ru.pavlig43.declaration.api.DeclarationFormScreen
 import ru.pavlig43.document.api.ui.DocumentFormScreen
@@ -63,6 +50,7 @@ fun RootNocombroScreen(rootNocombroComponent: RootNocombroComponent) {
 
 
 
+
     Surface {
 
         Children(
@@ -81,6 +69,22 @@ fun RootNocombroScreen(rootNocombroComponent: RootNocombroComponent) {
                     is RootChild.RootSign -> RootSignScreen(instance.component)
 
                     is RootChild.Tabs -> {
+                        val handler = remember {
+                            { keyEvent: KeyEvent ->
+                                if (keyEvent.isEscKeyUp && drawerState.isOpen) {
+                                    coroutineScope.launch { drawerState.close() }
+                                    true
+                                } else {
+                                    println(keyEvent)
+                                    false
+                                }
+                            }
+                        }
+
+                        DisposableEffect(Unit) {
+                            KeyEventHandler.subscribe(handler)
+                            onDispose { KeyEventHandler.unsubscribe(handler) }
+                        }
                         val mainTabNavigationComponent: MainTabNavigationComponent =
                             instance.component
                         val tabNavigationComponent: TabNavigationComponent<MainTabConfig, MainTabChild> =
@@ -108,15 +112,7 @@ fun RootNocombroScreen(rootNocombroComponent: RootNocombroComponent) {
                         ) {
                             Column(
                                 Modifier.fillMaxSize()
-                                    .onKeyEvent { keyEvent ->
-                                        if (keyEvent.key == Key.Escape && keyEvent.type == KeyEventType.KeyDown) {
-                                            println("Escape pressed")
-                                            tabNavigationComponent.onCloseCurrentTab()
-                                            true
-                                        } else {
-                                            false
-                                        }
-                                    }) {
+                            ) {
                                 TabLazyRowNavigationContent(
                                     navigationComponent = tabNavigationComponent,
                                     tabContent = { index, mainTabChild, modifier, isSelected, isDragging, onClose ->

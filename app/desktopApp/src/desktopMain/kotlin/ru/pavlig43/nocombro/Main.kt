@@ -12,6 +12,7 @@ import io.github.vinceglb.filekit.FileKit
 import org.koin.java.KoinJavaComponent.getKoin
 import ru.pavlig43.rootnocombro.api.RootDependencies
 import ru.pavlig43.rootnocombro.api.component.RootNocombroComponent
+import ru.pavlig43.coreui.KeyEventHandler
 import ru.pavlig43.rootnocombro.api.ui.App
 import ru.pavlig43.rootnocombro.internal.di.initKoin
 
@@ -42,7 +43,8 @@ fun main() {
             onCloseRequest = ::exitApplication,
 //            alwaysOnTop = true,
             title = "Nocombro",
-            state = windowState
+            state = windowState,
+            onPreviewKeyEvent = { KeyEventHandler.handle(it) }
         ) {
             LifecycleController(
                 lifecycleRegistry = lifecycle,

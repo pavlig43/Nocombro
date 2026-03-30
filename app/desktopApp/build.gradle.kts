@@ -20,6 +20,7 @@ kotlin{
         implementation(libs.kermit)
         implementation(projects.rootnocombro)
         implementation(compose.desktop.currentOs)
+        implementation(projects.coreui)
     }
 }
 
