@@ -69,15 +69,23 @@ fun RootNocombroScreen(rootNocombroComponent: RootNocombroComponent) {
                     is RootChild.RootSign -> RootSignScreen(instance.component)
 
                     is RootChild.Tabs -> {
+
+                        val mainTabNavigationComponent: MainTabNavigationComponent =
+                            instance.component
+                        val tabNavigationComponent: TabNavigationComponent<MainTabConfig, MainTabChild> =
+                            mainTabNavigationComponent.tabNavigationComponent
+                        val drawerNavigationComponent = mainTabNavigationComponent.drawerComponent
+
                         val handler = remember {
                             { keyEvent: KeyEvent ->
-                                if (keyEvent.isEscKeyUp && drawerState.isOpen) {
+                                if (!keyEvent.isEscKeyUp) return@remember false
+
+                                if (drawerState.isOpen) {
                                     coroutineScope.launch { drawerState.close() }
-                                    true
                                 } else {
-                                    println(keyEvent)
-                                    false
+                                    tabNavigationComponent.onCloseCurrentTab()
                                 }
+                                true
                             }
                         }
 
@@ -85,11 +93,6 @@ fun RootNocombroScreen(rootNocombroComponent: RootNocombroComponent) {
                             KeyEventHandler.subscribe(handler)
                             onDispose { KeyEventHandler.unsubscribe(handler) }
                         }
-                        val mainTabNavigationComponent: MainTabNavigationComponent =
-                            instance.component
-                        val tabNavigationComponent: TabNavigationComponent<MainTabConfig, MainTabChild> =
-                            mainTabNavigationComponent.tabNavigationComponent
-                        val drawerNavigationComponent = mainTabNavigationComponent.drawerComponent
                         NocombroAppBar(
                             settingsComponent = rootNocombroComponent.settingsComponent,
                             onOpenDrawer = {
