@@ -1,6 +1,7 @@
 package ru.pavlig43.tablecore.ui
 
 import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -10,8 +11,12 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
@@ -36,7 +41,7 @@ fun <I : IMultiLineTableUi, C, E : TableData<I>> TableBox(
     columns: ImmutableList<ColumnSpec<I, C, E>>,
     onFiltersChanged: (Map<C, TableFilterState<*>>) -> Unit,
     onSortChanged: (SortState<C>?) -> Unit,
-    tableSettingsModify:(TableSettings)-> TableSettings = {it},
+    tableSettingsModify: (TableSettings) -> TableSettings = { it },
     table: @Composable BoxScope.(
         verticalState: LazyListState,
         horizontalState: ScrollState,
@@ -45,17 +50,17 @@ fun <I : IMultiLineTableUi, C, E : TableData<I>> TableBox(
         modifier: Modifier
     ) -> Unit,
 
-) {
+    ) {
     val defaultTableSettings = TableSettings(
-    stripedRows = true,
-    autoApplyFilters = true,
-    showActiveFiltersHeader = true,
-    editingEnabled = true,
-    rowHeightMode = RowHeightMode.Fixed,
-    showFooter = true,
-    enableTextSelection = true,
-    selectionMode = SelectionMode.Multiple,
-    pinnedColumnsCount = 0
+        stripedRows = true,
+        autoApplyFilters = true,
+        showActiveFiltersHeader = true,
+        editingEnabled = true,
+        rowHeightMode = RowHeightMode.Fixed,
+        showFooter = true,
+        enableTextSelection = true,
+        selectionMode = SelectionMode.Multiple,
+        pinnedColumnsCount = 0
     )
 
     val state = rememberTableState(
@@ -70,7 +75,9 @@ fun <I : IMultiLineTableUi, C, E : TableData<I>> TableBox(
 
     val verticalState = rememberLazyListState()
     val horizontalState = rememberScrollState()
-    Box {
+    Box(
+        modifier = Modifier
+    ) {
         table(
             verticalState,
             horizontalState,

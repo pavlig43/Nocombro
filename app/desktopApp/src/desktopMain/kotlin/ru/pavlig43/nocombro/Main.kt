@@ -42,7 +42,11 @@ fun main() {
             onCloseRequest = ::exitApplication,
 //            alwaysOnTop = true,
             title = "Nocombro",
-            state = windowState
+            state = windowState,
+            onPreviewKeyEvent = { event ->
+//                println("Window: $event")
+                false // не поглощаем
+            }
         ) {
             LifecycleController(
                 lifecycleRegistry = lifecycle,
