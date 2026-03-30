@@ -7,15 +7,13 @@ import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.Child
 import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
+import com.arkivanov.essenty.backhandler.BackCallback
 import kotlinx.coroutines.launch
 import ru.pavlig43.core.tabs.TabNavigationComponent
-import ru.pavlig43.coreui.KeyEventHandler
-import ru.pavlig43.coreui.isEscKeyUp
 import ru.pavlig43.coreui.tab.TabLazyRowNavigationContent
 import ru.pavlig43.declaration.api.DeclarationFormScreen
 import ru.pavlig43.document.api.ui.DocumentFormScreen
@@ -76,22 +74,18 @@ fun RootNocombroScreen(rootNocombroComponent: RootNocombroComponent) {
                             mainTabNavigationComponent.tabNavigationComponent
                         val drawerNavigationComponent = mainTabNavigationComponent.drawerComponent
 
-                        val handler = remember {
-                            { keyEvent: KeyEvent ->
-                                if (!keyEvent.isEscKeyUp) return@remember false
-
+                        val backCallback = remember {
+                            BackCallback(priority = BackCallback.PRIORITY_MIN) {
                                 if (drawerState.isOpen) {
                                     coroutineScope.launch { drawerState.close() }
                                 } else {
                                     tabNavigationComponent.onCloseCurrentTab()
                                 }
-                                true
                             }
                         }
 
-                        DisposableEffect(Unit) {
-                            KeyEventHandler.subscribe(handler)
-                            onDispose { KeyEventHandler.unsubscribe(handler) }
+                        LaunchedEffect(Unit) {
+                            rootNocombroComponent.backHandler.register(backCallback)
                         }
                         NocombroAppBar(
                             settingsComponent = rootNocombroComponent.settingsComponent,
