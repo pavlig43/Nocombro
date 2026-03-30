@@ -66,6 +66,7 @@ class LoadInitDataComponent<I : Any>(
         loadData()
     }
 
+
     private fun loadData() {
 
         coroutineScope.launch(Dispatchers.IO) {

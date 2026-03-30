@@ -119,6 +119,9 @@ abstract class FilesComponent(
             onSuccessGetInitData = { files -> _filesUi.update { files } }
         )
 
+    override suspend fun refreshDataAfterUpsert() {
+        initDataComponent.retryLoadInitData()
+    }
 
     protected val isAllFilesUpload: Flow<Boolean> =
         _filesUi.map { it.all { file -> file.uploadState is UploadState.Success } }

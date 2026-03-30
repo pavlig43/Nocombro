@@ -62,6 +62,10 @@ internal class ProductDeclarationComponent(
             productDeclarations.update { lst }
         }
     )
+
+    override suspend fun refreshDataAfterUpsert() {
+        initDataComponent.retryLoadInitData()
+    }
     private val dialogNavigation = SlotNavigation<DeclarationDialogConfig>()
 
     internal val dialog = childSlot(

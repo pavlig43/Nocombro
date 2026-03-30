@@ -1,8 +1,12 @@
 @file:Suppress("MatchingDeclarationName")
+
 package ru.pavlig43.immutable.internal.component.items.expense
 
+import androidx.compose.material3.Text
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
+import ru.pavlig43.core.model.sumOfDecimal2
+import ru.pavlig43.core.model.toStartDoubleFormat
 import ru.pavlig43.database.data.expense.ExpenseType
 import ru.pavlig43.immutable.internal.column.idWithSelection
 import ru.pavlig43.immutable.internal.column.readBooleanColumn
@@ -54,7 +58,11 @@ internal fun createExpenseColumn(
             headerText = "Сумма (₽)",
             column = ExpenseField.AMOUNT,
             valueOf = { it.amount },
-            filterType = TableFilterType.NumberTableFilter(delegate = DataDecimalDelegate2)
+            filterType = TableFilterType.NumberTableFilter(delegate = DataDecimalDelegate2),
+            footerContent = { tableData ->
+                val sum = tableData.displayedItems.sumOfDecimal2 { it.amount }
+                Text(sum.toStartDoubleFormat())
+            }
         )
 
         readDateTimeColumn(
@@ -66,7 +74,7 @@ internal fun createExpenseColumn(
         readBooleanColumn(
             headerText = "Общие",
             column = ExpenseField.IS_MAIN,
-            valueOf = {it.isMain},
+            valueOf = { it.isMain },
             filterType = TableFilterType.BooleanTableFilter(),
         )
 

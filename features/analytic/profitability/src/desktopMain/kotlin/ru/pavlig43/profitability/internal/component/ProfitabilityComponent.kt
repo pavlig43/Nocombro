@@ -59,7 +59,9 @@ class ProfitabilityComponent(
             ).collect { result ->
                 emit(
                     result.fold(
-                        onSuccess = { LoadState.Success(it) },
+                        onSuccess = {
+                            println(it)
+                            LoadState.Success(it) },
                         onFailure = { LoadState.Error(it.message ?: "") }
                     )
                 )

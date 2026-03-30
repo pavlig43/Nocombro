@@ -79,6 +79,26 @@ abstract class BatchMovementDao {
     }
 
 
+    /**
+     * Находит OPZS-транзакции, которые потребляют указанные батчи как ингредиенты.
+     *
+     * Принимает список batch IDs (например, батчи из BUY или выход OPZS),
+     * возвращает список transaction IDs OPZS, где эти батчи появляются как OUTGOING движения.
+     *
+     * Используется для каскадного пересчёта batch_cost_price:
+     * передаём обновлённые batch IDs → получаем зависимые OPZS → пересчитываем их себестоимость.
+     *
+     * @param batchIds список batch ID ингредиентов
+     * @return список transaction ID OPZS, потребляющих эти батчи
+     */
+    @Query("""
+        SELECT DISTINCT transaction_id FROM batch_movement
+        WHERE batch_id IN (:batchIds)
+        AND movement_type = 'OUTGOING'
+        AND transaction_id IN (SELECT id FROM transact WHERE transaction_type = 'OPZS')
+    """)
+    abstract suspend fun getOpzsTransactionIdsByIngredientBatchIds(batchIds: List<Int>): List<Int>
+
     @Query("DELETE FROM batch_movement WHERE id in (:ids)")
     abstract suspend fun deleteByIds(ids: List<Int>)
 

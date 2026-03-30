@@ -156,6 +156,7 @@ class TabNavigationComponent<TabConfiguration : Any, out TabChild : Any>(
 
     fun addTab(index: Int, configuration: TabConfiguration) {
         navigation.navigate { state ->
+            if (configuration in state.configurations) return@navigate state
             val updatedConfigurations = state.configurations.toMutableList()
             updatedConfigurations.add(index, configuration)
             state.copy(configurations = updatedConfigurations, currentIndex = index)

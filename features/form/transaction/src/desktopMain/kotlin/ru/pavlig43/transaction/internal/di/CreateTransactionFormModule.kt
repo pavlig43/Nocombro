@@ -1,4 +1,5 @@
 @file:Suppress("MagicNumber")
+
 package ru.pavlig43.transaction.internal.di
 
 import org.koin.core.module.dsl.singleOf
@@ -38,7 +39,11 @@ internal fun createTransactionFormModule(dependencies: TransactionFormDependenci
         single<FilesDependencies> { dependencies.filesDependencies }
         single<ImmutableTableDependencies> { dependencies.immutableTableDependencies }
         single<CreateSingleItemRepository<Transact>> { TransactionCreateRepository(get()) }
-        single<UpdateSingleLineRepository<Transact>>(UpdateSingleLineRepositoryType.TRANSACTION.qualifier) { TransactionUpdateRepository(get()) }
+        single<UpdateSingleLineRepository<Transact>>(UpdateSingleLineRepositoryType.TRANSACTION.qualifier) {
+            TransactionUpdateRepository(
+                get()
+            )
+        }
         single<UpdateCollectionRepository<BuyBDOut, BuyBDOut>>(UpdateCollectionRepositoryType.BUY.qualifier) {
             BuyCollectionRepository(get())
         }
@@ -48,13 +53,19 @@ internal fun createTransactionFormModule(dependencies: TransactionFormDependenci
         single<UpdateCollectionRepository<ExpenseBD, ExpenseBD>>(UpdateCollectionRepositoryType.EXPENSES.qualifier) {
             ExpensesCollectionRepository(get())
         }
-        single<UpdateCollectionRepository<IngredientBD, IngredientBD>>(UpdateCollectionRepositoryType.INGREDIENTS.qualifier) {
+        single<UpdateCollectionRepository<IngredientBD, IngredientBD>>(
+            UpdateCollectionRepositoryType.INGREDIENTS.qualifier
+        ) {
             IngredientsCollectionRepository(get())
         }
         single<UpdateCollectionRepository<SaleBDOut, SaleBDOut>>(UpdateCollectionRepositoryType.SALE.qualifier) {
             SaleCollectionRepository(get())
         }
-        single<UpdateSingleLineRepository<PfBD>>(UpdateSingleLineRepositoryType.PF.qualifier) { PfUpdateRepository(get()) }
+        single<UpdateSingleLineRepository<PfBD>>(UpdateSingleLineRepositoryType.PF.qualifier) {
+            PfUpdateRepository(
+                get()
+            )
+        }
         singleOf(::FillIngredientsRepository)
         singleOf(::BatchCostRepository)
     }
@@ -131,23 +142,24 @@ private class BuyCollectionRepository(
             upsert = ::upsertAllEntity
         )
     }
-    private suspend fun deleteBuysWithMovement(buyIds:List<Int>){
+
+    private suspend fun deleteBuysWithMovement(buyIds: List<Int>) {
         val movementIds = buyDao.getMovementIdsByBuyIds(buyIds)
         buyDao.deleteByIds(buyIds)
         movementDao.deleteByIds(movementIds)
     }
+
     private suspend fun upsertAllEntity(buys: List<BuyBDOut>) {
-        buys.forEach {buy->
+        buys.forEach { buy ->
             val batch = BatchBD(
                 id = buy.batchId,
                 productId = buy.productId,
                 dateBorn = buy.dateBorn,
                 declarationId = buy.declarationId
             )
-            val batchId = if (batch.id == 0){
+            val batchId = if (batch.id == 0) {
                 batchDao.createBatch(batch).toInt()
-            }
-            else{
+            } else {
                 batchDao.updateBatch(batch)
                 batch.id
             }
@@ -158,10 +170,9 @@ private class BuyCollectionRepository(
                 transactionId = buy.transactionId,
                 id = buy.movementId
             )
-            val movementId = if (movement.id == 0){
+            val movementId = if (movement.id == 0) {
                 movementDao.createMovement(movement).toInt()
-            }
-            else{
+            } else {
                 movementDao.upsertMovement(movement)
                 movement.id
             }
@@ -297,7 +308,6 @@ private class IngredientsCollectionRepository(
 
     private suspend fun upsertIngredients(ingredients: List<IngredientBD>) {
         ingredients.map { ingredient ->
-
             BatchMovement(
                 batchId = ingredient.batchId,
                 movementType = MovementType.OUTGOING,
@@ -368,9 +378,10 @@ private class SaleCollectionRepository(
         }
     }
 }
+
 internal class BatchCostRepository(
     db: NocombroDatabase
-){
+) {
     private val batchCostDao = db.batchCostDao
     private val transactionDao = db.transactionDao
 
@@ -381,13 +392,17 @@ internal class BatchCostRepository(
     private val expenseDao = db.expenseDao
     suspend fun updateBatchCost(transactionId: Int) {
         val transaction = transactionDao.getTransaction(transactionId)
-        when(transaction.transactionType){
+        val updatedBatchIds = when (transaction.transactionType) {
             TransactionType.BUY -> upsertBatchCostFromBuy(transactionId)
             TransactionType.OPZS -> upsertBatchCostFromOpzs(transactionId)
-            else -> return
+            else -> emptyList()
+        }
+        if (updatedBatchIds.isNotEmpty()) {
+            recalculateDependentOpzs(updatedBatchIds)
         }
     }
-    private suspend fun upsertBatchCostFromBuy(transactionId: Int) {
+
+    private suspend fun upsertBatchCostFromBuy(transactionId: Int): List<Int> {
         val buys = buyDao.getBuysWithDetails(transactionId)
         val expenses = expenseDao.getByTransactionId(transactionId)
         val transactionExpenses = expenses.sumOf { it.amount }
@@ -401,26 +416,84 @@ internal class BatchCostRepository(
             )
         }
         batchCostDao.upsert(batchCostPriceEntities)
+        return batchCostPriceEntities.map { it.batchId }
     }
-    private suspend fun upsertBatchCostFromOpzs(transactionId: Int){
-        val (pf,ingredients) = batchMovementDao.getByTransactionId(transactionId).partition { it.movement.movementType == MovementType.INCOMING }
-        if (pf.isEmpty()) return
+
+    /**
+     * Пересчитывает себестоимость PF-партии (результат OPZS) по фактически списанным ингредиентам.
+     *
+     * Себестоимость PF = суммарная стоимость всех ингредиентов / выход PF (в кг).
+     * Стоимость каждого ингредиента берётся из batch_cost_price (должна быть уже рассчитана).
+     *
+     * @return список из одного batch ID — PF-партии, для которой обновлена себестоимость.
+     *         Пустой список если у OPZS нет INCOMING движения (нет выхода).
+     */
+    private suspend fun upsertBatchCostFromOpzs(transactionId: Int): List<Int> {
+        // Разделяем движения: INCOMING = PF (выход), OUTGOING = ингредиенты (списание)
+        val (pf, ingredients) = batchMovementDao.getByTransactionId(transactionId)
+            .partition { it.movement.movementType == MovementType.INCOMING }
+        if (pf.isEmpty()) return emptyList()
         val pfMovement = pf.first()
+
+        // Загружаем себестоимость каждого ингредиента из batch_cost_price
         val ingredientsCostMap = ingredients
             .map { it.movement.batchId }
             .let { batchCostDao.getBatchesCostPriceByIds(it) }
             .associateBy { it.batchId }
 
+        // Считаем суммарную стоимость всех списанных ингредиентов (коп/кг * грамм / 1000 = копейки)
         val totalCost = ingredients.sumOf { ingredient ->
             val costPerKg = ingredientsCostMap[ingredient.movement.batchId]?.costPricePerUnit ?: 0L
             (costPerKg * ingredient.movement.count) / 1000.0
         }
+
+        // Себестоимость 1 кг PF = суммарная стоимость / выход в граммах * 1000
         val costPricePerKg = if (pfMovement.movement.count > 0) {
             (totalCost / pfMovement.movement.count.toDouble()) * 1000
         } else 0.0
-        batchCostDao.upsert(listOf(
-            BatchCostPriceEntity(pfMovement.movement.batchId, costPricePerKg.roundToLong())
-        ))
+        val pfBatchId = pfMovement.movement.batchId
+        batchCostDao.upsert(
+            listOf(
+                BatchCostPriceEntity(pfBatchId, costPricePerKg.roundToLong())
+            )
+        )
+        return listOf(pfBatchId)
+    }
+    /**
+     * Каскадно пересчитывает себестоимость всех OPZS, зависящих от обновлённых батчей.
+     *
+     * Пример цепочки: Соль(BUY) → Баварские(OPZS) → Эластен(OPZS)
+     * 1. updatedBatchIds = [batch соли]
+     * 2. Ищем OPZS потребляющие соль → находим Баварские → пересчитываем → получаем batch Баварских
+     * 3. Ищем OPZS потребляющие Баварские → находим Эластен → пересчитываем → получаем batch Эластена
+     * 4. Ищем OPZS потребляющие Эластен → никого нет → цикл заканчивается
+     */
+    private suspend fun recalculateDependentOpzs(updatedBatchIds: List<Int>) {
+        // Уже обработанные OPZS, чтобы не пересчитывать дважды
+        val processedTransactions = mutableSetOf<Int>()
+        // Батчи, для которых нужно найти потребителей в текущей итерации
+        var batchIdsToProcess = updatedBatchIds.toSet()
+
+        while (batchIdsToProcess.isNotEmpty()) {
+            // Ищем OPZS-транзакции, которые потребляют наши батчи как ингредиенты
+            val opzsTransactionIds = batchMovementDao
+                .getOpzsTransactionIdsByIngredientBatchIds(batchIdsToProcess.toList())
+            val newUpdatedBatchIds = mutableListOf<Int>()
+
+            for (opzsId in opzsTransactionIds) {
+                // Пропускаем если уже пересчитывали эту OPZS
+                if (opzsId !in processedTransactions) {
+                    processedTransactions.add(opzsId)
+                    // Пересчитываем себестоимость этой OPZS
+                    // upsertBatchCostFromOpzs вернёт batch ID её PF-партии
+                    newUpdatedBatchIds.addAll(upsertBatchCostFromOpzs(opzsId))
+                }
+            }
+
+            // PF-батчи пересчитанных OPZS — это новые батчи для следующей итерации
+            // Возможно, другие OPZS потребляют их как ингредиенты
+            batchIdsToProcess = newUpdatedBatchIds.toSet()
+        }
     }
 }
 
