@@ -15,8 +15,6 @@ import com.arkivanov.essenty.backhandler.BackDispatcher
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
 import io.github.vinceglb.filekit.FileKit
 import org.koin.java.KoinJavaComponent.getKoin
-import ru.pavlig43.coreui.KeyEventHandler
-import ru.pavlig43.coreui.isEscKeyUp
 import ru.pavlig43.rootnocombro.api.RootDependencies
 import ru.pavlig43.rootnocombro.api.component.RootNocombroComponent
 import ru.pavlig43.rootnocombro.api.ui.App
@@ -53,11 +51,11 @@ fun main() {
             title = "Nocombro",
             state = windowState,
             onPreviewKeyEvent = { event ->
-                if (event.isEscKeyUp) {
+                if (event.key == Key.Escape && event.type == KeyEventType.KeyUp) {
                     backDispatcher.back()
                     true
                 } else {
-                    KeyEventHandler.handle(event)
+                    false
                 }
             }
         ) {
@@ -72,7 +70,3 @@ fun main() {
         }
     }
 }
-
-
-
-
