@@ -2,6 +2,7 @@ package ru.pavlig43.rootnocombro.internal.navigation
 
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
+import com.arkivanov.essenty.backhandler.BackCallback
 import kotlinx.datetime.LocalDateTime
 import org.koin.core.scope.Scope
 import ru.pavlig43.core.tabs.TabNavigationComponent

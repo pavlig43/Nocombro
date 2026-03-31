@@ -12,8 +12,10 @@ import com.arkivanov.decompose.Child
 import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.arkivanov.essenty.backhandler.BackCallback
+import com.arkivanov.essenty.backhandler.BackHandler
 import kotlinx.coroutines.launch
 import ru.pavlig43.core.tabs.TabNavigationComponent
+import ru.pavlig43.coreui.BackHandler
 import ru.pavlig43.coreui.tab.TabLazyRowNavigationContent
 import ru.pavlig43.declaration.api.DeclarationFormScreen
 import ru.pavlig43.document.api.ui.DocumentFormScreen
@@ -74,19 +76,19 @@ fun RootNocombroScreen(rootNocombroComponent: RootNocombroComponent) {
                             mainTabNavigationComponent.tabNavigationComponent
                         val drawerNavigationComponent = mainTabNavigationComponent.drawerComponent
 
-                        val backCallback = remember {
-                            BackCallback(priority = BackCallback.PRIORITY_MIN) {
+
+                        BackHandler(
+                            tabNavigationComponent.backHandler,
+                            onBack = {
                                 if (drawerState.isOpen) {
+                                    println("Drawer is open")
                                     coroutineScope.launch { drawerState.close() }
                                 } else {
+                                    println("Drawer is closed")
                                     tabNavigationComponent.onCloseCurrentTab()
                                 }
-                            }
-                        }
-
-                        LaunchedEffect(Unit) {
-                            rootNocombroComponent.backHandler.register(backCallback)
-                        }
+                            },
+                        )
                         NocombroAppBar(
                             settingsComponent = rootNocombroComponent.settingsComponent,
                             onOpenDrawer = {
@@ -181,6 +183,7 @@ private fun MainTabChildFactory(mainTabChild: MainTabChild?) {
         is MainTabChild.BatchMovementChild -> BatchMovementTableScreen(mainTabChild.component)
     }
 }
+
 
 
 
