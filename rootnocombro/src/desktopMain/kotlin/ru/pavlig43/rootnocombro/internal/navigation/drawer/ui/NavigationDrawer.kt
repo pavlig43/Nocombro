@@ -54,7 +54,8 @@ internal fun NavigationDrawer(
                 onItemClick = {
                     drawerComponent.onSelect(it)
                     onCloseNavigationDrawer()
-                }
+                },
+                drawerState = drawerState,
             )
         }
     ) {
@@ -68,11 +69,12 @@ private fun DrawerContent(
     notifications: List<NotificationDrawerUi>,
     onNotificationScreen: () -> Unit,
     onItemClick: (DrawerDestination) -> Unit,
+    drawerState: DrawerState,
     modifier: Modifier = Modifier,
 
     ) {
     val listState = rememberLazyListState()
-    ModalDrawerSheet(modifier = Modifier.fillMaxWidth(DRAWER_WIDTH)) {
+    ModalDrawerSheet( modifier = Modifier.fillMaxWidth(DRAWER_WIDTH)) {
         LazyColumn(state = listState, modifier = modifier.fillMaxWidth()) {
             item { NotificationsDrawer(notifications, onNotificationScreen) }
             items(items = items, key = { it.title }) { item ->

@@ -52,7 +52,7 @@ fun main() {
             onCloseRequest = ::exitApplication,
             title = "Nocombro",
             state = windowState,
-            onPreviewKeyEvent = { event ->
+            onKeyEvent = { event ->
                 if (event.isEscKeyUp){
                     backDispatcher.back()
                 }

@@ -81,10 +81,8 @@ fun RootNocombroScreen(rootNocombroComponent: RootNocombroComponent) {
                             tabNavigationComponent.backHandler,
                             onBack = {
                                 if (drawerState.isOpen) {
-                                    println("Drawer is open")
                                     coroutineScope.launch { drawerState.close() }
                                 } else {
-                                    println("Drawer is closed")
                                     tabNavigationComponent.onCloseCurrentTab()
                                 }
                             },
