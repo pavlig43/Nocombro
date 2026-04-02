@@ -81,6 +81,7 @@ internal fun createProductColumns1(
                 updateItem = { item, newValue ->
                     onChangeItem { it.copy(shelfLifeDays = newValue) }
                 },
+                isSortable = false
             )
 
             // Комментарий
