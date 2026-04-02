@@ -55,7 +55,6 @@ internal fun NavigationDrawer(
                     drawerComponent.onSelect(it)
                     onCloseNavigationDrawer()
                 },
-                drawerState = drawerState,
             )
         }
     ) {
@@ -69,7 +68,6 @@ private fun DrawerContent(
     notifications: List<NotificationDrawerUi>,
     onNotificationScreen: () -> Unit,
     onItemClick: (DrawerDestination) -> Unit,
-    drawerState: DrawerState,
     modifier: Modifier = Modifier,
 
     ) {
