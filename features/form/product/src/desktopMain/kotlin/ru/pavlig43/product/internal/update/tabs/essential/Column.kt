@@ -2,6 +2,7 @@ package ru.pavlig43.product.internal.update.tabs.essential
 
 import kotlinx.collections.immutable.ImmutableList
 import ru.pavlig43.mutable.api.column.decimalColumn
+import ru.pavlig43.mutable.api.column.intRangeColumn
 import ru.pavlig43.mutable.api.column.readItemTypeColumn
 import ru.pavlig43.mutable.api.column.writeDateColumn
 import ru.pavlig43.mutable.api.column.writeTextColumn
@@ -72,6 +73,15 @@ internal fun createProductColumns1(
                     onChangeItem { it.copy(secondName = newValue) }
                 },
             )
+            intRangeColumn(
+                key = ProductField.SHELF_LIFE_DAYS,
+                getValue = {it.shelfLifeDays},
+                headerText = "Срок годности",
+                range = (0..Int.MAX_VALUE),
+                updateItem = { item, newValue ->
+                    onChangeItem { it.copy(shelfLifeDays = newValue) }
+                },
+            )
 
             // Комментарий
             writeTextColumn(
@@ -84,16 +94,7 @@ internal fun createProductColumns1(
                 }
             )
 
-            // Срок годности (дни)
-            writeTextColumn(
-                headerText = "Срок годности (дни)",
-                column = ProductField.SHELF_LIFE_DAYS,
-                valueOf = { it.shelfLifeDays.toString() },
-                isSortable = false,
-                onChangeItem = { _, newValue ->
-                    onChangeItem { it.copy(shelfLifeDays = newValue.toIntOrNull() ?: 0) }
-                }
-            )
+
         }
 
     return columns
