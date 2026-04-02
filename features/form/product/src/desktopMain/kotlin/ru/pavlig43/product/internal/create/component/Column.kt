@@ -85,6 +85,17 @@ internal fun createProductColumns0(
                     onChangeItem { it.copy(comment = newValue) }
                 }
             )
+
+            // Срок годности (дни)
+            writeTextColumn(
+                headerText = "Срок годности (дни)",
+                column = ProductField.SHELF_LIFE_DAYS,
+                valueOf = { it.shelfLifeDays.toString() },
+                isSortable = false,
+                onChangeItem = { _, newValue ->
+                    onChangeItem { it.copy(shelfLifeDays = newValue.toIntOrNull() ?: 0) }
+                }
+            )
         }
 
     return columns

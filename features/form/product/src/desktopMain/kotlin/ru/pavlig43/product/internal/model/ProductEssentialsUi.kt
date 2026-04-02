@@ -21,6 +21,8 @@ internal data class ProductEssentialsUi(
 
     val priceForSale: DecimalData2 = DecimalData2(0),
 
+    val shelfLifeDays: Int = 0,
+
     val id: Int = 0,
 ) : ISingleLineTableUi
 
@@ -33,6 +35,7 @@ internal fun ProductEssentialsUi.toDto(): Product {
         createdAt = createdAt,
         comment = comment,
         priceForSale = priceForSale.value,
+        shelfLifeDays = shelfLifeDays,
         id = id
     )
 }
@@ -45,6 +48,7 @@ internal fun Product.toUi(): ProductEssentialsUi {
         createdAt = createdAt,
         comment = comment,
         priceForSale = DecimalData2(priceForSale),
+        shelfLifeDays = shelfLifeDays,
         id = id
     )
 }

@@ -21,6 +21,7 @@ data class Product(
     @ColumnInfo("second_name", defaultValue = "")
     val secondName: String = "",
 
+
 //    @ColumnInfo("unit")
 //    val unit: ProductUnit,
 
@@ -31,6 +32,9 @@ data class Product(
 
     @ColumnInfo("price_for_sale")
     val priceForSale: Long = 0,
+
+    @ColumnInfo("shelf_life_days")
+    val shelfLifeDays: Int = 0,
 
     @PrimaryKey(autoGenerate = true)
     override val id: Int = 0,

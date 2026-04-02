@@ -15,4 +15,6 @@ internal enum class ProductField {
     CREATED_AT,
     /** Комментарий */
     COMMENT,
+    /** Срок годности (дни) */
+    SHELF_LIFE_DAYS,
 }

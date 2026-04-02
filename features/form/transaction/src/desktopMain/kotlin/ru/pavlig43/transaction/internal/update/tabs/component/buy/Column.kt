@@ -30,6 +30,7 @@ enum class BuyField {
     VENDOR_NAME,
     DATE_BORN,
     PRICE,
+    NDS,
     COMMENT
 }
 
