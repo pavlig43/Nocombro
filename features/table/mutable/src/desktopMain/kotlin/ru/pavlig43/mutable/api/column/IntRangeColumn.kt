@@ -31,7 +31,7 @@ fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.intRangeColumn(
     placeholder: String = range.first.toString(),
 ) {
     column(key, valueOf = { getValue(it) }) {
-        autoWidth(300.dp)
+//        autoWidth(300.dp)
         header(headerText)
         align(Alignment.CenterStart)
         if (isSortable) {
