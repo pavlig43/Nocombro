@@ -181,6 +181,7 @@ private class BuyCollectionRepository(
                 movementId = movementId,
                 price = buy.price,
                 comment = buy.comment,
+                ndsPercent = buy.ndsPercent,
                 id = buy.id
             )
             buyDao.upsertBuyBd(buyBdIn)

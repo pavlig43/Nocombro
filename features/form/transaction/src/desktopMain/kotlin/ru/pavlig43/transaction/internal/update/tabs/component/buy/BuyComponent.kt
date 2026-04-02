@@ -153,6 +153,7 @@ internal class BuyComponent(
             vendorName = vendorName,
             dateBorn = dateBorn,
             price = DecimalData2(price),
+            ndsPercent = ndsPercent,
             comment = comment,
             id = id
         )
@@ -164,6 +165,7 @@ internal class BuyComponent(
             transactionId = transactionId,
             dateBorn = dateBorn,
             price = price.value,
+            ndsPercent = ndsPercent,
             comment = comment,
             id = id,
             productId = productId,

@@ -18,6 +18,7 @@ data class BuyUi(
     val vendorName: String = "",
     val dateBorn: LocalDate = getCurrentLocalDate(),
     val price: DecimalData2 = DecimalData2(0),
+    val ndsPercent: Int = 0,
     val comment: String = "",
     val batchId: Int = 0,
     val movementId: Int = 0

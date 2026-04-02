@@ -68,6 +68,7 @@ private fun InternalBuy.toBuyBDOut(): BuyBDOut {
         vendorName = batchOut.declaration.vendorName,
         price = buy.price,
         comment = buy.comment,
+        ndsPercent = buy.ndsPercent,
         id = buy.id,
         movementId = movementOut.movement.id
     )
