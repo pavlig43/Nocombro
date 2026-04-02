@@ -39,6 +39,8 @@ fun <TabConfiguration : Any, TabChild : Any> TabLazyRowNavigationContent(
     tabsRowModifier: Modifier = Modifier,
     tabChildFactory: @Composable (TabChild?) -> Unit,
 ) {
+
+
     val children by navigationComponent.tabChildren.subscribeAsState()
 
     /**
@@ -68,11 +70,13 @@ fun <TabConfiguration : Any, TabChild : Any> TabLazyRowNavigationContent(
     val key = activeTab?.keyHashString()
     val instance = activeTab?.instance
     key?.let {
-        holder.SaveableStateProvider(it) {
+        holder.SaveableStateProvider(it)
+        {
             tabChildFactory(instance)
         }
     }
 }
+
 
 /**
  * @see [TabLazyRowNavigationContent]
@@ -102,7 +106,7 @@ fun <TabConfiguration : Any, TabChild : Any> TabStaticNavigationContent(
         modifier = tabsRowModifier.fillMaxWidth(),
         horizontalArrangement = tabsArrangement,
         verticalAlignment = Alignment.CenterVertically
-        ){
+    ) {
         children.items.map { it.instance }.forEachIndexed { index, child ->
             tabContent(
                 index,

@@ -60,7 +60,6 @@ class ProfitabilityComponent(
                 emit(
                     result.fold(
                         onSuccess = {
-                            println(it)
                             LoadState.Success(it) },
                         onFailure = { LoadState.Error(it.message ?: "") }
                     )

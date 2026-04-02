@@ -22,6 +22,7 @@ import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import kotlinx.coroutines.launch
 import ru.pavlig43.core.tabs.TabNavigationComponent
+import ru.pavlig43.coreui.BackHandler
 import ru.pavlig43.coreui.tab.TabLazyRowNavigationContent
 import ru.pavlig43.declaration.api.DeclarationFormScreen
 import ru.pavlig43.document.api.ui.DocumentFormScreen
@@ -56,6 +57,7 @@ fun RootNocombroScreen(rootNocombroComponent: RootNocombroComponent) {
 
 
 
+
     Surface {
 
         Children(
@@ -74,11 +76,24 @@ fun RootNocombroScreen(rootNocombroComponent: RootNocombroComponent) {
                     is RootChild.RootSign -> RootSignScreen(instance.component)
 
                     is RootChild.Tabs -> {
+
                         val mainTabNavigationComponent: MainTabNavigationComponent =
                             instance.component
                         val tabNavigationComponent: TabNavigationComponent<MainTabConfig, MainTabChild> =
                             mainTabNavigationComponent.tabNavigationComponent
                         val drawerNavigationComponent = mainTabNavigationComponent.drawerComponent
+
+
+                        BackHandler(
+                            tabNavigationComponent.backHandler,
+                            onBack = {
+                                if (drawerState.isOpen || drawerState.isAnimationRunning) {
+                                    coroutineScope.launch { drawerState.close() }
+                                } else {
+                                    tabNavigationComponent.onCloseCurrentTab()
+                                }
+                            },
+                        )
                         NocombroAppBar(
                             settingsComponent = rootNocombroComponent.settingsComponent,
                             onOpenDrawer = {
@@ -99,7 +114,9 @@ fun RootNocombroScreen(rootNocombroComponent: RootNocombroComponent) {
                             },
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Column(Modifier.fillMaxSize()) {
+                            Column(
+                                Modifier.fillMaxSize()
+                            ) {
                                 TabLazyRowNavigationContent(
                                     navigationComponent = tabNavigationComponent,
                                     tabContent = { index, mainTabChild, modifier, isSelected, isDragging, onClose ->
@@ -112,7 +129,11 @@ fun RootNocombroScreen(rootNocombroComponent: RootNocombroComponent) {
                                             onSelect = { tabNavigationComponent.onSelectTab(index) },
                                         )
                                     },
-                                    tabChildFactory = { mainTabChild -> MainTabChildFactory(mainTabChild) }
+                                    tabChildFactory = { mainTabChild ->
+                                        MainTabChildFactory(
+                                            mainTabChild
+                                        )
+                                    }
                                 )
                             }
                         }
@@ -126,6 +147,7 @@ fun RootNocombroScreen(rootNocombroComponent: RootNocombroComponent) {
     }
 
 }
+
 @Suppress("CyclomaticComplexMethod")
 @Composable
 private fun MainTabChildFactory(mainTabChild: MainTabChild?) {
@@ -166,6 +188,7 @@ private fun MainTabChildFactory(mainTabChild: MainTabChild?) {
         is MainTabChild.BatchMovementChild -> BatchMovementTableScreen(mainTabChild.component)
     }
 }
+
 
 
 
