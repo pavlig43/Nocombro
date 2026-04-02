@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "63bccdea0216885542acc0e6bb3baf1d",
+    "identityHash": "93e378dcf5266a35724117f23c679dab",
     "entities": [
       {
         "tableName": "file",
@@ -198,7 +198,7 @@
       },
       {
         "tableName": "product",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`type` TEXT NOT NULL, `display_name` TEXT NOT NULL, `second_name` TEXT NOT NULL DEFAULT '', `created_at` TEXT NOT NULL, `comment` TEXT NOT NULL, `price_for_sale` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`type` TEXT NOT NULL, `display_name` TEXT NOT NULL, `second_name` TEXT NOT NULL DEFAULT '', `created_at` TEXT NOT NULL, `comment` TEXT NOT NULL, `price_for_sale` INTEGER NOT NULL, `shelf_life_days` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL)",
         "fields": [
           {
             "fieldPath": "type",
@@ -234,6 +234,12 @@
           {
             "fieldPath": "priceForSale",
             "columnName": "price_for_sale",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "shelfLifeDays",
+            "columnName": "shelf_life_days",
             "affinity": "INTEGER",
             "notNull": true
           },
@@ -1042,7 +1048,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '63bccdea0216885542acc0e6bb3baf1d')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '93e378dcf5266a35724117f23c679dab')"
     ]
   }
 }

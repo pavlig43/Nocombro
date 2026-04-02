@@ -49,6 +49,7 @@ class ProductFormComponent(
             buildList {
                 if (item.displayName.isBlank()) add("Название продукта обязательно")
                 if (item.productType == null) add("Тип продукта обязателен")
+                if (item.shelfLifeDays <= 0) add("Срок годности должен быть больше 0")
             }
         },
         mapperToUi = { toUi() }
