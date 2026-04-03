@@ -36,6 +36,9 @@ data class Product(
     @ColumnInfo("shelf_life_days")
     val shelfLifeDays: Int = 0,
 
+    @ColumnInfo("rec_nds")
+    val recNds: Int = 0,
+
     @PrimaryKey(autoGenerate = true)
     override val id: Int = 0,
 ) : SingleItem

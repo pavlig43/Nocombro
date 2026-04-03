@@ -17,4 +17,6 @@ internal enum class ProductField {
     COMMENT,
     /** Срок годности (дни) */
     SHELF_LIFE_DAYS,
+    /** Рекомендованный НДС (%) */
+    REC_NDS,
 }

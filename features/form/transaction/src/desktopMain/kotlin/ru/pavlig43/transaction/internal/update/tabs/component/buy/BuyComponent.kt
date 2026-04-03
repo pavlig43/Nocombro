@@ -109,6 +109,7 @@ internal class BuyComponent(
                                 buyUi.copy(
                                     productId = product.composeId,
                                     productName = product.displayName,
+                                    ndsPercent = product.recNds,
                                 )
                             )
                         )

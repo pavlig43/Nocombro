@@ -83,6 +83,18 @@ internal fun createProductColumns1(
                 },
                 isSortable = false
             )
+            // Рекомендованный НДС
+            intRangeColumn(
+                key = ProductField.REC_NDS,
+                getValue = { it.recNds },
+                headerText = "НДС %",
+                range = 0..99,
+                updateItem = { item, newValue ->
+                    onChangeItem { it.copy(recNds = newValue) }
+                },
+                isSortable = false,
+                placeholder = "0"
+            )
 
             // Комментарий
             writeTextColumn(
