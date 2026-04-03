@@ -51,6 +51,9 @@ data class SaleBDIn(
     @ColumnInfo("client_id", index = true)
     val clientId: Int,
 
+    @ColumnInfo("nds_percent")
+    val ndsPercent: Int = 0,
+
     @PrimaryKey(autoGenerate = true)
     override val id: Int = 0
 ) : CollectionObject
@@ -88,5 +91,6 @@ data class SaleBDOut(
     val clientId: Int,
     val price: Long,
     val comment: String,
+    val ndsPercent: Int = 0,
     override val id: Int
 ) : CollectionObject

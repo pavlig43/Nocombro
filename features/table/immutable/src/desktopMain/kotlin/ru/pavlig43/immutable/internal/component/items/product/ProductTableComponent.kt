@@ -38,6 +38,7 @@ private fun Product.toUi(): ProductTableUi {
         type = type,
         createdAt = createdAt,
         comment = comment,
-        priceForSale = priceForSale
+        priceForSale = priceForSale,
+        recNds = recNds
     )
 }

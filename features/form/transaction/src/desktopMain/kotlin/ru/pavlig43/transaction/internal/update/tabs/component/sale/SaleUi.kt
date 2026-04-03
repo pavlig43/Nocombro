@@ -19,6 +19,7 @@ data class SaleUi(
     val clientName: String = "",
     val clientId: Int = 0,
     val price: DecimalData2 = DecimalData2(0),
+    val ndsPercent: Int = 0,
     val comment: String = "",
     val movementId: Int = 0
 ) : IMultiLineTableUi {

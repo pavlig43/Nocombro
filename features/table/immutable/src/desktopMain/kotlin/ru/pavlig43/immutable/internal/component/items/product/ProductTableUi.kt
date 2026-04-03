@@ -12,4 +12,5 @@ data class ProductTableUi(
     val createdAt: LocalDate,
     val comment: String = "",
     val priceForSale: Long = 0,
+    val recNds: Int = 0,
 ) : IMultiLineTableUi

@@ -7,6 +7,7 @@ import ru.pavlig43.core.model.DecimalData2
 import ru.pavlig43.core.model.DecimalData3
 import ru.pavlig43.mutable.api.column.decimalColumn
 import ru.pavlig43.mutable.api.column.idWithSelection
+import ru.pavlig43.mutable.api.column.intRangeColumn
 import ru.pavlig43.mutable.api.column.readDecimalColumn
 import ru.pavlig43.mutable.api.column.readTextColumn
 import ru.pavlig43.mutable.api.column.textWithSearchIconColumn
@@ -30,6 +31,7 @@ enum class BuyField {
     VENDOR_NAME,
     DATE_BORN,
     PRICE,
+    NDS,
     COMMENT
 }
 
@@ -75,6 +77,18 @@ internal fun createBuyColumn(
                 getValue = { it.price },
                 headerText = "Цена",
                 updateItem = { item, price -> onEvent(MutableUiEvent.UpdateItem(item.copy(price = price))) }
+            )
+
+            intRangeColumn(
+                key = BuyField.NDS,
+                getValue = { it.ndsPercent },
+                headerText = "НДС %",
+                range = 0..99,
+                updateItem = { item, newValue ->
+                    onEvent(MutableUiEvent.UpdateItem(item.copy(ndsPercent = newValue)))
+                },
+                isSortable = false,
+                placeholder = "0"
             )
 
             readDecimalColumn(
