@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "93e378dcf5266a35724117f23c679dab",
+    "identityHash": "3a6393e20dc58e52abb2e63086bf0d5e",
     "entities": [
       {
         "tableName": "file",
@@ -198,7 +198,7 @@
       },
       {
         "tableName": "product",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`type` TEXT NOT NULL, `display_name` TEXT NOT NULL, `second_name` TEXT NOT NULL DEFAULT '', `created_at` TEXT NOT NULL, `comment` TEXT NOT NULL, `price_for_sale` INTEGER NOT NULL, `shelf_life_days` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`type` TEXT NOT NULL, `display_name` TEXT NOT NULL, `second_name` TEXT NOT NULL DEFAULT '', `created_at` TEXT NOT NULL, `comment` TEXT NOT NULL, `price_for_sale` INTEGER NOT NULL, `shelf_life_days` INTEGER NOT NULL, `rec_nds` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL)",
         "fields": [
           {
             "fieldPath": "type",
@@ -240,6 +240,12 @@
           {
             "fieldPath": "shelfLifeDays",
             "columnName": "shelf_life_days",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "recNds",
+            "columnName": "rec_nds",
             "affinity": "INTEGER",
             "notNull": true
           },
@@ -718,7 +724,7 @@
       },
       {
         "tableName": "buy",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`transaction_id` INTEGER NOT NULL, `movement_id` INTEGER NOT NULL, `price` INTEGER NOT NULL, `comment` TEXT NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, FOREIGN KEY(`transaction_id`) REFERENCES `transact`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`movement_id`) REFERENCES `batch_movement`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`transaction_id` INTEGER NOT NULL, `movement_id` INTEGER NOT NULL, `price` INTEGER NOT NULL, `comment` TEXT NOT NULL, `nds_percent` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, FOREIGN KEY(`transaction_id`) REFERENCES `transact`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`movement_id`) REFERENCES `batch_movement`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
         "fields": [
           {
             "fieldPath": "transactionId",
@@ -742,6 +748,12 @@
             "fieldPath": "comment",
             "columnName": "comment",
             "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ndsPercent",
+            "columnName": "nds_percent",
+            "affinity": "INTEGER",
             "notNull": true
           },
           {
@@ -804,7 +816,7 @@
       },
       {
         "tableName": "sale",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`transaction_id` INTEGER NOT NULL, `movement_id` INTEGER NOT NULL, `price` INTEGER NOT NULL, `comment` TEXT NOT NULL, `client_id` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, FOREIGN KEY(`transaction_id`) REFERENCES `transact`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`movement_id`) REFERENCES `batch_movement`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION , FOREIGN KEY(`client_id`) REFERENCES `vendor`(`id`) ON UPDATE NO ACTION ON DELETE RESTRICT )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`transaction_id` INTEGER NOT NULL, `movement_id` INTEGER NOT NULL, `price` INTEGER NOT NULL, `comment` TEXT NOT NULL, `client_id` INTEGER NOT NULL, `nds_percent` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, FOREIGN KEY(`transaction_id`) REFERENCES `transact`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`movement_id`) REFERENCES `batch_movement`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION , FOREIGN KEY(`client_id`) REFERENCES `vendor`(`id`) ON UPDATE NO ACTION ON DELETE RESTRICT )",
         "fields": [
           {
             "fieldPath": "transactionId",
@@ -833,6 +845,12 @@
           {
             "fieldPath": "clientId",
             "columnName": "client_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ndsPercent",
+            "columnName": "nds_percent",
             "affinity": "INTEGER",
             "notNull": true
           },
@@ -1048,7 +1066,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '93e378dcf5266a35724117f23c679dab')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '3a6393e20dc58e52abb2e63086bf0d5e')"
     ]
   }
 }

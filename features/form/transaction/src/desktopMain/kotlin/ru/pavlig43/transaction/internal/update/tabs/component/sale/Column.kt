@@ -6,6 +6,7 @@ import kotlinx.collections.immutable.ImmutableList
 import ru.pavlig43.core.model.DecimalData2
 import ru.pavlig43.core.model.DecimalData3
 import ru.pavlig43.mutable.api.column.decimalColumn
+import ru.pavlig43.mutable.api.column.intRangeColumn
 import ru.pavlig43.mutable.api.column.idWithSelection
 import ru.pavlig43.mutable.api.column.readDateColumn
 import ru.pavlig43.mutable.api.column.readDecimalColumn
@@ -29,6 +30,7 @@ enum class SaleField {
     DATE_BORN,
     CLIENT_NAME,
     PRICE,
+    NDS,
     COMMENT
 }
 
@@ -85,6 +87,18 @@ internal fun createSaleColumn(
                         acc + item.sum
                     }
                 }
+            )
+
+            intRangeColumn(
+                key = SaleField.NDS,
+                getValue = { it.ndsPercent },
+                headerText = "НДС %",
+                range = 0..99,
+                updateItem = { item, newValue ->
+                    onEvent(MutableUiEvent.UpdateItem(item.copy(ndsPercent = newValue)))
+                },
+                isSortable = false,
+                placeholder = "0"
             )
 
             textWithSearchIconColumn(

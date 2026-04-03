@@ -81,6 +81,7 @@ private fun InternalSale.toSaleBDOut(): SaleBDOut {
         clientId = client.id,
         price = sale.price,
         comment = sale.comment,
+        ndsPercent = sale.ndsPercent,
         id = sale.id,
         movementId = movementOut.movement.id
     )

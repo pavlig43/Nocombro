@@ -77,7 +77,8 @@ internal class SaleComponent(
                                 saleUi.copy(
                                     productId = product.composeId,
                                     productName = product.displayName,
-                                    price = DecimalData2(product.priceForSale)
+                                    price = DecimalData2(product.priceForSale),
+                                    ndsPercent = product.recNds,
                                 )
                             )
                         )
@@ -171,6 +172,7 @@ internal class SaleComponent(
             clientName = clientName,
             clientId = clientId,
             price = DecimalData2(price),
+            ndsPercent = ndsPercent,
             comment = comment,
             id = id
         )
@@ -182,6 +184,7 @@ internal class SaleComponent(
             transactionId = transactionId,
             dateBorn = dateBorn,
             price = price.value,
+            ndsPercent = ndsPercent,
             comment = comment,
             id = id,
             productId = productId,
