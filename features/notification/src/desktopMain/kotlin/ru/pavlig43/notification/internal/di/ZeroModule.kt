@@ -4,7 +4,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.DateTimeUnit
-import kotlinx.datetime.LocalDate
 import kotlinx.datetime.format
 import kotlinx.datetime.plus
 import kotlinx.datetime.until
@@ -130,6 +129,7 @@ private class BatchExpiryZeroRepository(
     override val notificationLevel: NotificationLevel = NotificationLevel.HIGH
     override val notificationItem: NotificationItem = NotificationItem.BatchExpiry
 
+    @Suppress("MagicNumber")
     override val mergedFromDBNotificationFlow: Flow<List<NotificationUi>> =
         db.batchMovementDao.observeAllMovementsWithBatch().map { allMovements ->
             val now = getCurrentLocalDate()
