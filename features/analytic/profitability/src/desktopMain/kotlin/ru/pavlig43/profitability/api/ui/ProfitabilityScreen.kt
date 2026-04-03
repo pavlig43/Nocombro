@@ -22,7 +22,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
-import ru.pavlig43.core.model.toStartDoubleFormat
 import ru.pavlig43.coreui.ErrorScreen
 import ru.pavlig43.coreui.LoadingUi
 import ru.pavlig43.datetime.period.dateTime.DateTimeSelectorScreen
@@ -73,8 +72,7 @@ fun ProfitabilityScreen(component: ProfitabilityComponent) {
             }
             LaunchedEffect(tableState) { snapshotFlow { tableState.sort }.collect { sort -> component.updateSort(sort) } }
             val tableData by component.tableData.collectAsState()
-            val mainExpenses = state.data.mainExpenses
-            Text("Общие расходы за этот период составили ${mainExpenses.toStartDoubleFormat()}",Modifier.padding(start = 24.dp))
+            ProfitabilitySummaryCard(summary = state.data.summary)
 
             ProfitabilityTable(
                 state = tableState,

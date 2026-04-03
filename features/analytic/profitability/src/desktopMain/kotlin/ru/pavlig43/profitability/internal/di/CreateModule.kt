@@ -12,8 +12,10 @@ import ru.pavlig43.core.model.DecimalData3
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.profitability.api.ProfitabilityDependencies
 import ru.pavlig43.profitability.internal.model.AllProfitability
+import ru.pavlig43.profitability.internal.model.ExpenseByType
 import ru.pavlig43.profitability.internal.model.ProfitabilityBatchDetails
 import ru.pavlig43.profitability.internal.model.ProfitabilityProduct
+import ru.pavlig43.profitability.internal.model.ProfitabilitySummary
 import kotlin.math.roundToLong
 
 internal fun createModule(dependencies: ProfitabilityDependencies) = listOf(
@@ -37,9 +39,9 @@ internal class ProfitabilityRepository(
             expenseDao.observeMainExpense(start, end), dao.observeOnSale(start, end)
         ) { expenses, sales ->
             runCatching {
-                // 1. Группируем продажи по транзакциям для распределения расходов
+                // Группируем продажи по транзакциям для распределения расходов транзакции
                 val quantityFromTransaction =
-                    sales.groupBy { it.transaction.id }.mapValues { (transactionId, sales) ->
+                    sales.groupBy { it.transaction.id }.mapValues { (_, sales) ->
                         sales.sumOf { it.movementOut.movement.count }
                     }
 
@@ -53,33 +55,29 @@ internal class ProfitabilityRepository(
                         var quantity = 0L
                         var allRevenue = 0L
                         var productExpenses = 0L
-                        var totalProfit = 0L
 
                         val details = sales.map { sale ->
-                            val expensesOnSale = sale.expenses.sumOf { it.amount } // кп
+                            val expensesOnSale = sale.expenses.sumOf { it.amount }
                             val saleQuantity = sale.movementOut.movement.count
-                            // Расходы на все позиции  из продаж(распределяется по кг)
+                            // Расходы транзакции распределяются по кг внутри транзакции
                             val expenseOnSaleOnAllPositionInSale =
                                 if ((quantityFromTransaction[sale.transaction.id] ?: 0) != 0L) {
                                     ((expensesOnSale.toDouble() * 1000) / (quantityFromTransaction[sale.transaction.id]!!))
                                 } else 0.0
-                            val expenseOnOneRowInSale = (expenseOnSaleOnAllPositionInSale * saleQuantity)/1000
-
+                            val expenseOnOneRowInSale = (expenseOnSaleOnAllPositionInSale * saleQuantity) / 1000
 
                             val batchesCost = sale.movementOut.batchOut.costPrice
-
-
                             val costPrice =
                                 (batchesCost?.costPricePerUnit ?: 0) * saleQuantity / 1000
 
-                            // Итого расходы( стоимость партий + расходы на продажу)
                             val itemExpenses =
                                 (costPrice + expenseOnOneRowInSale).roundToLong()
 
                             val revenue =
                                 (sale.sale.price * (saleQuantity.toDouble() / 1000)).roundToLong()
                             val profit = revenue - itemExpenses
-                            val expensesOnOneKg = (itemExpenses * 1000 / saleQuantity.toDouble()).roundToLong()
+                            val expensesOnOneKg =
+                                (itemExpenses * 1000 / saleQuantity.toDouble()).roundToLong()
                             val margin = profit.toDouble() / itemExpenses * 100
                             val profitability = profit.toDouble() / revenue * 100
 
@@ -100,55 +98,54 @@ internal class ProfitabilityRepository(
                                     DecimalData2(it)
                                 },
                                 expensesOnOneKg = DecimalData2(expensesOnOneKg),
-                                profit = profit.let {
-                                    totalProfit += it
-                                    DecimalData2(it)
-                                },
+                                profit = profit.let { DecimalData2(it) },
                                 margin = margin,
                                 profitability = profitability
                             )
                         }
+                        val profit = allRevenue - productExpenses
+                        val expensesOnOneKg = if (quantity != 0L) {
+                            (productExpenses.toDouble() * 1000 / quantity).roundToLong()
+                        } else 0L
+                        val margin = if (productExpenses != 0L) {
+                            profit.toDouble() / productExpenses * 100
+                        } else 0.0
+                        val profitability = if (allRevenue != 0L) {
+                            profit.toDouble() / allRevenue * 100
+                        } else 0.0
+
                         ProfitabilityProduct(
                             productId = productId,
                             productName = productName,
                             quantity = DecimalData3(quantity),
                             revenue = DecimalData2(allRevenue),
                             totalExpenses = DecimalData2(productExpenses),
-                            expensesOnOneKg = DecimalData2(0),
-                            profit = DecimalData2(totalProfit),
-                            margin = 0.0,
-                            profitability = 0.0,
+                            expensesOnOneKg = DecimalData2(expensesOnOneKg),
+                            profit = DecimalData2(profit),
+                            margin = margin,
+                            profitability = profitability,
                             details = details
                         )
-
                     }
-                val totalMainExpenses: Long = expenses.sumOf { it.amount }
-                val totalQuantity = products.sumOf { it.quantity.value }
-                val productsWithMainExpenses = products.map { product ->
-                    // Распределяем общие расходы пропорционально quantity
-                    val mainExpenseShare =
-                        ( totalMainExpenses * product.quantity.value) / totalQuantity
 
-                    // Итого расходы с учётом общих
-                    val totalExpenses = product.totalExpenses.value + mainExpenseShare
+                val totalRevenue = products.sumOf { it.revenue.value }
+                val batchExpenses = products.sumOf { it.totalExpenses.value }
+                val totalMainExpenses = expenses.sumOf { it.amount }
+                val profit = totalRevenue - batchExpenses - totalMainExpenses
+                val mainExpensesByType = expenses
+                    .groupBy { it.expenseType }
+                    .map { (type, list) ->
+                        ExpenseByType(type, DecimalData2(list.sumOf { it.amount }))
+                    }
 
-                    // Пересчитываем показатели
-                    val profit = product.revenue.value - totalExpenses
-                    val expensesOnOneKg = ((totalExpenses.toDouble() * 1000) / product.quantity.value).roundToLong()
-                    val margin = (profit.toDouble() / totalExpenses * 100)
-                    val profitability = (profit.toDouble() / product.revenue.value * 100)
-
-                    product.copy(
-                        totalExpenses = DecimalData2(totalExpenses),
-                        expensesOnOneKg = DecimalData2(expensesOnOneKg),
-                        profit = DecimalData2(profit),
-                        margin = margin,
-                        profitability = profitability
-                    )
-                }
-                AllProfitability(
-                    mainExpenses = DecimalData2(totalMainExpenses), products = productsWithMainExpenses
+                val summary = ProfitabilitySummary(
+                    totalRevenue = DecimalData2(totalRevenue),
+                    batchExpenses = DecimalData2(batchExpenses),
+                    mainExpenses = DecimalData2(totalMainExpenses),
+                    profit = DecimalData2(profit),
+                    mainExpensesByType = mainExpensesByType
                 )
+                AllProfitability(summary = summary, products = products)
             }
 
 
