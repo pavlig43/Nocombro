@@ -72,7 +72,10 @@ fun ProfitabilityScreen(component: ProfitabilityComponent) {
             }
             LaunchedEffect(tableState) { snapshotFlow { tableState.sort }.collect { sort -> component.updateSort(sort) } }
             val tableData by component.tableData.collectAsState()
-            ProfitabilitySummaryCard(summary = state.data.summary)
+            ProfitabilitySummaryCard(
+                summary = state.data.summary,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
 
             ProfitabilityTable(
                 state = tableState,
