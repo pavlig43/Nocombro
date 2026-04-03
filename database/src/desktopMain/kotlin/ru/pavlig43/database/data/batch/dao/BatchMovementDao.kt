@@ -48,6 +48,10 @@ abstract class BatchMovementDao {
     @Query("SELECT * FROM batch_movement WHERE batch_id IN (SELECT id FROM batch WHERE product_id = :productId)")
     internal abstract fun observeMovementsByProductId(productId: Int): Flow<List<MovementOut>>
 
+    @Transaction
+    @Query("SELECT * FROM batch_movement")
+    abstract fun observeAllMovementsWithBatch(): Flow<List<MovementOut>>
+
 
 
 

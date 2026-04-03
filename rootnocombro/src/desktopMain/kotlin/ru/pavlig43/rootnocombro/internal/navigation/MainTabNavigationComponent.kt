@@ -223,6 +223,7 @@ internal class MainTabNavigationComponent(
             NotificationItem.Product -> tabOpener.openProductTab(id)
             NotificationItem.Declaration -> tabOpener.openDeclarationTab(id)
             NotificationItem.Transaction -> tabOpener.openTransactionTab(id)
+            NotificationItem.BatchExpiry -> tabOpener.openTransactionTab(id)
         }
     }
 

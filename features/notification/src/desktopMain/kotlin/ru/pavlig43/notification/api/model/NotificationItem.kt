@@ -13,5 +13,6 @@ enum class NotificationItem(val title: String) {
     Product("Продукты"),
     Declaration("Декларации"),
     Transaction("Транзакции"),
+    BatchExpiry("Сроки годности"),
 
 }
