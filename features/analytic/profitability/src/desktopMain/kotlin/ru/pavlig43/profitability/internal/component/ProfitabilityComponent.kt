@@ -88,6 +88,9 @@ class ProfitabilityComponent(
         }
     }.stateIn(coroutineScope, SharingStarted.Lazily, ProfitabilityTableData())
 
+    val filters: Map<ProfitabilityField, TableFilterState<*>> get() = filterManager.filters.value
+    val sort: SortState<ProfitabilityField>? get() = sortManager.sort.value
+
     fun updateFilters(filters: Map<ProfitabilityField, TableFilterState<*>>) {
         filterManager.update(filters)
     }

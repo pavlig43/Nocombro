@@ -59,18 +59,25 @@ fun ProfitabilityScreen(component: ProfitabilityComponent) {
                 TableSettings(
                     showActiveFiltersHeader = true,
                     showFooter = true
-                    )
+                )
             }
             val tableState = rememberTableState(
                 columns = ProfitabilityField.entries.toImmutableList(),
                 settings = tableSettings,
+                initialSort = component.sort,
             )
+            component.filters.forEach { (column, filterState) ->
+                tableState.filters[column] = filterState
+            }
             LaunchedEffect(tableState) {
                 snapshotFlow { tableState.filters.toMap() }.collect { filters ->
                     component.updateFilters(filters)
                 }
             }
-            LaunchedEffect(tableState) { snapshotFlow { tableState.sort }.collect { sort -> component.updateSort(sort) } }
+            LaunchedEffect(tableState) {
+                snapshotFlow { tableState.sort }
+                    .collect { sort -> component.updateSort(sort) }
+            }
             val tableData by component.tableData.collectAsState()
             ProfitabilitySummaryCard(
                 summary = state.data.summary,

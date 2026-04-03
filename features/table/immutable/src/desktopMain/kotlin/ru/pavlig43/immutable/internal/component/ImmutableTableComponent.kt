@@ -124,6 +124,9 @@ internal abstract class ImmutableTableComponent<BD, UI : IMultiLineTableUi, Colu
         filterManager.update(filters)
     }
 
+    val filters: Map<Column, TableFilterState<*>> get() = filterManager.filters.value
+    val sort: SortState<Column>? get() = sortManager.sort.value
+
     /** Update sort state - triggers automatic recalculation via StateFlow combination */
     fun updateSort(sort: SortState<Column>?) {
         sortManager.update(sort)

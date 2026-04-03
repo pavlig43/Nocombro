@@ -36,6 +36,8 @@ fun <I : IMultiLineTableUi, C, E : TableData<I>> TableBox(
     columns: ImmutableList<ColumnSpec<I, C, E>>,
     onFiltersChanged: (Map<C, TableFilterState<*>>) -> Unit,
     onSortChanged: (SortState<C>?) -> Unit,
+    initialSort: SortState<C>? = null,
+    initialFilters: Map<C, TableFilterState<*>> = emptyMap(),
     tableSettingsModify: (TableSettings) -> TableSettings = { it },
     table: @Composable BoxScope.(
         verticalState: LazyListState,
@@ -60,13 +62,19 @@ fun <I : IMultiLineTableUi, C, E : TableData<I>> TableBox(
 
     val state = rememberTableState(
         columns = columns.map { it.key }.toImmutableList(),
-        settings = tableSettingsModify(defaultTableSettings)
+        settings = tableSettingsModify(defaultTableSettings),
+        initialSort = initialSort,
     )
+    initialFilters.forEach { (column, filterState) ->
+        state.filters[column] = filterState
+    }
     LaunchedEffect(state) {
         snapshotFlow { state.filters.toMap() }.collect { filters -> onFiltersChanged(filters) }
     }
 
-    LaunchedEffect(state) { snapshotFlow { state.sort }.collect { sort -> onSortChanged(sort) } }
+    LaunchedEffect(state) {
+        snapshotFlow { state.sort }.collect { sort -> onSortChanged(sort) }
+    }
 
     val verticalState = rememberLazyListState()
     val horizontalState = rememberScrollState()

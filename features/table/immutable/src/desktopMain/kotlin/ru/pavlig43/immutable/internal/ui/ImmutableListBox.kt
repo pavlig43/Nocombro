@@ -51,6 +51,8 @@ internal fun <I : IMultiLineTableUi, C> ImmutableTableBox(
                     columns = component.columns,
                     onFiltersChanged = component::updateFilters,
                     onSortChanged = component::updateSort,
+                    initialSort = component.sort,
+                    initialFilters = component.filters,
                 ) { verticalState, horizontalState, tableState, stringProvider, modifier ->
                     ImmutableTable(
                         columns = component.columns,

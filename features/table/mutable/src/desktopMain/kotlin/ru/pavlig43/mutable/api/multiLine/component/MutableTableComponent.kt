@@ -96,6 +96,9 @@ abstract class MutableTableComponent<BDOut : CollectionObject, BDIn : Collection
         filterManager.update(filters)
     }
 
+    val filters: Map<C, TableFilterState<*>> get() = filterManager.filters.value
+    val sort: SortState<C>? get() = sortManager.sort.value
+
     /** Update sort state - triggers automatic recalculation via StateFlow combination */
     fun updateSort(sort: SortState<C>?) {
         sortManager.update(sort)

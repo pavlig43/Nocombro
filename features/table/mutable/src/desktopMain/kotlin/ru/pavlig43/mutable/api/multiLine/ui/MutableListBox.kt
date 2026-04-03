@@ -51,6 +51,8 @@ fun <I : IMultiLineTableUi, C> MutableTableBox(
                 onFiltersChanged = component::updateFilters,
                 tableSettingsModify = tableSettingsModify,
                 onSortChanged = component::updateSort,
+                initialSort = component.sort,
+                initialFilters = component.filters,
             ) { verticalState, horizontalState, tableState, stringProvider, modifier ->
                 MutableTable(
                     columns = component.columns,
