@@ -3,11 +3,9 @@ package ru.pavlig43.immutable.internal.component.items.product
 import com.arkivanov.decompose.ComponentContext
 import kotlinx.collections.immutable.ImmutableList
 import ru.pavlig43.database.data.product.Product
-import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.immutable.api.component.ProductImmutableTableBuilder
 import ru.pavlig43.immutable.internal.component.ImmutableTableComponent
 import ru.pavlig43.immutable.internal.data.ImmutableListRepository
-import ru.pavlig43.tablecore.export.ExportCellValue
 import ru.pavlig43.tablecore.export.TableExportConfiguration
 import ru.pavlig43.tablecore.model.TableData
 import ua.wwind.table.ColumnSpec
@@ -35,12 +33,6 @@ internal class ProductTableComponent(
     override val exportConfiguration: TableExportConfiguration<ProductTableUi, ProductField> =
         TableExportConfiguration(
             suggestedFileName = "products-export",
-            formatCellValue = { column, rawValue, _ ->
-                when (column) {
-                    ProductField.TYPE -> ExportCellValue.Text((rawValue as? ProductType)?.displayName.orEmpty())
-                    else -> null
-                }
-            },
         )
 
 }

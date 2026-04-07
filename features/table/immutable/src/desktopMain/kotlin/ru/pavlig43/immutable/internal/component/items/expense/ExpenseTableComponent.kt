@@ -7,6 +7,7 @@ import ru.pavlig43.database.data.expense.MainExpenseBD
 import ru.pavlig43.immutable.api.component.ExpenseImmutableTableBuilder
 import ru.pavlig43.immutable.internal.component.ImmutableTableComponent
 import ru.pavlig43.immutable.internal.data.ImmutableListRepository
+import ru.pavlig43.tablecore.export.TableExportConfiguration
 import ru.pavlig43.tablecore.model.TableData
 import ua.wwind.table.ColumnSpec
 
@@ -28,6 +29,11 @@ internal class ExpenseTableComponent(
 ) {
     override val columns: ImmutableList<ColumnSpec<ExpenseTableUi, ExpenseField, TableData<ExpenseTableUi>>> =
         createExpenseColumn(::onEvent)
+
+    override val exportConfiguration: TableExportConfiguration<ExpenseTableUi, ExpenseField> =
+        TableExportConfiguration(
+            suggestedFileName = "expenses-export",
+        )
 }
 
 private fun MainExpenseBD.toUi(): ExpenseTableUi {

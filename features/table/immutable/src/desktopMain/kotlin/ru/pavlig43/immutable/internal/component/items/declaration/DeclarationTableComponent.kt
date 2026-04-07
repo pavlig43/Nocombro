@@ -6,6 +6,7 @@ import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.immutable.api.component.DeclarationImmutableTableBuilder
 import ru.pavlig43.immutable.internal.component.ImmutableTableComponent
 import ru.pavlig43.immutable.internal.data.ImmutableListRepository
+import ru.pavlig43.tablecore.export.TableExportConfiguration
 import ru.pavlig43.tablecore.model.TableData
 import ua.wwind.table.ColumnSpec
 
@@ -29,6 +30,11 @@ internal class DeclarationTableComponent(
 
     override val columns: ImmutableList<ColumnSpec<DeclarationTableUi, DeclarationField, TableData<DeclarationTableUi>>> =
         createDeclarationColumn(::onEvent)
+
+    override val exportConfiguration: TableExportConfiguration<DeclarationTableUi, DeclarationField> =
+        TableExportConfiguration(
+            suggestedFileName = "declarations-export",
+        )
 
 }
 private fun Declaration.toUi(): DeclarationTableUi {

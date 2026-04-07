@@ -2,6 +2,7 @@ package ru.pavlig43.tablecore.export
 
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
+import ru.pavlig43.core.model.ItemType
 
 /**
  * Единый тип значения для экспорта.
@@ -64,12 +65,14 @@ fun defaultExportValue(rawValue: Any?): ExportCellValue =
         null -> ExportCellValue.Empty
         is ExportCellValue -> rawValue
         is String -> ExportCellValue.Text(rawValue)
+        is ItemType -> ExportCellValue.Text(rawValue.displayName)
         is Int -> ExportCellValue.Number(rawValue.toDouble())
         is Long -> ExportCellValue.Number(rawValue.toDouble())
         is Float -> ExportCellValue.Number(rawValue.toDouble())
         is Double -> ExportCellValue.Number(rawValue)
         is Short -> ExportCellValue.Number(rawValue.toDouble())
         is Byte -> ExportCellValue.Number(rawValue.toDouble())
+        is Number -> ExportCellValue.Number(rawValue.toDouble())
         is LocalDate -> ExportCellValue.Date(rawValue)
         is LocalDateTime -> ExportCellValue.DateTime(rawValue)
         is Boolean -> ExportCellValue.BooleanValue(rawValue)

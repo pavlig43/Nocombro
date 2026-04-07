@@ -7,6 +7,7 @@ import ru.pavlig43.database.data.safety.SafetyTableItem
 import ru.pavlig43.immutable.api.component.SafetyImmutableTableBuilder
 import ru.pavlig43.immutable.internal.component.ImmutableTableComponent
 import ru.pavlig43.immutable.internal.data.ImmutableListRepository
+import ru.pavlig43.tablecore.export.TableExportConfiguration
 import ru.pavlig43.tablecore.model.TableData
 import ua.wwind.table.ColumnSpec
 
@@ -28,6 +29,11 @@ internal class SafetyTableComponent(
 ) {
     override val columns: ImmutableList<ColumnSpec<SafetyTableUi, SafetyField, TableData<SafetyTableUi>>> =
         createSafetyColumn()
+
+    override val exportConfiguration: TableExportConfiguration<SafetyTableUi, SafetyField> =
+        TableExportConfiguration(
+            suggestedFileName = "safety-export",
+        )
 }
 
 private fun SafetyTableItem.toUi(): SafetyTableUi {

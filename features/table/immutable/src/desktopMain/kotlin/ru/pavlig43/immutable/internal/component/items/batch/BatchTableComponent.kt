@@ -7,6 +7,7 @@ import ru.pavlig43.database.data.batch.BatchWithBalanceOut
 import ru.pavlig43.immutable.api.component.BatchImmutableTableBuilder
 import ru.pavlig43.immutable.internal.component.ImmutableTableComponent
 import ru.pavlig43.immutable.internal.data.ImmutableListRepository
+import ru.pavlig43.tablecore.export.TableExportConfiguration
 import ru.pavlig43.tablecore.model.TableData
 import ua.wwind.table.ColumnSpec
 
@@ -30,6 +31,11 @@ internal class BatchTableComponent(
     override val columns: ImmutableList<ColumnSpec<BatchTableUi, BatchField, TableData<BatchTableUi>>> =
         createBatchColumn(
             onEvent = ::onEvent
+        )
+
+    override val exportConfiguration: TableExportConfiguration<BatchTableUi, BatchField> =
+        TableExportConfiguration(
+            suggestedFileName = "batches-export",
         )
 }
 

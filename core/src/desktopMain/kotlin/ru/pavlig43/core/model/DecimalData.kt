@@ -56,7 +56,7 @@ abstract class DecimalData: Number(), Comparable<DecimalData> {
 
     
     override fun toDouble(): Double {
-        return value.toDouble()
+        return value / (10.0.pow(countDecimal))
     }
 
     override fun toFloat(): Float {

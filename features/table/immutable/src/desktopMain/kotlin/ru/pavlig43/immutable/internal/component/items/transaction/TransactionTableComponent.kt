@@ -6,6 +6,7 @@ import ru.pavlig43.database.data.transact.Transact
 import ru.pavlig43.immutable.api.component.TransactionImmutableTableBuilder
 import ru.pavlig43.immutable.internal.component.ImmutableTableComponent
 import ru.pavlig43.immutable.internal.data.ImmutableListRepository
+import ru.pavlig43.tablecore.export.TableExportConfiguration
 import ru.pavlig43.tablecore.model.TableData
 import ua.wwind.table.ColumnSpec
 
@@ -31,6 +32,11 @@ internal class TransactionTableComponent(
         createTransactionColumn(
             listTypeForFilter = tableBuilder.fullListTransactionTypes,
             onEvent = ::onEvent
+        )
+
+    override val exportConfiguration: TableExportConfiguration<TransactionTableUi, TransactionField> =
+        TableExportConfiguration(
+            suggestedFileName = "transactions-export",
         )
 
 }

@@ -6,6 +6,7 @@ import ru.pavlig43.database.data.document.Document
 import ru.pavlig43.immutable.api.component.DocumentImmutableTableBuilder
 import ru.pavlig43.immutable.internal.component.ImmutableTableComponent
 import ru.pavlig43.immutable.internal.data.ImmutableListRepository
+import ru.pavlig43.tablecore.export.TableExportConfiguration
 import ru.pavlig43.tablecore.model.TableData
 import ua.wwind.table.ColumnSpec
 import kotlin.time.ExperimentalTime
@@ -30,6 +31,11 @@ internal class DocumentTableComponent(
 
     override val columns: ImmutableList<ColumnSpec<DocumentTableUi, DocumentField, TableData<DocumentTableUi>>> =
         createDocumentColumn(tableBuilder.fullListDocumentTypes,::onEvent)
+
+    override val exportConfiguration: TableExportConfiguration<DocumentTableUi, DocumentField> =
+        TableExportConfiguration(
+            suggestedFileName = "documents-export",
+        )
 
 }
 
