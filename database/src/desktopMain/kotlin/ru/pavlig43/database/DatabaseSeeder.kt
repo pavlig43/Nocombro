@@ -4,6 +4,7 @@ package ru.pavlig43.database
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.database.data.batch.BatchBD
+import ru.pavlig43.database.data.batch.BatchCostPriceEntity
 import ru.pavlig43.database.data.batch.BatchMovement
 import ru.pavlig43.database.data.batch.MovementType
 import ru.pavlig43.database.data.declaration.Declaration
@@ -22,6 +23,7 @@ import ru.pavlig43.database.data.transact.buy.BuyBDIn
 import ru.pavlig43.database.data.transact.reminder.ReminderBD
 import ru.pavlig43.database.data.transact.sale.SaleBDIn
 import ru.pavlig43.database.data.vendor.Vendor
+import kotlin.math.roundToLong
 import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalTime::class)
@@ -405,4 +407,95 @@ suspend fun seedDatabase(db: NocombroDatabase) {
     sales.forEach { db.saleDao.upsertSaleBd(it) }
     db.expenseDao.upsertAll(expenses)
     db.reminderDao.upsertAll(reminders)
+    db.batchCostDao.upsert(
+        buildBatchCostPrices(
+            transactions = transactions,
+            batchMovements = batchMovements,
+            buys = buys,
+            expenses = expenses,
+        )
+    )
+}
+
+private fun buildBatchCostPrices(
+    transactions: List<Transact>,
+    batchMovements: List<BatchMovement>,
+    buys: List<BuyBDIn>,
+    expenses: List<ExpenseBD>,
+): List<BatchCostPriceEntity> {
+    val movementById = batchMovements.associateBy { it.id }
+    val expensesByTransactionId = expenses.groupBy { it.transactionId }
+    val costByBatchId = mutableMapOf<Int, Long>()
+
+    val buyCosts = transactions
+        .filter { it.transactionType == TransactionType.BUY }
+        .flatMap { transaction ->
+            val transactionBuys = buys.filter { it.transactionId == transaction.id }
+            if (transactionBuys.isEmpty()) return@flatMap emptyList()
+
+            val transactionExpenses = expensesByTransactionId[transaction.id].orEmpty().sumOf { it.amount }
+            val quantityAmount = transactionBuys.sumOf { buy ->
+                movementById[buy.movementId]?.count ?: 0L
+            }
+            val expenseOnOneKg = if (quantityAmount > 0) {
+                (transactionExpenses / quantityAmount.toDouble()) * 1000
+            } else 0.0
+
+            transactionBuys.mapNotNull { buy ->
+                val movement = movementById[buy.movementId] ?: return@mapNotNull null
+                val cost = (buy.price + expenseOnOneKg).roundToLong()
+                costByBatchId[movement.batchId] = cost
+                BatchCostPriceEntity(
+                    batchId = movement.batchId,
+                    costPricePerUnit = cost,
+                )
+            }
+        }
+
+    val opzsTransactions = transactions.filter { it.transactionType == TransactionType.OPZS }
+    val opzsCosts = buildList {
+        val remaining = opzsTransactions.toMutableList()
+        while (remaining.isNotEmpty()) {
+            var progress = false
+            val iterator = remaining.iterator()
+
+            while (iterator.hasNext()) {
+                val transaction = iterator.next()
+                val transactionMovements = batchMovements.filter { it.transactionId == transaction.id }
+                val incomingMovements = transactionMovements.filter { it.movementType == MovementType.INCOMING }
+                val ingredientMovements = transactionMovements.filter { it.movementType == MovementType.OUTGOING }
+                if (incomingMovements.isEmpty()) {
+                    iterator.remove()
+                    progress = true
+                    continue
+                }
+                if (ingredientMovements.any { it.batchId !in costByBatchId }) continue
+
+                val incomingMovement = incomingMovements.first()
+                val totalCost = ingredientMovements.sumOf { ingredient ->
+                    val costPerKg = costByBatchId[ingredient.batchId] ?: 0L
+                    (costPerKg * ingredient.count) / 1000.0
+                }
+                val costPricePerUnit = if (incomingMovement.count > 0) {
+                    ((totalCost / incomingMovement.count.toDouble()) * 1000).roundToLong()
+                } else 0L
+
+                costByBatchId[incomingMovement.batchId] = costPricePerUnit
+                add(
+                    BatchCostPriceEntity(
+                        batchId = incomingMovement.batchId,
+                        costPricePerUnit = costPricePerUnit,
+                    )
+                )
+                iterator.remove()
+                progress = true
+            }
+
+            if (!progress) {
+                error("Не удалось вычислить себестоимость для всех OPZS-партий в seedDatabase.")
+            }
+        }
+    }
+
+    return buyCosts + opzsCosts
 }
