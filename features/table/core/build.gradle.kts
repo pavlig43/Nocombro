@@ -9,6 +9,7 @@ plugins {
 kotlin{
     desktopDependencies {
         implementation(projects.database)
+        implementation(libs.filekit.dialogs)
 
 
     }

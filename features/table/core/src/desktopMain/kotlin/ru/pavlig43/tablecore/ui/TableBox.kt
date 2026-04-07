@@ -1,6 +1,7 @@
 package ru.pavlig43.tablecore.ui
 
 import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -10,11 +11,15 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.launch
 import ru.pavlig43.tablecore.model.IMultiLineTableUi
 import ru.pavlig43.tablecore.model.TableData
 import ua.wwind.table.ColumnSpec
@@ -76,10 +81,27 @@ fun <I : IMultiLineTableUi, C, E : TableData<I>> TableBox(
         snapshotFlow { state.sort }.collect { sort -> onSortChanged(sort) }
     }
 
+    val coroutineScope = rememberCoroutineScope()
     val verticalState = rememberLazyListState()
     val horizontalState = rememberScrollState()
     Box(
-        modifier = Modifier
+        modifier = Modifier.pointerInput(verticalState) {
+            awaitPointerEventScope {
+                while (true) {
+                    val event = awaitPointerEvent()
+                    if (event.type == PointerEventType.Scroll) {
+                        val scrollDelta = event.changes.firstOrNull()?.scrollDelta?.y ?: 0f
+                        if (scrollDelta != 0f) {
+                            // Ловим прокрутку колесом на всем контейнере таблицы,
+                            // а не только когда курсор находится прямо над сеткой.
+                            coroutineScope.launch {
+                                verticalState.scrollBy(-scrollDelta * 64f)
+                            }
+                        }
+                    }
+                }
+            }
+        }
     ) {
         table(
             verticalState,

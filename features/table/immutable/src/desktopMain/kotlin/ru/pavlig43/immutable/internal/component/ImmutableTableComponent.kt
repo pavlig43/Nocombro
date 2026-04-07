@@ -16,6 +16,7 @@ import ru.pavlig43.tablecore.manger.SelectionManager
 import ru.pavlig43.tablecore.manger.SortManager
 import ru.pavlig43.tablecore.model.IMultiLineTableUi
 import ru.pavlig43.tablecore.model.TableData
+import ru.pavlig43.tablecore.export.TableExportConfiguration
 import ru.pavlig43.tablecore.utils.FilterMatcher
 import ru.pavlig43.tablecore.utils.SortMatcher
 import ua.wwind.table.ColumnSpec
@@ -44,6 +45,7 @@ internal abstract class ImmutableTableComponent<BD, UI : IMultiLineTableUi, Colu
 
 
     abstract val columns: ImmutableList<ColumnSpec<UI, Column, TableData<UI>>>
+    open val exportConfiguration: TableExportConfiguration<UI, Column>? = null
 
 
     private val coroutineScope = componentCoroutineScope()
