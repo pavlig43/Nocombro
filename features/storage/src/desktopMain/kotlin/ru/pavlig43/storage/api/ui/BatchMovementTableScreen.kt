@@ -2,6 +2,7 @@ package ru.pavlig43.storage.api.ui
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -17,19 +18,25 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.launch
 import ru.pavlig43.coreui.ErrorScreen
 import ru.pavlig43.coreui.LoadingUi
+import ru.pavlig43.coreui.ValidationErrorsCard
 import ru.pavlig43.datetime.period.dateTime.DateTimeSelectorScreen
 import ru.pavlig43.storage.api.component.batchMovement.BatchMovementComponent
 import ru.pavlig43.storage.api.component.batchMovement.BatchMovementField
 import ru.pavlig43.storage.api.component.batchMovement.BatchMovementLoadState
 import ru.pavlig43.storage.api.component.batchMovement.BatchMovementTableUi
 import ru.pavlig43.storage.api.component.batchMovement.createBatchMovementColumns
+import ru.pavlig43.tablecore.export.TableExportConfiguration
 import ru.pavlig43.tablecore.ui.RussianStringProvider
 import ru.pavlig43.tablecore.ui.ScrollBar
 import ua.wwind.table.ColumnSpec
@@ -98,7 +105,22 @@ private fun BatchMovementTable(
     modifier: Modifier = Modifier,
 ) {
     val horizontalState = rememberScrollState()
+    val coroutineScope = rememberCoroutineScope()
+    var exportErrorMessage by remember { mutableStateOf<String?>(null) }
+    var isExportMenuExpanded by remember { mutableStateOf(false) }
     val customization = remember { BatchMovementTableCustomization() }
+    val exportConfiguration = remember {
+        TableExportConfiguration<BatchMovementTableUi, BatchMovementField>(
+            suggestedFileName = "batch-movements-export",
+        )
+    }
+    val exportColumns = buildStorageExportColumns(
+        columns = columns,
+        tableState = state,
+        items = items,
+        exportConfiguration = exportConfiguration,
+    )
+    val actionBarTopPadding = 132.dp
 
 
     Box(
@@ -115,12 +137,36 @@ private fun BatchMovementTable(
             customization = customization,
             verticalState = verticalState,
             horizontalState = horizontalState,
-            modifier = modifier,
+            modifier = Modifier.padding(top = actionBarTopPadding),
             colors = TableDefaults.colors(
                 headerContainerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
             ),
             border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
         )
+        StorageExportActionBar(
+            exportConfiguration = exportConfiguration,
+            isExportMenuExpanded = isExportMenuExpanded,
+            onExpandExportMenu = { isExportMenuExpanded = true },
+            onDismissExportMenu = { isExportMenuExpanded = false },
+            onExportClick = { exportFormat ->
+                coroutineScope.launch {
+                    exportErrorMessage = runStorageExport(
+                        exportFormat = exportFormat,
+                        exportConfiguration = exportConfiguration,
+                        exportColumns = exportColumns,
+                    )
+                }
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(end = 24.dp, top = 12.dp),
+        )
+        exportErrorMessage?.let { message ->
+            ValidationErrorsCard(
+                errorMessages = listOf(message),
+                modifier = Modifier.padding(top = 138.dp, end = 24.dp),
+            )
+        }
         ScrollBar(
             verticalState = verticalState,
             horizontalState = horizontalState

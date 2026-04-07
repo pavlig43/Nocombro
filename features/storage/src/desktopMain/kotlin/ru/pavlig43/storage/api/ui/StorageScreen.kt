@@ -28,8 +28,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,8 +41,10 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
+import ru.pavlig43.core.model.DecimalData3
 import ru.pavlig43.coreui.ErrorScreen
 import ru.pavlig43.coreui.LoadingUi
+import ru.pavlig43.coreui.ValidationErrorsCard
 import ru.pavlig43.datetime.period.dateTime.DateTimeSelectorScreen
 import ru.pavlig43.storage.api.component.storage.LoadState
 import ru.pavlig43.storage.api.component.storage.StorageComponent
@@ -48,6 +52,10 @@ import ru.pavlig43.storage.api.component.storage.StorageProductField
 import ru.pavlig43.storage.api.component.storage.createStorageColumns
 import ru.pavlig43.storage.internal.model.StorageProductUi
 import ru.pavlig43.storage.internal.model.StorageTableData
+import ru.pavlig43.tablecore.export.ExportCellValue
+import ru.pavlig43.tablecore.export.TableExportConfiguration
+import ru.pavlig43.tablecore.export.defaultExportValue
+import ru.pavlig43.tablecore.export.formatValue
 import ru.pavlig43.tablecore.ui.RussianStringProvider
 import ru.pavlig43.tablecore.ui.ScrollBar
 import ru.pavlig43.theme.Res
@@ -153,8 +161,35 @@ private fun StorageTable(
     modifier: Modifier = Modifier,
 ) {
     val horizontalState = rememberScrollState()
-
+    val coroutineScope = rememberCoroutineScope()
+    var exportErrorMessage by remember { mutableStateOf<String?>(null) }
+    var isExportMenuExpanded by remember { mutableStateOf(false) }
     val customization = remember { StorageTableCustomization() }
+    val exportConfiguration = remember {
+        TableExportConfiguration<StorageProductUi, StorageProductField>(
+            suggestedFileName = "storage-export",
+        ) { column, rawValue, item ->
+            when (column) {
+                StorageProductField.NAME -> {
+                    val displayName = if (item.isProduct) item.itemName else "    ${item.itemName}"
+                    ExportCellValue.Text(displayName)
+                }
+
+                StorageProductField.BALANCE_BEFORE -> defaultExportValue(DecimalData3(item.balanceBeforeStart))
+                StorageProductField.INCOMING -> defaultExportValue(DecimalData3(item.incoming))
+                StorageProductField.OUTGOING -> defaultExportValue(DecimalData3(item.outgoing))
+                StorageProductField.BALANCE_END -> defaultExportValue(DecimalData3(item.balanceOnEnd))
+                StorageProductField.EXPAND -> defaultExportValue(rawValue)
+            }
+        }
+    }
+    val exportColumns = buildStorageExportColumns(
+        columns = columns,
+        tableState = state,
+        items = tableData.displayedProducts,
+        exportConfiguration = exportConfiguration,
+    )
+    val actionBarTopPadding = 132.dp
 
     Box(
         modifier = modifier.padding(start = 24.dp),
@@ -173,9 +208,37 @@ private fun StorageTable(
             colors = TableDefaults.colors(
                 headerContainerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
             ),
-            border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
+            border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary),
+            modifier = Modifier.padding(top = actionBarTopPadding),
 
         )
+        StorageExportActionBar(
+            exportConfiguration = exportConfiguration,
+            isExportMenuExpanded = isExportMenuExpanded,
+            onExpandExportMenu = { isExportMenuExpanded = true },
+            onDismissExportMenu = { isExportMenuExpanded = false },
+            onExportClick = { exportFormat ->
+                coroutineScope.launch {
+                    exportErrorMessage = runStorageExport(
+                        exportFormat = exportFormat,
+                        exportConfiguration = exportConfiguration,
+                        exportColumns = exportColumns,
+                    )
+                }
+            },
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .fillMaxWidth()
+                .padding(end = 24.dp, top = 12.dp),
+        )
+        exportErrorMessage?.let { message ->
+            ValidationErrorsCard(
+                errorMessages = listOf(message),
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(top = 138.dp, end = 24.dp),
+            )
+        }
         ScrollBar(
             verticalState = verticalState,
             horizontalState = horizontalState,

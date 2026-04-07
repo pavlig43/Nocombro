@@ -15,6 +15,7 @@ import ru.pavlig43.core.model.ChangeSet
 import ru.pavlig43.core.model.CollectionObject
 import ru.pavlig43.loadinitdata.api.component.LoadInitDataComponent
 import ru.pavlig43.mutable.api.multiLine.data.UpdateCollectionRepository
+import ru.pavlig43.tablecore.export.TableExportConfiguration
 import ru.pavlig43.tablecore.manger.FilterManager
 import ru.pavlig43.tablecore.manger.SelectionManager
 import ru.pavlig43.tablecore.manger.SortManager
@@ -41,6 +42,10 @@ abstract class MutableTableComponent<BDOut : CollectionObject, BDIn : Collection
 
 
     abstract val columns: ImmutableList<ColumnSpec<UI, C, TableData<UI>>>
+    open val exportConfiguration: TableExportConfiguration<UI, C> =
+        TableExportConfiguration(
+            suggestedFileName = "$title-export",
+        )
     protected abstract fun createNewItem(composeId: Int): UI
     protected abstract fun BDOut.toUi(composeId: Int): UI
 
