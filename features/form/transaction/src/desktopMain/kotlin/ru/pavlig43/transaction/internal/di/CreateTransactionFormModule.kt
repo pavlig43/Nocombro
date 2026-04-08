@@ -9,6 +9,7 @@ import ru.pavlig43.core.TransactionExecutor
 import ru.pavlig43.core.model.ChangeSet
 import ru.pavlig43.core.model.UpsertListChangeSet
 import ru.pavlig43.database.NocombroDatabase
+import ru.pavlig43.database.data.batch.BATCH_TABLE_NAME
 import ru.pavlig43.database.data.batch.BatchCostPriceEntity
 import ru.pavlig43.database.data.batch.BATCH_MOVEMENT_TABLE_NAME
 import ru.pavlig43.database.data.batch.BatchBD
@@ -21,12 +22,14 @@ import ru.pavlig43.database.data.sync.defaultUpdatedAt
 import ru.pavlig43.database.data.transact.Transact
 import ru.pavlig43.database.data.transact.TRANSACTION_TABLE_NAME
 import ru.pavlig43.database.data.transact.TransactionType
+import ru.pavlig43.database.data.transact.buy.BUY_TABLE_NAME
 import ru.pavlig43.database.data.transact.buy.BuyBDIn
 import ru.pavlig43.database.data.transact.buy.BuyBDOut
 import ru.pavlig43.database.data.transact.ingredient.IngredientBD
 import ru.pavlig43.database.data.transact.pf.PfBD
 import ru.pavlig43.database.data.transact.reminder.REMINDER_TABLE_NAME
 import ru.pavlig43.database.data.transact.reminder.ReminderBD
+import ru.pavlig43.database.data.transact.sale.SALE_TABLE_NAME
 import ru.pavlig43.database.data.transact.sale.SaleBDIn
 import ru.pavlig43.database.data.transact.sale.SaleBDOut
 import ru.pavlig43.database.inTransaction
@@ -57,7 +60,7 @@ internal fun createTransactionFormModule(dependencies: TransactionFormDependenci
             )
         }
         single<UpdateCollectionRepository<BuyBDOut, BuyBDOut>>(UpdateCollectionRepositoryType.BUY.qualifier) {
-            BuyCollectionRepository(get())
+            BuyCollectionRepository(get(), get())
         }
         single<UpdateCollectionRepository<ReminderBD, ReminderBD>>(UpdateCollectionRepositoryType.REMINDERS.qualifier) {
             RemindersCollectionRepository(get(), get())
@@ -71,7 +74,7 @@ internal fun createTransactionFormModule(dependencies: TransactionFormDependenci
             IngredientsCollectionRepository(get(), get())
         }
         single<UpdateCollectionRepository<SaleBDOut, SaleBDOut>>(UpdateCollectionRepositoryType.SALE.qualifier) {
-            SaleCollectionRepository(get())
+            SaleCollectionRepository(get(), get())
         }
         single<UpdateSingleLineRepository<PfBD>>(UpdateSingleLineRepositoryType.PF.qualifier) {
             PfUpdateRepository(
@@ -141,7 +144,8 @@ private class TransactionUpdateRepository(
 
 
 private class BuyCollectionRepository(
-    db: NocombroDatabase
+    private val db: NocombroDatabase,
+    private val syncQueueRepository: SyncQueueRepository,
 ) : UpdateCollectionRepository<BuyBDOut, BuyBDOut> {
 
     private val buyDao = db.buyDao
@@ -156,11 +160,30 @@ private class BuyCollectionRepository(
     }
 
     override suspend fun update(changeSet: ChangeSet<List<BuyBDOut>>): Result<Unit> {
-        return UpsertListChangeSet.update(
-            changeSet = changeSet,
-            delete = ::deleteBuysWithMovement,
-            upsert = ::upsertAllEntity
-        )
+        if (changeSet.old == changeSet.new) return Result.success(Unit)
+
+        val diff = buildBuyDiff(changeSet)
+
+        return runCatching {
+            db.inTransaction {
+                if (diff.buyIdsForDelete.isNotEmpty()) {
+                    deleteBuysWithMovement(diff.buyIdsForDelete)
+                }
+                if (diff.buysForUpsert.isNotEmpty()) {
+                    upsertAllEntity(diff.buysForUpsert)
+                }
+
+                diff.buysForDelete.forEach { buy ->
+                    syncQueueRepository.enqueueDelete(BUY_TABLE_NAME, buy.syncId)
+                    syncQueueRepository.enqueueDelete(BATCH_MOVEMENT_TABLE_NAME, buy.movementSyncId)
+                }
+                diff.buysForUpsert.forEach { buy ->
+                    syncQueueRepository.enqueueUpsert(BATCH_TABLE_NAME, buy.batchSyncId)
+                    syncQueueRepository.enqueueUpsert(BATCH_MOVEMENT_TABLE_NAME, buy.movementSyncId)
+                    syncQueueRepository.enqueueUpsert(BUY_TABLE_NAME, buy.syncId)
+                }
+            }
+        }
     }
 
     private suspend fun deleteBuysWithMovement(buyIds: List<Int>) {
@@ -175,7 +198,9 @@ private class BuyCollectionRepository(
                 id = buy.batchId,
                 productId = buy.productId,
                 dateBorn = buy.dateBorn,
-                declarationId = buy.declarationId
+                declarationId = buy.declarationId,
+                syncId = buy.batchSyncId,
+                updatedAt = defaultUpdatedAt(),
             )
             val batchId = if (batch.id == 0) {
                 batchDao.createBatch(batch).toInt()
@@ -188,7 +213,9 @@ private class BuyCollectionRepository(
                 movementType = MovementType.INCOMING,
                 count = buy.count,
                 transactionId = buy.transactionId,
-                id = buy.movementId
+                id = buy.movementId,
+                syncId = buy.movementSyncId,
+                updatedAt = defaultUpdatedAt(),
             )
             val movementId = if (movement.id == 0) {
                 movementDao.createMovement(movement).toInt()
@@ -202,12 +229,44 @@ private class BuyCollectionRepository(
                 price = buy.price,
                 comment = buy.comment,
                 ndsPercent = buy.ndsPercent,
-                id = buy.id
+                id = buy.id,
+                syncId = buy.syncId,
+                updatedAt = defaultUpdatedAt(),
             )
             buyDao.upsertBuyBd(buyBdIn)
         }
     }
 }
+
+private fun buildBuyDiff(changeSet: ChangeSet<List<BuyBDOut>>): BuySyncDiff {
+    val oldBuys = changeSet.old.orEmpty()
+    val newBuys = changeSet.new
+
+    val oldBuysByKey = oldBuys.associateBy(BuyBDOut::syncId)
+    val newBuysByKey = newBuys.associateBy(BuyBDOut::syncId)
+
+    val buysForDelete = oldBuysByKey
+        .filterKeys { key -> key !in newBuysByKey }
+        .values
+        .toList()
+
+    val buysForUpsert = newBuys.filter { buy ->
+        val oldBuy = oldBuysByKey[buy.syncId]
+        oldBuy == null || oldBuy != buy
+    }
+
+    return BuySyncDiff(
+        buyIdsForDelete = buysForDelete.map(BuyBDOut::id).filter { it > 0 },
+        buysForDelete = buysForDelete,
+        buysForUpsert = buysForUpsert,
+    )
+}
+
+private data class BuySyncDiff(
+    val buyIdsForDelete: List<Int>,
+    val buysForDelete: List<BuyBDOut>,
+    val buysForUpsert: List<BuyBDOut>,
+)
 
 
 private class RemindersCollectionRepository(
@@ -370,7 +429,8 @@ private class IngredientsCollectionRepository(
 
 
 private class SaleCollectionRepository(
-    db: NocombroDatabase
+    private val db: NocombroDatabase,
+    private val syncQueueRepository: SyncQueueRepository,
 ) : UpdateCollectionRepository<SaleBDOut, SaleBDOut> {
 
     private val saleDao = db.saleDao
@@ -383,11 +443,29 @@ private class SaleCollectionRepository(
     }
 
     override suspend fun update(changeSet: ChangeSet<List<SaleBDOut>>): Result<Unit> {
-        return UpsertListChangeSet.update(
-            changeSet = changeSet,
-            delete = ::deleteSalesWithMovement,
-            upsert = ::upsertAllEntity
-        )
+        if (changeSet.old == changeSet.new) return Result.success(Unit)
+
+        val diff = buildSaleDiff(changeSet)
+
+        return runCatching {
+            db.inTransaction {
+                if (diff.saleIdsForDelete.isNotEmpty()) {
+                    deleteSalesWithMovement(diff.saleIdsForDelete)
+                }
+                if (diff.salesForUpsert.isNotEmpty()) {
+                    upsertAllEntity(diff.salesForUpsert)
+                }
+
+                diff.salesForDelete.forEach { sale ->
+                    syncQueueRepository.enqueueDelete(SALE_TABLE_NAME, sale.syncId)
+                    syncQueueRepository.enqueueDelete(BATCH_MOVEMENT_TABLE_NAME, sale.movementSyncId)
+                }
+                diff.salesForUpsert.forEach { sale ->
+                    syncQueueRepository.enqueueUpsert(SALE_TABLE_NAME, sale.syncId)
+                    syncQueueRepository.enqueueUpsert(BATCH_MOVEMENT_TABLE_NAME, sale.movementSyncId)
+                }
+            }
+        }
     }
 
     private suspend fun deleteSalesWithMovement(saleIds: List<Int>) {
@@ -398,14 +476,14 @@ private class SaleCollectionRepository(
 
     private suspend fun upsertAllEntity(sales: List<SaleBDOut>) {
         sales.forEach { sale ->
-
-
             val movement = BatchMovement(
                 batchId = sale.batchId,
                 movementType = MovementType.OUTGOING,
                 count = sale.count,
                 transactionId = sale.transactionId,
-                id = sale.movementId
+                id = sale.movementId,
+                syncId = sale.movementSyncId,
+                updatedAt = defaultUpdatedAt(),
             )
             val movementId = if (movement.id == 0) {
                 movementDao.createMovement(movement).toInt()
@@ -420,12 +498,44 @@ private class SaleCollectionRepository(
                 comment = sale.comment,
                 clientId = sale.clientId,
                 ndsPercent = sale.ndsPercent,
-                id = sale.id
+                id = sale.id,
+                syncId = sale.syncId,
+                updatedAt = defaultUpdatedAt(),
             )
             saleDao.upsertSaleBd(saleBdIn)
         }
     }
 }
+
+private fun buildSaleDiff(changeSet: ChangeSet<List<SaleBDOut>>): SaleSyncDiff {
+    val oldSales = changeSet.old.orEmpty()
+    val newSales = changeSet.new
+
+    val oldSalesByKey = oldSales.associateBy(SaleBDOut::syncId)
+    val newSalesByKey = newSales.associateBy(SaleBDOut::syncId)
+
+    val salesForDelete = oldSalesByKey
+        .filterKeys { key -> key !in newSalesByKey }
+        .values
+        .toList()
+
+    val salesForUpsert = newSales.filter { sale ->
+        val oldSale = oldSalesByKey[sale.syncId]
+        oldSale == null || oldSale != sale
+    }
+
+    return SaleSyncDiff(
+        saleIdsForDelete = salesForDelete.map(SaleBDOut::id).filter { it > 0 },
+        salesForDelete = salesForDelete,
+        salesForUpsert = salesForUpsert,
+    )
+}
+
+private data class SaleSyncDiff(
+    val saleIdsForDelete: List<Int>,
+    val salesForDelete: List<SaleBDOut>,
+    val salesForUpsert: List<SaleBDOut>,
+)
 
 internal class BatchCostRepository(
     db: NocombroDatabase

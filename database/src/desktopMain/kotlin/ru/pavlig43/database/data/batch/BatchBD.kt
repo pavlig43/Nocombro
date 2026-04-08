@@ -14,8 +14,10 @@ import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.sync.defaultSyncId
 import ru.pavlig43.database.data.sync.defaultUpdatedAt
 
+const val BATCH_TABLE_NAME = "batch"
+
 @Entity(
-    tableName = "batch",
+    tableName = BATCH_TABLE_NAME,
     foreignKeys = [
         ForeignKey(
             entity = Product::class,
