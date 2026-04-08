@@ -51,8 +51,8 @@ private class ProductCreateRepository(
     syncQueueRepository: SyncQueueRepository,
 ) : SyncCreateSingleItemRepository<Product>(
     tableName = PRODUCT_TABLE_NAME,
-    enqueueUpsert = syncQueueRepository::enqueueUpsert,
-    runInTransaction = { block -> db.inTransaction(block) },
+    enqueueSyncUpsert = syncQueueRepository::enqueueUpsert,
+    inWriteTransaction = { block -> db.inTransaction(block) },
 ) {
     private val dao = db.productDao
 
@@ -66,8 +66,8 @@ private class ProductUpdateRepository(
     syncQueueRepository: SyncQueueRepository,
 ) : SyncUpdateSingleLineRepository<Product>(
     tableName = PRODUCT_TABLE_NAME,
-    enqueueUpsert = syncQueueRepository::enqueueUpsert,
-    runInTransaction = { block -> db.inTransaction(block) },
+    enqueueSyncUpsert = syncQueueRepository::enqueueUpsert,
+    inWriteTransaction = { block -> db.inTransaction(block) },
 ) {
 
     private val dao = db.productDao

@@ -35,8 +35,8 @@ private class CreateDeclarationRepository(
     syncQueueRepository: SyncQueueRepository,
 ) : SyncCreateSingleItemRepository<Declaration>(
     tableName = DECLARATIONS_TABLE_NAME,
-    enqueueUpsert = syncQueueRepository::enqueueUpsert,
-    runInTransaction = { block -> db.inTransaction(block) },
+    enqueueSyncUpsert = syncQueueRepository::enqueueUpsert,
+    inWriteTransaction = { block -> db.inTransaction(block) },
 ) {
     private val dao = db.declarationDao
 
@@ -49,8 +49,8 @@ private class DeclarationUpdateRepository(
     syncQueueRepository: SyncQueueRepository,
 ) : SyncUpdateSingleLineRepository<Declaration>(
     tableName = DECLARATIONS_TABLE_NAME,
-    enqueueUpsert = syncQueueRepository::enqueueUpsert,
-    runInTransaction = { block -> db.inTransaction(block) },
+    enqueueSyncUpsert = syncQueueRepository::enqueueUpsert,
+    inWriteTransaction = { block -> db.inTransaction(block) },
 ) {
 
     private val dao = db.declarationDao

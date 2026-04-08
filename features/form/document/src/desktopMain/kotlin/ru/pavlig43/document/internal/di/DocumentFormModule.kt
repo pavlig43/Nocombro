@@ -31,8 +31,8 @@ private class DocumentCreateRepository(
     syncQueueRepository: SyncQueueRepository,
 ) : SyncCreateSingleItemRepository<Document>(
     tableName = DOCUMENT_TABLE_NAME,
-    enqueueUpsert = syncQueueRepository::enqueueUpsert,
-    runInTransaction = { block -> db.inTransaction(block) },
+    enqueueSyncUpsert = syncQueueRepository::enqueueUpsert,
+    inWriteTransaction = { block -> db.inTransaction(block) },
 ) {
     private val dao = db.documentDao
 
@@ -46,8 +46,8 @@ private class DocumentUpdateRepository(
     syncQueueRepository: SyncQueueRepository,
 ) : SyncUpdateSingleLineRepository<Document>(
     tableName = DOCUMENT_TABLE_NAME,
-    enqueueUpsert = syncQueueRepository::enqueueUpsert,
-    runInTransaction = { block -> db.inTransaction(block) },
+    enqueueSyncUpsert = syncQueueRepository::enqueueUpsert,
+    inWriteTransaction = { block -> db.inTransaction(block) },
 ) {
 
     private val dao = db.documentDao

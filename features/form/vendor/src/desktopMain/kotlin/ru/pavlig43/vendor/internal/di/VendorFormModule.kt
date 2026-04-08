@@ -32,8 +32,8 @@ private class VendorCreateRepository(
     syncQueueRepository: SyncQueueRepository,
 ) : SyncCreateSingleItemRepository<Vendor>(
     tableName = VENDOR_TABLE_NAME,
-    enqueueUpsert = syncQueueRepository::enqueueUpsert,
-    runInTransaction = { block -> db.inTransaction(block) },
+    enqueueSyncUpsert = syncQueueRepository::enqueueUpsert,
+    inWriteTransaction = { block -> db.inTransaction(block) },
 ) {
     private val dao = db.vendorDao
 
@@ -47,8 +47,8 @@ private class VendorUpdateRepository(
     syncQueueRepository: SyncQueueRepository,
 ) : SyncUpdateSingleLineRepository<Vendor>(
     tableName = VENDOR_TABLE_NAME,
-    enqueueUpsert = syncQueueRepository::enqueueUpsert,
-    runInTransaction = { block -> db.inTransaction(block) },
+    enqueueSyncUpsert = syncQueueRepository::enqueueUpsert,
+    inWriteTransaction = { block -> db.inTransaction(block) },
 ) {
 
     private val dao = db.vendorDao

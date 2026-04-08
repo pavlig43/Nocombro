@@ -5,22 +5,33 @@ import ru.pavlig43.core.model.SingleItem
 
 /**
  * Базовый репозиторий для update-операций с автоматическим обновлением очереди синхронизации.
+ *
+ * Наследник отвечает только за подготовку, валидацию и локальное сохранение изменений.
+ * Вся sync-обвязка выполняется в [update] и не должна дублироваться в конкретных формах.
  */
 abstract class SyncUpdateSingleLineRepository<I : SingleItem>(
     private val tableName: String,
-    private val enqueueUpsert: suspend (tableName: String, entityLocalId: String) -> Unit,
-    private val runInTransaction: suspend (block: suspend () -> Unit) -> Unit,
+    private val enqueueSyncUpsert: suspend (tableName: String, entityLocalId: String) -> Unit,
+    private val inWriteTransaction: suspend (block: suspend () -> Unit) -> Unit,
 ) : UpdateSingleLineRepository<I> {
 
+    /**
+     * Выполняет полный шаблон update-операции:
+     * 1. проверяет, что данные реально изменились;
+     * 2. подготавливает новую версию сущности;
+     * 3. валидирует ее;
+     * 4. сохраняет изменения в локальную БД в транзакции;
+     * 5. обновляет очередь синхронизации.
+     */
     final override suspend fun update(changeSet: ChangeSet<I>): Result<Unit> {
         if (changeSet.old == changeSet.new) return Result.success(Unit)
 
         return runCatching {
             val itemToUpdate = prepareForUpdate(changeSet.new)
-            runInTransaction {
+            inWriteTransaction {
                 validate(itemToUpdate).getOrThrow()
                 updateInDb(itemToUpdate)
-                enqueueUpsert(tableName, itemToUpdate.id.toString())
+                enqueueSyncUpsert(tableName, itemToUpdate.id.toString())
             }
         }
     }

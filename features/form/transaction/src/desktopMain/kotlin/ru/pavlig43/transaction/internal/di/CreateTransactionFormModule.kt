@@ -98,8 +98,8 @@ private class TransactionCreateRepository(
     syncQueueRepository: SyncQueueRepository,
 ) : SyncCreateSingleItemRepository<Transact>(
     tableName = TRANSACTION_TABLE_NAME,
-    enqueueUpsert = syncQueueRepository::enqueueUpsert,
-    runInTransaction = { block -> db.inTransaction(block) },
+    enqueueSyncUpsert = syncQueueRepository::enqueueUpsert,
+    inWriteTransaction = { block -> db.inTransaction(block) },
 ) {
     private val dao = db.transactionDao
 
@@ -113,8 +113,8 @@ private class TransactionUpdateRepository(
     syncQueueRepository: SyncQueueRepository,
 ) : SyncUpdateSingleLineRepository<Transact>(
     tableName = TRANSACTION_TABLE_NAME,
-    enqueueUpsert = syncQueueRepository::enqueueUpsert,
-    runInTransaction = { block -> db.inTransaction(block) },
+    enqueueSyncUpsert = syncQueueRepository::enqueueUpsert,
+    inWriteTransaction = { block -> db.inTransaction(block) },
 ) {
 
     private val dao = db.transactionDao
