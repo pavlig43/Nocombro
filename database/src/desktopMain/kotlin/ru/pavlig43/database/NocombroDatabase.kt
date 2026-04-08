@@ -132,16 +132,24 @@ class NocombroTransactionExecutor(
 
     override suspend fun transaction(blocks: List<suspend () -> Result<Unit>>): Result<Unit> {
         return runCatching {
-            db.useWriterConnection { transactor ->
-                transactor.immediateTransaction {
-                    blocks.forEach { block ->
-                            block().getOrThrow()
-                        }
-                    }
+            db.inTransaction {
+                blocks.forEach { block ->
+                    block().getOrThrow()
                 }
             }
         }
     }
+}
 
+/**
+ * Выполняет блок в writer-транзакции Room и возвращает его результат.
+ */
+suspend fun <T> NocombroDatabase.inTransaction(block: suspend () -> T): T {
+    return useWriterConnection { transactor ->
+        transactor.immediateTransaction {
+            block()
+        }
+    }
+}
 
 

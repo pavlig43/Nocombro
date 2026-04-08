@@ -8,7 +8,11 @@ import ru.pavlig43.core.TransactionExecutor
 import ru.pavlig43.core.model.ChangeSet
 import ru.pavlig43.core.model.UpsertListChangeSet
 import ru.pavlig43.database.NocombroDatabase
+import ru.pavlig43.database.data.sync.SyncQueueRepository
+import ru.pavlig43.database.data.sync.defaultUpdatedAt
+import ru.pavlig43.database.inTransaction
 import ru.pavlig43.database.data.declaration.Declaration
+import ru.pavlig43.database.data.product.PRODUCT_TABLE_NAME
 import ru.pavlig43.database.data.product.CompositionIn
 import ru.pavlig43.database.data.product.CompositionOut
 import ru.pavlig43.database.data.product.Product
@@ -18,6 +22,8 @@ import ru.pavlig43.files.api.FilesDependencies
 import ru.pavlig43.immutable.api.ImmutableTableDependencies
 import ru.pavlig43.mutable.api.multiLine.data.UpdateCollectionRepository
 import ru.pavlig43.mutable.api.singleLine.data.CreateSingleItemRepository
+import ru.pavlig43.mutable.api.singleLine.data.SyncCreateSingleItemRepository
+import ru.pavlig43.mutable.api.singleLine.data.SyncUpdateSingleLineRepository
 import ru.pavlig43.mutable.api.singleLine.data.UpdateSingleLineRepository
 import ru.pavlig43.product.api.ProductFormDependencies
 
@@ -27,8 +33,8 @@ internal fun createProductFormModule(dependencies: ProductFormDependencies) = li
         single<TransactionExecutor> { dependencies.transaction }
         single<FilesDependencies> { dependencies.filesDependencies }
         single<ImmutableTableDependencies> { dependencies.immutableTableDependencies }
-        single<CreateSingleItemRepository<Product>> { ProductCreateRepository(get()) }
-        single<UpdateSingleLineRepository<Product>> (SingleRepositoryType.ESSENTIALS.qualifier){ ProductUpdateRepository(get()) }
+        single<CreateSingleItemRepository<Product>> { ProductCreateRepository(get(), get()) }
+        single<UpdateSingleLineRepository<Product>> (SingleRepositoryType.ESSENTIALS.qualifier){ ProductUpdateRepository(get(), get()) }
 
         single<UpdateCollectionRepository<CompositionOut, CompositionIn>>(
             UpdateCollectionRepositoryType.Composition.qualifier
@@ -40,20 +46,29 @@ internal fun createProductFormModule(dependencies: ProductFormDependencies) = li
     }
 )
 
-private class ProductCreateRepository(db: NocombroDatabase) : CreateSingleItemRepository<Product> {
+private class ProductCreateRepository(
+    db: NocombroDatabase,
+    syncQueueRepository: SyncQueueRepository,
+) : SyncCreateSingleItemRepository<Product>(
+    tableName = PRODUCT_TABLE_NAME,
+    enqueueUpsert = syncQueueRepository::enqueueUpsert,
+    runInTransaction = { block -> db.inTransaction(block) },
+) {
     private val dao = db.productDao
 
-    override suspend fun createEssential(item: Product): Result<Int> {
-        return runCatching {
-            dao.isCanSave(item).getOrThrow()
-            dao.create(item).toInt()
-        }
-    }
+    override suspend fun validate(item: Product): Result<Unit> = dao.isCanSave(item)
+
+    override suspend fun createInDb(item: Product): Int = dao.create(item).toInt()
 }
 
 private class ProductUpdateRepository(
-    db: NocombroDatabase
-) : UpdateSingleLineRepository<Product> {
+    db: NocombroDatabase,
+    syncQueueRepository: SyncQueueRepository,
+) : SyncUpdateSingleLineRepository<Product>(
+    tableName = PRODUCT_TABLE_NAME,
+    enqueueUpsert = syncQueueRepository::enqueueUpsert,
+    runInTransaction = { block -> db.inTransaction(block) },
+) {
 
     private val dao = db.productDao
 
@@ -63,12 +78,12 @@ private class ProductUpdateRepository(
         }
     }
 
-    override suspend fun update(changeSet: ChangeSet<Product>): Result<Unit> {
-        if (changeSet.old == changeSet.new) return Result.success(Unit)
-        return runCatching {
-            dao.isCanSave(changeSet.new).getOrThrow()
-            dao.updateProduct(changeSet.new)
-        }
+    override fun prepareForUpdate(item: Product): Product = item.copy(updatedAt = defaultUpdatedAt())
+
+    override suspend fun validate(item: Product): Result<Unit> = dao.isCanSave(item)
+
+    override suspend fun updateInDb(item: Product) {
+        dao.updateProduct(item)
     }
 }
 

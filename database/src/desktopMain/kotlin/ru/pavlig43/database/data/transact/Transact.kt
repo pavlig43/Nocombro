@@ -9,7 +9,7 @@ import ru.pavlig43.core.model.SingleItem
 import ru.pavlig43.database.data.sync.defaultSyncId
 import ru.pavlig43.database.data.sync.defaultUpdatedAt
 
-internal const val TRANSACTION_TABLE_NAME = "transact"
+const val TRANSACTION_TABLE_NAME = "transact"
 @Entity(
     tableName = TRANSACTION_TABLE_NAME,
     indices = [Index(value = ["sync_id"], unique = true)]

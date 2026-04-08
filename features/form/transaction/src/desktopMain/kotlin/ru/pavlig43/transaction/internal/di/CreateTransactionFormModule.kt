@@ -9,12 +9,15 @@ import ru.pavlig43.core.TransactionExecutor
 import ru.pavlig43.core.model.ChangeSet
 import ru.pavlig43.core.model.UpsertListChangeSet
 import ru.pavlig43.database.NocombroDatabase
+import ru.pavlig43.database.data.sync.SyncQueueRepository
+import ru.pavlig43.database.data.sync.defaultUpdatedAt
 import ru.pavlig43.database.data.batch.BatchBD
 import ru.pavlig43.database.data.batch.BatchCostPriceEntity
 import ru.pavlig43.database.data.batch.BatchMovement
 import ru.pavlig43.database.data.batch.MovementType
 import ru.pavlig43.database.data.expense.ExpenseBD
 import ru.pavlig43.database.data.transact.Transact
+import ru.pavlig43.database.data.transact.TRANSACTION_TABLE_NAME
 import ru.pavlig43.database.data.transact.TransactionType
 import ru.pavlig43.database.data.transact.buy.BuyBDIn
 import ru.pavlig43.database.data.transact.buy.BuyBDOut
@@ -23,10 +26,13 @@ import ru.pavlig43.database.data.transact.pf.PfBD
 import ru.pavlig43.database.data.transact.reminder.ReminderBD
 import ru.pavlig43.database.data.transact.sale.SaleBDIn
 import ru.pavlig43.database.data.transact.sale.SaleBDOut
+import ru.pavlig43.database.inTransaction
 import ru.pavlig43.files.api.FilesDependencies
 import ru.pavlig43.immutable.api.ImmutableTableDependencies
 import ru.pavlig43.mutable.api.multiLine.data.UpdateCollectionRepository
 import ru.pavlig43.mutable.api.singleLine.data.CreateSingleItemRepository
+import ru.pavlig43.mutable.api.singleLine.data.SyncCreateSingleItemRepository
+import ru.pavlig43.mutable.api.singleLine.data.SyncUpdateSingleLineRepository
 import ru.pavlig43.mutable.api.singleLine.data.UpdateSingleLineRepository
 import ru.pavlig43.transaction.api.TransactionFormDependencies
 import ru.pavlig43.transaction.internal.update.tabs.component.opzs.ingredients.FillIngredientsRepository
@@ -38,10 +44,11 @@ internal fun createTransactionFormModule(dependencies: TransactionFormDependenci
         single<TransactionExecutor> { dependencies.dbTransaction }
         single<FilesDependencies> { dependencies.filesDependencies }
         single<ImmutableTableDependencies> { dependencies.immutableTableDependencies }
-        single<CreateSingleItemRepository<Transact>> { TransactionCreateRepository(get()) }
+        single<CreateSingleItemRepository<Transact>> { TransactionCreateRepository(get(), get()) }
         single<UpdateSingleLineRepository<Transact>>(UpdateSingleLineRepositoryType.TRANSACTION.qualifier) {
             TransactionUpdateRepository(
-                get()
+                get(),
+                get(),
             )
         }
         single<UpdateCollectionRepository<BuyBDOut, BuyBDOut>>(UpdateCollectionRepositoryType.BUY.qualifier) {
@@ -86,21 +93,29 @@ internal enum class UpdateSingleLineRepositoryType {
     PF
 }
 
-private class TransactionCreateRepository(db: NocombroDatabase) :
-    CreateSingleItemRepository<Transact> {
+private class TransactionCreateRepository(
+    db: NocombroDatabase,
+    syncQueueRepository: SyncQueueRepository,
+) : SyncCreateSingleItemRepository<Transact>(
+    tableName = TRANSACTION_TABLE_NAME,
+    enqueueUpsert = syncQueueRepository::enqueueUpsert,
+    runInTransaction = { block -> db.inTransaction(block) },
+) {
     private val dao = db.transactionDao
 
-    override suspend fun createEssential(item: Transact): Result<Int> {
-        return runCatching {
-            dao.isCanSave(item).getOrThrow()
-            dao.create(item).toInt()
-        }
-    }
+    override suspend fun validate(item: Transact): Result<Unit> = dao.isCanSave(item)
+
+    override suspend fun createInDb(item: Transact): Int = dao.create(item).toInt()
 }
 
 private class TransactionUpdateRepository(
-    db: NocombroDatabase
-) : UpdateSingleLineRepository<Transact> {
+    db: NocombroDatabase,
+    syncQueueRepository: SyncQueueRepository,
+) : SyncUpdateSingleLineRepository<Transact>(
+    tableName = TRANSACTION_TABLE_NAME,
+    enqueueUpsert = syncQueueRepository::enqueueUpsert,
+    runInTransaction = { block -> db.inTransaction(block) },
+) {
 
     private val dao = db.transactionDao
 
@@ -110,12 +125,12 @@ private class TransactionUpdateRepository(
         }
     }
 
-    override suspend fun update(changeSet: ChangeSet<Transact>): Result<Unit> {
-        if (changeSet.old == changeSet.new) return Result.success(Unit)
-        return runCatching {
-            dao.isCanSave(changeSet.new).getOrThrow()
-            dao.updateTransaction(changeSet.new)
-        }
+    override fun prepareForUpdate(item: Transact): Transact = item.copy(updatedAt = defaultUpdatedAt())
+
+    override suspend fun validate(item: Transact): Result<Unit> = dao.isCanSave(item)
+
+    override suspend fun updateInDb(item: Transact) {
+        dao.updateTransaction(item)
     }
 }
 
