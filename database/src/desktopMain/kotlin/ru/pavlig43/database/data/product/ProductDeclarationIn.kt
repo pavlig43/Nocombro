@@ -11,8 +11,10 @@ import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.database.data.sync.defaultSyncId
 import ru.pavlig43.database.data.sync.defaultUpdatedAt
 
+const val PRODUCT_DECLARATION_TABLE_NAME = "product_declaration"
+
 @Entity(
-    tableName = "product_declaration",
+    tableName = PRODUCT_DECLARATION_TABLE_NAME,
     foreignKeys = [
         ForeignKey(
             entity = Product::class,
@@ -37,8 +39,8 @@ data class ProductDeclarationIn(
     val declarationId: Int,
 
     @PrimaryKey(autoGenerate = true)
-    override val id: Int = 0
-,
+    override val id: Int = 0,
+
     @ColumnInfo("sync_id")
     val syncId: String = defaultSyncId(),
 

@@ -6,19 +6,19 @@ import org.koin.core.qualifier.qualifier
 import org.koin.dsl.module
 import ru.pavlig43.core.TransactionExecutor
 import ru.pavlig43.core.model.ChangeSet
-import ru.pavlig43.core.model.UpsertListChangeSet
 import ru.pavlig43.database.NocombroDatabase
-import ru.pavlig43.database.data.sync.SyncQueueRepository
-import ru.pavlig43.database.data.sync.defaultUpdatedAt
-import ru.pavlig43.database.inTransaction
 import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.database.data.product.COMPOSITION_TABLE_NAME
-import ru.pavlig43.database.data.product.PRODUCT_TABLE_NAME
 import ru.pavlig43.database.data.product.CompositionIn
 import ru.pavlig43.database.data.product.CompositionOut
+import ru.pavlig43.database.data.product.PRODUCT_DECLARATION_TABLE_NAME
+import ru.pavlig43.database.data.product.PRODUCT_TABLE_NAME
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductDeclarationIn
 import ru.pavlig43.database.data.product.SafetyStock
+import ru.pavlig43.database.data.sync.SyncQueueRepository
+import ru.pavlig43.database.data.sync.defaultUpdatedAt
+import ru.pavlig43.database.inTransaction
 import ru.pavlig43.files.api.FilesDependencies
 import ru.pavlig43.immutable.api.ImmutableTableDependencies
 import ru.pavlig43.mutable.api.multiLine.data.SyncUpdateCollectionRepository
@@ -162,24 +162,37 @@ internal class SafetyStockUpdateRepository(
     }
 }
 internal class ProductDeclarationRepository(
-    db: NocombroDatabase
+    db: NocombroDatabase,
+    syncQueueRepository: SyncQueueRepository,
+) : SyncUpdateCollectionRepository<ProductDeclarationIn, ProductDeclarationIn>(
+    tableName = PRODUCT_DECLARATION_TABLE_NAME,
+    entitySyncKeyOf = ProductDeclarationIn::syncId,
+    enqueueSyncUpsert = syncQueueRepository::enqueueUpsert,
+    enqueueSyncDelete = syncQueueRepository::enqueueDelete,
+    inWriteTransaction = { block -> db.inTransaction(block) },
 ) {
     private val productDeclarationDao = db.productDeclarationDao
     private val declarationDao = db.declarationDao
 
-    suspend fun getInit(productId: Int): Result<List<ProductDeclarationIn>> {
+    override suspend fun getInit(id: Int): Result<List<ProductDeclarationIn>> {
         return runCatching {
-            productDeclarationDao.getProductDeclarationIn(productId)
+            productDeclarationDao.getProductDeclarationIn(id)
         }
     }
+
     fun observeOnDeclarations(ids: List<Int>): Flow<List<Declaration>>{
         return declarationDao.observeDeclarationsByIds(ids)
     }
-    suspend fun update(changeSet: ChangeSet<List<ProductDeclarationIn>>): Result<Unit>{
-        return UpsertListChangeSet.update(
-            changeSet = changeSet,
-            delete = productDeclarationDao::deleteProductDeclarations,
-            upsert = productDeclarationDao::upsertProductDeclarations
-        )
+
+    override fun prepareForUpsert(item: ProductDeclarationIn): ProductDeclarationIn {
+        return item.copy(updatedAt = defaultUpdatedAt())
+    }
+
+    override suspend fun deleteByIds(ids: List<Int>) {
+        productDeclarationDao.deleteProductDeclarations(ids)
+    }
+
+    override suspend fun upsertItems(items: List<ProductDeclarationIn>) {
+        productDeclarationDao.upsertProductDeclarations(items)
     }
 }
