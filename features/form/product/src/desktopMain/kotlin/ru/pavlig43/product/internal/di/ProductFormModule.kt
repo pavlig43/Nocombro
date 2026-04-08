@@ -12,6 +12,7 @@ import ru.pavlig43.database.data.sync.SyncQueueRepository
 import ru.pavlig43.database.data.sync.defaultUpdatedAt
 import ru.pavlig43.database.inTransaction
 import ru.pavlig43.database.data.declaration.Declaration
+import ru.pavlig43.database.data.product.COMPOSITION_TABLE_NAME
 import ru.pavlig43.database.data.product.PRODUCT_TABLE_NAME
 import ru.pavlig43.database.data.product.CompositionIn
 import ru.pavlig43.database.data.product.CompositionOut
@@ -20,6 +21,7 @@ import ru.pavlig43.database.data.product.ProductDeclarationIn
 import ru.pavlig43.database.data.product.SafetyStock
 import ru.pavlig43.files.api.FilesDependencies
 import ru.pavlig43.immutable.api.ImmutableTableDependencies
+import ru.pavlig43.mutable.api.multiLine.data.SyncUpdateCollectionRepository
 import ru.pavlig43.mutable.api.multiLine.data.UpdateCollectionRepository
 import ru.pavlig43.mutable.api.singleLine.data.CreateSingleItemRepository
 import ru.pavlig43.mutable.api.singleLine.data.SyncCreateSingleItemRepository
@@ -38,7 +40,7 @@ internal fun createProductFormModule(dependencies: ProductFormDependencies) = li
 
         single<UpdateCollectionRepository<CompositionOut, CompositionIn>>(
             UpdateCollectionRepositoryType.Composition.qualifier
-        ) { CompositionCollectionRepository(get()) }
+        ) { CompositionCollectionRepository(get(), get()) }
 
         singleOf(::ProductDeclarationRepository)
 
@@ -88,8 +90,15 @@ private class ProductUpdateRepository(
 }
 
 private class CompositionCollectionRepository(
-    db: NocombroDatabase
-) : UpdateCollectionRepository<CompositionOut, CompositionIn> {
+    db: NocombroDatabase,
+    syncQueueRepository: SyncQueueRepository,
+) : SyncUpdateCollectionRepository<CompositionOut, CompositionIn>(
+    tableName = COMPOSITION_TABLE_NAME,
+    entitySyncKeyOf = CompositionIn::syncId,
+    enqueueSyncUpsert = syncQueueRepository::enqueueUpsert,
+    enqueueSyncDelete = syncQueueRepository::enqueueDelete,
+    inWriteTransaction = { block -> db.inTransaction(block) },
+) {
 
     private val dao = db.compositionDao
 
@@ -99,12 +108,16 @@ private class CompositionCollectionRepository(
         }
     }
 
-    override suspend fun update(changeSet: ChangeSet<List<CompositionIn>>): Result<Unit> {
-        return UpsertListChangeSet.update(
-            changeSet = changeSet,
-            delete = { ids -> dao.deleteCompositions(ids) },
-            upsert = { items -> dao.upsertComposition(items) }
-        )
+    override fun prepareForUpsert(item: CompositionIn): CompositionIn {
+        return item.copy(updatedAt = defaultUpdatedAt())
+    }
+
+    override suspend fun deleteByIds(ids: List<Int>) {
+        dao.deleteCompositions(ids)
+    }
+
+    override suspend fun upsertItems(items: List<CompositionIn>) {
+        dao.upsertComposition(items)
     }
 }
 

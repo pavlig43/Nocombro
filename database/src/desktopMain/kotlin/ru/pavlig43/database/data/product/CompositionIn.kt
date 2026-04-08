@@ -10,9 +10,10 @@ import ru.pavlig43.core.model.CollectionObject
 import ru.pavlig43.database.data.sync.defaultSyncId
 import ru.pavlig43.database.data.sync.defaultUpdatedAt
 
+const val COMPOSITION_TABLE_NAME = "composition"
 
 @Entity(
-    tableName = "composition",
+    tableName = COMPOSITION_TABLE_NAME,
     foreignKeys = [
         ForeignKey(
             entity = Product::class,
@@ -57,6 +58,7 @@ data class CompositionOut(
     val productName: String,
     val productType: ProductType,
     val count: Long,
+    val syncId: String,
 ): CollectionObject
 
 

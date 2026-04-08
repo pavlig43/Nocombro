@@ -2,6 +2,7 @@ package ru.pavlig43.product.internal.update.tabs.composition
 
 import ru.pavlig43.core.model.DecimalData
 import ru.pavlig43.database.data.product.ProductType
+import ru.pavlig43.database.data.sync.defaultSyncId
 import ru.pavlig43.tablecore.model.IMultiLineTableUi
 
 internal data class CompositionUi(
@@ -11,4 +12,5 @@ internal data class CompositionUi(
     val productName: String,
     val productType: ProductType?,
     val count: DecimalData,
+    val syncId: String = defaultSyncId(),
 ) : IMultiLineTableUi

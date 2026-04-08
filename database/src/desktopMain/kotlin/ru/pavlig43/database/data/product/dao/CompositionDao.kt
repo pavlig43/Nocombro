@@ -84,7 +84,8 @@ private fun InternalComposition.toCompositionOut(): CompositionOut {
         productId = product.id,
         productName = product.displayName,
         productType = product.type,
-        count = composition.count
+        count = composition.count,
+        syncId = composition.syncId,
     )
 }
 
