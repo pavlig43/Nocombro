@@ -96,6 +96,7 @@ fun RootNocombroScreen(rootNocombroComponent: RootNocombroComponent) {
                         )
                         NocombroAppBar(
                             settingsComponent = rootNocombroComponent.settingsComponent,
+                            syncComponent = rootNocombroComponent.syncComponent,
                             onOpenDrawer = {
                                 coroutineScope.launch {
                                     if (drawerState.isClosed) {
