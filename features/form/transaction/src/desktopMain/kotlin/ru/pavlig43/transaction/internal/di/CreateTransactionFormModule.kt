@@ -9,14 +9,15 @@ import ru.pavlig43.core.TransactionExecutor
 import ru.pavlig43.core.model.ChangeSet
 import ru.pavlig43.core.model.UpsertListChangeSet
 import ru.pavlig43.database.NocombroDatabase
-import ru.pavlig43.database.data.sync.SyncQueueRepository
-import ru.pavlig43.database.data.sync.defaultUpdatedAt
-import ru.pavlig43.database.data.batch.BatchBD
 import ru.pavlig43.database.data.batch.BatchCostPriceEntity
+import ru.pavlig43.database.data.batch.BATCH_MOVEMENT_TABLE_NAME
+import ru.pavlig43.database.data.batch.BatchBD
 import ru.pavlig43.database.data.batch.BatchMovement
 import ru.pavlig43.database.data.batch.MovementType
 import ru.pavlig43.database.data.expense.EXPENSE_TABLE_NAME
 import ru.pavlig43.database.data.expense.ExpenseBD
+import ru.pavlig43.database.data.sync.SyncQueueRepository
+import ru.pavlig43.database.data.sync.defaultUpdatedAt
 import ru.pavlig43.database.data.transact.Transact
 import ru.pavlig43.database.data.transact.TRANSACTION_TABLE_NAME
 import ru.pavlig43.database.data.transact.TransactionType
@@ -66,7 +67,7 @@ internal fun createTransactionFormModule(dependencies: TransactionFormDependenci
         single<UpdateCollectionRepository<IngredientBD, IngredientBD>>(
             UpdateCollectionRepositoryType.INGREDIENTS.qualifier
         ) {
-            IngredientsCollectionRepository(get())
+            IngredientsCollectionRepository(get(), get())
         }
         single<UpdateCollectionRepository<SaleBDOut, SaleBDOut>>(UpdateCollectionRepositoryType.SALE.qualifier) {
             SaleCollectionRepository(get())
@@ -327,8 +328,15 @@ private class PfUpdateRepository(
 
 
 private class IngredientsCollectionRepository(
-    db: NocombroDatabase
-) : UpdateCollectionRepository<IngredientBD, IngredientBD> {
+    db: NocombroDatabase,
+    syncQueueRepository: SyncQueueRepository,
+) : SyncUpdateCollectionRepository<IngredientBD, IngredientBD>(
+    tableName = BATCH_MOVEMENT_TABLE_NAME,
+    entitySyncKeyOf = IngredientBD::syncId,
+    enqueueSyncUpsert = syncQueueRepository::enqueueUpsert,
+    enqueueSyncDelete = syncQueueRepository::enqueueDelete,
+    inWriteTransaction = { block -> db.inTransaction(block) },
+) {
 
     private val ingredientDao = db.ingredientDao
     private val movementDao = db.batchMovementDao
@@ -339,26 +347,23 @@ private class IngredientsCollectionRepository(
         }
     }
 
-    override suspend fun update(changeSet: ChangeSet<List<IngredientBD>>): Result<Unit> {
-        return UpsertListChangeSet.update(
-            changeSet = changeSet,
-            delete = movementDao::deleteByIds,
-            upsert = ::upsertIngredients
-        )
+    override suspend fun deleteByIds(ids: List<Int>) {
+        movementDao.deleteByIds(ids)
     }
 
-    private suspend fun upsertIngredients(ingredients: List<IngredientBD>) {
-        ingredients.map { ingredient ->
+    override suspend fun upsertItems(items: List<IngredientBD>) {
+        val movements = items.map { ingredient ->
             BatchMovement(
                 batchId = ingredient.batchId,
                 movementType = MovementType.OUTGOING,
                 count = ingredient.count,
                 transactionId = ingredient.transactionId,
-                id = ingredient.movementId
+                id = ingredient.movementId,
+                syncId = ingredient.syncId,
+                updatedAt = defaultUpdatedAt(),
             )
-        }.also {
-            movementDao.upsertMovements(it)
         }
+        movementDao.upsertMovements(movements)
     }
 }
 

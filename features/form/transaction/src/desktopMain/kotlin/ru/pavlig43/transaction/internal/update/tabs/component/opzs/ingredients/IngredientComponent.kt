@@ -203,6 +203,7 @@ internal class IngredientComponent(
             vendorName = vendorName,
             balance = DecimalData3(count),
             productType = productType,
+            syncId = syncId,
             id = id
         )
     }
@@ -217,6 +218,7 @@ internal class IngredientComponent(
             productName = productName,
             vendorName = vendorName,
             productType = productType,
+            syncId = syncId,
             id = id
         )
     }

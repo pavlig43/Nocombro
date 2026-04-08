@@ -12,8 +12,10 @@ import ru.pavlig43.database.data.sync.defaultSyncId
 import ru.pavlig43.database.data.sync.defaultUpdatedAt
 import ru.pavlig43.database.data.transact.Transact
 
+const val BATCH_MOVEMENT_TABLE_NAME = "batch_movement"
+
 @Entity(
-    tableName = "batch_movement",
+    tableName = BATCH_MOVEMENT_TABLE_NAME,
     foreignKeys = [
         ForeignKey(
             entity = BatchBD::class,
@@ -43,8 +45,8 @@ data class BatchMovement(
     val transactionId: Int,
 
     @PrimaryKey(autoGenerate = true)
-    override val id: Int = 0
-,
+    override val id: Int = 0,
+
     @ColumnInfo("sync_id")
     val syncId: String = defaultSyncId(),
 
