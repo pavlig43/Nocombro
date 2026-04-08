@@ -4,11 +4,15 @@ import androidx.room.ColumnInfo
 import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import androidx.room.Relation
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.database.data.product.Product
+import ru.pavlig43.database.data.sync.defaultSyncId
+import ru.pavlig43.database.data.sync.defaultUpdatedAt
 
 @Entity(
     tableName = "batch",
@@ -26,7 +30,8 @@ import ru.pavlig43.database.data.product.Product
             onDelete = ForeignKey.RESTRICT
         )
 
-    ]
+    ],
+    indices = [Index(value = ["sync_id"], unique = true)]
 )
 data class BatchBD(
     @PrimaryKey(autoGenerate = true)
@@ -39,6 +44,15 @@ data class BatchBD(
 
     @ColumnInfo("declaration_id", index = true)
     val declarationId: Int,
+
+    @ColumnInfo("sync_id")
+    val syncId: String = defaultSyncId(),
+
+    @ColumnInfo("updated_at")
+    val updatedAt: LocalDateTime = defaultUpdatedAt(),
+
+    @ColumnInfo("deleted_at")
+    val deletedAt: LocalDateTime? = null,
 )
 data class BatchOut(
     @Embedded

@@ -32,6 +32,9 @@ import ru.pavlig43.database.data.product.dao.ProductDeclarationDao
 import ru.pavlig43.database.data.product.dao.SafetyStockDao
 import ru.pavlig43.database.data.safety.SafetyTableDao
 import ru.pavlig43.database.data.storage.dao.StorageDao
+import ru.pavlig43.database.data.sync.SyncChangeEntity
+import ru.pavlig43.database.data.sync.SyncDao
+import ru.pavlig43.database.data.sync.SyncStateEntity
 import ru.pavlig43.database.data.transact.Transact
 import ru.pavlig43.database.data.transact.buy.BuyBDIn
 import ru.pavlig43.database.data.transact.buy.dao.BuyDao
@@ -74,8 +77,11 @@ import ru.pavlig43.database.data.vendor.dao.VendorDao
 
         ExpenseBD::class,
 
+        SyncChangeEntity::class,
+        SyncStateEntity::class,
+
     ],
-    version = 1,
+    version = 3,
 
 )
 @TypeConverters(Converters::class)
@@ -110,6 +116,7 @@ abstract class NocombroDatabase : RoomDatabase() {
     abstract val safetyTableDao: SafetyTableDao
 
     abstract val profitabilityDao: ProfitabilityDao
+    abstract val syncDao: SyncDao
 }
 
 
