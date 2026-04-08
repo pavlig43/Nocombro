@@ -81,7 +81,7 @@ import ru.pavlig43.database.data.vendor.dao.VendorDao
         SyncStateEntity::class,
 
     ],
-    version = 3,
+    version = 1,
 
 )
 @TypeConverters(Converters::class)
