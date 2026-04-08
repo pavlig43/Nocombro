@@ -76,13 +76,16 @@ private fun InternalSale.toSaleBDOut(): SaleBDOut {
         dateBorn = batchOut.batch.dateBorn,
         count = movementOut.movement.count,
         batchId = movementOut.movement.batchId,
+        batchSyncId = batchOut.batch.syncId,
         vendorName = batchOut.declaration.vendorName,
         clientName = client.displayName,
         clientId = client.id,
         price = sale.price,
         comment = sale.comment,
         ndsPercent = sale.ndsPercent,
+        syncId = sale.syncId,
         id = sale.id,
-        movementId = movementOut.movement.id
+        movementId = movementOut.movement.id,
+        movementSyncId = movementOut.movement.syncId,
     )
 }

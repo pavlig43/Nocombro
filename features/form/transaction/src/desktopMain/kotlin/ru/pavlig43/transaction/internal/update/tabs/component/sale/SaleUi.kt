@@ -3,6 +3,7 @@ package ru.pavlig43.transaction.internal.update.tabs.component.sale
 import kotlinx.datetime.LocalDate
 import ru.pavlig43.core.model.DecimalData2
 import ru.pavlig43.core.model.DecimalData3
+import ru.pavlig43.database.data.sync.defaultSyncId
 import ru.pavlig43.datetime.getCurrentLocalDate
 import ru.pavlig43.tablecore.model.IMultiLineTableUi
 
@@ -21,7 +22,10 @@ data class SaleUi(
     val price: DecimalData2 = DecimalData2(0),
     val ndsPercent: Int = 0,
     val comment: String = "",
-    val movementId: Int = 0
+    val batchSyncId: String = defaultSyncId(),
+    val movementId: Int = 0,
+    val movementSyncId: String = defaultSyncId(),
+    val syncId: String = defaultSyncId(),
 ) : IMultiLineTableUi {
     val sum: DecimalData2
         get() = DecimalData2(

@@ -60,8 +60,8 @@ data class BuyBDIn(
     val ndsPercent: Int = 0,
 
     @PrimaryKey(autoGenerate = true)
-    override val id: Int = 0
-,
+    override val id: Int = 0,
+
     @ColumnInfo("sync_id")
     val syncId: String = defaultSyncId(),
 
@@ -96,7 +96,9 @@ data class BuyBDOut(
     val transactionId: Int,
     val count: Long,
     val batchId: Int,
+    val batchSyncId: String,
     val movementId: Int,
+    val movementSyncId: String,
     val productId: Int,
     val productName: String,
     val declarationId: Int,
@@ -106,5 +108,6 @@ data class BuyBDOut(
     val price: Long,
     val comment: String,
     val ndsPercent: Int = 0,
+    val syncId: String,
     override val id: Int
 ) : CollectionObject

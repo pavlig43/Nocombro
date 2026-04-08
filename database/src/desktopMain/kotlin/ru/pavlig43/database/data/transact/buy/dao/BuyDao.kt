@@ -64,12 +64,15 @@ private fun InternalBuy.toBuyBDOut(): BuyBDOut {
         dateBorn = batchOut.batch.dateBorn,
         count = movementOut.movement.count,
         batchId = movementOut.movement.batchId,
+        batchSyncId = batchOut.batch.syncId,
         declarationName = batchOut.declaration.displayName,
         vendorName = batchOut.declaration.vendorName,
         price = buy.price,
         comment = buy.comment,
         ndsPercent = buy.ndsPercent,
+        syncId = buy.syncId,
         id = buy.id,
-        movementId = movementOut.movement.id
+        movementId = movementOut.movement.id,
+        movementSyncId = movementOut.movement.syncId,
     )
 }
