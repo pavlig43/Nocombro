@@ -51,7 +51,8 @@ internal class ExpensesComponent(
             expenseType = expenseType,
             amount = DecimalData2(amount),
             expenseDateTime = expenseDateTime,
-            comment = comment
+            comment = comment,
+            syncId = syncId,
         )
     }
 
@@ -62,7 +63,8 @@ internal class ExpensesComponent(
             amount = amount.value,
             expenseDateTime = getTransactionDateTime(),
             comment = comment,
-            id = id
+            id = id,
+            syncId = syncId,
         )
     }
 

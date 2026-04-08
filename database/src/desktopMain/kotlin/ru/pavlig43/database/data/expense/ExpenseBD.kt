@@ -12,7 +12,7 @@ import ru.pavlig43.database.data.sync.defaultSyncId
 import ru.pavlig43.database.data.sync.defaultUpdatedAt
 import ru.pavlig43.database.data.transact.Transact
 
-internal const val EXPENSE_TABLE_NAME = "expense"
+const val EXPENSE_TABLE_NAME = "expense"
 
 @Entity(
     tableName = EXPENSE_TABLE_NAME,

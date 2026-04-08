@@ -15,6 +15,7 @@ import ru.pavlig43.database.data.batch.BatchBD
 import ru.pavlig43.database.data.batch.BatchCostPriceEntity
 import ru.pavlig43.database.data.batch.BatchMovement
 import ru.pavlig43.database.data.batch.MovementType
+import ru.pavlig43.database.data.expense.EXPENSE_TABLE_NAME
 import ru.pavlig43.database.data.expense.ExpenseBD
 import ru.pavlig43.database.data.transact.Transact
 import ru.pavlig43.database.data.transact.TRANSACTION_TABLE_NAME
@@ -23,12 +24,14 @@ import ru.pavlig43.database.data.transact.buy.BuyBDIn
 import ru.pavlig43.database.data.transact.buy.BuyBDOut
 import ru.pavlig43.database.data.transact.ingredient.IngredientBD
 import ru.pavlig43.database.data.transact.pf.PfBD
+import ru.pavlig43.database.data.transact.reminder.REMINDER_TABLE_NAME
 import ru.pavlig43.database.data.transact.reminder.ReminderBD
 import ru.pavlig43.database.data.transact.sale.SaleBDIn
 import ru.pavlig43.database.data.transact.sale.SaleBDOut
 import ru.pavlig43.database.inTransaction
 import ru.pavlig43.files.api.FilesDependencies
 import ru.pavlig43.immutable.api.ImmutableTableDependencies
+import ru.pavlig43.mutable.api.multiLine.data.SyncUpdateCollectionRepository
 import ru.pavlig43.mutable.api.multiLine.data.UpdateCollectionRepository
 import ru.pavlig43.mutable.api.singleLine.data.CreateSingleItemRepository
 import ru.pavlig43.mutable.api.singleLine.data.SyncCreateSingleItemRepository
@@ -55,10 +58,10 @@ internal fun createTransactionFormModule(dependencies: TransactionFormDependenci
             BuyCollectionRepository(get())
         }
         single<UpdateCollectionRepository<ReminderBD, ReminderBD>>(UpdateCollectionRepositoryType.REMINDERS.qualifier) {
-            RemindersCollectionRepository(get())
+            RemindersCollectionRepository(get(), get())
         }
         single<UpdateCollectionRepository<ExpenseBD, ExpenseBD>>(UpdateCollectionRepositoryType.EXPENSES.qualifier) {
-            ExpensesCollectionRepository(get())
+            ExpensesCollectionRepository(get(), get())
         }
         single<UpdateCollectionRepository<IngredientBD, IngredientBD>>(
             UpdateCollectionRepositoryType.INGREDIENTS.qualifier
@@ -206,8 +209,15 @@ private class BuyCollectionRepository(
 
 
 private class RemindersCollectionRepository(
-    db: NocombroDatabase
-) : UpdateCollectionRepository<ReminderBD, ReminderBD> {
+    db: NocombroDatabase,
+    syncQueueRepository: SyncQueueRepository,
+) : SyncUpdateCollectionRepository<ReminderBD, ReminderBD>(
+    tableName = REMINDER_TABLE_NAME,
+    entitySyncKeyOf = ReminderBD::syncId,
+    enqueueSyncUpsert = syncQueueRepository::enqueueUpsert,
+    enqueueSyncDelete = syncQueueRepository::enqueueDelete,
+    inWriteTransaction = { block -> db.inTransaction(block) },
+) {
 
     private val dao = db.reminderDao
 
@@ -217,19 +227,30 @@ private class RemindersCollectionRepository(
         }
     }
 
-    override suspend fun update(changeSet: ChangeSet<List<ReminderBD>>): Result<Unit> {
-        return UpsertListChangeSet.update(
-            changeSet = changeSet,
-            delete = { ids -> dao.deleteByIds(ids) },
-            upsert = { reminders -> dao.upsertAll(reminders) }
-        )
+    override fun prepareForUpsert(item: ReminderBD): ReminderBD {
+        return item.copy(updatedAt = defaultUpdatedAt())
+    }
+
+    override suspend fun deleteByIds(ids: List<Int>) {
+        dao.deleteByIds(ids)
+    }
+
+    override suspend fun upsertItems(items: List<ReminderBD>) {
+        dao.upsertAll(items)
     }
 }
 
 
 private class ExpensesCollectionRepository(
-    db: NocombroDatabase
-) : UpdateCollectionRepository<ExpenseBD, ExpenseBD> {
+    db: NocombroDatabase,
+    syncQueueRepository: SyncQueueRepository,
+) : SyncUpdateCollectionRepository<ExpenseBD, ExpenseBD>(
+    tableName = EXPENSE_TABLE_NAME,
+    entitySyncKeyOf = ExpenseBD::syncId,
+    enqueueSyncUpsert = syncQueueRepository::enqueueUpsert,
+    enqueueSyncDelete = syncQueueRepository::enqueueDelete,
+    inWriteTransaction = { block -> db.inTransaction(block) },
+) {
 
     private val dao = db.expenseDao
 
@@ -239,12 +260,16 @@ private class ExpensesCollectionRepository(
         }
     }
 
-    override suspend fun update(changeSet: ChangeSet<List<ExpenseBD>>): Result<Unit> {
-        return UpsertListChangeSet.update(
-            changeSet = changeSet,
-            delete = { ids -> dao.deleteByIds(ids) },
-            upsert = { expenses -> dao.upsertAll(expenses) }
-        )
+    override fun prepareForUpsert(item: ExpenseBD): ExpenseBD {
+        return item.copy(updatedAt = defaultUpdatedAt())
+    }
+
+    override suspend fun deleteByIds(ids: List<Int>) {
+        dao.deleteByIds(ids)
+    }
+
+    override suspend fun upsertItems(items: List<ExpenseBD>) {
+        dao.upsertAll(items)
     }
 }
 

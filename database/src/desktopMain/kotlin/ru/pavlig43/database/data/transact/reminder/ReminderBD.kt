@@ -11,7 +11,7 @@ import ru.pavlig43.database.data.sync.defaultSyncId
 import ru.pavlig43.database.data.sync.defaultUpdatedAt
 import ru.pavlig43.database.data.transact.Transact
 
-internal const val REMINDER_TABLE_NAME = "reminder"
+const val REMINDER_TABLE_NAME = "reminder"
 
 @Entity(
     tableName = REMINDER_TABLE_NAME,

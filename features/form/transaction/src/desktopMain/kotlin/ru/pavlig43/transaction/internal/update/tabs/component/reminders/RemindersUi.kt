@@ -1,6 +1,7 @@
 package ru.pavlig43.transaction.internal.update.tabs.component.reminders
 
 import kotlinx.datetime.LocalDateTime
+import ru.pavlig43.database.data.sync.defaultSyncId
 import ru.pavlig43.tablecore.model.IMultiLineTableUi
 
 data class RemindersUi(
@@ -8,5 +9,6 @@ data class RemindersUi(
     val id: Int,
     val transactionId: Int,
     val text: String,
-    val reminderDateTime: LocalDateTime
+    val reminderDateTime: LocalDateTime,
+    val syncId: String = defaultSyncId(),
 ) : IMultiLineTableUi

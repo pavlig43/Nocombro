@@ -3,6 +3,7 @@ package ru.pavlig43.transaction.internal.update.tabs.component.expenses
 import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.core.model.DecimalData2
 import ru.pavlig43.database.data.expense.ExpenseType
+import ru.pavlig43.database.data.sync.defaultSyncId
 import ru.pavlig43.tablecore.model.IMultiLineTableUi
 
 internal data class ExpensesUi(
@@ -12,7 +13,8 @@ internal data class ExpensesUi(
     val expenseType: ExpenseType?,
     val amount: DecimalData2, // в копейках
     val expenseDateTime: LocalDateTime,
-    val comment: String
+    val comment: String,
+    val syncId: String = defaultSyncId(),
 ) : IMultiLineTableUi
 
 internal enum class ExpensesField {
