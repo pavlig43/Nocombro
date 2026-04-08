@@ -35,6 +35,7 @@ internal fun createProductFormModule(dependencies: ProductFormDependencies) = li
         single<TransactionExecutor> { dependencies.transaction }
         single<FilesDependencies> { dependencies.filesDependencies }
         single<ImmutableTableDependencies> { dependencies.immutableTableDependencies }
+        single { SyncQueueRepository(get<NocombroDatabase>().syncDao) }
         single<CreateSingleItemRepository<Product>> { ProductCreateRepository(get(), get()) }
         single<UpdateSingleLineRepository<Product>> (SingleRepositoryType.ESSENTIALS.qualifier){ ProductUpdateRepository(get(), get()) }
 

@@ -21,6 +21,7 @@ internal fun createVendorFormModule(dependencies: VendorFormDependencies) = list
         single<NocombroDatabase> { dependencies.db }
         single<TransactionExecutor> { dependencies.transaction }
         single<FilesDependencies> {dependencies.filesDependencies  }
+        single { SyncQueueRepository(get<NocombroDatabase>().syncDao) }
         single<CreateSingleItemRepository<Vendor>> { VendorCreateRepository(get(), get()) }
         single<UpdateSingleLineRepository<Vendor>> { VendorUpdateRepository(get(), get()) }
 

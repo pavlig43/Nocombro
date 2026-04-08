@@ -21,6 +21,7 @@ internal fun createDocumentFormModule(dependencies: DocumentFormDependencies) = 
         single<NocombroDatabase> { dependencies.db }
         single<TransactionExecutor> { dependencies.transaction }
         single<FilesDependencies> {dependencies.filesDependencies  }
+        single { SyncQueueRepository(get<NocombroDatabase>().syncDao) }
         single<CreateSingleItemRepository<Document>> { DocumentCreateRepository(get(), get()) }
         single<UpdateSingleLineRepository<Document>> { DocumentUpdateRepository(get(), get()) }
     }

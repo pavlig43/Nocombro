@@ -110,7 +110,11 @@ private fun ProductDeclarationTable(
             itemAt = { index -> items.getOrNull(index) },
             state = state,
             strings = RussianStringProvider,
-            onRowClick = { onEvent(ProductDeclarationEvent.OpenDeclaration(it.declarationId)) },
+            onRowClick = {
+                if (!it.isProductInDeclaration) {
+                    onEvent(ProductDeclarationEvent.OpenDeclaration(it.declarationId))
+                }
+            },
             tableData = tableData,
             colors = TableDefaults.colors().copy(
                 headerContainerColor = MaterialTheme.colorScheme.primaryContainer.copy(0.3f)

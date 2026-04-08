@@ -38,6 +38,9 @@ data class ProductDeclarationIn(
     @ColumnInfo("declaration_id", index = true)
     val declarationId: Int,
 
+    @ColumnInfo("is_product_in_declaration", defaultValue = "0")
+    val isProductInDeclaration: Boolean = false,
+
     @PrimaryKey(autoGenerate = true)
     override val id: Int = 0,
 
@@ -55,6 +58,7 @@ data class ProductDeclarationOut(
     override val id: Int,
     val productId: Int,
     val declarationId: Int,
+    val isProductInDeclaration: Boolean,
     val declarationName: String,
     val vendorName: String,
     val isActual: Boolean

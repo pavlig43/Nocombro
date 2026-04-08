@@ -161,6 +161,7 @@ private fun InternalProductDeclaration.toProductDeclarationOut(): ProductDeclara
         id = productDeclaration.id,
         productId = productDeclaration.productId,
         declarationId = productDeclaration.declarationId,
+        isProductInDeclaration = productDeclaration.isProductInDeclaration,
         declarationName = declaration.displayName,
         vendorName = declaration.vendorName,
         isActual = declaration.bestBefore > getCurrentLocalDate(),

@@ -48,6 +48,7 @@ internal fun createTransactionFormModule(dependencies: TransactionFormDependenci
         single<TransactionExecutor> { dependencies.dbTransaction }
         single<FilesDependencies> { dependencies.filesDependencies }
         single<ImmutableTableDependencies> { dependencies.immutableTableDependencies }
+        single { SyncQueueRepository(get<NocombroDatabase>().syncDao) }
         single<CreateSingleItemRepository<Transact>> { TransactionCreateRepository(get(), get()) }
         single<UpdateSingleLineRepository<Transact>>(UpdateSingleLineRepositoryType.TRANSACTION.qualifier) {
             TransactionUpdateRepository(

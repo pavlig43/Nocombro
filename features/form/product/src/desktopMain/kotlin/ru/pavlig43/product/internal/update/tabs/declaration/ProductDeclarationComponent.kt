@@ -111,11 +111,14 @@ internal class ProductDeclarationComponent(
     }.flatMapLatest { (declarationIds, selectedIds) ->
         repository.observeOnDeclarations(declarationIds)
             .map { declarationsList ->
+                val declarationsById = productDeclarations.value.associateBy(ProductDeclarationIn::declarationId)
                 val tableUiItems = declarationsList.map { declaration ->
+                    val declarationIn = declarationsById.getValue(declaration.id)
                     ProductDeclarationTableUi(
                         declarationId = declaration.id,
                         declarationName = declaration.displayName,
                         vendorName = declaration.vendorName,
+                        isProductInDeclaration = declarationIn.isProductInDeclaration,
                         isActual = declaration.isActual
                     )
                 }
@@ -155,6 +158,20 @@ internal class ProductDeclarationComponent(
                     updatedList
                 }
             }
+            is ProductDeclarationEvent.ToggleProductInDeclaration -> {
+                productDeclarations.update { declarations ->
+                    declarations.map { declaration ->
+                        if (declaration.declarationId == event.declarationId) {
+                            declaration.copy(isProductInDeclaration = event.isChecked)
+                        } else {
+                            declaration
+                        }
+                    }
+                }
+            }
+            is ProductDeclarationEvent.ParseDeclaration -> {
+                TODO("Implement declaration PDF parsing for product matching")
+            }
             is ProductDeclarationEvent.OpenDeclaration -> {tabOpener.openDeclarationTab(event.declarationId)}
             is ProductDeclarationEvent.Selection -> {
                 selectionManager.onEvent(event.selectionUiEvent)
@@ -168,6 +185,9 @@ internal class ProductDeclarationComponent(
             buildList {
                 if (lst.isEmpty()) add("Добавьте хотя бы одну декларацию")
                 if (lst.none { it.isActual }) add("Хотя бы одна декларация должна быть актуальной")
+                if (lst.any { !it.isProductInDeclaration }) {
+                    add("Отметьте, есть ли продукт в декларации")
+                }
                 if (lst.map { it.vendorName }
                         .toSet().size > 1) add("Все декларации должны быть от одного поставщика")
             }
@@ -186,4 +206,11 @@ internal sealed interface ProductDeclarationEvent {
     data object DeleteSelected : ProductDeclarationEvent
 
     data object AddNew : ProductDeclarationEvent
+
+    data class ToggleProductInDeclaration(
+        val declarationId: Int,
+        val isChecked: Boolean,
+    ) : ProductDeclarationEvent
+
+    data class ParseDeclaration(val declarationId: Int) : ProductDeclarationEvent
 }

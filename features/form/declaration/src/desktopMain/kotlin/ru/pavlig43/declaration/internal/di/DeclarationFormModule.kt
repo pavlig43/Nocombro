@@ -23,6 +23,7 @@ internal fun createDeclarationFormModule(dependencies: DeclarationFormDependenci
         single<TransactionExecutor> { dependencies.transaction }
         single<ImmutableTableDependencies> {dependencies.immutableTableDependencies  }
         single<FilesDependencies> {dependencies.filesDependencies  }
+        single { SyncQueueRepository(get<NocombroDatabase>().syncDao) }
         single<CreateSingleItemRepository<Declaration>> { CreateDeclarationRepository(get(), get()) }
         single<UpdateSingleLineRepository<Declaration>> {  DeclarationUpdateRepository(get(), get())}
 
