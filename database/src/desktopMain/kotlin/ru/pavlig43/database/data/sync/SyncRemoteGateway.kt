@@ -37,6 +37,7 @@ data class RemoteSyncStatus(
     val hasRemoteChanges: Boolean,
     val checkedAt: LocalDateTime = defaultUpdatedAt(),
     val remoteCursor: String? = null,
+    val error: String? = null,
 )
 
 data class RemotePushResult(

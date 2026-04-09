@@ -3,10 +3,13 @@ package ru.pavlig43.rootnocombro.internal.topbar.ui
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.material3.Badge
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DropdownMenu
@@ -69,6 +72,8 @@ internal fun NocombroAppBar(
             SyncStatusButton(
                 syncUiState = syncUiState,
                 onSyncClick = syncComponent::onSyncClick,
+                onPushClick = syncComponent::onPushClick,
+                onPullClick = syncComponent::onPullClick,
                 onRefreshClick = syncComponent::refreshStatus,
             )
             IconButton(onClick = settingsComponent::toggleDarkMode) {
@@ -83,10 +88,13 @@ internal fun NocombroAppBar(
     )
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun SyncStatusButton(
     syncUiState: SyncUiState,
     onSyncClick: () -> Unit,
+    onPushClick: () -> Unit,
+    onPullClick: () -> Unit,
     onRefreshClick: () -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -128,33 +136,56 @@ private fun SyncStatusButton(
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     SyncDropdownContent(syncUiState = syncUiState)
-                    Row(
+                    FlowRow(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        maxItemsInEachRow = 2,
                     ) {
                         TextButton(
+                            modifier = Modifier.widthIn(min = 140.dp),
                             onClick = {
                                 expanded = false
                                 copySyncSnapshotToClipboard(syncUiState)
                             }
                         ) {
-                            Text("Скопировать")
+                            Text("Скопировать статус")
                         }
                         TextButton(
+                            modifier = Modifier.widthIn(min = 140.dp),
                             onClick = {
                                 expanded = false
                                 onRefreshClick()
                             }
                         ) {
-                            Text("Проверить")
+                            Text("Обновить статус")
+                        }
+                        TextButton(
+                            modifier = Modifier.widthIn(min = 140.dp),
+                            onClick = {
+                                expanded = false
+                                onPushClick()
+                            }
+                        ) {
+                            Text("Отправить")
+                        }
+                        TextButton(
+                            modifier = Modifier.widthIn(min = 140.dp),
+                            onClick = {
+                                expanded = false
+                                onPullClick()
+                            }
+                        ) {
+                            Text("Получить")
                         }
                         FilledTonalButton(
+                            modifier = Modifier.widthIn(min = 140.dp),
                             onClick = {
                                 expanded = false
                                 onSyncClick()
                             }
                         ) {
-                            Text("Синхронизировать")
+                            Text("Синхронизировать все")
                         }
                     }
                 }
@@ -182,6 +213,7 @@ private fun buildSyncTooltip(syncUiState: SyncUiState): String {
     return buildList {
         add(
             when {
+                syncUiState.isSyncRunning -> syncUiState.runningActionLabel?.let { "$it..." } ?: "Синхронизация..."
                 syncUiState.failedChangesCount > 0 -> "Есть ошибки синхронизации"
                 syncUiState.hasRemoteChanges -> "На сервере есть новые изменения"
                 syncUiState.pendingChangesCount > 0 -> "Есть локальные изменения для отправки"
@@ -190,12 +222,12 @@ private fun buildSyncTooltip(syncUiState: SyncUiState): String {
         )
         add(
             if (syncUiState.remoteSyncConfigured) {
-                "Удаленный sync backend подключен"
+                "Удаленная база подключена"
             } else {
-                "Удаленный sync backend пока не подключен"
+                "Удаленная база пока не подключена"
             }
         )
-        add("Payload version: ${syncUiState.payloadVersion}")
+        add("Версия формата данных: ${syncUiState.payloadVersion}")
         syncUiState.lastError?.let {
             add("Последняя ошибка: $it")
         }
@@ -206,7 +238,7 @@ private fun buildSyncTooltip(syncUiState: SyncUiState): String {
             add("Ошибок очереди: ${syncUiState.failedChangesCount}")
         }
         syncUiState.lastRemoteCursor?.let {
-            add("Remote cursor: $it")
+            add("Курсор синхронизации: $it")
         }
         syncUiState.lastStatusCheckAt?.let {
             add("Последняя проверка: ${it.format(dateTimeFormat)}")
@@ -216,6 +248,7 @@ private fun buildSyncTooltip(syncUiState: SyncUiState): String {
 
 private fun buildSyncSummary(syncUiState: SyncUiState): String {
     return when {
+        syncUiState.isSyncRunning -> syncUiState.runningActionLabel?.let { "$it..." } ?: "Синхронизация..."
         syncUiState.failedChangesCount > 0 -> "Есть ошибки синхронизации"
         syncUiState.hasRemoteChanges -> "На сервере есть новые изменения"
         syncUiState.pendingChangesCount > 0 -> "Есть локальные изменения"
@@ -248,19 +281,19 @@ private fun SyncDropdownContent(syncUiState: SyncUiState) {
         }
         syncUiState.lastPullAt?.let {
             Text(
-                text = "Последний pull: ${it.format(dateTimeFormat)}",
+                text = "Последнее получение: ${it.format(dateTimeFormat)}",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
         Text(
-            text = "Payload v${syncUiState.payloadVersion}",
+            text = "Формат данных v${syncUiState.payloadVersion}",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         syncUiState.lastRemoteCursor?.let {
             Text(
-                text = "Cursor: $it",
+                text = "Курсор синхронизации: $it",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )

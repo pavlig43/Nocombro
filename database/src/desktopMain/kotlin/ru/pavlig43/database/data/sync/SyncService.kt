@@ -25,15 +25,34 @@ class SyncService(
             lastPullAt = syncState?.lastPullAt,
             lastRemoteCursor = syncState?.lastRemoteCursor,
             payloadVersion = CURRENT_SYNC_PAYLOAD_VERSION,
+            remoteError = remoteStatus.error,
         )
     }
 
     suspend fun syncOnce(): SyncRunResult {
+        val pushResult = pushOnce()
+        if (pushResult.error != null) {
+            return pushResult
+        }
+
+        val pullResult = pullOnce()
+        if (pullResult.error != null) {
+            return pullResult
+        }
+
+        return SyncRunResult(
+            status = pullResult.status,
+            lastSyncAt = pushResult.lastSyncAt ?: pullResult.lastSyncAt,
+            lastPushAt = pushResult.lastPushAt,
+            lastPullAt = pullResult.lastPullAt,
+        )
+    }
+
+    suspend fun pushOnce(): SyncRunResult {
         val syncState = syncStateRepository.getSyncState()
             ?: return SyncRunResult.failure("Sync state is not initialized")
 
         var lastSyncAt = syncState.lastPushAt
-        val pullCursorBeforePush = syncState.lastRemoteCursor
 
         val batch = syncRunner.reservePendingBatch().getOrElse { throwable ->
             return SyncRunResult.failure(throwable.message ?: "Failed to reserve sync batch")
@@ -68,12 +87,22 @@ class SyncService(
             lastSyncAt = pushResult.pushedAt
         }
 
-        val refreshedSyncState = syncStateRepository.getSyncState()
-            ?: return SyncRunResult.failure("Sync state is not initialized after push")
+        val status = getStatus()
+        return SyncRunResult(
+            status = status,
+            lastSyncAt = lastSyncAt,
+            lastPushAt = lastSyncAt,
+            lastPullAt = status.lastPullAt,
+        )
+    }
+
+    suspend fun pullOnce(): SyncRunResult {
+        val syncState = syncStateRepository.getSyncState()
+            ?: return SyncRunResult.failure("Sync state is not initialized")
 
         val pullResult = syncRemoteGateway.pullChanges(
-            deviceId = refreshedSyncState.deviceId,
-            lastRemoteCursor = pullCursorBeforePush,
+            deviceId = syncState.deviceId,
+            lastRemoteCursor = syncState.lastRemoteCursor,
         ).fold(
             onSuccess = { it },
             onFailure = { throwable ->
@@ -97,9 +126,12 @@ class SyncService(
             remoteCursor = pullResult.remoteCursor,
         )
 
+        val status = getStatus()
         return SyncRunResult(
-            status = getStatus(),
-            lastSyncAt = lastSyncAt,
+            status = status,
+            lastSyncAt = status.lastSyncAt,
+            lastPushAt = status.lastSyncAt,
+            lastPullAt = pullResult.pulledAt,
         )
     }
 }
@@ -130,11 +162,14 @@ data class SyncStatusSnapshot(
     val lastPullAt: LocalDateTime?,
     val lastRemoteCursor: String?,
     val payloadVersion: Int,
+    val remoteError: String? = null,
 )
 
 data class SyncRunResult(
     val status: SyncStatusSnapshot,
     val lastSyncAt: LocalDateTime? = null,
+    val lastPushAt: LocalDateTime? = null,
+    val lastPullAt: LocalDateTime? = null,
     val error: String? = null,
 ) {
     companion object {
@@ -152,6 +187,7 @@ data class SyncRunResult(
                 lastPullAt = null,
                 lastRemoteCursor = null,
                 payloadVersion = CURRENT_SYNC_PAYLOAD_VERSION,
+                remoteError = null,
             )
             return SyncRunResult(
                 status = fallbackStatus,

@@ -47,13 +47,60 @@ class SyncComponent(
      */
     fun onSyncClick() {
         coroutineScope.launch {
-            _uiState.update { it.copy(isSyncRunning = true, lastError = null) }
+            _uiState.update {
+                it.copy(
+                    isSyncRunning = true,
+                    runningActionLabel = "Синхронизация",
+                    lastError = null,
+                )
+            }
             val result = syncService.syncOnce()
             updateUiState(
                 status = result.status,
                 isSyncRunning = false,
                 lastError = result.error,
                 lastSyncAt = result.lastSyncAt,
+                lastPullAt = result.lastPullAt,
+            )
+        }
+    }
+
+    fun onPushClick() {
+        coroutineScope.launch {
+            _uiState.update {
+                it.copy(
+                    isSyncRunning = true,
+                    runningActionLabel = "Отправка",
+                    lastError = null,
+                )
+            }
+            val result = syncService.pushOnce()
+            updateUiState(
+                status = result.status,
+                isSyncRunning = false,
+                lastError = result.error,
+                lastSyncAt = result.lastSyncAt,
+                lastPullAt = result.lastPullAt,
+            )
+        }
+    }
+
+    fun onPullClick() {
+        coroutineScope.launch {
+            _uiState.update {
+                it.copy(
+                    isSyncRunning = true,
+                    runningActionLabel = "Получение",
+                    lastError = null,
+                )
+            }
+            val result = syncService.pullOnce()
+            updateUiState(
+                status = result.status,
+                isSyncRunning = false,
+                lastError = result.error,
+                lastSyncAt = result.lastSyncAt,
+                lastPullAt = result.lastPullAt,
             )
         }
     }
@@ -63,6 +110,7 @@ class SyncComponent(
         isSyncRunning: Boolean,
         lastError: String?,
         lastSyncAt: LocalDateTime? = null,
+        lastPullAt: LocalDateTime? = null,
     ) {
         _uiState.update {
             it.copy(
@@ -73,10 +121,11 @@ class SyncComponent(
                 remoteSyncConfigured = status.remoteSyncConfigured,
                 lastStatusCheckAt = status.lastStatusCheckAt,
                 lastSyncAt = lastSyncAt ?: status.lastSyncAt,
-                lastPullAt = status.lastPullAt,
+                lastPullAt = lastPullAt ?: status.lastPullAt,
                 lastRemoteCursor = status.lastRemoteCursor,
                 payloadVersion = status.payloadVersion,
-                lastError = lastError,
+                lastError = lastError ?: status.remoteError,
+                runningActionLabel = null,
             )
         }
     }
@@ -106,6 +155,7 @@ data class SyncUiState(
     val lastRemoteCursor: String? = null,
     val payloadVersion: Int = 0,
     val lastError: String? = null,
+    val runningActionLabel: String? = null,
 )
 
 private const val STATUS_CHECK_INTERVAL_MILLIS = 3 * 60 * 1000L

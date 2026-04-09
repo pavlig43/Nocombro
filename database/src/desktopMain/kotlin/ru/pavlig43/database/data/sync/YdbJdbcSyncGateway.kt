@@ -24,6 +24,7 @@ class YdbJdbcSyncGateway(
                 configured = false,
                 hasRemoteChanges = false,
                 remoteCursor = syncState?.lastRemoteCursor,
+                error = it.message,
             )
         }
     }
@@ -88,10 +89,20 @@ class YdbJdbcSyncGateway(
                 remote_cursor,
                 change_cursor
             ) VALUES (
-                ?, ?, ?, ?, ?, ?, ?, ?,
+                CAST(? AS Utf8),
+                CAST(? AS Utf8),
+                CAST(? AS Utf8),
+                CAST(? AS Utf8),
+                CAST(? AS Utf8),
+                CAST(? AS Utf8),
+                CAST(? AS Utf8),
+                CAST(? AS Utf8),
                 CAST(CurrentUtcTimestamp() AS Utf8),
-                ?,
-                CAST(CurrentUtcTimestamp() AS Utf8) || '|' || ? || '|' || ?
+                CAST(? AS Utf8),
+                CAST(
+                    CAST(CurrentUtcTimestamp() AS Utf8) || '|' || CAST(? AS Utf8) || '|' || CAST(? AS Utf8)
+                    AS Utf8
+                )
             )
         """.trimIndent()
 
@@ -206,7 +217,7 @@ class YdbJdbcSyncGateway(
                         entityTable = resultSet.getString("entity_table"),
                         entitySyncId = resultSet.getString("entity_sync_id"),
                         changeType = enumValueOf(resultSet.getString("change_type")),
-                        changedAt = LocalDateTime.parse(resultSet.getString("pushed_at")),
+                        changedAt = parseYdbTimestamp(resultSet.getString("pushed_at")),
                         payloadJson = resultSet.getString("payload_json"),
                     )
                 }
@@ -225,5 +236,11 @@ class YdbJdbcSyncGateway(
         }
 
         return DriverManager.getConnection(config.jdbcUrl, properties).use(block)
+    }
+
+    private fun parseYdbTimestamp(
+        rawValue: String,
+    ): LocalDateTime {
+        return LocalDateTime.parse(rawValue.removeSuffix("Z"))
     }
 }

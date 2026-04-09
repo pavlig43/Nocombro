@@ -8,16 +8,18 @@ data class YdbJdbcConfig(
     companion object {
         fun fromEnvironment(): YdbJdbcConfig? {
             val jdbcUrl = readSetting("NOCOMBRO_YDB_JDBC_URL", "nocombro.ydb.jdbcUrl")
+                ?.trim()
                 ?.takeIf(String::isNotBlank)
                 ?: return null
 
             val tablePath = readSetting("NOCOMBRO_YDB_SYNC_TABLE", "nocombro.ydb.syncTable")
+                ?.trim()
                 ?.takeIf(String::isNotBlank)
                 ?: "sync_push_log"
 
             return YdbJdbcConfig(
                 jdbcUrl = jdbcUrl,
-                authToken = readSetting("NOCOMBRO_YDB_TOKEN", "nocombro.ydb.token"),
+                authToken = readSetting("NOCOMBRO_YDB_TOKEN", "nocombro.ydb.token")?.trim(),
                 tablePath = tablePath,
             )
         }
