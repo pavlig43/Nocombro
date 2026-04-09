@@ -1,94 +1,195 @@
 # Sync TODO
 
-## Что уже сделано
+## Что уже было сделано раньше
 
 - `Room` остается локальной базой для desktop.
 - Добавлены служебные таблицы синхронизации:
   - `sync_change`
   - `sync_state`
-- Для sync-таблиц введены служебные поля:
+- Для sync-сущностей введены служебные поля:
   - `syncId`
   - `updatedAt`
   - `deletedAt`
-- Single-line формы переведены на обязательный sync-шаблон:
+- Single-line формы переведены на sync-шаблон:
   - `Product`
   - `Vendor`
   - `Document`
   - `Declaration`
   - `Transact`
-- Collection-формы уже поддерживают sync:
+- Collection-формы уже поддерживали sync:
   - `Composition`
   - `ProductDeclaration`
   - `Reminders`
   - `Expenses`
   - `Ingredients`
-- `Buy` и `Sale` переведены на multi-entity sync:
-  - `Sale` синкает `sale + batch_movement`
-  - `Buy` синкает `buy + batch_movement + batch`
-- Для `buy/sale` сохранены стабильные `syncId` в `Out -> UI -> In`.
-- В шапке приложения уже есть sync-статус и периодическая проверка статуса.
+- `Buy` и `Sale` переведены на multi-entity sync.
+- В шапке приложения уже был sync-статус.
 - Добавлен локальный `SyncRunner`, который:
   - берет `pending` из `sync_change`
   - помечает записи как `IN_PROGRESS`
   - схлопывает повторы одной сущности в один push-change
   - умеет `markBatchSucceeded` / `markBatchFailed`
 
-## Что сознательно отложено
+## Что реализовано в ветке `120-remote_db`
 
-- Синхронизация файлов.
-- Реальный серверный `push/pull`.
-- Автоматическое применение удаленных изменений в локальную БД.
+### Remote YDB integration
 
-## Следующий шаг
+- Добавлен реальный JDBC gateway для `YDB`:
+  - `database/.../sync/YdbJdbcConfig.kt`
+  - `database/.../sync/YdbJdbcSyncGateway.kt`
+- Добавлен fallback `YdbSyncGatewayMock`, если remote endpoint не настроен.
+- В `database/build.gradle.kts` подключен `tech.ydb.jdbc:ydb-jdbc-driver:2.3.21`.
+- В DI зарегистрированы:
+  - `SyncStateRepository`
+  - `SyncEntityExportRepository`
+  - `SyncRemoteApplyRepository`
+  - `SyncService`
+  - `SyncRemoteGateway`
 
-Ближайший следующий шаг по sync:
+### Push / Pull / Apply
 
-1. заменить mock `YDB` gateway на реальный adapter
-2. реализовать настоящий `push` подготовленного `RemotePushPayload`
-3. сохранять и использовать серверный cursor/offset в `sync_state`
-4. добавить реальный `pull/status` поверх того же gateway
+- Добавлен `SyncService` как единая orchestration-точка sync-цикла.
+- `syncOnce()` теперь делает:
+  - reserve локального batch
+  - push локальных изменений
+  - pull удаленных изменений
+  - apply удаленных изменений в `Room`
+  - update `sync_state.lastPushAt`
+  - update `sync_state.lastPullAt`
+  - update `sync_state.lastRemoteCursor`
+- `SyncRemoteGateway` расширен до контракта:
+  - `getStatus`
+  - `pushChanges`
+  - `pullChanges`
 
-Текущий локальный слой уже делает:
+### Export payload для remote sync
 
-- DI-регистрацию `SyncRunner` и sync-service
-- запуск sync по кнопке
-- обработку `sync_change`
-- обновление `sync_state.lastPushAt`
-- подготовку payload для удаленного backend
-- fallback между `YdbSyncGatewayMock` и реальным `YdbJdbcSyncGateway`
+- Добавлен `SyncEntityExportRepository`.
+- Payload больше не собирается вручную через `JsonObjectBuilder`.
+- Введены typed `@Serializable` DTO payload-модели:
+  - `VendorSyncPayload`
+  - `DocumentSyncPayload`
+  - `DeclarationSyncPayload`
+  - `ProductSyncPayload`
+  - `CompositionSyncPayload`
+  - `ProductDeclarationSyncPayload`
+  - `BatchSyncPayload`
+  - `BatchMovementSyncPayload`
+  - `BuySyncPayload`
+  - `SaleSyncPayload`
+  - `ReminderSyncPayload`
+  - `ExpenseSyncPayload`
+  - `TransactionSyncPayload`
+- Export теперь идет через `kotlinx.serialization`.
+- Связи в remote payload переведены с локальных `id` на стабильные `syncId`.
+
+### Versioned payload contract
+
+- Добавлен `SyncPayloadEnvelope<T>`.
+- Введена константа `CURRENT_SYNC_PAYLOAD_VERSION = 1`.
+- Новый payload уходит в формате:
+  - `version`
+  - `payload`
+- `pull/apply` поддерживает:
+  - новый envelope-формат
+  - старый raw-DTO формат для обратной совместимости
+
+### Apply удаленных изменений в локальную БД
+
+- Добавлен `SyncRemoteApplyRepository`.
+- Реализовано применение remote changes в `Room` с учетом порядка зависимостей:
+  - `Vendor`
+  - `Document`
+  - `Product`
+  - `Transact`
+  - `Declaration`
+  - `Batch`
+  - `ProductDeclaration`
+  - `Composition`
+  - `BatchMovement`
+  - `Reminder`
+  - `Expense`
+  - `Buy`
+  - `Sale`
+- Базовая конфликтная стратегия сейчас:
+  - `updatedAt`
+  - last-write-wins
+
+### DAO и data-layer подготовка
+
+- Для sync/export/apply добавлены выборки по `sync_id`.
+- Для нужных сущностей добавлены дополнительные DAO-методы чтения по локальному `id`, чтобы строить payload на `syncId`-ссылках.
+- Подготовлены DAO для export/import следующих сущностей:
+  - `Vendor`
+  - `Document`
+  - `Declaration`
+  - `Product`
+  - `Transact`
+  - `Composition`
+  - `ProductDeclaration`
+  - `Batch`
+  - `BatchMovement`
+  - `Buy`
+  - `Sale`
+  - `Reminder`
+  - `Expense`
+
+### Desktop debug UI
+
+- `SyncComponent` переведен на `SyncService`.
+- В top bar dropdown добавлены диагностические поля:
+  - `payloadVersion`
+  - `lastPullAt`
+  - `lastRemoteCursor`
+  - `lastError`
+- Добавлена кнопка `Скопировать`, которая кладет в clipboard debug snapshot:
+  - `sync.remote_configured`
+  - `sync.payload_version`
+  - `sync.pending`
+  - `sync.failed`
+  - `sync.has_remote_changes`
+  - `sync.last_sync_at`
+  - `sync.last_pull_at`
+  - `sync.last_status_check_at`
+  - `sync.last_remote_cursor`
+  - `sync.last_error`
+
+## Что сознательно еще не доведено
+
+- Нет реального прогона на живом remote `YDB`.
+- Remote схема пока промежуточная:
+  - одна универсальная таблица
+  - `payload_json`
+- Нет полноценного production-grade conflict resolution.
+- Нет отдельного reset/replay механизма для cursor.
+- Нет финального предметного remote schema design.
+- Нет sync файлов.
 
 ## Текущая runtime-конфигурация YDB
 
-Для включения реального JDBC gateway сейчас используются:
+Для включения реального JDBC gateway используются:
 
 - `NOCOMBRO_YDB_JDBC_URL` или JVM property `nocombro.ydb.jdbcUrl`
 - `NOCOMBRO_YDB_TOKEN` или JVM property `nocombro.ydb.token`
 - `NOCOMBRO_YDB_SYNC_TABLE` или JVM property `nocombro.ydb.syncTable`
 
-Если `jdbcUrl` не задан, приложение остается на mock gateway.
+Если `jdbcUrl` не задан, приложение работает через `YdbSyncGatewayMock`.
 
 ## Решение по удаленной БД
 
-На текущий момент принято такое решение:
+- `YDB` выбрана как основная удаленная БД.
+- Локальная база остается в `Room/SQLite`.
+- Локальный sync-слой нужен как подготовительный слой между UI/очередью и remote `YDB`.
 
-- `YDB` выбрана как основная удаленная БД
-- текущий вектор синхронизации строится вокруг интеграции с `YDB`
-- архитектуру локального sync-слоя все равно держим достаточно чистой, чтобы не смешивать UI, очередь и конкретный backend
+## Следующий практический шаг
 
-При этом важно:
-
-- локальная база все равно остается в `Room/SQLite`
-- очередь `sync_change` и `SyncRunner` остаются локальной точкой подготовки изменений перед отправкой в удаленное хранилище
-- интеграция с `YDB` должна опираться на этот слой, а не обходить его напрямую
-
-## Текущий целевой вектор
-
-- локально: `Room/SQLite`
-- удаленно: `YDB`
-- серверный стек сейчас предполагается как:
-  - `YDB`
-  - sync API/adapter над `YDB`
-  - файлы отдельно
+1. Получить реальный remote `YDB` endpoint.
+2. Подставить `jdbcUrl`, `token`, `table`.
+3. Прогнать sync на живых данных.
+4. По результатам первого прогона уточнить:
+   - remote schema
+   - conflict policy
+   - обработку edge cases
 
 ## Коммиты по sync
 
@@ -102,3 +203,4 @@
 - `4782522d` Preserve sync ids for buy and sale rows
 - `73a7f2fc` Add multi-entity sync for transaction rows
 - `ebcd3707` Add sync queue runner
+- `85a4795e` Add YDB sync pipeline and desktop debug UI
