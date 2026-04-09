@@ -32,22 +32,17 @@ class YdbJdbcSyncGateway(
         payload: RemotePushPayload,
     ): Result<RemotePushResult> {
         return runCatching {
-            val pushedAt = defaultUpdatedAt()
             withConnection { connection ->
                 ensureSyncTable(connection)
                 upsertChanges(
                     connection = connection,
                     payload = payload,
-                    pushedAt = pushedAt,
                 )
             }
 
             RemotePushResult(
-                pushedAt = pushedAt,
-                remoteCursor = payload.changes.lastIndex
-                    .takeIf { it >= 0 }
-                    ?.let { buildChangeCursor(pushedAt.toString(), it) }
-                    ?: payload.lastRemoteCursor,
+                pushedAt = defaultUpdatedAt(),
+                remoteCursor = payload.lastRemoteCursor,
             )
         }
     }
@@ -78,7 +73,6 @@ class YdbJdbcSyncGateway(
     private fun upsertChanges(
         connection: Connection,
         payload: RemotePushPayload,
-        pushedAt: LocalDateTime,
     ) {
         val sql = """
             UPSERT INTO `${config.tablePath}` (
@@ -93,11 +87,16 @@ class YdbJdbcSyncGateway(
                 pushed_at,
                 remote_cursor,
                 change_cursor
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (
+                ?, ?, ?, ?, ?, ?, ?, ?,
+                CAST(CurrentUtcTimestamp() AS Utf8),
+                ?,
+                CAST(CurrentUtcTimestamp() AS Utf8) || '|' || ? || '|' || ?
+            )
         """.trimIndent()
 
         connection.prepareStatement(sql).use { statement ->
-            payload.changes.forEachIndexed { index, change ->
+            payload.changes.forEach { change ->
                 statement.setString(1, payload.deviceId)
                 statement.setString(2, change.entityTable)
                 statement.setString(3, change.entityLocalId)
@@ -106,9 +105,9 @@ class YdbJdbcSyncGateway(
                 statement.setString(6, change.sourceQueueIds.joinToString(","))
                 statement.setString(7, change.lastQueuedAt.toString())
                 statement.setString(8, payload.reservedAt.toString())
-                statement.setString(9, pushedAt.toString())
-                statement.setString(10, payload.lastRemoteCursor ?: "")
-                statement.setString(11, buildChangeCursor(pushedAt.toString(), index))
+                statement.setString(9, payload.lastRemoteCursor ?: "")
+                statement.setString(10, change.entityTable)
+                statement.setString(11, change.entityLocalId)
                 statement.addBatch()
             }
             statement.executeBatch()
@@ -227,11 +226,4 @@ class YdbJdbcSyncGateway(
 
         return DriverManager.getConnection(config.jdbcUrl, properties).use(block)
     }
-}
-
-private fun buildChangeCursor(
-    pushedAt: String,
-    index: Int,
-): String {
-    return "$pushedAt|${index.toString().padStart(6, '0')}"
 }

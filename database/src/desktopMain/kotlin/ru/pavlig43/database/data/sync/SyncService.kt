@@ -33,13 +33,22 @@ class SyncService(
             ?: return SyncRunResult.failure("Sync state is not initialized")
 
         var lastSyncAt = syncState.lastPushAt
+        val pullCursorBeforePush = syncState.lastRemoteCursor
 
         val batch = syncRunner.reservePendingBatch().getOrElse { throwable ->
             return SyncRunResult.failure(throwable.message ?: "Failed to reserve sync batch")
         }
 
         if (batch != null) {
-            val pushPayload = batch.toRemotePushPayload(syncState, syncEntityExportRepository)
+            val pushPayload = runCatching {
+                batch.toRemotePushPayload(syncState, syncEntityExportRepository)
+            }.getOrElse { throwable ->
+                syncRunner.markBatchFailed(batch, throwable.message)
+                return SyncRunResult.failure(
+                    message = throwable.message ?: "Failed to export sync batch",
+                    status = getStatus(),
+                )
+            }
 
             val pushResult = syncRemoteGateway.pushChanges(pushPayload).fold(
                 onSuccess = { it },
@@ -55,7 +64,6 @@ class SyncService(
             syncRunner.markBatchSucceeded(batch)
             syncStateRepository.updateLastPushAt(
                 pushedAt = pushResult.pushedAt,
-                remoteCursor = pushResult.remoteCursor,
             )
             lastSyncAt = pushResult.pushedAt
         }
@@ -65,7 +73,7 @@ class SyncService(
 
         val pullResult = syncRemoteGateway.pullChanges(
             deviceId = refreshedSyncState.deviceId,
-            lastRemoteCursor = refreshedSyncState.lastRemoteCursor,
+            lastRemoteCursor = pullCursorBeforePush,
         ).fold(
             onSuccess = { it },
             onFailure = { throwable ->
@@ -76,7 +84,14 @@ class SyncService(
             }
         )
 
-        syncRemoteApplyRepository.applyChanges(pullResult.changes)
+        runCatching {
+            syncRemoteApplyRepository.applyChanges(pullResult.changes)
+        }.getOrElse { throwable ->
+            return SyncRunResult.failure(
+                message = throwable.message ?: "Apply remote changes failed",
+                status = getStatus(),
+            )
+        }
         syncStateRepository.updateLastPullAt(
             pulledAt = pullResult.pulledAt,
             remoteCursor = pullResult.remoteCursor,
