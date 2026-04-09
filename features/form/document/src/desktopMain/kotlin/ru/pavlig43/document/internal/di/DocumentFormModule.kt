@@ -32,6 +32,7 @@ private class DocumentCreateRepository(
     syncQueueRepository: SyncQueueRepository,
 ) : SyncCreateSingleItemRepository<Document>(
     tableName = DOCUMENT_TABLE_NAME,
+    entitySyncKeyOf = Document::syncId,
     enqueueSyncUpsert = syncQueueRepository::enqueueUpsert,
     inWriteTransaction = { block -> db.inTransaction(block) },
 ) {
@@ -47,6 +48,7 @@ private class DocumentUpdateRepository(
     syncQueueRepository: SyncQueueRepository,
 ) : SyncUpdateSingleLineRepository<Document>(
     tableName = DOCUMENT_TABLE_NAME,
+    entitySyncKeyOf = Document::syncId,
     enqueueSyncUpsert = syncQueueRepository::enqueueUpsert,
     inWriteTransaction = { block -> db.inTransaction(block) },
 ) {

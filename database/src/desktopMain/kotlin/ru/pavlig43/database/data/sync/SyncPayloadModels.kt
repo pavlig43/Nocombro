@@ -67,6 +67,16 @@ data class ProductSyncPayload(
 )
 
 @Serializable
+data class SafetyStockSyncPayload(
+    val syncId: String,
+    val productSyncId: String,
+    val reorderPoint: Long,
+    val orderQuantity: Long,
+    val updatedAt: LocalDateTime,
+    val deletedAt: LocalDateTime? = null,
+)
+
+@Serializable
 data class CompositionSyncPayload(
     val syncId: String,
     val parentSyncId: String,

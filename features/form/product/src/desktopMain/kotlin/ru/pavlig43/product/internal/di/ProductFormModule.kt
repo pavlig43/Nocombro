@@ -15,6 +15,7 @@ import ru.pavlig43.database.data.product.PRODUCT_DECLARATION_TABLE_NAME
 import ru.pavlig43.database.data.product.PRODUCT_TABLE_NAME
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductDeclarationIn
+import ru.pavlig43.database.data.product.SAFETY_STOCK_TABLE_NAME
 import ru.pavlig43.database.data.product.SafetyStock
 import ru.pavlig43.database.data.sync.SyncQueueRepository
 import ru.pavlig43.database.data.sync.defaultUpdatedAt
@@ -45,7 +46,12 @@ internal fun createProductFormModule(dependencies: ProductFormDependencies) = li
 
         singleOf(::ProductDeclarationRepository)
 
-        single<UpdateSingleLineRepository<SafetyStock>>(SingleRepositoryType.SAFETY.qualifier) { SafetyStockUpdateRepository(get()) }
+        single<UpdateSingleLineRepository<SafetyStock>>(SingleRepositoryType.SAFETY.qualifier) {
+            SafetyStockUpdateRepository(
+                get(),
+                get(),
+            )
+        }
     }
 )
 
@@ -54,6 +60,7 @@ private class ProductCreateRepository(
     syncQueueRepository: SyncQueueRepository,
 ) : SyncCreateSingleItemRepository<Product>(
     tableName = PRODUCT_TABLE_NAME,
+    entitySyncKeyOf = Product::syncId,
     enqueueSyncUpsert = syncQueueRepository::enqueueUpsert,
     inWriteTransaction = { block -> db.inTransaction(block) },
 ) {
@@ -69,6 +76,7 @@ private class ProductUpdateRepository(
     syncQueueRepository: SyncQueueRepository,
 ) : SyncUpdateSingleLineRepository<Product>(
     tableName = PRODUCT_TABLE_NAME,
+    entitySyncKeyOf = Product::syncId,
     enqueueSyncUpsert = syncQueueRepository::enqueueUpsert,
     inWriteTransaction = { block -> db.inTransaction(block) },
 ) {
@@ -132,7 +140,8 @@ internal enum class SingleRepositoryType{
 }
 
 internal class SafetyStockUpdateRepository(
-    db: NocombroDatabase
+    private val db: NocombroDatabase,
+    private val syncQueueRepository: SyncQueueRepository,
 ) : UpdateSingleLineRepository<SafetyStock> {
 
     private val dao = db.safetyStockDao
@@ -151,12 +160,17 @@ internal class SafetyStockUpdateRepository(
     override suspend fun update(changeSet: ChangeSet<SafetyStock>): Result<Unit> {
         if (changeSet.old == changeSet.new) return Result.success(Unit)
         return runCatching {
-            with(changeSet.new){
-                if (reorderPoint == 0L && orderQuantity == 0L){
-                    dao.delete(this)
-                }
-                else{
-                    dao.upsert(this)
+            db.inTransaction {
+                with(changeSet.new) {
+                    if (reorderPoint == 0L && orderQuantity == 0L) {
+                        if (id > 0) {
+                            dao.delete(this)
+                            syncQueueRepository.enqueueDelete(SAFETY_STOCK_TABLE_NAME, syncId)
+                        }
+                    } else {
+                        dao.upsert(copy(updatedAt = defaultUpdatedAt()))
+                        syncQueueRepository.enqueueUpsert(SAFETY_STOCK_TABLE_NAME, syncId)
+                    }
                 }
             }
         }

@@ -33,6 +33,7 @@ private class VendorCreateRepository(
     syncQueueRepository: SyncQueueRepository,
 ) : SyncCreateSingleItemRepository<Vendor>(
     tableName = VENDOR_TABLE_NAME,
+    entitySyncKeyOf = Vendor::syncId,
     enqueueSyncUpsert = syncQueueRepository::enqueueUpsert,
     inWriteTransaction = { block -> db.inTransaction(block) },
 ) {
@@ -48,6 +49,7 @@ private class VendorUpdateRepository(
     syncQueueRepository: SyncQueueRepository,
 ) : SyncUpdateSingleLineRepository<Vendor>(
     tableName = VENDOR_TABLE_NAME,
+    entitySyncKeyOf = Vendor::syncId,
     enqueueSyncUpsert = syncQueueRepository::enqueueUpsert,
     inWriteTransaction = { block -> db.inTransaction(block) },
 ) {

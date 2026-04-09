@@ -32,6 +32,25 @@
 
 ## Что реализовано в ветке `120-remote_db`
 
+### Локальный аудит syncable-таблиц
+
+- Проверены все `Room`-таблицы из `NocombroDatabase`.
+- Для всех syncable бизнес-сущностей подтверждено наличие:
+  - `syncId`
+  - `updatedAt`
+  - `deletedAt`
+- Single-line sync теперь пишет в очередь по `syncId`, а не по локальному `id`.
+- Закрыты найденные дыры в write-path:
+  - `SafetyStock`
+  - standalone `Expense` form
+- `SafetyStock` добавлен и в remote pipeline:
+  - export payload
+  - pull/apply
+- Сознательно не включены в remote sync:
+  - `FileBD`
+  - `BatchCostPriceEntity`
+  - `PfBD`
+
 ### Remote YDB integration
 
 - Добавлен реальный JDBC gateway для `YDB`:
@@ -71,6 +90,7 @@
   - `DocumentSyncPayload`
   - `DeclarationSyncPayload`
   - `ProductSyncPayload`
+  - `SafetyStockSyncPayload`
   - `CompositionSyncPayload`
   - `ProductDeclarationSyncPayload`
   - `BatchSyncPayload`
@@ -101,6 +121,7 @@
   - `Vendor`
   - `Document`
   - `Product`
+  - `SafetyStock`
   - `Transact`
   - `Declaration`
   - `Batch`
@@ -124,6 +145,7 @@
   - `Document`
   - `Declaration`
   - `Product`
+  - `SafetyStock`
   - `Transact`
   - `Composition`
   - `ProductDeclaration`
@@ -162,7 +184,6 @@
   - `payload_json`
 - Нет полноценного production-grade conflict resolution.
 - Нет отдельного reset/replay механизма для cursor.
-- Нет финального предметного remote schema design.
 - Нет sync файлов.
 
 ## Текущая runtime-конфигурация YDB

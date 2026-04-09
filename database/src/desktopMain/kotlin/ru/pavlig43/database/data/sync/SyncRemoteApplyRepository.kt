@@ -20,6 +20,8 @@ import ru.pavlig43.database.data.product.PRODUCT_TABLE_NAME
 import ru.pavlig43.database.data.product.CompositionIn
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductDeclarationIn
+import ru.pavlig43.database.data.product.SAFETY_STOCK_TABLE_NAME
+import ru.pavlig43.database.data.product.SafetyStock
 import ru.pavlig43.database.data.transact.TRANSACTION_TABLE_NAME
 import ru.pavlig43.database.data.transact.Transact
 import ru.pavlig43.database.data.transact.buy.BUY_TABLE_NAME
@@ -58,6 +60,7 @@ class SyncRemoteApplyRepository(
             VENDOR_TABLE_NAME -> applyVendor(change)
             DOCUMENT_TABLE_NAME -> applyDocument(change)
             PRODUCT_TABLE_NAME -> applyProduct(change)
+            SAFETY_STOCK_TABLE_NAME -> applySafetyStock(change)
             TRANSACTION_TABLE_NAME -> applyTransaction(change)
             DECLARATIONS_TABLE_NAME -> applyDeclaration(change)
             BATCH_TABLE_NAME -> applyBatch(change)
@@ -161,6 +164,32 @@ class SyncRemoteApplyRepository(
         } else {
             db.productDao.create(incoming)
         }
+    }
+
+    private suspend fun applySafetyStock(change: RemotePullChange) {
+        val existing = db.safetyStockDao.getBySyncId(change.entitySyncId)
+        if (change.changeType == SyncChangeType.DELETE) {
+            existing?.let {
+                if (!isStale(it.updatedAt, change.changedAt)) {
+                    db.safetyStockDao.upsert(it.copy(deletedAt = change.changedAt, updatedAt = change.changedAt))
+                }
+            }
+            return
+        }
+
+        val payload = change.decodePayload<SafetyStockSyncPayload>()
+        val product = requireProduct(payload.productSyncId)
+        val incoming = SafetyStock(
+            productId = product.id,
+            reorderPoint = payload.reorderPoint,
+            orderQuantity = payload.orderQuantity,
+            id = existing?.id ?: 0,
+            syncId = payload.syncId,
+            updatedAt = payload.updatedAt,
+            deletedAt = payload.deletedAt,
+        )
+        if (existing != null && isStale(existing.updatedAt, incoming.updatedAt)) return
+        db.safetyStockDao.upsert(incoming)
     }
 
     private suspend fun applyTransaction(change: RemotePullChange) {
@@ -509,16 +538,17 @@ private fun entityPriority(entityTable: String): Int {
         VENDOR_TABLE_NAME -> 0
         DOCUMENT_TABLE_NAME -> 1
         PRODUCT_TABLE_NAME -> 2
-        TRANSACTION_TABLE_NAME -> 3
-        DECLARATIONS_TABLE_NAME -> 4
-        BATCH_TABLE_NAME -> 5
-        PRODUCT_DECLARATION_TABLE_NAME -> 6
-        COMPOSITION_TABLE_NAME -> 7
-        BATCH_MOVEMENT_TABLE_NAME -> 8
-        REMINDER_TABLE_NAME -> 9
-        EXPENSE_TABLE_NAME -> 10
-        BUY_TABLE_NAME -> 11
-        SALE_TABLE_NAME -> 12
+        SAFETY_STOCK_TABLE_NAME -> 3
+        TRANSACTION_TABLE_NAME -> 4
+        DECLARATIONS_TABLE_NAME -> 5
+        BATCH_TABLE_NAME -> 6
+        PRODUCT_DECLARATION_TABLE_NAME -> 7
+        COMPOSITION_TABLE_NAME -> 8
+        BATCH_MOVEMENT_TABLE_NAME -> 9
+        REMINDER_TABLE_NAME -> 10
+        EXPENSE_TABLE_NAME -> 11
+        BUY_TABLE_NAME -> 12
+        SALE_TABLE_NAME -> 13
         else -> 100
     }
 }

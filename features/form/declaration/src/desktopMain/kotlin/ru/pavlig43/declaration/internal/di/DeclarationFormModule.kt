@@ -36,6 +36,7 @@ private class CreateDeclarationRepository(
     syncQueueRepository: SyncQueueRepository,
 ) : SyncCreateSingleItemRepository<Declaration>(
     tableName = DECLARATIONS_TABLE_NAME,
+    entitySyncKeyOf = Declaration::syncId,
     enqueueSyncUpsert = syncQueueRepository::enqueueUpsert,
     inWriteTransaction = { block -> db.inTransaction(block) },
 ) {
@@ -50,6 +51,7 @@ private class DeclarationUpdateRepository(
     syncQueueRepository: SyncQueueRepository,
 ) : SyncUpdateSingleLineRepository<Declaration>(
     tableName = DECLARATIONS_TABLE_NAME,
+    entitySyncKeyOf = Declaration::syncId,
     enqueueSyncUpsert = syncQueueRepository::enqueueUpsert,
     inWriteTransaction = { block -> db.inTransaction(block) },
 ) {

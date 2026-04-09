@@ -106,6 +106,7 @@ private class TransactionCreateRepository(
     syncQueueRepository: SyncQueueRepository,
 ) : SyncCreateSingleItemRepository<Transact>(
     tableName = TRANSACTION_TABLE_NAME,
+    entitySyncKeyOf = Transact::syncId,
     enqueueSyncUpsert = syncQueueRepository::enqueueUpsert,
     inWriteTransaction = { block -> db.inTransaction(block) },
 ) {
@@ -121,6 +122,7 @@ private class TransactionUpdateRepository(
     syncQueueRepository: SyncQueueRepository,
 ) : SyncUpdateSingleLineRepository<Transact>(
     tableName = TRANSACTION_TABLE_NAME,
+    entitySyncKeyOf = Transact::syncId,
     enqueueSyncUpsert = syncQueueRepository::enqueueUpsert,
     inWriteTransaction = { block -> db.inTransaction(block) },
 ) {

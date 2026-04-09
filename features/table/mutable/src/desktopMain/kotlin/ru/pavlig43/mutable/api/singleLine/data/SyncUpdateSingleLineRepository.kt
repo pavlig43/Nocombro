@@ -11,6 +11,7 @@ import ru.pavlig43.core.model.SingleItem
  */
 abstract class SyncUpdateSingleLineRepository<I : SingleItem>(
     private val tableName: String,
+    private val entitySyncKeyOf: (I) -> String,
     private val enqueueSyncUpsert: suspend (tableName: String, entityLocalId: String) -> Unit,
     private val inWriteTransaction: suspend (block: suspend () -> Unit) -> Unit,
 ) : UpdateSingleLineRepository<I> {
@@ -31,7 +32,7 @@ abstract class SyncUpdateSingleLineRepository<I : SingleItem>(
             inWriteTransaction {
                 validate(itemToUpdate).getOrThrow()
                 updateInDb(itemToUpdate)
-                enqueueSyncUpsert(tableName, itemToUpdate.id.toString())
+                enqueueSyncUpsert(tableName, entitySyncKeyOf(itemToUpdate))
             }
         }
     }

@@ -10,6 +10,7 @@ import ru.pavlig43.core.model.SingleItem
  */
 abstract class SyncCreateSingleItemRepository<I : SingleItem>(
     private val tableName: String,
+    private val entitySyncKeyOf: (I) -> String,
     private val enqueueSyncUpsert: suspend (tableName: String, entityLocalId: String) -> Unit,
     private val inWriteTransaction: suspend (block: suspend () -> Int) -> Int,
 ) : CreateSingleItemRepository<I> {
@@ -27,7 +28,7 @@ abstract class SyncCreateSingleItemRepository<I : SingleItem>(
             inWriteTransaction {
                 validate(itemToCreate).getOrThrow()
                 val entityId = createInDb(itemToCreate)
-                enqueueSyncUpsert(tableName, entityId.toString())
+                enqueueSyncUpsert(tableName, entitySyncKeyOf(itemToCreate))
                 entityId
             }
         }

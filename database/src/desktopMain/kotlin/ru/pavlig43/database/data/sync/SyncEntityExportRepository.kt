@@ -11,6 +11,7 @@ import ru.pavlig43.database.data.expense.EXPENSE_TABLE_NAME
 import ru.pavlig43.database.data.product.COMPOSITION_TABLE_NAME
 import ru.pavlig43.database.data.product.PRODUCT_DECLARATION_TABLE_NAME
 import ru.pavlig43.database.data.product.PRODUCT_TABLE_NAME
+import ru.pavlig43.database.data.product.SAFETY_STOCK_TABLE_NAME
 import ru.pavlig43.database.data.transact.TRANSACTION_TABLE_NAME
 import ru.pavlig43.database.data.transact.buy.BUY_TABLE_NAME
 import ru.pavlig43.database.data.transact.reminder.REMINDER_TABLE_NAME
@@ -102,6 +103,20 @@ class SyncEntityExportRepository(
                         recNds = product.recNds,
                         updatedAt = product.updatedAt,
                         deletedAt = product.deletedAt,
+                    )
+                )
+            }
+
+            SAFETY_STOCK_TABLE_NAME -> db.safetyStockDao.getBySyncId(entitySyncId)?.let { safetyStock ->
+                val product = db.productDao.getProduct(safetyStock.productId)
+                encodePayload(
+                    SafetyStockSyncPayload(
+                        syncId = safetyStock.syncId,
+                        productSyncId = product.syncId,
+                        reorderPoint = safetyStock.reorderPoint,
+                        orderQuantity = safetyStock.orderQuantity,
+                        updatedAt = safetyStock.updatedAt,
+                        deletedAt = safetyStock.deletedAt,
                     )
                 )
             }

@@ -10,8 +10,10 @@ import ru.pavlig43.core.model.SingleItem
 import ru.pavlig43.database.data.sync.defaultSyncId
 import ru.pavlig43.database.data.sync.defaultUpdatedAt
 
+const val SAFETY_STOCK_TABLE_NAME = "safety_stock"
+
 @Entity(
-    tableName = "safety_stock",
+    tableName = SAFETY_STOCK_TABLE_NAME,
     foreignKeys = [
         ForeignKey(
             entity = Product::class,
