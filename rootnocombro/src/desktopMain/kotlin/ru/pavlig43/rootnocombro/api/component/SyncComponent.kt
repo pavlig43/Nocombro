@@ -5,9 +5,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.core.componentCoroutineScope
 import ru.pavlig43.database.data.sync.SyncService
@@ -38,7 +40,17 @@ class SyncComponent(
      */
     fun refreshStatus() {
         coroutineScope.launch {
-            updateUiState(syncService.getStatus(), isSyncRunning = false, lastError = null)
+            _uiState.update {
+                it.copy(
+                    isSyncRunning = true,
+                    runningActionLabel = "Проверка",
+                    lastError = null,
+                )
+            }
+            val status = withContext(Dispatchers.IO) {
+                syncService.getStatus()
+            }
+            updateUiState(status, isSyncRunning = false, lastError = null)
         }
     }
 
@@ -54,7 +66,9 @@ class SyncComponent(
                     lastError = null,
                 )
             }
-            val result = syncService.syncOnce()
+            val result = withContext(Dispatchers.IO) {
+                syncService.syncOnce()
+            }
             updateUiState(
                 status = result.status,
                 isSyncRunning = false,
@@ -74,7 +88,9 @@ class SyncComponent(
                     lastError = null,
                 )
             }
-            val result = syncService.pushOnce()
+            val result = withContext(Dispatchers.IO) {
+                syncService.pushOnce()
+            }
             updateUiState(
                 status = result.status,
                 isSyncRunning = false,
@@ -94,7 +110,9 @@ class SyncComponent(
                     lastError = null,
                 )
             }
-            val result = syncService.pullOnce()
+            val result = withContext(Dispatchers.IO) {
+                syncService.pullOnce()
+            }
             updateUiState(
                 status = result.status,
                 isSyncRunning = false,

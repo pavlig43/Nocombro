@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.material3.Badge
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
@@ -101,17 +102,30 @@ private fun SyncStatusButton(
 
     Box {
         ToolTipProject(tooltipText = buildSyncSummary(syncUiState)) {
-            IconButton(onClick = { expanded = true }) {
+            IconButton(
+                onClick = { expanded = true },
+                enabled = !syncUiState.isSyncRunning,
+            ) {
                 Box {
-                    Icon(
-                        painter = painterResource(syncIcon(syncUiState)),
-                        contentDescription = "Sync status",
-                        tint = syncTint(syncUiState)
-                    )
+                    if (syncUiState.isSyncRunning) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(18.dp),
+                            strokeWidth = 2.dp,
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                    } else {
+                        Icon(
+                            painter = painterResource(syncIcon(syncUiState)),
+                            contentDescription = "Sync status",
+                            tint = syncTint(syncUiState)
+                        )
+                    }
                     if (
-                        syncUiState.failedChangesCount > 0 ||
-                        syncUiState.pendingChangesCount > 0 ||
-                        syncUiState.hasRemoteChanges
+                        !syncUiState.isSyncRunning && (
+                            syncUiState.failedChangesCount > 0 ||
+                                syncUiState.pendingChangesCount > 0 ||
+                                syncUiState.hasRemoteChanges
+                            )
                     ) {
                         Badge(
                             containerColor = when {
@@ -145,7 +159,6 @@ private fun SyncStatusButton(
                         TextButton(
                             modifier = Modifier.widthIn(min = 140.dp),
                             onClick = {
-                                expanded = false
                                 copySyncSnapshotToClipboard(syncUiState)
                             }
                         ) {
@@ -153,8 +166,8 @@ private fun SyncStatusButton(
                         }
                         TextButton(
                             modifier = Modifier.widthIn(min = 140.dp),
+                            enabled = !syncUiState.isSyncRunning,
                             onClick = {
-                                expanded = false
                                 onRefreshClick()
                             }
                         ) {
@@ -162,8 +175,8 @@ private fun SyncStatusButton(
                         }
                         TextButton(
                             modifier = Modifier.widthIn(min = 140.dp),
+                            enabled = !syncUiState.isSyncRunning,
                             onClick = {
-                                expanded = false
                                 onPushClick()
                             }
                         ) {
@@ -171,8 +184,8 @@ private fun SyncStatusButton(
                         }
                         TextButton(
                             modifier = Modifier.widthIn(min = 140.dp),
+                            enabled = !syncUiState.isSyncRunning,
                             onClick = {
-                                expanded = false
                                 onPullClick()
                             }
                         ) {
@@ -180,8 +193,8 @@ private fun SyncStatusButton(
                         }
                         FilledTonalButton(
                             modifier = Modifier.widthIn(min = 140.dp),
+                            enabled = !syncUiState.isSyncRunning,
                             onClick = {
-                                expanded = false
                                 onSyncClick()
                             }
                         ) {
@@ -262,11 +275,22 @@ private fun SyncDropdownContent(syncUiState: SyncUiState) {
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
-        Text(
-            text = "Синхронизация",
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onSurface
-        )
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Text(
+                text = "Синхронизация",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            if (syncUiState.isSyncRunning) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(16.dp),
+                    strokeWidth = 2.dp,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+            }
+        }
         Text(
             text = buildSyncTooltip(syncUiState),
             style = MaterialTheme.typography.bodyMedium,
