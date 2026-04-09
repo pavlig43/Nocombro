@@ -10,19 +10,17 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.core.componentCoroutineScope
-import ru.pavlig43.database.data.sync.SyncQueueRepository
-import ru.pavlig43.database.data.sync.SyncQueueStatus
-import ru.pavlig43.datetime.getCurrentLocalDateTime
+import ru.pavlig43.database.data.sync.SyncService
+import ru.pavlig43.database.data.sync.SyncStatusSnapshot
 
 /**
  * Компонент шапки, который держит локальное состояние синхронизации для UI.
  *
- * Пока удаленная часть не подключена, он показывает состояние локальной очереди и дает
- * единое место, куда позже можно будет добавить запросы `status check` и реальный `push/pull`.
+ * Компонент не знает деталей конкретного backend и работает через sync-service.
  */
 class SyncComponent(
     componentContext: ComponentContext,
-    private val syncQueueRepository: SyncQueueRepository,
+    private val syncService: SyncService,
 ) : ComponentContext by componentContext {
 
     private val coroutineScope = componentCoroutineScope()
@@ -40,43 +38,46 @@ class SyncComponent(
      */
     fun refreshStatus() {
         coroutineScope.launch {
-            val pendingCount = syncQueueRepository.getChangesCount(SyncQueueStatus.PENDING)
-            val failedCount = syncQueueRepository.getChangesCount(SyncQueueStatus.FAILED)
-            _uiState.update {
-                it.copy(
-                    pendingChangesCount = pendingCount,
-                    failedChangesCount = failedCount,
-                    hasRemoteChanges = false,
-                    isSyncRunning = false,
-                    remoteSyncConfigured = false,
-                    lastStatusCheckAt = getCurrentLocalDateTime(),
-                )
-            }
+            updateUiState(syncService.getStatus(), isSyncRunning = false, lastError = null)
         }
     }
 
     /**
      * Действие по иконке синхронизации в шапке.
-     *
-     * Пока сервер еще не подключен, используем кнопку как ручное обновление локального статуса
-     * и явно показываем, что удаленная синхронизация находится в разработке.
      */
     fun onSyncClick() {
         coroutineScope.launch {
-            _uiState.update { it.copy(isSyncRunning = true) }
-            val pendingCount = syncQueueRepository.getChangesCount(SyncQueueStatus.PENDING)
-            val failedCount = syncQueueRepository.getChangesCount(SyncQueueStatus.FAILED)
-            _uiState.update {
-                it.copy(
-                    pendingChangesCount = pendingCount,
-                    failedChangesCount = failedCount,
-                    hasRemoteChanges = false,
-                    isSyncRunning = false,
-                    remoteSyncConfigured = false,
-                    lastStatusCheckAt = getCurrentLocalDateTime(),
-                    lastError = null,
-                )
-            }
+            _uiState.update { it.copy(isSyncRunning = true, lastError = null) }
+            val result = syncService.syncOnce()
+            updateUiState(
+                status = result.status,
+                isSyncRunning = false,
+                lastError = result.error,
+                lastSyncAt = result.lastSyncAt,
+            )
+        }
+    }
+
+    private fun updateUiState(
+        status: SyncStatusSnapshot,
+        isSyncRunning: Boolean,
+        lastError: String?,
+        lastSyncAt: LocalDateTime? = null,
+    ) {
+        _uiState.update {
+            it.copy(
+                pendingChangesCount = status.pendingChangesCount,
+                failedChangesCount = status.failedChangesCount,
+                hasRemoteChanges = status.hasRemoteChanges,
+                isSyncRunning = isSyncRunning,
+                remoteSyncConfigured = status.remoteSyncConfigured,
+                lastStatusCheckAt = status.lastStatusCheckAt,
+                lastSyncAt = lastSyncAt ?: status.lastSyncAt,
+                lastPullAt = status.lastPullAt,
+                lastRemoteCursor = status.lastRemoteCursor,
+                payloadVersion = status.payloadVersion,
+                lastError = lastError,
+            )
         }
     }
 
@@ -101,6 +102,9 @@ data class SyncUiState(
     val remoteSyncConfigured: Boolean = false,
     val lastStatusCheckAt: LocalDateTime? = null,
     val lastSyncAt: LocalDateTime? = null,
+    val lastPullAt: LocalDateTime? = null,
+    val lastRemoteCursor: String? = null,
+    val payloadVersion: Int = 0,
     val lastError: String? = null,
 )
 

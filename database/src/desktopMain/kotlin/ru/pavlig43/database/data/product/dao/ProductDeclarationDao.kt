@@ -44,6 +44,9 @@ abstract class ProductDeclarationDao {
     @Query("SELECT * FROM product_declaration WHERE product_id = :productId")
     abstract suspend fun getProductDeclarationIn(productId: Int): List<ProductDeclarationIn>
 
+    @Query("SELECT * FROM product_declaration WHERE sync_id = :syncId")
+    abstract suspend fun getProductDeclarationBySyncId(syncId: String): ProductDeclarationIn?
+
     /**
      * Создаёт Flow для отслеживания всех связей продуктов и деклараций.
      *

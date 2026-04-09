@@ -10,6 +10,7 @@ import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import ru.pavlig43.core.mapParallel
+import ru.pavlig43.database.data.batch.BATCH_MOVEMENT_TABLE_NAME
 import ru.pavlig43.database.data.batch.BatchBD
 import ru.pavlig43.database.data.batch.BatchMovement
 import ru.pavlig43.database.data.batch.BatchOut
@@ -43,6 +44,12 @@ abstract class BatchMovementDao {
     @Query("SELECT * FROM batch_movement WHERE transaction_id = :transactionId")
     @Transaction
     abstract suspend fun getByTransactionId(transactionId: Int): List<MovementOut>
+
+    @Query("SELECT * FROM $BATCH_MOVEMENT_TABLE_NAME WHERE sync_id = :syncId")
+    abstract suspend fun getMovementBySyncId(syncId: String): BatchMovement?
+
+    @Query("SELECT * FROM $BATCH_MOVEMENT_TABLE_NAME WHERE id = :id")
+    abstract suspend fun getMovement(id: Int): BatchMovement
 
     @Transaction
     @Query("SELECT * FROM batch_movement WHERE batch_id IN (SELECT id FROM batch WHERE product_id = :productId)")

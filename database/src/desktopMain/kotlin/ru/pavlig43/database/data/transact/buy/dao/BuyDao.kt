@@ -27,6 +27,9 @@ abstract class BuyDao {
     @Upsert
     abstract suspend fun upsertBuyBd(buy: BuyBDIn)
 
+    @Query("SELECT * FROM $BUY_TABLE_NAME WHERE sync_id = :syncId")
+    abstract suspend fun getBuyBySyncId(syncId: String): BuyBDIn?
+
     @Query("DELETE FROM $BUY_TABLE_NAME WHERE id IN (:ids)")
     abstract suspend fun deleteByIds(ids: List<Int>)
 

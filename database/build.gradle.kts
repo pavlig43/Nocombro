@@ -23,6 +23,7 @@ kotlin{
         implementation(projects.datetime)
         api(libs.androidx.room.runtime)
         api(libs.androidx.sqlite.bundled)
+        implementation("tech.ydb.jdbc:ydb-jdbc-driver:2.3.21")
     }
 
 }

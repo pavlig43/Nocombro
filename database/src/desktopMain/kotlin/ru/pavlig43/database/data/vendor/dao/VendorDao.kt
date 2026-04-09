@@ -24,6 +24,9 @@ interface VendorDao {
     @Query("SELECT * from $VENDOR_TABLE_NAME WHERE id = :id")
     suspend fun getVendor(id: Int): Vendor
 
+    @Query("SELECT * from $VENDOR_TABLE_NAME WHERE sync_id = :syncId")
+    suspend fun getVendorBySyncId(syncId: String): Vendor?
+
     @Query(
         """
     SELECT * FROM $VENDOR_TABLE_NAME

@@ -49,6 +49,9 @@ interface ExpenseDao {
     @Query("SELECT * FROM $EXPENSE_TABLE_NAME WHERE id =:expenseId")
     suspend fun getExpense(expenseId: Int): ExpenseBD?
 
+    @Query("SELECT * FROM $EXPENSE_TABLE_NAME WHERE sync_id = :syncId")
+    suspend fun getExpenseBySyncId(syncId: String): ExpenseBD?
+
     @Upsert
     suspend fun updateExpense(expenseBD: ExpenseBD)
 

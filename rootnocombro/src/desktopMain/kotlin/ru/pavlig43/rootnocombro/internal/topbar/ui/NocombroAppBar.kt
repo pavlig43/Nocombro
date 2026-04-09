@@ -11,13 +11,13 @@ import androidx.compose.material3.Badge
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -42,6 +42,8 @@ import ru.pavlig43.theme.light_mode
 import ru.pavlig43.theme.menu
 import ru.pavlig43.theme.refresh
 import ru.pavlig43.theme.warning
+import java.awt.Toolkit
+import java.awt.datatransfer.StringSelection
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -52,11 +54,15 @@ internal fun NocombroAppBar(
 ) {
     val darkMode by settingsComponent.darkMode.collectAsState()
     val syncUiState by syncComponent.uiState.collectAsState()
+
     CenterAlignedTopAppBar(
         title = { Text(text = "Nocombro") },
         navigationIcon = {
-            IconButton(onClick = onOpenDrawer){
-                Icon(painter = painterResource( Res.drawable.menu), contentDescription = "Menu")
+            IconButton(onClick = onOpenDrawer) {
+                Icon(
+                    painter = painterResource(Res.drawable.menu),
+                    contentDescription = "Menu",
+                )
             }
         },
         actions = {
@@ -67,8 +73,10 @@ internal fun NocombroAppBar(
             )
             IconButton(onClick = settingsComponent::toggleDarkMode) {
                 Icon(
-                    painter = painterResource(if (darkMode) Res.drawable.light_mode else Res.drawable.dark_mode),
-                    contentDescription = "Toggle theme"
+                    painter = painterResource(
+                        if (darkMode) Res.drawable.light_mode else Res.drawable.dark_mode
+                    ),
+                    contentDescription = "Toggle theme",
                 )
             }
         }
@@ -92,7 +100,11 @@ private fun SyncStatusButton(
                         contentDescription = "Sync status",
                         tint = syncTint(syncUiState)
                     )
-                    if (syncUiState.failedChangesCount > 0 || syncUiState.pendingChangesCount > 0 || syncUiState.hasRemoteChanges) {
+                    if (
+                        syncUiState.failedChangesCount > 0 ||
+                        syncUiState.pendingChangesCount > 0 ||
+                        syncUiState.hasRemoteChanges
+                    ) {
                         Badge(
                             containerColor = when {
                                 syncUiState.failedChangesCount > 0 -> MaterialTheme.colorScheme.error
@@ -120,6 +132,14 @@ private fun SyncStatusButton(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
+                        TextButton(
+                            onClick = {
+                                expanded = false
+                                copySyncSnapshotToClipboard(syncUiState)
+                            }
+                        ) {
+                            Text("Скопировать")
+                        }
                         TextButton(
                             onClick = {
                                 expanded = false
@@ -159,7 +179,7 @@ private fun syncTint(syncUiState: SyncUiState): Color = when {
 }
 
 private fun buildSyncTooltip(syncUiState: SyncUiState): String {
-    val lines = buildList {
+    return buildList {
         add(
             when {
                 syncUiState.failedChangesCount > 0 -> "Есть ошибки синхронизации"
@@ -168,8 +188,16 @@ private fun buildSyncTooltip(syncUiState: SyncUiState): String {
                 else -> "Локальная база синхронизирована"
             }
         )
-        if (!syncUiState.remoteSyncConfigured) {
-            add("Удаленная синхронизация пока не подключена")
+        add(
+            if (syncUiState.remoteSyncConfigured) {
+                "Удаленный sync backend подключен"
+            } else {
+                "Удаленный sync backend пока не подключен"
+            }
+        )
+        add("Payload version: ${syncUiState.payloadVersion}")
+        syncUiState.lastError?.let {
+            add("Последняя ошибка: $it")
         }
         if (syncUiState.pendingChangesCount > 0) {
             add("Локальных изменений: ${syncUiState.pendingChangesCount}")
@@ -177,11 +205,13 @@ private fun buildSyncTooltip(syncUiState: SyncUiState): String {
         if (syncUiState.failedChangesCount > 0) {
             add("Ошибок очереди: ${syncUiState.failedChangesCount}")
         }
+        syncUiState.lastRemoteCursor?.let {
+            add("Remote cursor: $it")
+        }
         syncUiState.lastStatusCheckAt?.let {
             add("Последняя проверка: ${it.format(dateTimeFormat)}")
         }
-    }
-    return lines.joinToString(separator = "\n")
+    }.joinToString(separator = "\n")
 }
 
 private fun buildSyncSummary(syncUiState: SyncUiState): String {
@@ -216,5 +246,44 @@ private fun SyncDropdownContent(syncUiState: SyncUiState) {
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
+        syncUiState.lastPullAt?.let {
+            Text(
+                text = "Последний pull: ${it.format(dateTimeFormat)}",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        Text(
+            text = "Payload v${syncUiState.payloadVersion}",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        syncUiState.lastRemoteCursor?.let {
+            Text(
+                text = "Cursor: $it",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
     }
+}
+
+private fun copySyncSnapshotToClipboard(
+    syncUiState: SyncUiState,
+) {
+    val clipboard = Toolkit.getDefaultToolkit().systemClipboard
+    val snapshot = buildString {
+        appendLine("sync.remote_configured=${syncUiState.remoteSyncConfigured}")
+        appendLine("sync.payload_version=${syncUiState.payloadVersion}")
+        appendLine("sync.pending=${syncUiState.pendingChangesCount}")
+        appendLine("sync.failed=${syncUiState.failedChangesCount}")
+        appendLine("sync.has_remote_changes=${syncUiState.hasRemoteChanges}")
+        appendLine("sync.last_sync_at=${syncUiState.lastSyncAt}")
+        appendLine("sync.last_pull_at=${syncUiState.lastPullAt}")
+        appendLine("sync.last_status_check_at=${syncUiState.lastStatusCheckAt}")
+        appendLine("sync.last_remote_cursor=${syncUiState.lastRemoteCursor}")
+        appendLine("sync.last_error=${syncUiState.lastError}")
+    }.trimEnd()
+
+    clipboard.setContents(StringSelection(snapshot), null)
 }

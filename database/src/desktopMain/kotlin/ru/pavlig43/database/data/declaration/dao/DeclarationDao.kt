@@ -29,6 +29,9 @@ interface DeclarationDao {
     @Query("SELECT * FROM $DECLARATIONS_TABLE_NAME WHERE id = :id")
     suspend fun getDeclaration(id: Int): Declaration
 
+    @Query("SELECT * FROM $DECLARATIONS_TABLE_NAME WHERE sync_id = :syncId")
+    suspend fun getDeclarationBySyncId(syncId: String): Declaration?
+
     @Query("SELECT * FROM $DECLARATIONS_TABLE_NAME WHERE id in (:ids)")
     fun observeDeclarationsByIds(ids: List<Int>): Flow<List<Declaration>>
 
