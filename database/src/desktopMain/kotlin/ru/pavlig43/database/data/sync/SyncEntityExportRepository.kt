@@ -29,6 +29,7 @@ class SyncEntityExportRepository(
         } else {
             loadPayloadJson(change.entityTable, change.entityLocalId)
         }
+        val reminderEmailQueue = loadReminderEmailQueueChange(change)
 
         return RemotePushChange(
             entityTable = change.entityTable,
@@ -37,6 +38,37 @@ class SyncEntityExportRepository(
             sourceQueueIds = change.sourceQueueIds,
             lastQueuedAt = change.lastQueuedAt,
             payloadJson = payloadJson,
+            reminderEmailQueue = reminderEmailQueue,
+        )
+    }
+
+    private suspend fun loadReminderEmailQueueChange(
+        change: SyncPushChange,
+    ): ReminderEmailQueueChange? {
+        if (change.entityTable != REMINDER_TABLE_NAME) {
+            return null
+        }
+
+        if (change.changeType == SyncChangeType.DELETE) {
+            return ReminderEmailQueueChange(
+                reminderSyncId = change.entityLocalId,
+                transactionSyncId = null,
+                reminderText = null,
+                reminderAt = null,
+                updatedAt = change.lastQueuedAt,
+                deletedAt = change.lastQueuedAt,
+            )
+        }
+
+        val reminder = db.reminderDao.getReminderBySyncId(change.entityLocalId) ?: return null
+        val transaction = db.transactionDao.getTransaction(reminder.transactionId)
+        return ReminderEmailQueueChange(
+            reminderSyncId = reminder.syncId,
+            transactionSyncId = transaction.syncId,
+            reminderText = reminder.text,
+            reminderAt = reminder.reminderDateTime,
+            updatedAt = reminder.updatedAt,
+            deletedAt = reminder.deletedAt,
         )
     }
 

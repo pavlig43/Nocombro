@@ -35,7 +35,12 @@ class YdbJdbcSyncGateway(
         return runCatching {
             withConnection { connection ->
                 ensureSyncTable(connection)
+                ensureReminderQueueTable(connection)
                 upsertChanges(
+                    connection = connection,
+                    payload = payload,
+                )
+                upsertReminderQueue(
                     connection = connection,
                     payload = payload,
                 )
@@ -56,6 +61,7 @@ class YdbJdbcSyncGateway(
         return runCatching {
             withConnection { connection ->
                 ensureSyncTable(connection)
+                ensureReminderQueueTable(connection)
                 val changes = loadRemoteChanges(
                     connection = connection,
                     deviceId = deviceId,
@@ -147,6 +153,67 @@ class YdbJdbcSyncGateway(
 
         connection.createStatement().use { statement ->
             statement.execute(sql)
+        }
+    }
+
+    private fun ensureReminderQueueTable(
+        connection: Connection,
+    ) {
+        val sql = """
+            CREATE TABLE IF NOT EXISTS `${config.reminderQueueTablePath}` (
+                reminder_sync_id Utf8,
+                transaction_sync_id Utf8,
+                reminder_text Utf8,
+                reminder_at Utf8,
+                updated_at Utf8,
+                deleted_at Utf8,
+                PRIMARY KEY (reminder_sync_id)
+            )
+        """.trimIndent()
+
+        connection.createStatement().use { statement ->
+            statement.execute(sql)
+        }
+    }
+
+    private fun upsertReminderQueue(
+        connection: Connection,
+        payload: RemotePushPayload,
+    ) {
+        val reminderChanges = payload.changes.mapNotNull { it.reminderEmailQueue }
+        if (reminderChanges.isEmpty()) {
+            return
+        }
+
+        val sql = """
+            UPSERT INTO `${config.reminderQueueTablePath}` (
+                reminder_sync_id,
+                transaction_sync_id,
+                reminder_text,
+                reminder_at,
+                updated_at,
+                deleted_at
+            ) VALUES (
+                CAST(? AS Utf8),
+                CAST(? AS Utf8),
+                CAST(? AS Utf8),
+                CAST(? AS Utf8),
+                CAST(? AS Utf8),
+                CAST(? AS Utf8)
+            )
+        """.trimIndent()
+
+        connection.prepareStatement(sql).use { statement ->
+            reminderChanges.forEach { change ->
+                statement.setString(1, change.reminderSyncId)
+                statement.setString(2, change.transactionSyncId)
+                statement.setString(3, change.reminderText)
+                statement.setString(4, change.reminderAt?.toString())
+                statement.setString(5, change.updatedAt.toString())
+                statement.setString(6, change.deletedAt?.toString())
+                statement.addBatch()
+            }
+            statement.executeBatch()
         }
     }
 
