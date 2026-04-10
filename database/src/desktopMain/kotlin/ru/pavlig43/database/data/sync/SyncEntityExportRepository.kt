@@ -29,7 +29,7 @@ class SyncEntityExportRepository(
         } else {
             loadPayloadJson(change.entityTable, change.entityLocalId)
         }
-        val reminderEmailQueue = loadReminderEmailQueueChange(change)
+        val reminderEmailSource = loadReminderEmailSourceChange(change)
 
         return RemotePushChange(
             entityTable = change.entityTable,
@@ -38,21 +38,23 @@ class SyncEntityExportRepository(
             sourceQueueIds = change.sourceQueueIds,
             lastQueuedAt = change.lastQueuedAt,
             payloadJson = payloadJson,
-            reminderEmailQueue = reminderEmailQueue,
+            reminderEmailSource = reminderEmailSource,
         )
     }
 
-    private suspend fun loadReminderEmailQueueChange(
+    private suspend fun loadReminderEmailSourceChange(
         change: SyncPushChange,
-    ): ReminderEmailQueueChange? {
+    ): ReminderEmailSourceChange? {
         if (change.entityTable != REMINDER_TABLE_NAME) {
             return null
         }
 
         if (change.changeType == SyncChangeType.DELETE) {
-            return ReminderEmailQueueChange(
+            return ReminderEmailSourceChange(
                 reminderSyncId = change.entityLocalId,
-                transactionSyncId = null,
+                transactionSyncId = "",
+                transactionType = "",
+                transactionCreatedAt = change.lastQueuedAt,
                 reminderText = null,
                 reminderAt = null,
                 updatedAt = change.lastQueuedAt,
@@ -62,9 +64,11 @@ class SyncEntityExportRepository(
 
         val reminder = db.reminderDao.getReminderBySyncId(change.entityLocalId) ?: return null
         val transaction = db.transactionDao.getTransaction(reminder.transactionId)
-        return ReminderEmailQueueChange(
+        return ReminderEmailSourceChange(
             reminderSyncId = reminder.syncId,
             transactionSyncId = transaction.syncId,
+            transactionType = transaction.transactionType.displayName,
+            transactionCreatedAt = transaction.createdAt,
             reminderText = reminder.text,
             reminderAt = reminder.reminderDateTime,
             updatedAt = reminder.updatedAt,

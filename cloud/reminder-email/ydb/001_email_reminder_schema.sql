@@ -1,8 +1,10 @@
 ﻿-- Reminder email pipeline schema for YDB (single daily sender flow).
 
-CREATE TABLE IF NOT EXISTS `reminder_email_queue` (
+CREATE TABLE IF NOT EXISTS `reminder_email_source` (
     reminder_sync_id Utf8,
     transaction_sync_id Utf8,
+    transaction_type Utf8,
+    transaction_created_at Utf8,
     reminder_text Utf8,
     reminder_at Utf8,
     updated_at Utf8,
@@ -11,11 +13,10 @@ CREATE TABLE IF NOT EXISTS `reminder_email_queue` (
 );
 
 CREATE TABLE IF NOT EXISTS `reminder_recipient` (
-    reminder_sync_id Utf8,
     email Utf8,
     is_active Bool,
     updated_at Utf8,
-    PRIMARY KEY (reminder_sync_id, email)
+    PRIMARY KEY (email)
 );
 
 CREATE TABLE IF NOT EXISTS `reminder_email_delivery` (

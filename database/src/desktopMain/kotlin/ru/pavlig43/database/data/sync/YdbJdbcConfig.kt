@@ -4,7 +4,7 @@ data class YdbJdbcConfig(
     val jdbcUrl: String,
     val authToken: String?,
     val tablePath: String,
-    val reminderQueueTablePath: String,
+    val reminderSourceTablePath: String,
 ) {
     companion object {
         fun fromEnvironment(): YdbJdbcConfig? {
@@ -18,18 +18,18 @@ data class YdbJdbcConfig(
                 ?.takeIf(String::isNotBlank)
                 ?: "sync_push_log"
 
-            val reminderQueueTablePath = readSetting(
-                "NOCOMBRO_YDB_REMINDER_QUEUE_TABLE",
-                "nocombro.ydb.reminderQueueTable"
+            val reminderSourceTablePath = readSetting(
+                "NOCOMBRO_YDB_REMINDER_SOURCE_TABLE",
+                "nocombro.ydb.reminderSourceTable"
             )?.trim()
                 ?.takeIf(String::isNotBlank)
-                ?: "reminder_email_queue"
+                ?: "reminder_email_source"
 
             return YdbJdbcConfig(
                 jdbcUrl = jdbcUrl,
                 authToken = readSetting("NOCOMBRO_YDB_TOKEN", "nocombro.ydb.token")?.trim(),
                 tablePath = tablePath,
-                reminderQueueTablePath = reminderQueueTablePath,
+                reminderSourceTablePath = reminderSourceTablePath,
             )
         }
 

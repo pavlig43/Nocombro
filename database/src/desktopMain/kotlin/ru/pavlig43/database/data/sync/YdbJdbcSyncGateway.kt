@@ -35,12 +35,12 @@ class YdbJdbcSyncGateway(
         return runCatching {
             withConnection { connection ->
                 ensureSyncTable(connection)
-                ensureReminderQueueTable(connection)
+                ensureReminderSourceTable(connection)
                 upsertChanges(
                     connection = connection,
                     payload = payload,
                 )
-                upsertReminderQueue(
+                upsertReminderSource(
                     connection = connection,
                     payload = payload,
                 )
@@ -61,7 +61,7 @@ class YdbJdbcSyncGateway(
         return runCatching {
             withConnection { connection ->
                 ensureSyncTable(connection)
-                ensureReminderQueueTable(connection)
+                ensureReminderSourceTable(connection)
                 val changes = loadRemoteChanges(
                     connection = connection,
                     deviceId = deviceId,
@@ -156,13 +156,15 @@ class YdbJdbcSyncGateway(
         }
     }
 
-    private fun ensureReminderQueueTable(
+    private fun ensureReminderSourceTable(
         connection: Connection,
     ) {
         val sql = """
-            CREATE TABLE IF NOT EXISTS `${config.reminderQueueTablePath}` (
+            CREATE TABLE IF NOT EXISTS `${config.reminderSourceTablePath}` (
                 reminder_sync_id Utf8,
                 transaction_sync_id Utf8,
+                transaction_type Utf8,
+                transaction_created_at Utf8,
                 reminder_text Utf8,
                 reminder_at Utf8,
                 updated_at Utf8,
@@ -176,24 +178,28 @@ class YdbJdbcSyncGateway(
         }
     }
 
-    private fun upsertReminderQueue(
+    private fun upsertReminderSource(
         connection: Connection,
         payload: RemotePushPayload,
     ) {
-        val reminderChanges = payload.changes.mapNotNull { it.reminderEmailQueue }
+        val reminderChanges = payload.changes.mapNotNull { it.reminderEmailSource }
         if (reminderChanges.isEmpty()) {
             return
         }
 
         val sql = """
-            UPSERT INTO `${config.reminderQueueTablePath}` (
+            UPSERT INTO `${config.reminderSourceTablePath}` (
                 reminder_sync_id,
                 transaction_sync_id,
+                transaction_type,
+                transaction_created_at,
                 reminder_text,
                 reminder_at,
                 updated_at,
                 deleted_at
             ) VALUES (
+                CAST(? AS Utf8),
+                CAST(? AS Utf8),
                 CAST(? AS Utf8),
                 CAST(? AS Utf8),
                 CAST(? AS Utf8),
@@ -207,10 +213,12 @@ class YdbJdbcSyncGateway(
             reminderChanges.forEach { change ->
                 statement.setString(1, change.reminderSyncId)
                 statement.setString(2, change.transactionSyncId)
-                statement.setString(3, change.reminderText)
-                statement.setString(4, change.reminderAt?.toString())
-                statement.setString(5, change.updatedAt.toString())
-                statement.setString(6, change.deletedAt?.toString())
+                statement.setString(3, change.transactionType)
+                statement.setString(4, change.transactionCreatedAt.toString())
+                statement.setString(5, change.reminderText)
+                statement.setString(6, change.reminderAt?.toString())
+                statement.setString(7, change.updatedAt.toString())
+                statement.setString(8, change.deletedAt?.toString())
                 statement.addBatch()
             }
             statement.executeBatch()
