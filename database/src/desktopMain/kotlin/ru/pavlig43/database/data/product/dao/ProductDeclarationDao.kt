@@ -44,6 +44,9 @@ abstract class ProductDeclarationDao {
     @Query("SELECT * FROM product_declaration WHERE product_id = :productId")
     abstract suspend fun getProductDeclarationIn(productId: Int): List<ProductDeclarationIn>
 
+    @Query("SELECT * FROM product_declaration WHERE sync_id = :syncId")
+    abstract suspend fun getProductDeclarationBySyncId(syncId: String): ProductDeclarationIn?
+
     /**
      * Создаёт Flow для отслеживания всех связей продуктов и деклараций.
      *
@@ -161,6 +164,7 @@ private fun InternalProductDeclaration.toProductDeclarationOut(): ProductDeclara
         id = productDeclaration.id,
         productId = productDeclaration.productId,
         declarationId = productDeclaration.declarationId,
+        isProductInDeclaration = productDeclaration.isProductInDeclaration,
         declarationName = declaration.displayName,
         vendorName = declaration.vendorName,
         isActual = declaration.bestBefore > getCurrentLocalDate(),

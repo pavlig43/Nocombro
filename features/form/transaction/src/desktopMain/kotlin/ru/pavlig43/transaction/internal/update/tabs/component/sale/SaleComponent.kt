@@ -163,7 +163,9 @@ internal class SaleComponent(
         return SaleUi(
             composeId = composeId,
             movementId = movementId,
+            movementSyncId = movementSyncId,
             batchId = batchId,
+            batchSyncId = batchSyncId,
             productId = productId,
             productName = productName,
             count = DecimalData3(count),
@@ -174,6 +176,7 @@ internal class SaleComponent(
             price = DecimalData2(price),
             ndsPercent = ndsPercent,
             comment = comment,
+            syncId = syncId,
             id = id
         )
     }
@@ -187,13 +190,16 @@ internal class SaleComponent(
             ndsPercent = ndsPercent,
             comment = comment,
             id = id,
+            syncId = syncId,
             productId = productId,
             productName = productName,
             batchId = batchId,
+            batchSyncId = batchSyncId,
             vendorName = vendorName,
             clientName = clientName,
             clientId = clientId,
-            movementId = movementId
+            movementId = movementId,
+            movementSyncId = movementSyncId,
         )
     }
 

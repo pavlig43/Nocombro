@@ -3,12 +3,18 @@ package ru.pavlig43.database.data.product
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Index
 import androidx.room.PrimaryKey
+import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.core.model.CollectionObject
 import ru.pavlig43.database.data.declaration.Declaration
+import ru.pavlig43.database.data.sync.defaultSyncId
+import ru.pavlig43.database.data.sync.defaultUpdatedAt
+
+const val PRODUCT_DECLARATION_TABLE_NAME = "product_declaration"
 
 @Entity(
-    tableName = "product_declaration",
+    tableName = PRODUCT_DECLARATION_TABLE_NAME,
     foreignKeys = [
         ForeignKey(
             entity = Product::class,
@@ -22,7 +28,8 @@ import ru.pavlig43.database.data.declaration.Declaration
             childColumns = ["declaration_id"],
             onDelete = ForeignKey.CASCADE
         )
-    ]
+    ],
+    indices = [Index(value = ["sync_id"], unique = true)]
 )
 data class ProductDeclarationIn(
     @ColumnInfo("product_id", index = true)
@@ -31,14 +38,27 @@ data class ProductDeclarationIn(
     @ColumnInfo("declaration_id", index = true)
     val declarationId: Int,
 
+    @ColumnInfo("is_product_in_declaration", defaultValue = "0")
+    val isProductInDeclaration: Boolean = false,
+
     @PrimaryKey(autoGenerate = true)
-    override val id: Int = 0
+    override val id: Int = 0,
+
+    @ColumnInfo("sync_id")
+    val syncId: String = defaultSyncId(),
+
+    @ColumnInfo("updated_at")
+    val updatedAt: LocalDateTime = defaultUpdatedAt(),
+
+    @ColumnInfo("deleted_at")
+    val deletedAt: LocalDateTime? = null,
 ) : CollectionObject
 
 data class ProductDeclarationOut(
     override val id: Int,
     val productId: Int,
     val declarationId: Int,
+    val isProductInDeclaration: Boolean,
     val declarationName: String,
     val vendorName: String,
     val isActual: Boolean

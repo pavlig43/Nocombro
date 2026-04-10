@@ -3,6 +3,7 @@ package ru.pavlig43.database.data.transact.ingredient
 import kotlinx.datetime.LocalDate
 import ru.pavlig43.core.model.CollectionObject
 import ru.pavlig43.database.data.product.ProductType
+import ru.pavlig43.database.data.sync.defaultSyncId
 import ru.pavlig43.datetime.emptyDate
 
 /**
@@ -19,5 +20,6 @@ data class IngredientBD(
     val productId: Int = 0,
     val productName: String = "",
     val vendorName: String = "",
-    override val id: Int = 0
+    val syncId: String = defaultSyncId(),
+    override val id: Int = 0,
 ) : CollectionObject

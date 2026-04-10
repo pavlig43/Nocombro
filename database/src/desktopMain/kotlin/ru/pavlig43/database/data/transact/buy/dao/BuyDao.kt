@@ -27,6 +27,9 @@ abstract class BuyDao {
     @Upsert
     abstract suspend fun upsertBuyBd(buy: BuyBDIn)
 
+    @Query("SELECT * FROM $BUY_TABLE_NAME WHERE sync_id = :syncId")
+    abstract suspend fun getBuyBySyncId(syncId: String): BuyBDIn?
+
     @Query("DELETE FROM $BUY_TABLE_NAME WHERE id IN (:ids)")
     abstract suspend fun deleteByIds(ids: List<Int>)
 
@@ -64,12 +67,15 @@ private fun InternalBuy.toBuyBDOut(): BuyBDOut {
         dateBorn = batchOut.batch.dateBorn,
         count = movementOut.movement.count,
         batchId = movementOut.movement.batchId,
+        batchSyncId = batchOut.batch.syncId,
         declarationName = batchOut.declaration.displayName,
         vendorName = batchOut.declaration.vendorName,
         price = buy.price,
         comment = buy.comment,
         ndsPercent = buy.ndsPercent,
+        syncId = buy.syncId,
         id = buy.id,
-        movementId = movementOut.movement.id
+        movementId = movementOut.movement.id,
+        movementSyncId = movementOut.movement.syncId,
     )
 }

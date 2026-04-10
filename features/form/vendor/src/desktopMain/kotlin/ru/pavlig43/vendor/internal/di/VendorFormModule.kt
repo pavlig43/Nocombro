@@ -4,9 +4,15 @@ import org.koin.dsl.module
 import ru.pavlig43.core.TransactionExecutor
 import ru.pavlig43.core.model.ChangeSet
 import ru.pavlig43.database.NocombroDatabase
+import ru.pavlig43.database.data.sync.SyncQueueRepository
+import ru.pavlig43.database.data.sync.defaultUpdatedAt
 import ru.pavlig43.database.data.vendor.Vendor
+import ru.pavlig43.database.data.vendor.VENDOR_TABLE_NAME
+import ru.pavlig43.database.inTransaction
 import ru.pavlig43.files.api.FilesDependencies
 import ru.pavlig43.mutable.api.singleLine.data.CreateSingleItemRepository
+import ru.pavlig43.mutable.api.singleLine.data.SyncCreateSingleItemRepository
+import ru.pavlig43.mutable.api.singleLine.data.SyncUpdateSingleLineRepository
 import ru.pavlig43.mutable.api.singleLine.data.UpdateSingleLineRepository
 import ru.pavlig43.vendor.api.VendorFormDependencies
 
@@ -15,26 +21,38 @@ internal fun createVendorFormModule(dependencies: VendorFormDependencies) = list
         single<NocombroDatabase> { dependencies.db }
         single<TransactionExecutor> { dependencies.transaction }
         single<FilesDependencies> {dependencies.filesDependencies  }
-        single<CreateSingleItemRepository<Vendor>> { VendorCreateRepository(get()) }
-        single<UpdateSingleLineRepository<Vendor>> { VendorUpdateRepository(get()) }
+        single { SyncQueueRepository(get<NocombroDatabase>().syncDao) }
+        single<CreateSingleItemRepository<Vendor>> { VendorCreateRepository(get(), get()) }
+        single<UpdateSingleLineRepository<Vendor>> { VendorUpdateRepository(get(), get()) }
 
     }
 )
 
-private class VendorCreateRepository(db: NocombroDatabase) : CreateSingleItemRepository<Vendor> {
+private class VendorCreateRepository(
+    db: NocombroDatabase,
+    syncQueueRepository: SyncQueueRepository,
+) : SyncCreateSingleItemRepository<Vendor>(
+    tableName = VENDOR_TABLE_NAME,
+    entitySyncKeyOf = Vendor::syncId,
+    enqueueSyncUpsert = syncQueueRepository::enqueueUpsert,
+    inWriteTransaction = { block -> db.inTransaction(block) },
+) {
     private val dao = db.vendorDao
 
-    override suspend fun createEssential(item: Vendor): Result<Int> {
-        return runCatching {
-            dao.isCanSave(item).getOrThrow()
-            dao.create(item).toInt()
-        }
-    }
+    override suspend fun validate(item: Vendor): Result<Unit> = dao.isCanSave(item)
+
+    override suspend fun createInDb(item: Vendor): Int = dao.create(item).toInt()
 }
 
 private class VendorUpdateRepository(
-    db: NocombroDatabase
-) : UpdateSingleLineRepository<Vendor> {
+    db: NocombroDatabase,
+    syncQueueRepository: SyncQueueRepository,
+) : SyncUpdateSingleLineRepository<Vendor>(
+    tableName = VENDOR_TABLE_NAME,
+    entitySyncKeyOf = Vendor::syncId,
+    enqueueSyncUpsert = syncQueueRepository::enqueueUpsert,
+    inWriteTransaction = { block -> db.inTransaction(block) },
+) {
 
     private val dao = db.vendorDao
 
@@ -44,12 +62,12 @@ private class VendorUpdateRepository(
         }
     }
 
-    override suspend fun update(changeSet: ChangeSet<Vendor>): Result<Unit> {
-        if (changeSet.old == changeSet.new) return Result.success(Unit)
-        return runCatching {
-            dao.isCanSave(changeSet.new).getOrThrow()
-            dao.updateVendor(changeSet.new)
-        }
+    override fun prepareForUpdate(item: Vendor): Vendor = item.copy(updatedAt = defaultUpdatedAt())
+
+    override suspend fun validate(item: Vendor): Result<Unit> = dao.isCanSave(item)
+
+    override suspend fun updateInDb(item: Vendor) {
+        dao.updateVendor(item)
     }
 }
 

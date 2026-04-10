@@ -145,7 +145,9 @@ internal class BuyComponent(
         return BuyUi(
             composeId = composeId,
             movementId = movementId,
+            movementSyncId = movementSyncId,
             batchId = batchId,
+            batchSyncId = batchSyncId,
             productId = productId,
             productName = productName,
             count = DecimalData3(count),
@@ -156,6 +158,7 @@ internal class BuyComponent(
             price = DecimalData2(price),
             ndsPercent = ndsPercent,
             comment = comment,
+            syncId = syncId,
             id = id
         )
     }
@@ -169,13 +172,16 @@ internal class BuyComponent(
             ndsPercent = ndsPercent,
             comment = comment,
             id = id,
+            syncId = syncId,
             productId = productId,
             declarationId = declarationId,
             batchId = batchId,
+            batchSyncId = batchSyncId,
             productName = productName,
             declarationName = declarationName,
             vendorName = vendorName,
-            movementId = movementId
+            movementId = movementId,
+            movementSyncId = movementSyncId,
         )
     }
 

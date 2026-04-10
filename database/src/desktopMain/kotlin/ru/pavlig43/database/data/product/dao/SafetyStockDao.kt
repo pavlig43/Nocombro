@@ -11,6 +11,9 @@ interface SafetyStockDao {
     @Query("SELECT * FROM safety_stock WHERE product_id = :productId")
     suspend fun getByProductId(productId: Int): SafetyStock?
 
+    @Query("SELECT * FROM safety_stock WHERE sync_id = :syncId")
+    suspend fun getBySyncId(syncId: String): SafetyStock?
+
     @Upsert
     suspend fun upsert(safetyStock: SafetyStock)
 

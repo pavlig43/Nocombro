@@ -9,6 +9,8 @@ import ru.pavlig43.database.data.expense.ExpenseType
 import ru.pavlig43.database.data.files.OwnerType
 import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.database.data.product.ProductUnit
+import ru.pavlig43.database.data.sync.SyncChangeType
+import ru.pavlig43.database.data.sync.SyncQueueStatus
 import ru.pavlig43.database.data.transact.TransactionType
 import kotlin.time.ExperimentalTime
 
@@ -58,6 +60,18 @@ class Converters {
 
     @TypeConverter
     fun fromExpenseTypeEnum(value: ExpenseType): String = value.name
+
+    @TypeConverter
+    fun toSyncChangeType(value: String): SyncChangeType = enumValueOf<SyncChangeType>(value)
+
+    @TypeConverter
+    fun fromSyncChangeType(value: SyncChangeType): String = value.name
+
+    @TypeConverter
+    fun toSyncQueueStatus(value: String): SyncQueueStatus = enumValueOf<SyncQueueStatus>(value)
+
+    @TypeConverter
+    fun fromSyncQueueStatus(value: SyncQueueStatus): String = value.name
 
 
     @TypeConverter

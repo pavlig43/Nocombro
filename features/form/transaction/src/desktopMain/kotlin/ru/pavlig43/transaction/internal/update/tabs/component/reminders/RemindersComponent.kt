@@ -79,7 +79,8 @@ internal class RemindersComponent(
             transactionId = transactionId,
             text = text,
             reminderDateTime = reminderDateTime,
-            id = id
+            id = id,
+            syncId = syncId,
         )
     }
 
@@ -88,7 +89,8 @@ internal class RemindersComponent(
             transactionId = transactionId,
             text = text,
             reminderDateTime = reminderDateTime,
-            id = id
+            id = id,
+            syncId = syncId,
         )
     }
 

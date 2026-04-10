@@ -1,9 +1,12 @@
 package ru.pavlig43.product.internal.model
 
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.core.model.DecimalData2
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductType
+import ru.pavlig43.database.data.sync.defaultSyncId
+import ru.pavlig43.database.data.sync.defaultUpdatedAt
 import ru.pavlig43.datetime.getCurrentLocalDate
 import ru.pavlig43.mutable.api.singleLine.model.ISingleLineTableUi
 import kotlin.time.ExperimentalTime
@@ -26,6 +29,12 @@ internal data class ProductEssentialsUi(
     val recNds: Int = 0,
 
     val id: Int = 0,
+
+    val syncId: String = defaultSyncId(),
+
+    val updatedAt: LocalDateTime = defaultUpdatedAt(),
+
+    val deletedAt: LocalDateTime? = null,
 ) : ISingleLineTableUi
 
 @OptIn(ExperimentalTime::class)
@@ -39,7 +48,10 @@ internal fun ProductEssentialsUi.toDto(): Product {
         priceForSale = priceForSale.value,
         shelfLifeDays = shelfLifeDays,
         recNds = recNds,
-        id = id
+        id = id,
+        syncId = syncId,
+        updatedAt = updatedAt,
+        deletedAt = deletedAt,
     )
 }
 
@@ -53,6 +65,9 @@ internal fun Product.toUi(): ProductEssentialsUi {
         priceForSale = DecimalData2(priceForSale),
         shelfLifeDays = shelfLifeDays,
         recNds = recNds,
-        id = id
+        id = id,
+        syncId = syncId,
+        updatedAt = updatedAt,
+        deletedAt = deletedAt,
     )
 }

@@ -42,6 +42,10 @@ class RootNocombroComponent(
         componentContext = childContext("settings"),
         settingsRepository = scope.get()
     )
+    val syncComponent = SyncComponent(
+        componentContext = childContext("sync"),
+        syncService = scope.get(),
+    )
 
 
     private fun createChild(

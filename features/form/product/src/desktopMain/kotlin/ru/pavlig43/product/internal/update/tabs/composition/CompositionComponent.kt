@@ -98,7 +98,8 @@ internal class CompositionComponent(
             productId = productId,
             productName = productName,
             productType = productType,
-            count = DecimalData3(count)
+            count = DecimalData3(count),
+            syncId = syncId,
         )
     }
 
@@ -107,7 +108,8 @@ internal class CompositionComponent(
             id = id,
             parentId = parentId,
             productId = productId,
-            count = count.value
+            count = count.value,
+            syncId = syncId,
         )
     }
 

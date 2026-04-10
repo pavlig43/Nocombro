@@ -3,6 +3,8 @@ package ru.pavlig43.transaction.internal.model
 import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.database.data.transact.Transact
 import ru.pavlig43.database.data.transact.TransactionType
+import ru.pavlig43.database.data.sync.defaultSyncId
+import ru.pavlig43.database.data.sync.defaultUpdatedAt
 import ru.pavlig43.datetime.getCurrentLocalDateTime
 import ru.pavlig43.mutable.api.singleLine.model.ISingleLineTableUi
 import kotlin.time.ExperimentalTime
@@ -19,6 +21,12 @@ internal data class TransactionEssentialsUi(
 
     val id: Int = 0,
 
+    val syncId: String = defaultSyncId(),
+
+    val updatedAt: LocalDateTime = defaultUpdatedAt(),
+
+    val deletedAt: LocalDateTime? = null,
+
     ) : ISingleLineTableUi
 
 
@@ -28,7 +36,10 @@ internal fun Transact.toUi(): TransactionEssentialsUi {
         comment = comment,
         id = id,
         transactionType = transactionType,
-        isCompleted = isCompleted
+        isCompleted = isCompleted,
+        syncId = syncId,
+        updatedAt = updatedAt,
+        deletedAt = deletedAt,
     )
 }
 
@@ -39,6 +50,9 @@ internal fun TransactionEssentialsUi.toDto(): Transact {
         createdAt = createdAt,
         comment = comment,
         isCompleted = isCompleted,
-        id = id
+        id = id,
+        syncId = syncId,
+        updatedAt = updatedAt,
+        deletedAt = deletedAt,
     )
 }

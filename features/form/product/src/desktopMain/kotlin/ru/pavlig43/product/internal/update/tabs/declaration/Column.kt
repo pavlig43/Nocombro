@@ -4,6 +4,7 @@ package ru.pavlig43.product.internal.update.tabs.declaration
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -28,6 +29,8 @@ internal enum class ProductDeclarationField {
     SELECTION,
     DECLARATION_NAME,
     VENDOR_NAME,
+    IS_PRODUCT_IN_DECLARATION,
+    PARSE_DECLARATION,
     IS_ACTUAL
 }
 
@@ -82,6 +85,41 @@ internal fun createProductDeclarationColumn(
                 header("Поставщик")
                 align(Alignment.Center)
                 cell { item, _ -> Text(item.vendorName) }
+            }
+
+            column(
+                ProductDeclarationField.IS_PRODUCT_IN_DECLARATION,
+                valueOf = { it.isProductInDeclaration }
+            ) {
+                header("Есть в декларации")
+                align(Alignment.Center)
+                cell { item, _ ->
+                    Checkbox(
+                        checked = item.isProductInDeclaration,
+                        onCheckedChange = { isChecked ->
+                            onEvent(
+                                ProductDeclarationEvent.ToggleProductInDeclaration(
+                                    declarationId = item.declarationId,
+                                    isChecked = isChecked
+                                )
+                            )
+                        }
+                    )
+                }
+            }
+
+            column(ProductDeclarationField.PARSE_DECLARATION, valueOf = { it.declarationId }) {
+                header("Парсинг")
+                align(Alignment.Center)
+                cell { item, _ ->
+                    Button(
+                        onClick = {
+                            onEvent(ProductDeclarationEvent.ParseDeclaration(item.declarationId))
+                        }
+                    ) {
+                        Text("Парсить")
+                    }
+                }
             }
 
             column(ProductDeclarationField.IS_ACTUAL, valueOf = { it.isActual }) {

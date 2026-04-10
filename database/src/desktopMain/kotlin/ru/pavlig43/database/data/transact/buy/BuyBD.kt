@@ -3,10 +3,14 @@ package ru.pavlig43.database.data.transact.buy
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.core.model.CollectionObject
 import ru.pavlig43.database.data.batch.BatchMovement
+import ru.pavlig43.database.data.sync.defaultSyncId
+import ru.pavlig43.database.data.sync.defaultUpdatedAt
 import ru.pavlig43.database.data.transact.Transact
 
 const val BUY_TABLE_NAME = "buy"
@@ -36,7 +40,8 @@ const val BUY_TABLE_NAME = "buy"
             parentColumns = ["id"],
             childColumns = ["movement_id"]
         )
-    ]
+    ],
+    indices = [Index(value = ["sync_id"], unique = true)]
 )
 data class BuyBDIn(
     @ColumnInfo("transaction_id", index = true)
@@ -55,7 +60,16 @@ data class BuyBDIn(
     val ndsPercent: Int = 0,
 
     @PrimaryKey(autoGenerate = true)
-    override val id: Int = 0
+    override val id: Int = 0,
+
+    @ColumnInfo("sync_id")
+    val syncId: String = defaultSyncId(),
+
+    @ColumnInfo("updated_at")
+    val updatedAt: LocalDateTime = defaultUpdatedAt(),
+
+    @ColumnInfo("deleted_at")
+    val deletedAt: LocalDateTime? = null,
 ) : CollectionObject
 
 /**
@@ -82,7 +96,9 @@ data class BuyBDOut(
     val transactionId: Int,
     val count: Long,
     val batchId: Int,
+    val batchSyncId: String,
     val movementId: Int,
+    val movementSyncId: String,
     val productId: Int,
     val productName: String,
     val declarationId: Int,
@@ -92,5 +108,6 @@ data class BuyBDOut(
     val price: Long,
     val comment: String,
     val ndsPercent: Int = 0,
+    val syncId: String,
     override val id: Int
 ) : CollectionObject

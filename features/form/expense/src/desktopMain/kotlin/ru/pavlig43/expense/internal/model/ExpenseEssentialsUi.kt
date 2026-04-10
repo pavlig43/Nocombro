@@ -4,6 +4,8 @@ import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.core.model.DecimalData2
 import ru.pavlig43.database.data.expense.ExpenseBD
 import ru.pavlig43.database.data.expense.ExpenseType
+import ru.pavlig43.database.data.sync.defaultSyncId
+import ru.pavlig43.database.data.sync.defaultUpdatedAt
 import ru.pavlig43.datetime.getCurrentLocalDateTime
 import ru.pavlig43.mutable.api.singleLine.model.ISingleLineTableUi
 
@@ -12,7 +14,10 @@ internal data class ExpenseEssentialsUi(
     val amount: DecimalData2 = DecimalData2(0),
     val expenseDateTime: LocalDateTime = getCurrentLocalDateTime(),
     val comment: String = "",
-    val id: Int = 0
+    val id: Int = 0,
+    val syncId: String = defaultSyncId(),
+    val updatedAt: LocalDateTime = defaultUpdatedAt(),
+    val deletedAt: LocalDateTime? = null,
 ) : ISingleLineTableUi
 
 internal fun ExpenseEssentialsUi.toDto(): ExpenseBD {
@@ -22,7 +27,10 @@ internal fun ExpenseEssentialsUi.toDto(): ExpenseBD {
         amount = amount.value,
         expenseDateTime = expenseDateTime,
         comment = comment,
-        id = id
+        id = id,
+        syncId = syncId,
+        updatedAt = updatedAt,
+        deletedAt = deletedAt,
     )
 }
 
@@ -32,6 +40,9 @@ internal fun ExpenseBD.toUi(): ExpenseEssentialsUi {
         amount = DecimalData2(amount),
         expenseDateTime = expenseDateTime,
         comment = comment,
-        id = id
+        id = id,
+        syncId = syncId,
+        updatedAt = updatedAt,
+        deletedAt = deletedAt,
     )
 }

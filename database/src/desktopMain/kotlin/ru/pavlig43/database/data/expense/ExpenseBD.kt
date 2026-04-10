@@ -8,9 +8,11 @@ import androidx.room.PrimaryKey
 import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.core.model.CollectionObject
 import ru.pavlig43.core.model.SingleItem
+import ru.pavlig43.database.data.sync.defaultSyncId
+import ru.pavlig43.database.data.sync.defaultUpdatedAt
 import ru.pavlig43.database.data.transact.Transact
 
-internal const val EXPENSE_TABLE_NAME = "expense"
+const val EXPENSE_TABLE_NAME = "expense"
 
 @Entity(
     tableName = EXPENSE_TABLE_NAME,
@@ -23,7 +25,8 @@ internal const val EXPENSE_TABLE_NAME = "expense"
         )
     ],
     indices = [
-        Index(value = ["transaction_id"])
+        Index(value = ["transaction_id"]),
+        Index(value = ["sync_id"], unique = true),
     ]
 )
 data class ExpenseBD(
@@ -59,4 +62,13 @@ data class ExpenseBD(
 
     @PrimaryKey(autoGenerate = true)
     override val id: Int = 0
+,
+    @ColumnInfo("sync_id")
+    val syncId: String = defaultSyncId(),
+
+    @ColumnInfo("updated_at")
+    val updatedAt: LocalDateTime = defaultUpdatedAt(),
+
+    @ColumnInfo("deleted_at")
+    val deletedAt: LocalDateTime? = null,
 ) : CollectionObject, SingleItem
