@@ -27,7 +27,7 @@ import kotlinx.serialization.Serializable
 class TabNavigationComponent<TabConfiguration : Any, out TabChild : Any>(
     componentContext: ComponentContext,
     private val startConfigurations: List<TabConfiguration>,
-    private val enableBackNa    vigation: Boolean = true,
+    enableBackNavigation: Boolean = true,
     serializer: KSerializer<TabConfiguration>,
     private val tabChildFactory: (
         componentContext: ComponentContext,
