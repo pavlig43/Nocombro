@@ -90,6 +90,7 @@ internal class TransactionFormTabsComponent(
                 TransactionTab.Essentials,
                 TransactionTab.Reminders
             ),
+            enableBackNavigation = false,
             serializer = TransactionTab.serializer(),
             tabChildFactory = { context, config, _ ->
                 when (config) {

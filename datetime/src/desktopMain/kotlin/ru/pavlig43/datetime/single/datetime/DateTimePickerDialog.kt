@@ -25,7 +25,7 @@ fun DateTimePickerDialog(
     val dateTime by dateTimeComponent.dateTime.collectAsState()
     DateTimePickerDialog(
         dateTime = dateTime,
-        onDismissRequest = {  },
+        onDismissRequest = {  dateTimeComponent.onDismissRequest()},
         onSelectDateTime = { dateTimeComponent.onChangeDate(it) },
     )
 

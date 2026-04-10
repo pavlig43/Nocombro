@@ -31,6 +31,7 @@ internal class VendorFormTabsComponent(
                 VendorTab.Essential,
                 VendorTab.Files
             ),
+            enableBackNavigation = false,
             serializer = VendorTab.serializer(),
             tabChildFactory = { context, tabConfig: VendorTab, _: () -> Unit ->
                 when (tabConfig) {

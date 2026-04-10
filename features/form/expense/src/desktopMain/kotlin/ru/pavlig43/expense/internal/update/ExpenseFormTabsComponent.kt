@@ -31,6 +31,7 @@ internal class ExpenseFormTabsComponent(
                 ExpenseTab.Essentials,
                 ExpenseTab.Files
             ),
+            enableBackNavigation = false,
             serializer = ExpenseTab.serializer(),
             tabChildFactory = { context, tabConfig: ExpenseTab, _: () -> Unit ->
                 when (tabConfig) {

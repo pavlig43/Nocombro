@@ -17,6 +17,8 @@ kotlin{
         implementation(libs.koin.core)
         implementation(libs.decompose)
         implementation(libs.decompose.compose)
+        implementation(libs.compose.ui.backhandler.desktop)
+        implementation(libs.androidx.navigationevent.desktop)
         implementation(libs.kermit)
         implementation(projects.rootnocombro)
         implementation(compose.desktop.currentOs)

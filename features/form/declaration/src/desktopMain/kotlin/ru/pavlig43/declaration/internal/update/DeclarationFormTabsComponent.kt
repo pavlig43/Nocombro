@@ -36,6 +36,7 @@ internal class DeclarationFormTabsComponent(
                 DeclarationTab.Essential,
                 DeclarationTab.Files
             ),
+            enableBackNavigation = false,
             serializer = DeclarationTab.serializer(),
             tabChildFactory = { context, tabConfig: DeclarationTab, _: () -> Unit ->
                 when (tabConfig) {

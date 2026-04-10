@@ -34,7 +34,7 @@ fun DatePickerDialog(
     val date by dateComponent.date.collectAsState()
     DatePickerDialog(
         date = date,
-        onDismissRequest = {},
+        onDismissRequest = {dateComponent.onDismissRequest()},
         onSelectDate = {dateComponent.onChangeDate(it)}
     )
 

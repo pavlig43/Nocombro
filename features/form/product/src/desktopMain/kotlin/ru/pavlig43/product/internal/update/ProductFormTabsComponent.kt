@@ -52,6 +52,7 @@ internal class ProductFormTabsComponent(
                 ProductTab.SafetyStock,
                 ProductTab.Declaration
             ),
+            enableBackNavigation = false,
             serializer = ProductTab.serializer(),
             tabChildFactory = { context, tabConfig: ProductTab, _: () -> Unit ->
                 when (tabConfig) {

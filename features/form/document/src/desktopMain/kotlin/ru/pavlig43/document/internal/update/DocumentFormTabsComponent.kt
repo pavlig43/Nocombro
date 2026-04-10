@@ -35,6 +35,7 @@ internal class DocumentFormTabsComponent(
                 DocumentTab.Essential,
                 DocumentTab.Files
             ),
+            enableBackNavigation = false,
             serializer = DocumentTab.serializer(),
             tabChildFactory = { context, tabConfig: DocumentTab, _: () -> Unit ->
                 when (tabConfig) {
