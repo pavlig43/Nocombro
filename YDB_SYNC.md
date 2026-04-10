@@ -68,6 +68,7 @@ SQL bootstrap лежит в:
 Для включения реального JDBC gateway:
 
 - `NOCOMBRO_YDB_JDBC_URL` или JVM property `nocombro.ydb.jdbcUrl`
+- `NOCOMBRO_YDB_SA_FILE` или JVM property `nocombro.ydb.saFile`
 - `NOCOMBRO_YDB_TOKEN` или JVM property `nocombro.ydb.token`
 - `NOCOMBRO_YDB_SYNC_TABLE` или JVM property `nocombro.ydb.syncTable`
 
@@ -77,5 +78,41 @@ SQL bootstrap лежит в:
 
 1. Создать serverless БД в Yandex Cloud.
 2. Подготовить таблицу `sync_push_log`.
-3. Прописать `jdbcUrl`, `token` и имя таблицы.
+3. Прописать `jdbcUrl` и либо `saFile`, либо `token`, а также имя таблицы.
+
+Для Windows по умолчанию также ищется файл:
+
+`%APPDATA%\Nocombro\ydb-sa-key.json`
+
+Если он существует, JDBC-драйвер YDB использует его как `saFile` без ручной передачи токена.
+
+### Где взять `ydb-sa-key.json`
+
+1. Открыть `IAM` в Yandex Cloud.
+2. Перейти в `Сервисные аккаунты`.
+3. Выбрать сервисный аккаунт с доступом к YDB.
+4. Нажать `Создать ключ`.
+5. Выбрать `Создать авторизованный ключ`.
+6. Сохранить скачанный JSON-файл.
+
+Документация:
+
+- `Service account`: https://yandex.cloud/en/docs/iam/concepts/users/service-accounts
+- `Authorized keys`: https://yandex.cloud/en/docs/iam/concepts/authorization/key
+- `Manage authorized keys`: https://yandex.cloud/en/docs/iam/operations/authentication/manage-authorized-keys
+
+### Куда положить файл на Windows
+
+1. Открыть папку `%APPDATA%`.
+2. Создать папку `Nocombro`, если ее еще нет.
+3. Переименовать скачанный JSON в `ydb-sa-key.json`.
+4. Положить файл сюда:
+
+`C:\Users\<username>\AppData\Roaming\Nocombro\ydb-sa-key.json`
+
+Важно:
+
+- не класть этот файл в репозиторий;
+- не коммитить его;
+- не передавать другим пользователям.
 4. Прогнать первый sync между двумя локальными базами.

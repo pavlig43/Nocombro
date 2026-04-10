@@ -305,9 +305,16 @@ class YdbJdbcSyncGateway(
         block: (Connection) -> T,
     ): T {
         val properties = Properties().apply {
-            config.authToken
+            val serviceAccountFile = config.serviceAccountFile
                 ?.takeIf(String::isNotBlank)
-                ?.let { setProperty("token", it) }
+
+            if (serviceAccountFile != null) {
+                setProperty("saKeyFile", serviceAccountFile)
+            } else {
+                config.authToken
+                    ?.takeIf(String::isNotBlank)
+                    ?.let { setProperty("token", it) }
+            }
         }
 
         return DriverManager.getConnection(config.jdbcUrl, properties).use(block)

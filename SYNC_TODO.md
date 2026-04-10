@@ -191,6 +191,7 @@
 Для включения реального JDBC gateway используются:
 
 - `NOCOMBRO_YDB_JDBC_URL` или JVM property `nocombro.ydb.jdbcUrl`
+- `NOCOMBRO_YDB_SA_FILE` или JVM property `nocombro.ydb.saFile`
 - `NOCOMBRO_YDB_TOKEN` или JVM property `nocombro.ydb.token`
 - `NOCOMBRO_YDB_SYNC_TABLE` или JVM property `nocombro.ydb.syncTable`
 
@@ -205,7 +206,29 @@
 ## Следующий практический шаг
 
 1. Получить реальный remote `YDB` endpoint.
-2. Подставить `jdbcUrl`, `token`, `table`.
+2. Подставить `jdbcUrl`, `saFile` или `token`, `table`.
+
+Для Windows также можно просто положить ключ сервисного аккаунта сюда:
+
+`%APPDATA%\Nocombro\ydb-sa-key.json`
+
+Как получить файл:
+
+1. `IAM` -> `Сервисные аккаунты`
+2. Нужный сервисный аккаунт
+3. `Создать ключ`
+4. `Создать авторизованный ключ`
+5. Сохранить JSON как `ydb-sa-key.json`
+
+Ссылки:
+
+- `Service account`: https://yandex.cloud/en/docs/iam/concepts/users/service-accounts
+- `Authorized keys`: https://yandex.cloud/en/docs/iam/concepts/authorization/key
+- `Manage authorized keys`: https://yandex.cloud/en/docs/iam/operations/authentication/manage-authorized-keys
+
+Куда положить:
+
+`C:\Users\<username>\AppData\Roaming\Nocombro\ydb-sa-key.json`
 3. Прогнать sync на живых данных.
 4. По результатам первого прогона уточнить:
    - remote schema

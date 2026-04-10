@@ -1,8 +1,13 @@
 package ru.pavlig43.database.data.sync
 
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
+
 data class YdbJdbcConfig(
     val jdbcUrl: String,
     val authToken: String?,
+    val serviceAccountFile: String?,
     val tablePath: String,
     val reminderSourceTablePath: String,
 ) {
@@ -25,12 +30,32 @@ data class YdbJdbcConfig(
                 ?.takeIf(String::isNotBlank)
                 ?: "reminder_email_source"
 
+            val serviceAccountFile = readSetting(
+                "NOCOMBRO_YDB_SA_FILE",
+                "nocombro.ydb.saFile"
+            )?.trim()
+                ?.takeIf(String::isNotBlank)
+                ?: defaultWindowsServiceAccountFile()
+
             return YdbJdbcConfig(
                 jdbcUrl = jdbcUrl,
                 authToken = readSetting("NOCOMBRO_YDB_TOKEN", "nocombro.ydb.token")?.trim(),
+                serviceAccountFile = serviceAccountFile,
                 tablePath = tablePath,
                 reminderSourceTablePath = reminderSourceTablePath,
             )
+        }
+
+        private fun defaultWindowsServiceAccountFile(): String? {
+            val appData = System.getenv("APPDATA")
+                ?.trim()
+                ?.takeIf(String::isNotBlank)
+                ?: return null
+
+            val candidate = Paths.get(appData, "Nocombro", "ydb-sa-key.json")
+            return candidate
+                .takeIf(Files::exists)
+                ?.toJdbcFileReference()
         }
 
         private fun readSetting(
@@ -41,4 +66,8 @@ data class YdbJdbcConfig(
                 ?: System.getProperty(propertyName)
         }
     }
+}
+
+private fun Path.toJdbcFileReference(): String {
+    return toAbsolutePath().normalize().toString()
 }
