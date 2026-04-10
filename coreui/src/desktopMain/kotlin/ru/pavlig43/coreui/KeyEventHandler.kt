@@ -23,7 +23,3 @@ object KeyEventHandler {
 
 
 }
-val KeyEvent.isEscKeyUp
-    get() =  key == Key.Escape && type == KeyEventType.KeyUp
-val KeyEvent.isEscKeyDown
-    get() =  key == Key.Escape && type == KeyEventType.KeyDown
