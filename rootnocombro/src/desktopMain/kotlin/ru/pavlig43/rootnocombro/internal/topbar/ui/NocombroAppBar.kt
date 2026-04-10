@@ -240,7 +240,6 @@ private fun buildSyncTooltip(syncUiState: SyncUiState): String {
                 "Удаленная база пока не подключена"
             }
         )
-        add("Версия формата данных: ${syncUiState.payloadVersion}")
         syncUiState.lastError?.let {
             add("Последняя ошибка: $it")
         }
@@ -249,9 +248,6 @@ private fun buildSyncTooltip(syncUiState: SyncUiState): String {
         }
         if (syncUiState.failedChangesCount > 0) {
             add("Ошибок очереди: ${syncUiState.failedChangesCount}")
-        }
-        syncUiState.lastRemoteCursor?.let {
-            add("Курсор синхронизации: $it")
         }
         syncUiState.lastStatusCheckAt?.let {
             add("Последняя проверка: ${it.format(dateTimeFormat)}")
