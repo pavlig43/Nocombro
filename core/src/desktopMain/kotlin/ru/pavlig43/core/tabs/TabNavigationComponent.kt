@@ -27,6 +27,7 @@ import kotlinx.serialization.Serializable
 class TabNavigationComponent<TabConfiguration : Any, out TabChild : Any>(
     componentContext: ComponentContext,
     private val startConfigurations: List<TabConfiguration>,
+    private val enableBackNa    vigation: Boolean = true,
     serializer: KSerializer<TabConfiguration>,
     private val tabChildFactory: (
         componentContext: ComponentContext,
@@ -81,12 +82,16 @@ class TabNavigationComponent<TabConfiguration : Any, out TabChild : Any>(
                     selectedIndex = state.currentIndex,
                 )
             },
-            backTransformer = { state ->
-                state.takeIf { it.currentIndex != null }
-                    ?.takeIf { it.currentIndex!! > 0 }
-                    ?.let { eligibleState ->
-                        { eligibleState.copy(currentIndex = eligibleState.currentIndex!! - 1) }
-                    }
+            backTransformer = if (enableBackNavigation) {
+                { state ->
+                    state.takeIf { it.currentIndex != null }
+                        ?.takeIf { it.currentIndex!! > 0 }
+                        ?.let { eligibleState ->
+                            { eligibleState.copy(currentIndex = eligibleState.currentIndex!! - 1) }
+                        }
+                }
+            } else {
+                { null }
             },
             childFactory = { configuration, componentContext ->
                 tabChildFactory(
