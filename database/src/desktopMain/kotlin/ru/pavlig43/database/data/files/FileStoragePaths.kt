@@ -29,6 +29,13 @@ fun buildManagedLocalFilePath(
 }
 
 /**
+ * Корневой каталог локального кэша управляемых файлов.
+ */
+fun getManagedFilesRootDirectory(): File {
+    return File(getNocombroAppDataDirectory(), "files").apply { mkdirs() }
+}
+
+/**
  * Извлекает имя файла из локального пути или object key.
  */
 fun extractFileName(

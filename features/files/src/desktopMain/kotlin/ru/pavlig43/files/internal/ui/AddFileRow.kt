@@ -176,7 +176,7 @@ private fun RemoveIconButton(
     removeFile: (Int) -> Unit
 ) {
     ToolTipIconButton(
-        tooltipText = "Удалить",
+        tooltipText = "Удалить вложение из записи",
         enabled = fileUi.uploadState !is UploadState.Loading,
         onClick = { removeFile(fileUi.composeKey) },
         icon = Res.drawable.delete

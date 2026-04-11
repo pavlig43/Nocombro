@@ -71,6 +71,7 @@ fun RootNocombroScreen(rootNocombroComponent: RootNocombroComponent) {
                 Modifier.fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                SettingsScreen(rootNocombroComponent.settingsComponent)
 
                 when (val instance = child.instance) {
                     is RootChild.RootSign -> RootSignScreen(instance.component)

@@ -45,6 +45,7 @@ import ru.pavlig43.theme.dark_mode
 import ru.pavlig43.theme.light_mode
 import ru.pavlig43.theme.menu
 import ru.pavlig43.theme.refresh
+import ru.pavlig43.theme.settings
 import ru.pavlig43.theme.warning
 import java.awt.Toolkit
 import java.awt.datatransfer.StringSelection
@@ -77,6 +78,12 @@ internal fun NocombroAppBar(
                 onPullClick = syncComponent::onPullClick,
                 onRefreshClick = syncComponent::refreshStatus,
             )
+            IconButton(onClick = settingsComponent::openSettings) {
+                Icon(
+                    painter = painterResource(Res.drawable.settings),
+                    contentDescription = "Open settings",
+                )
+            }
             IconButton(onClick = settingsComponent::toggleDarkMode) {
                 Icon(
                     painter = painterResource(
