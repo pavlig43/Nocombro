@@ -5,7 +5,7 @@ import ru.pavlig43.database.data.files.getManagedFilesRootDirectory
 import ru.pavlig43.rootnocombro.api.component.LocalOrphanFile
 import java.io.File
 
-internal class LocalFilesMaintenanceRepository(
+class LocalFilesMaintenanceRepository(
     db: NocombroDatabase,
 ) {
     private val fileDao = db.fileDao

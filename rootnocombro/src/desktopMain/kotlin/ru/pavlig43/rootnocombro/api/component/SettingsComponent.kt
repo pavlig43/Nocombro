@@ -8,7 +8,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.core.componentCoroutineScope
 import ru.pavlig43.datastore.SettingsRepository
 import ru.pavlig43.rootnocombro.internal.settings.LocalFilesMaintenanceRepository
@@ -18,10 +17,9 @@ import java.io.File
 class SettingsComponent(
     componentContext: ComponentContext,
     private val settingsRepository: SettingsRepository,
-    database: NocombroDatabase,
+    private val localFilesMaintenanceRepository: LocalFilesMaintenanceRepository,
 ) :  ComponentContext by componentContext {
     private val coroutineScope = componentCoroutineScope()
-    private val localFilesMaintenanceRepository = LocalFilesMaintenanceRepository(database)
 
     private val _isSettingsOpened = MutableStateFlow(false)
     val isSettingsOpened = _isSettingsOpened.asStateFlow()
