@@ -22,7 +22,15 @@ class AnalyticMainComponent(
     }
 
 }
-internal enum class ItemNavigation(val title: String){
-    PROFITABILITY("Прибыльность")
+enum class ItemNavigation(
+    val title: String,
+    val subtitle: String,
+    val description: String,
+){
+    PROFITABILITY(
+        title = "Прибыльность",
+        subtitle = "Сводка по товарам, партиям и финансовому результату.",
+        description = "Открывает таблицу прибыльности с периодом, фильтрами, сортировкой и деталями по партиям.",
+    )
 
 }
