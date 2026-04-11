@@ -8,6 +8,8 @@ import ru.pavlig43.core.TransactionExecutor
 import ru.pavlig43.core.model.ChangeSet
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.declaration.Declaration
+import ru.pavlig43.database.data.files.FileBD
+import ru.pavlig43.database.data.files.OwnerType
 import ru.pavlig43.database.data.product.COMPOSITION_TABLE_NAME
 import ru.pavlig43.database.data.product.CompositionIn
 import ru.pavlig43.database.data.product.CompositionOut
@@ -188,6 +190,7 @@ internal class ProductDeclarationRepository(
 ) {
     private val productDeclarationDao = db.productDeclarationDao
     private val declarationDao = db.declarationDao
+    private val fileDao = db.fileDao
 
     override suspend fun getInit(id: Int): Result<List<ProductDeclarationIn>> {
         return runCatching {
@@ -197,6 +200,10 @@ internal class ProductDeclarationRepository(
 
     fun observeOnDeclarations(ids: List<Int>): Flow<List<Declaration>>{
         return declarationDao.observeDeclarationsByIds(ids)
+    }
+
+    suspend fun getDeclarationFiles(declarationId: Int): List<FileBD> {
+        return fileDao.getFiles(declarationId, OwnerType.DECLARATION)
     }
 
     override fun prepareForUpsert(item: ProductDeclarationIn): ProductDeclarationIn {

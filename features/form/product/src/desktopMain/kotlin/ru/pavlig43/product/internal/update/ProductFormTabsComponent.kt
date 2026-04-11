@@ -2,6 +2,8 @@ package ru.pavlig43.product.internal.update
 
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.koin.core.qualifier.qualifier
 import org.koin.core.scope.Scope
@@ -28,6 +30,17 @@ import ru.pavlig43.update.component.IItemFormTabsComponent
 import ru.pavlig43.update.component.getDefaultUpdateComponent
 
 @Suppress("LongParameterList")
+/**
+ * Корневой компонент вкладок формы продукта.
+ *
+ * Помимо обычной таб-навигации хранит последнее состояние вкладки "Основное",
+ * чтобы другие вкладки могли читать уже введенные пользователем данные без
+ * прямой зависимости от UI этой вкладки.
+ *
+ * В контексте парсинга деклараций это нужно для получения актуального имени
+ * продукта: вкладка деклараций берет его через [getProductName], а не хранит
+ * отдельную копию сама.
+ */
 internal class ProductFormTabsComponent(
     componentContext: ComponentContext,
     componentFactory: SingleLineComponentFactory<Product, ProductEssentialsUi>,
@@ -40,7 +53,18 @@ internal class ProductFormTabsComponent(
 
     override val transactionExecutor: TransactionExecutor = scope.get()
     private val coroutineScope = componentCoroutineScope()
+    private val productEssentials = MutableStateFlow(componentFactory.initItem)
 
+    /**
+     * Синхронизирует состояние вкладки "Основное" в двух направлениях:
+     * наружу через уже существующий [observeOnProduct] и локально в
+     * [productEssentials], чтобы другие вкладки могли читать последнюю версию
+     * данных продукта.
+     */
+    private fun observeOnProductInfo(product: ProductEssentialsUi) {
+        observeOnProduct(product)
+        productEssentials.update { product }
+    }
 
 
     override val tabNavigationComponent: TabNavigationComponent<ProductTab, ProductTabChild> =
@@ -62,7 +86,7 @@ internal class ProductFormTabsComponent(
                             productId = productId,
                             updateRepository = scope.get(SingleRepositoryType.ESSENTIALS.qualifier),
                             componentFactory = componentFactory,
-                            observeOnItem = observeOnProduct,
+                            observeOnItem = ::observeOnProductInfo,
                             onSuccessInitData = ::onSuccessInitData
                         )
                     )
@@ -91,7 +115,8 @@ internal class ProductFormTabsComponent(
                             productId = productId,
                             repository = scope.get(),
                             tabOpener = tabOpener,
-                            immutableTableDependencies = scope.get()
+                            immutableTableDependencies = scope.get(),
+                            getProductName = { productEssentials.value.displayName }
                         )
                     )
 
@@ -107,7 +132,7 @@ internal class ProductFormTabsComponent(
         )
 
     private fun onSuccessInitData(product: ProductEssentialsUi) {
-        observeOnProduct(product)
+        observeOnProductInfo(product)
         coroutineScope.launch {
             if (product.productType == ProductType.FOOD_PF) {
                 tabNavigationComponent.addTab(ProductTab.Composition)

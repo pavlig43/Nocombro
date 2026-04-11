@@ -7,6 +7,7 @@ data class ProductDeclarationTableUi(
     val declarationName: String,
     val vendorName: String,
     val isProductInDeclaration: Boolean,
+    val isParsing: Boolean,
     val isActual: Boolean
 ): IMultiLineTableUi{
     override val composeId = declarationId

@@ -4,8 +4,10 @@ package ru.pavlig43.product.internal.update.tabs.declaration
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
@@ -113,11 +115,19 @@ internal fun createProductDeclarationColumn(
                 align(Alignment.Center)
                 cell { item, _ ->
                     Button(
+                        enabled = !item.isParsing,
                         onClick = {
                             onEvent(ProductDeclarationEvent.ParseDeclaration(item.declarationId))
                         }
                     ) {
-                        Text("Парсить")
+                        if (item.isParsing) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(18.dp),
+                                strokeWidth = 2.dp,
+                            )
+                        } else {
+                            Text("Парсить")
+                        }
                     }
                 }
             }

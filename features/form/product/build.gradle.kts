@@ -12,6 +12,7 @@ kotlin{
         implementation(projects.features.files)
         implementation(projects.features.manageitem.update)
         implementation(projects.features.manageitem.loadinitdata)
+        implementation(libs.pdfbox)
         
         
         
