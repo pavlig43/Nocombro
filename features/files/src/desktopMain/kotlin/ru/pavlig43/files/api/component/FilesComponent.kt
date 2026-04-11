@@ -5,8 +5,9 @@ import com.arkivanov.decompose.childContext
 import com.arkivanov.essenty.instancekeeper.getOrCreate
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.PlatformFile
-import io.github.vinceglb.filekit.filesDir
+import io.github.vinceglb.filekit.dialogs.openFileWithDefaultApplication
 import io.github.vinceglb.filekit.name
+import io.github.vinceglb.filekit.path
 import io.github.vinceglb.filekit.write
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -21,13 +22,30 @@ import ru.pavlig43.core.model.ChangeSet
 import ru.pavlig43.corekoin.ComponentKoinContext
 import ru.pavlig43.database.data.files.FileBD
 import ru.pavlig43.database.data.files.OwnerType
+import ru.pavlig43.database.data.files.buildCanonicalFileKey
+import ru.pavlig43.database.data.files.buildManagedLocalFilePath
+import ru.pavlig43.database.data.sync.defaultSyncId
+import ru.pavlig43.database.data.sync.defaultUpdatedAt
 import ru.pavlig43.files.api.FilesDependencies
 import ru.pavlig43.files.api.model.FileUi
 import ru.pavlig43.files.api.uploadState.UploadState
 import ru.pavlig43.files.internal.data.FilesRepository
 import ru.pavlig43.files.internal.di.filesModule
 import ru.pavlig43.loadinitdata.api.component.LoadInitDataComponent
+import java.io.File
 
+/**
+ * Базовый tab-компонент для вложений в формах.
+ *
+ * Компонент по-прежнему работает как локальный file-manager для формы, но теперь дополнительно
+ * умеет готовить remote object key и инициировать загрузку удалённой копии через репозиторий.
+ *
+ * Важный принцип здесь такой:
+ * - UI и форма работают с `PlatformFile` и локальным состоянием;
+ * - репозиторий занимается метаданными и удалённым storage;
+ * - стабильный `syncId` файла создаётся сразу при добавлении вложения, чтобы не зависеть
+ *   от локального `id` из Room.
+ */
 abstract class FilesComponent(
     componentContext: ComponentContext,
     private val ownerId: Int,
@@ -41,16 +59,53 @@ abstract class FilesComponent(
     private val filesRepository: FilesRepository = scope.get()
 
     private val coroutineScope = componentCoroutineScope()
+    private val _openFileError = MutableStateFlow<String?>(null)
+    private val _downloadingComposeKeys = MutableStateFlow<Set<Int>>(emptySet())
+    val openFileError = _openFileError.asStateFlow()
+    val downloadingComposeKeys = _downloadingComposeKeys.asStateFlow()
 
+    /**
+     * Имя локальной копии файла в каталоге приложения.
+     *
+     * Пока оно по-прежнему привязано к локальному владельцу формы, чтобы не ломать
+     * существующую desktop-логику работы с файлами.
+     */
     internal fun calculateNocombroFileName(platformFile: PlatformFile): String {
-        return "${ownerId}_${ownerType}_${platformFile.name}"
+        return buildCanonicalFileKey(
+            ownerType = ownerType,
+            fileSyncId = "preview",
+            originalName = platformFile.name,
+        ).substringAfterLast('/')
     }
 
+    /**
+     * Строит стабильный object key для удалённого storage.
+     *
+     * Основа ключа - `syncId` самого файла, а не локальный `id`, поэтому ключ можно
+     * использовать в будущей кросс-девайс синхронизации.
+     */
+    internal fun calculateRemoteObjectKey(
+        syncId: String,
+        platformFile: PlatformFile,
+    ): String {
+        return buildCanonicalFileKey(
+            ownerType = ownerType,
+            fileSyncId = syncId,
+            originalName = platformFile.name,
+        )
+    }
+
+    /**
+     * Добавляет файл в UI-состояние и сразу резервирует для него стабильный `syncId`.
+     */
     internal fun addNewFile(platformFile: PlatformFile) {
         val composeKey = _filesUi.value.maxOfOrNull { file -> file.composeKey }?.plus(1) ?: 0
+        val syncId = defaultSyncId()
 
         val newFile = FileUi(
             id = 0,
+            syncId = syncId,
+            updatedAt = defaultUpdatedAt(),
             platformFile = platformFile,
             composeKey = composeKey,
             uploadState = UploadState.Loading,
@@ -66,18 +121,35 @@ abstract class FilesComponent(
     }
 
     @Suppress("RedundantSuspendModifier")
+    /**
+     * Сохраняет локальную копию файла в каталоге приложения и, если доступен backend,
+     * отправляет этот же файл в удалённый bucket.
+     */
     private suspend fun saveFileInNocombro(fileUi: FileUi) {
-        val calculateNocombroFileName = calculateNocombroFileName(fileUi.platformFile)
-        val nocombroFile = PlatformFile(FileKit.filesDir, calculateNocombroFileName)
+        val remoteObjectKey = calculateRemoteObjectKey(fileUi.syncId, fileUi.platformFile)
+        val nocombroFile = PlatformFile(
+            buildManagedLocalFilePath(remoteObjectKey)
+        )
 
         val result: Result<Unit> = runCatching {
+            File(nocombroFile.path).parentFile?.mkdirs()
             nocombroFile.write(fileUi.platformFile)
+            filesRepository.uploadRemoteCopy(
+                objectKey = remoteObjectKey,
+                localPath = nocombroFile.path,
+            ).getOrThrow()
         }
         _filesUi.update { lst ->
             lst.map { file ->
                 if (file.composeKey == fileUi.composeKey) {
                     file.copy(
                         platformFile = if (result.isSuccess) nocombroFile else fileUi.platformFile,
+                        remoteObjectKey = if (result.isSuccess) remoteObjectKey else file.remoteObjectKey,
+                        remoteStorageProvider = if (result.isSuccess) {
+                            filesRepository.remoteProviderId()
+                        } else {
+                            file.remoteStorageProvider
+                        },
                         uploadState = if (result.isSuccess) UploadState.Success else UploadState.Error(
                             message = result.exceptionOrNull()?.message ?: "unknown error"
                         )
@@ -95,6 +167,64 @@ abstract class FilesComponent(
             saveFileInNocombro(file)
         }
 
+    }
+
+    internal fun openFile(fileUi: FileUi) {
+        coroutineScope.launch(Dispatchers.IO) {
+            filesRepository.ensureLocalFileForOpen(
+                localPath = fileUi.path,
+                remoteObjectKey = fileUi.remoteObjectKey,
+            ).onSuccess {
+                FileKit.openFileWithDefaultApplication(
+                    file = PlatformFile(fileUi.path),
+                )
+            }.onFailure { throwable ->
+                _openFileError.value = throwable.message ?: "Не удалось открыть файл"
+            }
+        }
+    }
+
+    internal fun downloadFile(composeKey: Int) {
+        val fileUi = _filesUi.value.firstOrNull { it.composeKey == composeKey } ?: return
+        coroutineScope.launch(Dispatchers.IO) {
+            _downloadingComposeKeys.update { it + composeKey }
+            filesRepository.ensureLocalFileForOpen(
+                localPath = fileUi.path,
+                remoteObjectKey = fileUi.remoteObjectKey,
+            ).onFailure { throwable ->
+                _openFileError.value = throwable.message ?: "Не удалось скачать файл"
+            }
+            _downloadingComposeKeys.update { it - composeKey }
+        }
+    }
+
+    internal fun downloadAllMissingFiles() {
+        val filesForDownload = _filesUi.value.filter { fileUi ->
+            fileUi.remoteObjectKey != null && !hasLocalFile(fileUi)
+        }
+        if (filesForDownload.isEmpty()) {
+            return
+        }
+        coroutineScope.launch(Dispatchers.IO) {
+            filesForDownload.forEach { fileUi ->
+                _downloadingComposeKeys.update { it + fileUi.composeKey }
+                filesRepository.ensureLocalFileForOpen(
+                    localPath = fileUi.path,
+                    remoteObjectKey = fileUi.remoteObjectKey,
+                ).onFailure { throwable ->
+                    _openFileError.value = throwable.message ?: "Не удалось скачать файл"
+                }
+                _downloadingComposeKeys.update { it - fileUi.composeKey }
+            }
+        }
+    }
+
+    internal fun hasLocalFile(fileUi: FileUi): Boolean {
+        return File(fileUi.path).exists()
+    }
+
+    internal fun dismissOpenFileError() {
+        _openFileError.value = null
     }
 
 
@@ -138,7 +268,11 @@ abstract class FilesComponent(
                 ownerId = ownerId,
                 ownerFileType = ownerType,
                 path = fileUi.path,
-                id = fileUi.id
+                remoteObjectKey = fileUi.remoteObjectKey,
+                remoteStorageProvider = fileUi.remoteStorageProvider,
+                id = fileUi.id,
+                syncId = fileUi.syncId,
+                updatedAt = fileUi.updatedAt,
             )
         }
     }
@@ -152,9 +286,13 @@ private fun List<FileBD>.toListFileUi(): List<FileUi> {
 private fun FileBD.toFileUI(composeKey: Int): FileUi {
     return FileUi(
         id = id,
+        syncId = syncId,
+        updatedAt = updatedAt,
         composeKey = composeKey,
         platformFile = PlatformFile(path),
         uploadState = UploadState.Success,
+        remoteObjectKey = remoteObjectKey,
+        remoteStorageProvider = remoteStorageProvider,
     )
 }
 

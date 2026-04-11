@@ -18,7 +18,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -36,14 +35,7 @@ fun ProjectDialog(
         )
     {
         Card(
-            modifier = Modifier
-                .wrapContentHeight()
-                .shadow(
-                    elevation = 24.dp,
-                    shape = RoundedCornerShape(28.dp),
-                    spotColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
-                    ambientColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.05f)
-                ),
+            modifier = Modifier.wrapContentHeight(),
             shape = RoundedCornerShape(28.dp),
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,

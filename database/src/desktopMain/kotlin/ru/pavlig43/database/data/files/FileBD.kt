@@ -9,8 +9,10 @@ import ru.pavlig43.core.model.CollectionObject
 import ru.pavlig43.database.data.sync.defaultSyncId
 import ru.pavlig43.database.data.sync.defaultUpdatedAt
 
+const val FILE_TABLE_NAME = "file"
+
 @Entity(
-    tableName = "file",
+    tableName = FILE_TABLE_NAME,
     indices = [Index(value = ["sync_id"], unique = true)]
 )
 data class FileBD(
@@ -22,6 +24,12 @@ data class FileBD(
 
     @ColumnInfo("path")
     val path: String,
+
+    @ColumnInfo("remote_object_key")
+    val remoteObjectKey: String? = null,
+
+    @ColumnInfo("remote_storage_provider")
+    val remoteStorageProvider: String? = null,
 
     @PrimaryKey(autoGenerate = true)
     override val id: Int = 0,

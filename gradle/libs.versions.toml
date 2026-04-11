@@ -46,6 +46,8 @@ turbine = "1.2.1"
 versionCode = "1"
 versionName = "1.0.0"
 wwindTable = "1.8.1"
+ydbJdbc = "2.3.21"
+awsSdk = "2.32.10"
 
 
 
@@ -161,6 +163,9 @@ sqldelight-desktop = { module = "app.cash.sqldelight:sqlite-driver", version.ref
 
 leakcanary-android = { module = "com.squareup.leakcanary:leakcanary-android", version.ref = "leakcanaryAndroid" }
 pdfbox = { module = "org.apache.pdfbox:pdfbox", version.ref = "pdfbox" }
+ydb-jdbc = { module = "tech.ydb.jdbc:ydb-jdbc-driver", version.ref = "ydbJdbc" }
+aws-s3 = { module = "software.amazon.awssdk:s3", version.ref = "awsSdk" }
+aws-url-connection-client = { module = "software.amazon.awssdk:url-connection-client", version.ref = "awsSdk" }
 
 #build-logic
 android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "agp" }

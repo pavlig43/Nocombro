@@ -14,6 +14,12 @@ import ru.pavlig43.database.data.document.DOCUMENT_TABLE_NAME
 import ru.pavlig43.database.data.document.Document
 import ru.pavlig43.database.data.expense.EXPENSE_TABLE_NAME
 import ru.pavlig43.database.data.expense.ExpenseBD
+import ru.pavlig43.database.data.files.FILE_TABLE_NAME
+import ru.pavlig43.database.data.files.FileBD
+import ru.pavlig43.database.data.files.OwnerType
+import ru.pavlig43.database.data.files.buildCanonicalFileKey
+import ru.pavlig43.database.data.files.buildManagedLocalFilePath
+import ru.pavlig43.database.data.files.extractFileName
 import ru.pavlig43.database.data.product.COMPOSITION_TABLE_NAME
 import ru.pavlig43.database.data.product.PRODUCT_DECLARATION_TABLE_NAME
 import ru.pavlig43.database.data.product.PRODUCT_TABLE_NAME
@@ -71,6 +77,7 @@ class SyncRemoteApplyRepository(
             EXPENSE_TABLE_NAME -> applyExpense(change)
             BUY_TABLE_NAME -> applyBuy(change)
             SALE_TABLE_NAME -> applySale(change)
+            FILE_TABLE_NAME -> applyFile(change)
         }
     }
 
@@ -489,6 +496,45 @@ class SyncRemoteApplyRepository(
         db.saleDao.upsertSaleBd(incoming)
     }
 
+    private suspend fun applyFile(change: RemotePullChange) {
+        val existing = db.fileDao.getFileBySyncId(change.entitySyncId)
+        if (change.changeType == SyncChangeType.DELETE) {
+            existing?.let {
+                if (!isStale(it.updatedAt, change.changedAt)) {
+                    db.fileDao.upsertFiles(
+                        listOf(it.copy(deletedAt = change.changedAt, updatedAt = change.changedAt))
+                    )
+                }
+            }
+            return
+        }
+
+        val payload = change.decodePayload<FileSyncPayload>()
+        val ownerId = requireOwnerId(
+            ownerType = payload.ownerType,
+            ownerSyncId = payload.ownerSyncId,
+        )
+        val incoming = FileBD(
+            ownerId = ownerId,
+            ownerFileType = payload.ownerType,
+            path = existing?.path ?: buildManagedLocalFilePath(
+                payload.remoteObjectKey ?: buildCanonicalFileKey(
+                    ownerType = payload.ownerType,
+                    fileSyncId = payload.syncId,
+                    originalName = extractFileName(payload.path),
+                )
+            ),
+            remoteObjectKey = payload.remoteObjectKey,
+            remoteStorageProvider = payload.remoteStorageProvider,
+            id = existing?.id ?: 0,
+            syncId = payload.syncId,
+            updatedAt = payload.updatedAt,
+            deletedAt = payload.deletedAt,
+        )
+        if (existing != null && isStale(existing.updatedAt, incoming.updatedAt)) return
+        db.fileDao.upsertFiles(listOf(incoming))
+    }
+
     private suspend fun requireVendor(syncId: String): Vendor {
         return db.vendorDao.getVendorBySyncId(syncId)
             ?: error("Missing vendor dependency for syncId=$syncId")
@@ -517,6 +563,22 @@ class SyncRemoteApplyRepository(
     private suspend fun requireMovement(syncId: String): BatchMovement {
         return db.batchMovementDao.getMovementBySyncId(syncId)
             ?: error("Missing movement dependency for syncId=$syncId")
+    }
+
+    private suspend fun requireOwnerId(
+        ownerType: OwnerType,
+        ownerSyncId: String,
+    ): Int {
+        return when (ownerType) {
+            OwnerType.DECLARATION -> requireDeclaration(ownerSyncId).id
+            OwnerType.PRODUCT -> requireProduct(ownerSyncId).id
+            OwnerType.VENDOR -> requireVendor(ownerSyncId).id
+            OwnerType.DOCUMENT -> db.documentDao.getDocumentBySyncId(ownerSyncId)?.id
+                ?: error("Missing document dependency for syncId=$ownerSyncId")
+            OwnerType.TRANSACTION -> requireTransaction(ownerSyncId).id
+            OwnerType.EXPENSE -> db.expenseDao.getExpenseBySyncId(ownerSyncId)?.id
+                ?: error("Missing expense dependency for syncId=$ownerSyncId")
+        }
     }
 
     private inline fun <reified T> RemotePullChange.decodePayload(): T {
@@ -549,6 +611,7 @@ private fun entityPriority(entityTable: String): Int {
         EXPENSE_TABLE_NAME -> 11
         BUY_TABLE_NAME -> 12
         SALE_TABLE_NAME -> 13
+        FILE_TABLE_NAME -> 14
         else -> 100
     }
 }

@@ -6,6 +6,7 @@ import kotlinx.serialization.Serializable
 import ru.pavlig43.database.data.batch.MovementType
 import ru.pavlig43.database.data.document.DocumentType
 import ru.pavlig43.database.data.expense.ExpenseType
+import ru.pavlig43.database.data.files.OwnerType
 import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.database.data.transact.TransactionType
 
@@ -171,6 +172,18 @@ data class TransactionSyncPayload(
     val createdAt: LocalDateTime,
     val comment: String,
     val isCompleted: Boolean,
+    val updatedAt: LocalDateTime,
+    val deletedAt: LocalDateTime? = null,
+)
+
+@Serializable
+data class FileSyncPayload(
+    val syncId: String,
+    val ownerType: OwnerType,
+    val ownerSyncId: String,
+    val path: String,
+    val remoteObjectKey: String? = null,
+    val remoteStorageProvider: String? = null,
     val updatedAt: LocalDateTime,
     val deletedAt: LocalDateTime? = null,
 )
