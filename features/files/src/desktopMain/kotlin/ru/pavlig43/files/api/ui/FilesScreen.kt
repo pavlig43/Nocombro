@@ -27,10 +27,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
-import io.github.vinceglb.filekit.dialogs.openFileWithDefaultApplication
 import org.jetbrains.compose.resources.painterResource
 import ru.pavlig43.coreui.tooltip.ToolTipIconButton
 import ru.pavlig43.files.api.component.FilesComponent
@@ -39,6 +37,7 @@ import ru.pavlig43.files.internal.ui.AddFileRow
 import ru.pavlig43.loadinitdata.api.ui.LoadInitDataScreen
 import ru.pavlig43.theme.Res
 import ru.pavlig43.theme.add_circle
+import ru.pavlig43.theme.cloud_download
 import ru.pavlig43.theme.warning
 
 
@@ -48,12 +47,30 @@ fun FilesScreen(
     modifier: Modifier = Modifier
 ) {
     val files by component.filesUi.collectAsState()
+    val openFileError by component.openFileError.collectAsState()
+    val downloadingComposeKeys by component.downloadingComposeKeys.collectAsState()
+    val missingLocalFilesCount = files.count { file ->
+        file.remoteObjectKey != null && !component.hasLocalFile(file)
+    }
+
+    if (openFileError != null) {
+        OpenFileErrorDialog(
+            message = openFileError.orEmpty(),
+            onDismissRequest = component::dismissOpenFileError,
+        )
+    }
 
     Column(modifier = modifier.verticalScroll(rememberScrollState())) {
         LoadInitDataScreen(component.initDataComponent) {
             AddFileBody(
                 files = files,
                 addPlatformFile = component::addNewFile,
+                openFile = component::openFile,
+                downloadFile = component::downloadFile,
+                downloadAllMissingFiles = component::downloadAllMissingFiles,
+                missingLocalFilesCount = missingLocalFilesCount,
+                hasLocalFile = component::hasLocalFile,
+                downloadingComposeKeys = downloadingComposeKeys,
                 removeFile = component::removeFile,
                 retryLoadFile = component::retryLoadFile,
                 calculateNocombroFileName = component::calculateNocombroFileName,
@@ -94,6 +111,12 @@ fun FilesScreen(
 private fun AddFileBody(
     files: List<FileUi>,
     addPlatformFile: (PlatformFile) -> Unit,
+    openFile: (FileUi) -> Unit,
+    downloadFile: (Int) -> Unit,
+    downloadAllMissingFiles: () -> Unit,
+    missingLocalFilesCount: Int,
+    hasLocalFile: (FileUi) -> Boolean,
+    downloadingComposeKeys: Set<Int>,
     calculateNocombroFileName: (PlatformFile) -> String,
     removeFile: (Int) -> Unit,
     retryLoadFile: (Int) -> Unit,
@@ -158,22 +181,69 @@ private fun AddFileBody(
                 onClick = { launcher.launch() },
                 icon = Res.drawable.add_circle
             )
+            if (missingLocalFilesCount > 0) {
+                ToolTipIconButton(
+                    tooltipText = "Скачать все отсутствующие локальные копии",
+                    onClick = downloadAllMissingFiles,
+                    icon = Res.drawable.cloud_download,
+                )
+                Text(
+                    text = "В облаке: $missingLocalFilesCount",
+                    style = MaterialTheme.typography.labelMedium,
+                )
+            }
         }
         files.forEach { file ->
             AddFileRow(
                 removeFile = removeFile,
                 fileUi = file,
-                openFile = {
-                    FileKit.openFileWithDefaultApplication(
-                        file = it,
-                    )
-                },
+                openFile = openFile,
+                downloadFile = downloadFile,
+                hasLocalFile = hasLocalFile(file),
+                isDownloading = file.composeKey in downloadingComposeKeys,
                 retryLoadFile = retryLoadFile
             )
         }
     }
 
 
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun OpenFileErrorDialog(
+    message: String,
+    onDismissRequest: () -> Unit,
+) {
+    BasicAlertDialog(
+        onDismissRequest = onDismissRequest,
+        content = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.background)
+                    .padding(24.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Text(
+                    text = "Не удалось открыть файл",
+                    style = MaterialTheme.typography.headlineSmall,
+                )
+                Text(
+                    text = message,
+                    style = MaterialTheme.typography.bodyLarge,
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End,
+                ) {
+                    Button(onClick = onDismissRequest) {
+                        Text("Закрыть")
+                    }
+                }
+            }
+        }
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

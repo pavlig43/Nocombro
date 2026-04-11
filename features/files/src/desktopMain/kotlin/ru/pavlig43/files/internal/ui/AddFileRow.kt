@@ -4,8 +4,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -15,7 +17,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.absolutePath
 import io.github.vinceglb.filekit.extension
 import org.jetbrains.compose.resources.DrawableResource
@@ -38,7 +39,10 @@ import ru.pavlig43.theme.word
 @Composable
 internal fun AddFileRow(
     fileUi: FileUi,
-    openFile: (PlatformFile) -> Unit,
+    openFile: (FileUi) -> Unit,
+    downloadFile: (Int) -> Unit,
+    hasLocalFile: Boolean,
+    isDownloading: Boolean,
     removeFile: (Int) -> Unit,
     retryLoadFile: (Int) -> Unit,
     modifier: Modifier = Modifier.Companion
@@ -59,19 +63,30 @@ internal fun AddFileRow(
         ToolTipProject(
             tooltipText = fileUi.platformFile.absolutePath(),
         ) {
-            Text(
-                text = fileUi.name,
-                textDecoration = TextDecoration.Underline,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.width(250.dp),
-
+            Column(modifier = Modifier.width(250.dp)) {
+                Text(
+                    text = fileUi.name,
+                    textDecoration = TextDecoration.Underline,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                 )
+                FilePresenceStatus(
+                    fileUi = fileUi,
+                    hasLocalFile = hasLocalFile,
+                    isDownloading = isDownloading,
+                )
+            }
         }
 
         OnOpenIconButton(
             fileUi = fileUi,
             onOpenFile = openFile
+        )
+        DownloadIconButton(
+            fileUi = fileUi,
+            hasLocalFile = hasLocalFile,
+            isDownloading = isDownloading,
+            onDownload = downloadFile,
         )
 
         RemoveIconButton(
@@ -89,15 +104,70 @@ internal fun AddFileRow(
 @Composable
 private fun OnOpenIconButton(
     fileUi: FileUi,
-    onOpenFile: (PlatformFile) -> Unit
+    onOpenFile: (FileUi) -> Unit
 ) {
     ToolTipIconButton(
         tooltipText = "Открыть",
-        onClick = { onOpenFile(fileUi.platformFile) },
+        onClick = { onOpenFile(fileUi) },
         icon = Res.drawable.search,
         enabled = fileUi.uploadState !is UploadState.Loading,
 
         )
+}
+
+@Composable
+private fun FilePresenceStatus(
+    fileUi: FileUi,
+    hasLocalFile: Boolean,
+    isDownloading: Boolean,
+) {
+    val uploadSucceeded = fileUi.uploadState is UploadState.Success
+    val statusText = when {
+        fileUi.uploadState is UploadState.Error -> "Ошибка загрузки"
+        isDownloading -> "Скачивается"
+        hasLocalFile && uploadSucceeded -> "Локально и загружен"
+        !hasLocalFile && uploadSucceeded -> "Загружен, локальной копии нет"
+        hasLocalFile && fileUi.remoteObjectKey != null -> "Локально, есть remote key"
+        hasLocalFile -> "Локально"
+        fileUi.remoteObjectKey != null -> "Локально нет, есть remote key"
+        else -> "Нет локальной копии"
+    }
+    val statusColor = when {
+        fileUi.uploadState is UploadState.Error -> MaterialTheme.colorScheme.error
+        isDownloading -> MaterialTheme.colorScheme.primary
+        hasLocalFile -> MaterialTheme.colorScheme.secondary
+        else -> MaterialTheme.colorScheme.outline
+    }
+
+    Text(
+        text = statusText,
+        color = statusColor,
+        style = MaterialTheme.typography.labelSmall,
+        modifier = Modifier.padding(top = 2.dp),
+    )
+}
+
+@Composable
+private fun DownloadIconButton(
+    fileUi: FileUi,
+    hasLocalFile: Boolean,
+    isDownloading: Boolean,
+    onDownload: (Int) -> Unit,
+) {
+    val canDownload = fileUi.remoteObjectKey != null && !hasLocalFile
+    if (!canDownload) {
+        return
+    }
+    if (isDownloading) {
+        LoadingUi(Modifier.size(24.dp))
+        return
+    }
+    ToolTipIconButton(
+        tooltipText = "Скачать локальную копию",
+        onClick = { onDownload(fileUi.composeKey) },
+        icon = Res.drawable.cloud_download,
+        enabled = fileUi.uploadState !is UploadState.Loading,
+    )
 }
 
 @Composable

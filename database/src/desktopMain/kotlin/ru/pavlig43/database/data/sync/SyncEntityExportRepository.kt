@@ -8,6 +8,8 @@ import ru.pavlig43.database.data.batch.BATCH_TABLE_NAME
 import ru.pavlig43.database.data.declaration.DECLARATIONS_TABLE_NAME
 import ru.pavlig43.database.data.document.DOCUMENT_TABLE_NAME
 import ru.pavlig43.database.data.expense.EXPENSE_TABLE_NAME
+import ru.pavlig43.database.data.files.FILE_TABLE_NAME
+import ru.pavlig43.database.data.files.OwnerType
 import ru.pavlig43.database.data.product.COMPOSITION_TABLE_NAME
 import ru.pavlig43.database.data.product.PRODUCT_DECLARATION_TABLE_NAME
 import ru.pavlig43.database.data.product.PRODUCT_TABLE_NAME
@@ -299,7 +301,40 @@ class SyncEntityExportRepository(
                 )
             }
 
+            FILE_TABLE_NAME -> db.fileDao.getFileBySyncId(entitySyncId)?.let { file ->
+                encodePayload(
+                    FileSyncPayload(
+                        syncId = file.syncId,
+                        ownerType = file.ownerFileType,
+                        ownerSyncId = loadOwnerSyncId(
+                            ownerId = file.ownerId,
+                            ownerType = file.ownerFileType,
+                        ),
+                        path = file.path,
+                        remoteObjectKey = file.remoteObjectKey,
+                        remoteStorageProvider = file.remoteStorageProvider,
+                        updatedAt = file.updatedAt,
+                        deletedAt = file.deletedAt,
+                    )
+                )
+            }
+
             else -> null
+        }
+    }
+
+    private suspend fun loadOwnerSyncId(
+        ownerId: Int,
+        ownerType: OwnerType,
+    ): String {
+        return when (ownerType) {
+            OwnerType.DECLARATION -> db.declarationDao.getDeclaration(ownerId).syncId
+            OwnerType.PRODUCT -> db.productDao.getProduct(ownerId).syncId
+            OwnerType.VENDOR -> db.vendorDao.getVendor(ownerId).syncId
+            OwnerType.DOCUMENT -> db.documentDao.getDocument(ownerId).syncId
+            OwnerType.TRANSACTION -> db.transactionDao.getTransaction(ownerId).syncId
+            OwnerType.EXPENSE -> db.expenseDao.getExpense(ownerId)?.syncId
+                ?: error("Missing expense owner for id=$ownerId")
         }
     }
 
