@@ -82,6 +82,7 @@ include(":features:notification")
 include(":datetime")
 include(":features:sampletable")
 include(":features:storage")
+include(":features:doctor")
 
 
 

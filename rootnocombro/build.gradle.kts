@@ -17,6 +17,7 @@ kotlin {
         implementation(projects.datastore)
         implementation(projects.features.manageitem.update)
         implementation(projects.features.files)
+        implementation(projects.features.doctor)
 
         implementation(projects.features.form.document)
         implementation(projects.features.form.product)
