@@ -37,6 +37,18 @@ internal class FilesRepository(
         }
     }
 
+    suspend fun getFileByOwnerAndDisplayName(
+        ownerId: Int,
+        ownerType: OwnerType,
+        displayName: String,
+    ): FileBD? {
+        return dao.getFileByOwnerAndDisplayName(
+            ownerId = ownerId,
+            ownerFileType = ownerType,
+            displayName = displayName,
+        )
+    }
+
     /**
      * Пытается отправить локальную копию файла в object storage.
      *
@@ -91,6 +103,50 @@ internal class FilesRepository(
     fun remoteProviderId(): String? {
         return remoteFileStorageGateway.providerId
             .takeIf { remoteFileStorageGateway.isConfigured() }
+    }
+
+    suspend fun replaceOwnedFile(
+        ownerId: Int,
+        ownerType: OwnerType,
+        displayName: String,
+        localPath: String,
+        remoteObjectKey: String?,
+        remoteStorageProvider: String?,
+    ): Result<FileBD> {
+        return runCatching {
+            database.inTransaction {
+                val existing = dao.getFileByOwnerAndDisplayName(ownerId, ownerType, displayName)
+                if (
+                    existing != null &&
+                    existing.remoteObjectKey != null &&
+                    existing.remoteObjectKey != remoteObjectKey &&
+                    remoteFileStorageGateway.isConfigured()
+                ) {
+                    remoteFileStorageGateway.delete(existing.remoteObjectKey).getOrThrow()
+                }
+
+                val file = FileBD(
+                    ownerId = ownerId,
+                    ownerFileType = ownerType,
+                    displayName = displayName,
+                    path = localPath,
+                    remoteObjectKey = remoteObjectKey,
+                    remoteStorageProvider = remoteStorageProvider,
+                    id = existing?.id ?: 0,
+                    syncId = existing?.syncId ?: ru.pavlig43.database.data.sync.defaultSyncId(),
+                    updatedAt = ru.pavlig43.database.data.sync.defaultUpdatedAt(),
+                    deletedAt = null,
+                )
+
+                dao.upsertFiles(listOf(file))
+                syncQueueRepository.enqueueUpsert(
+                    entityTable = FILE_TABLE_NAME,
+                    entityLocalId = file.syncId,
+                    createdAt = file.updatedAt,
+                )
+                file
+            }
+        }
     }
 
     /**

@@ -130,6 +130,7 @@ private fun ProductDeclarationTable(
         autoApplyFilters = false,
         rowHeightMode = RowHeightMode.Dynamic,
         selectionMode = SelectionMode.Multiple,
+        enableDragToScroll = true
     )
     val verticalState = rememberLazyListState()
     val horizontalState = rememberScrollState()

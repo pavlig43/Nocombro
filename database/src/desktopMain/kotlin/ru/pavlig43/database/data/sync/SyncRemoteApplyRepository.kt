@@ -558,6 +558,7 @@ class SyncRemoteApplyRepository(
         val incoming = FileBD(
             ownerId = ownerId,
             ownerFileType = payload.ownerType,
+            displayName = payload.displayName,
             path = existing?.path ?: buildManagedLocalFilePath(
                 payload.remoteObjectKey ?: buildCanonicalFileKey(
                     ownerType = payload.ownerType,

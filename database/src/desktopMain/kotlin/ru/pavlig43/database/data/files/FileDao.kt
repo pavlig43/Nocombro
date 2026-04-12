@@ -10,6 +10,15 @@ interface FileDao {
     @Query("SELECT * FROM file WHERE owner_id = :ownerId AND owner_type =:ownerFileType")
     suspend fun getFiles(ownerId: Int,ownerFileType: OwnerType):List<FileBD>
 
+    @Query(
+        "SELECT * FROM file WHERE owner_id = :ownerId AND owner_type = :ownerFileType AND display_name = :displayName LIMIT 1"
+    )
+    suspend fun getFileByOwnerAndDisplayName(
+        ownerId: Int,
+        ownerFileType: OwnerType,
+        displayName: String,
+    ): FileBD?
+
     @Query("SELECT path FROM file")
     suspend fun getAllPaths(): List<String>
 

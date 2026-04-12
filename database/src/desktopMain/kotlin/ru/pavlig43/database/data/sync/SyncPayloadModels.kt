@@ -203,6 +203,7 @@ data class FileSyncPayload(
     val syncId: String,
     val ownerType: OwnerType,
     val ownerSyncId: String,
+    val displayName: String,
     val path: String,
     val remoteObjectKey: String? = null,
     val remoteStorageProvider: String? = null,

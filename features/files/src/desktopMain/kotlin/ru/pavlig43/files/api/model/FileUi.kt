@@ -12,11 +12,12 @@ data class FileUi(
     val syncId: String,
     val updatedAt: LocalDateTime,
     val composeKey: Int,
+    val displayName: String,
     internal val platformFile: PlatformFile,
     internal val uploadState: UploadState,
     val remoteObjectKey: String? = null,
     val remoteStorageProvider: String? = null,
 ) {
     val path by lazy { platformFile.path }
-    val name by lazy { platformFile.name }
+    val name by lazy { displayName }
 }

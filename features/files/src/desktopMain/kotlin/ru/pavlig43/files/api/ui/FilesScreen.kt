@@ -47,16 +47,16 @@ fun FilesScreen(
     modifier: Modifier = Modifier
 ) {
     val files by component.filesUi.collectAsState()
-    val openFileError by component.openFileError.collectAsState()
+    val fileMessage by component.fileMessage.collectAsState()
     val downloadingComposeKeys by component.downloadingComposeKeys.collectAsState()
     val missingLocalFilesCount = files.count { file ->
         file.remoteObjectKey != null && !component.hasLocalFile(file)
     }
 
-    if (openFileError != null) {
-        OpenFileErrorDialog(
-            message = openFileError.orEmpty(),
-            onDismissRequest = component::dismissOpenFileError,
+    if (fileMessage != null) {
+        FileMessageDialog(
+            message = fileMessage.orEmpty(),
+            onDismissRequest = component::dismissFileMessage,
         )
     }
 
@@ -211,7 +211,7 @@ private fun AddFileBody(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun OpenFileErrorDialog(
+private fun FileMessageDialog(
     message: String,
     onDismissRequest: () -> Unit,
 ) {
@@ -226,7 +226,7 @@ private fun OpenFileErrorDialog(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Text(
-                    text = "Не удалось открыть файл",
+                    text = "Ошибка работы с файлами",
                     style = MaterialTheme.typography.headlineSmall,
                 )
                 Text(

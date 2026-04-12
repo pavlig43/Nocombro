@@ -59,10 +59,14 @@ abstract class FilesComponent(
     private val filesRepository: FilesRepository = scope.get()
 
     private val coroutineScope = componentCoroutineScope()
-    private val _openFileError = MutableStateFlow<String?>(null)
+    private val _fileMessage = MutableStateFlow<String?>(null)
     private val _downloadingComposeKeys = MutableStateFlow<Set<Int>>(emptySet())
-    val openFileError = _openFileError.asStateFlow()
+    val fileMessage = _fileMessage.asStateFlow()
     val downloadingComposeKeys = _downloadingComposeKeys.asStateFlow()
+
+    protected open fun manualUploadBlockedReason(
+        fileName: String,
+    ): String? = null
 
     /**
      * Имя локальной копии файла в каталоге приложения.
@@ -99,6 +103,11 @@ abstract class FilesComponent(
      * Добавляет файл в UI-состояние и сразу резервирует для него стабильный `syncId`.
      */
     internal fun addNewFile(platformFile: PlatformFile) {
+        manualUploadBlockedReason(platformFile.name)?.let { message ->
+            _fileMessage.value = message
+            return
+        }
+
         val composeKey = _filesUi.value.maxOfOrNull { file -> file.composeKey }?.plus(1) ?: 0
         val syncId = defaultSyncId()
 
@@ -108,6 +117,7 @@ abstract class FilesComponent(
             updatedAt = defaultUpdatedAt(),
             platformFile = platformFile,
             composeKey = composeKey,
+            displayName = platformFile.name,
             uploadState = UploadState.Loading,
         )
 
@@ -179,7 +189,7 @@ abstract class FilesComponent(
                     file = PlatformFile(fileUi.path),
                 )
             }.onFailure { throwable ->
-                _openFileError.value = throwable.message ?: "Не удалось открыть файл"
+                _fileMessage.value = throwable.message ?: "Не удалось открыть файл"
             }
         }
     }
@@ -192,7 +202,7 @@ abstract class FilesComponent(
                 localPath = fileUi.path,
                 remoteObjectKey = fileUi.remoteObjectKey,
             ).onFailure { throwable ->
-                _openFileError.value = throwable.message ?: "Не удалось скачать файл"
+                _fileMessage.value = throwable.message ?: "Не удалось скачать файл"
             }
             _downloadingComposeKeys.update { it - composeKey }
         }
@@ -212,7 +222,7 @@ abstract class FilesComponent(
                     localPath = fileUi.path,
                     remoteObjectKey = fileUi.remoteObjectKey,
                 ).onFailure { throwable ->
-                    _openFileError.value = throwable.message ?: "Не удалось скачать файл"
+                    _fileMessage.value = throwable.message ?: "Не удалось скачать файл"
                 }
                 _downloadingComposeKeys.update { it - fileUi.composeKey }
             }
@@ -223,8 +233,8 @@ abstract class FilesComponent(
         return File(fileUi.path).exists()
     }
 
-    internal fun dismissOpenFileError() {
-        _openFileError.value = null
+    internal fun dismissFileMessage() {
+        _fileMessage.value = null
     }
 
 
@@ -267,6 +277,7 @@ abstract class FilesComponent(
             FileBD(
                 ownerId = ownerId,
                 ownerFileType = ownerType,
+                displayName = fileUi.displayName,
                 path = fileUi.path,
                 remoteObjectKey = fileUi.remoteObjectKey,
                 remoteStorageProvider = fileUi.remoteStorageProvider,
@@ -289,6 +300,7 @@ private fun FileBD.toFileUI(composeKey: Int): FileUi {
         syncId = syncId,
         updatedAt = updatedAt,
         composeKey = composeKey,
+        displayName = displayName,
         platformFile = PlatformFile(path),
         uploadState = UploadState.Success,
         remoteObjectKey = remoteObjectKey,

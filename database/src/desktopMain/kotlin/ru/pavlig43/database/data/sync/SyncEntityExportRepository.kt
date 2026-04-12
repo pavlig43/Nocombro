@@ -337,6 +337,7 @@ class SyncEntityExportRepository(
                             ownerId = file.ownerId,
                             ownerType = file.ownerFileType,
                         ),
+                        displayName = file.displayName,
                         path = file.path,
                         remoteObjectKey = file.remoteObjectKey,
                         remoteStorageProvider = file.remoteStorageProvider,

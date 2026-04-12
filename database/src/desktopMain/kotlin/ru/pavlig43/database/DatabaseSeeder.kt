@@ -167,36 +167,42 @@ suspend fun seedDatabase(db: NocombroDatabase) {
         FileBD(
             ownerId = 1,
             ownerFileType = OwnerType.DECLARATION,
+            displayName = "1_decl.jpg",
             path = "/storage/declarations/1_decl.jpg",
             id = 1
         ),
         FileBD(
             ownerId = 2,
             ownerFileType = OwnerType.DECLARATION,
+            displayName = "2_decl.jpg",
             path = "/storage/declarations/2_decl.jpg",
             id = 2
         ),
         FileBD(
             ownerId = 3,
             ownerFileType = OwnerType.DECLARATION,
+            displayName = "3_decl.jpg",
             path = "/storage/declarations/3_decl.jpg",
             id = 3
         ),
         FileBD(
             ownerId = 4,
             ownerFileType = OwnerType.DECLARATION,
+            displayName = "4_decl.jpg",
             path = "/storage/declarations/4_decl.jpg",
             id = 4
         ),
         FileBD(
             ownerId = 5,
             ownerFileType = OwnerType.DECLARATION,
+            displayName = "5_decl.jpg",
             path = "/storage/declarations/5_decl.jpg",
             id = 5
         ),
         FileBD(
             ownerId = 6,
             ownerFileType = OwnerType.DECLARATION,
+            displayName = "6_decl.jpg",
             path = "/storage/declarations/6_decl.jpg",
             id = 6
         )

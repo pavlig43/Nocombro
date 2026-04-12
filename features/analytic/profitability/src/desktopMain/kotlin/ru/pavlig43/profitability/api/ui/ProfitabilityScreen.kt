@@ -57,7 +57,8 @@ fun ProfitabilityScreen(component: ProfitabilityComponent) {
             val tableSettings = remember {
                 TableSettings(
                     showActiveFiltersHeader = true,
-                    showFooter = true
+                    showFooter = true,
+                    enableDragToScroll = true
                 )
             }
             val tableState = rememberTableState(
