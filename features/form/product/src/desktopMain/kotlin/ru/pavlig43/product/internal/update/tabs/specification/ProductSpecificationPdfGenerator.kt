@@ -323,19 +323,19 @@ private class ProductSpecificationPdfWriter(
         val signature = signatureImage ?: return
         val stamp = stampImage ?: return
 
-        val signatureHeight = 44f
+        val signatureHeight = 50f
         val signatureWidth = signature.width / signature.height.toFloat() * signatureHeight
-        val stampSize = 72f
-        val gap = 4f
+        val stampSize = 60f
         val blockHeight = maxOf(signatureHeight, stampSize)
+        val blockWidth = signatureWidth + 26f
 
         ensureSpace(blockHeight + 12f)
 
         val top = y
+        val signatureX = pageWidth - margin - blockWidth
         val signatureBottom = top - signatureHeight
-        val stampBottom = top - stampSize
-        val signatureX = pageWidth - margin - signatureWidth - stampSize - gap
-        val stampX = signatureX + signatureWidth + gap
+        val stampX = signatureX + signatureWidth - 28f
+        val stampBottom = signatureBottom - 6f
 
         stream.drawImage(signature, signatureX, signatureBottom, signatureWidth, signatureHeight)
         stream.drawImage(stamp, stampX, stampBottom, stampSize, stampSize)
