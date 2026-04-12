@@ -12,6 +12,7 @@ import ru.pavlig43.database.data.files.FILE_TABLE_NAME
 import ru.pavlig43.database.data.files.OwnerType
 import ru.pavlig43.database.data.product.COMPOSITION_TABLE_NAME
 import ru.pavlig43.database.data.product.PRODUCT_DECLARATION_TABLE_NAME
+import ru.pavlig43.database.data.product.PRODUCT_SPECIFICATION_TABLE_NAME
 import ru.pavlig43.database.data.product.PRODUCT_TABLE_NAME
 import ru.pavlig43.database.data.product.SAFETY_STOCK_TABLE_NAME
 import ru.pavlig43.database.data.transact.TRANSACTION_TABLE_NAME
@@ -141,6 +142,32 @@ class SyncEntityExportRepository(
                         recNds = product.recNds,
                         updatedAt = product.updatedAt,
                         deletedAt = product.deletedAt,
+                    )
+                )
+            }
+
+            PRODUCT_SPECIFICATION_TABLE_NAME -> db.productSpecificationDao.getBySyncId(entitySyncId)?.let { specification ->
+                val product = db.productDao.getProduct(specification.productId)
+                encodePayload(
+                    ProductSpecificationSyncPayload(
+                        syncId = specification.syncId,
+                        productSyncId = product.syncId,
+                        description = specification.description,
+                        dosage = specification.dosage,
+                        composition = specification.composition,
+                        shelfLifeText = specification.shelfLifeText,
+                        storageConditions = specification.storageConditions,
+                        appearance = specification.appearance,
+                        color = specification.color,
+                        smell = specification.smell,
+                        taste = specification.taste,
+                        physicalChemicalIndicators = specification.physicalChemicalIndicators,
+                        microbiologicalIndicators = specification.microbiologicalIndicators,
+                        toxicElements = specification.toxicElements,
+                        allergens = specification.allergens,
+                        gmoInfo = specification.gmoInfo,
+                        updatedAt = specification.updatedAt,
+                        deletedAt = specification.deletedAt,
                     )
                 )
             }

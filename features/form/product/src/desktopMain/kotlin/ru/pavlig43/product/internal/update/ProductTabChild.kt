@@ -6,10 +6,12 @@ import ru.pavlig43.product.internal.update.tabs.composition.CompositionComponent
 import ru.pavlig43.product.internal.update.tabs.declaration.ProductDeclarationComponent
 import ru.pavlig43.product.internal.update.tabs.essential.ProductUpdateSingleLineComponent
 import ru.pavlig43.product.internal.update.tabs.safety.SafetyStockComponent
+import ru.pavlig43.product.internal.update.tabs.specification.ProductSpecificationComponent
 
 internal sealed interface ProductTabChild : FormTabChild {
     class Essentials(override val component: ProductUpdateSingleLineComponent) : ProductTabChild
     class Files(override val component: ProductFilesComponent) : ProductTabChild
+    class Specification(override val component: ProductSpecificationComponent) : ProductTabChild
 
     class Declaration1(override val component: ProductDeclarationComponent) : ProductTabChild
     class Composition(override val component: CompositionComponent) : ProductTabChild

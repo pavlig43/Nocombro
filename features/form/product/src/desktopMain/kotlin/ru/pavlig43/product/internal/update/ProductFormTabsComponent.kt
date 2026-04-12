@@ -21,11 +21,13 @@ import ru.pavlig43.product.internal.update.ProductTabChild.Composition
 import ru.pavlig43.product.internal.update.ProductTabChild.Essentials
 import ru.pavlig43.product.internal.update.ProductTabChild.Files
 import ru.pavlig43.product.internal.update.ProductTabChild.SafetyStock
+import ru.pavlig43.product.internal.update.ProductTabChild.Specification
 import ru.pavlig43.product.internal.update.tabs.ProductFilesComponent
 import ru.pavlig43.product.internal.update.tabs.composition.CompositionComponent
 import ru.pavlig43.product.internal.update.tabs.declaration.ProductDeclarationComponent
 import ru.pavlig43.product.internal.update.tabs.essential.ProductUpdateSingleLineComponent
 import ru.pavlig43.product.internal.update.tabs.safety.SafetyStockComponent
+import ru.pavlig43.product.internal.update.tabs.specification.ProductSpecificationComponent
 import ru.pavlig43.update.component.IItemFormTabsComponent
 import ru.pavlig43.update.component.getDefaultUpdateComponent
 
@@ -72,6 +74,7 @@ internal class ProductFormTabsComponent(
             componentContext = childContext("tab"),
             startConfigurations = listOf(
                 ProductTab.Essentials,
+                ProductTab.Specification,
                 ProductTab.Files,
                 ProductTab.SafetyStock,
                 ProductTab.Declaration
@@ -96,6 +99,14 @@ internal class ProductFormTabsComponent(
                             productId = productId,
                             dependencies = scope.get(),
                             componentContext = context
+                        )
+                    )
+
+                    ProductTab.Specification -> Specification(
+                        ProductSpecificationComponent(
+                            componentContext = context,
+                            productId = productId,
+                            updateRepository = scope.get(SingleRepositoryType.SPECIFICATION.qualifier),
                         )
                     )
 

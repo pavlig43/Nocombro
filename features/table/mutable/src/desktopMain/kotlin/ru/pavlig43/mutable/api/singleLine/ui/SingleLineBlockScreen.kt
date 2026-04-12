@@ -1,7 +1,10 @@
 package ru.pavlig43.mutable.api.singleLine.ui
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -36,14 +39,18 @@ fun <I : ISingleLineTableUi, C> SingleLineBlockScreen(
             showFooter = false,
             showFastFilters = false,
             showActiveFiltersHeader = false,
-            enableDragToScroll = false
+            enableDragToScroll = true
         )
         val state = rememberTableState(
             columns = component.columns.map { it.key }.toImmutableList(),
             settings = defaultTableSettings
         )
+        val verticalState = rememberLazyListState()
+        val horizontalState = rememberScrollState()
         Box(
-            modifier = modifier.padding(16.dp)
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(16.dp)
         ) {
             EditableTable(
                 itemsCount = items.size,
@@ -54,7 +61,9 @@ fun <I : ISingleLineTableUi, C> SingleLineBlockScreen(
                 ),
                 columns = component.columns,
                 tableData = Unit,
-                embedded = true,
+                verticalState = verticalState,
+                horizontalState = horizontalState,
+                embedded = false,
             )
         }
     }
