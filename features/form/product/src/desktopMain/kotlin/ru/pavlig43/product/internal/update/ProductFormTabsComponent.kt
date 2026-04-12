@@ -107,6 +107,9 @@ internal class ProductFormTabsComponent(
                             componentContext = context,
                             productId = productId,
                             updateRepository = scope.get(SingleRepositoryType.SPECIFICATION.qualifier),
+                            pdfRepository = scope.get(),
+                            getProductName = { productEssentials.value.displayName },
+                            onPdfGenerated = ::refreshFilesTabAfterSpecificationPdfGenerated,
                         )
                     )
 
@@ -149,6 +152,14 @@ internal class ProductFormTabsComponent(
                 tabNavigationComponent.addTab(ProductTab.Composition)
             }
             tabNavigationComponent.onSelectTab(0)
+        }
+    }
+
+    private suspend fun refreshFilesTabAfterSpecificationPdfGenerated() {
+        tabNavigationComponent.tabChildren.value.items.forEach { child ->
+            if (child.configuration == ProductTab.Files) {
+                child.instance.component.refreshDataAfterUpsert()
+            }
         }
     }
 
