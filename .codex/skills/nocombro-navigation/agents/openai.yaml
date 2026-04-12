@@ -1,0 +1,4 @@
+interface:
+  display_name: "Nocombro Navigation"
+  short_description: "Root navigation and tab wiring"
+  default_prompt: "Use $nocombro-navigation to trace why a Nocombro screen does not open or to wire a new route."
