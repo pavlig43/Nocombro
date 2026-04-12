@@ -61,6 +61,7 @@ fun <I : IMultiLineTableUi, C, E : TableData<I>> TableBox(
         rowHeightMode = RowHeightMode.Fixed,
         showFooter = true,
         enableTextSelection = true,
+        enableDragToScroll = true,
         selectionMode = SelectionMode.Multiple,
         pinnedColumnsCount = 0
     )

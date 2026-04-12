@@ -45,7 +45,7 @@ fun PersonMovementsSection(
                 showActiveFiltersHeader = false,
                 selectionMode = SelectionMode.None,
                 rowHeightMode = RowHeightMode.Dynamic,
-                enableDragToScroll = false,
+                enableDragToScroll = true,
                 showFooter = true,
             )
         }

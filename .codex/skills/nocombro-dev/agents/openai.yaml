@@ -1,0 +1,4 @@
+interface:
+  display_name: "Nocombro Dev"
+  short_description: "Broad project routing and onboarding"
+  default_prompt: "Use $nocombro-dev to orient yourself in the Nocombro codebase before working across several modules."

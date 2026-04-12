@@ -41,7 +41,6 @@ class RootNocombroComponent(
     val settingsComponent = SettingsComponent(
         componentContext = childContext("settings"),
         settingsRepository = scope.get(),
-        localFilesMaintenanceRepository = scope.get(),
     )
     val syncComponent = SyncComponent(
         componentContext = childContext("sync"),

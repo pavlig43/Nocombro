@@ -2,6 +2,7 @@ package ru.pavlig43.rootnocombro.internal.navigation
 
 import ru.pavlig43.core.MainTabComponent
 import ru.pavlig43.declaration.api.DeclarationFormComponent
+import ru.pavlig43.doctor.api.component.DoctorComponent
 import ru.pavlig43.document.api.component.DocumentFormComponent
 import ru.pavlig43.expense.api.component.ExpenseFormComponent
 import ru.pavlig43.immutable.api.component.ImmutableTableComponentFactoryMain
@@ -27,6 +28,8 @@ internal sealed interface MainTabChild {
     class MainMoneyChild(override val component: AnalyticMainComponent) : MainTabChild
 
     class ProfitabilityChild(override val component: ProfitabilityComponent) : MainTabChild
+
+    class DoctorChild(override val component: DoctorComponent) : MainTabChild
 
     class BatchMovementChild(override val component: BatchMovementComponent) : MainTabChild
 

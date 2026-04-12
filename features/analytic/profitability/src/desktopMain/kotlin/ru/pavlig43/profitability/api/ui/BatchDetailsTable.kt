@@ -40,7 +40,7 @@ internal fun BatchDetailsTable(
             showActiveFiltersHeader = false,
             selectionMode = SelectionMode.None,
             rowHeightMode = RowHeightMode.Dynamic,
-            enableDragToScroll = false,
+            enableDragToScroll = true,
         )
     }
     val tableState = rememberTableState(

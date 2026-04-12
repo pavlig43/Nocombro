@@ -22,6 +22,9 @@ data class FileBD(
     @ColumnInfo("owner_type")
     val ownerFileType: OwnerType,
 
+    @ColumnInfo("display_name")
+    val displayName: String,
+
     @ColumnInfo("path")
     val path: String,
 

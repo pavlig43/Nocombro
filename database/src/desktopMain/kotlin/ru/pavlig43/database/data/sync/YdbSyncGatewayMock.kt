@@ -16,6 +16,10 @@ class YdbSyncGatewayMock : SyncRemoteGateway {
         )
     }
 
+    override suspend fun loadCurrentRemoteFileStates(): Result<List<RemoteFileSyncState>> {
+        return Result.success(emptyList())
+    }
+
     override suspend fun pushChanges(
         payload: RemotePushPayload,
     ): Result<RemotePushResult> {

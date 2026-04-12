@@ -1,0 +1,4 @@
+interface:
+  display_name: "Nocombro Theme & Settings"
+  short_description: "Theme, settings, and app-wide UI"
+  default_prompt: "Use $nocombro-theme-settings to change Nocombro theme, settings, or app-wide desktop UI behavior."

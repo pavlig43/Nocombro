@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import ua.wwind.table.EditableColumnBuilder
 import ua.wwind.table.EditableTableColumnsBuilder
@@ -19,11 +20,13 @@ fun <T : Any, C, E> EditableTableColumnsBuilder<T, C, E>.writeTextColumn(
     filterType: TableFilterType.TextTableFilter? = null,
     isSortable: Boolean = true,
     singleLine: Boolean = true,
-    alignment: Alignment = Alignment.CenterStart
+    alignment: Alignment = Alignment.CenterStart,
+    minWidth: Dp = 300.dp,
+    autoMaxWidth: Dp? = null,
 ) {
     column(column, valueOf = valueOf) {
-        width(300.dp)
-        autoWidth()
+        width(minWidth)
+        autoWidth(autoMaxWidth)
         header(headerText)
         align(alignment)
         filterType?.let {

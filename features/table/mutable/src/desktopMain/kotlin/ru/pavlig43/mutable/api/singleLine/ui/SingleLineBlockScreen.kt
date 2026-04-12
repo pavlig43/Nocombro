@@ -1,7 +1,12 @@
 package ru.pavlig43.mutable.api.singleLine.ui
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -24,6 +29,7 @@ import ua.wwind.table.state.rememberTableState
 fun <I : ISingleLineTableUi, C> SingleLineBlockScreen(
     component: SingleLineComponent<*, I, C>,
     modifier: Modifier = Modifier,
+    headerContent: @Composable (() -> Unit)? = null,
 ) {
     LoadInitDataScreen(component.initDataComponent) {
         val items by component.itemFieldsList.collectAsState()
@@ -36,26 +42,38 @@ fun <I : ISingleLineTableUi, C> SingleLineBlockScreen(
             showFooter = false,
             showFastFilters = false,
             showActiveFiltersHeader = false,
-            enableDragToScroll = false
+            enableDragToScroll = true
         )
         val state = rememberTableState(
             columns = component.columns.map { it.key }.toImmutableList(),
             settings = defaultTableSettings
         )
-        Box(
-            modifier = modifier.padding(16.dp)
+        val verticalState = rememberLazyListState()
+        val horizontalState = rememberScrollState()
+        Column(
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            EditableTable(
-                itemsCount = items.size,
-                itemAt = { index -> items.getOrNull(index) },
-                state = state,
-                colors = TableDefaults.colors().copy(
-                    headerContainerColor = MaterialTheme.colorScheme.primaryContainer.copy(0.3f)
-                ),
-                columns = component.columns,
-                tableData = Unit,
-                embedded = true,
-            )
+            headerContent?.invoke()
+            Box(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                EditableTable(
+                    itemsCount = items.size,
+                    itemAt = { index -> items.getOrNull(index) },
+                    state = state,
+                    colors = TableDefaults.colors().copy(
+                        headerContainerColor = MaterialTheme.colorScheme.primaryContainer.copy(0.3f)
+                    ),
+                    columns = component.columns,
+                    tableData = Unit,
+                    verticalState = verticalState,
+                    horizontalState = horizontalState,
+                    embedded = false,
+                )
+            }
         }
     }
 }

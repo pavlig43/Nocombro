@@ -1,0 +1,4 @@
+interface:
+  display_name: "Nocombro Data Screens"
+  short_description: "Tables analytics storage and files"
+  default_prompt: "Use $nocombro-data-screens to change Nocombro tables, analytics, storage, or file-related screens."

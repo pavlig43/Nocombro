@@ -4,6 +4,7 @@ import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 import ru.pavlig43.declaration.api.DeclarationFormDependencies
+import ru.pavlig43.doctor.api.DoctorDependencies
 import ru.pavlig43.document.api.DocumentFormDependencies
 import ru.pavlig43.expense.api.ExpenseFormDependencies
 import ru.pavlig43.files.api.FilesDependencies
@@ -31,6 +32,7 @@ internal val featureDependenciesModule = listOf(module {
     factoryOf(::ExpenseFormDependencies)
     factoryOf(::StorageDependencies)
     factoryOf(::ProfitabilityDependencies)
+    factoryOf(::DoctorDependencies)
 
 })
 

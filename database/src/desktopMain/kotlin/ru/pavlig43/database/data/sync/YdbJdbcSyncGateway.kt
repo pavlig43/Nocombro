@@ -1,12 +1,20 @@
 package ru.pavlig43.database.data.sync
 
 import kotlinx.datetime.LocalDateTime
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
+import ru.pavlig43.database.data.files.FILE_TABLE_NAME
 import java.sql.Connection
 import java.sql.DriverManager
 import java.util.Properties
 
 class YdbJdbcSyncGateway(
     private val config: YdbJdbcConfig,
+    private val json: Json = Json {
+        ignoreUnknownKeys = true
+    },
 ) : SyncRemoteGateway {
 
     override suspend fun getStatus(syncState: SyncStateEntity?): RemoteSyncStatus {
@@ -26,6 +34,15 @@ class YdbJdbcSyncGateway(
                 remoteCursor = syncState?.lastRemoteCursor,
                 error = it.message,
             )
+        }
+    }
+
+    override suspend fun loadCurrentRemoteFileStates(): Result<List<RemoteFileSyncState>> {
+        return runCatching {
+            withConnection { connection ->
+                ensureSyncTable(connection)
+                loadCurrentRemoteFileStates(connection)
+            }
         }
     }
 
@@ -299,6 +316,69 @@ class YdbJdbcSyncGateway(
                 return changes
             }
         }
+    }
+
+    private fun loadCurrentRemoteFileStates(
+        connection: Connection,
+    ): List<RemoteFileSyncState> {
+        val sql = """
+            SELECT
+                entity_sync_id,
+                change_type,
+                payload_json
+            FROM `${config.tablePath}`
+            WHERE entity_table = ?
+        """.trimIndent()
+
+        connection.prepareStatement(sql).use { statement ->
+            statement.setString(1, FILE_TABLE_NAME)
+            statement.executeQuery().use { resultSet ->
+                val items = mutableListOf<RemoteFileSyncState>()
+                while (resultSet.next()) {
+                    val syncId = resultSet.getString("entity_sync_id")
+                    val changeType = enumValueOf<SyncChangeType>(resultSet.getString("change_type"))
+                    val payloadJson = resultSet.getString("payload_json")
+                    val payload = payloadJson
+                        ?.let(::decodeFilePayload)
+
+                    items += RemoteFileSyncState(
+                        syncId = syncId,
+                        remoteObjectKey = payload?.remoteObjectKey,
+                        changeType = changeType,
+                        deletedAt = payload?.deletedAt,
+                    )
+                }
+                return items
+            }
+        }
+    }
+
+    private fun decodeFilePayload(
+        rawPayload: String,
+    ): RemoteFilePayloadSnapshot {
+        val rootElement = json.decodeFromString<kotlinx.serialization.json.JsonElement>(rawPayload)
+        val payloadElement = rootElement.jsonObject["payload"] ?: rootElement
+        val payloadObject = payloadElement.jsonObject
+
+        return RemoteFilePayloadSnapshot(
+            remoteObjectKey = payloadObject.jsonStringOrNull("remoteObjectKey"),
+            deletedAt = payloadObject.jsonStringOrNull("deletedAt")
+                ?.let { rawDateTime -> LocalDateTime.parse(rawDateTime) },
+        )
+    }
+
+    private data class RemoteFilePayloadSnapshot(
+        val remoteObjectKey: String?,
+        val deletedAt: LocalDateTime?,
+    )
+
+    private fun Map<String, kotlinx.serialization.json.JsonElement>.jsonStringOrNull(
+        key: String,
+    ): String? {
+        val element = this[key] ?: return null
+        return runCatching { element.jsonPrimitive.content }
+            .getOrNull()
+            ?.takeUnless { it == "null" }
     }
 
     private fun <T> withConnection(

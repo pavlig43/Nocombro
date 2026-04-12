@@ -1,0 +1,4 @@
+interface:
+  display_name: "Nocombro DI"
+  short_description: "Koin and root wiring for features"
+  default_prompt: "Use $nocombro-di to fix Nocombro dependency wiring, Koin setup, or missing scope bindings."

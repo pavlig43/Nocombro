@@ -21,11 +21,14 @@ import ru.pavlig43.product.internal.update.ProductTabChild.Composition
 import ru.pavlig43.product.internal.update.ProductTabChild.Essentials
 import ru.pavlig43.product.internal.update.ProductTabChild.Files
 import ru.pavlig43.product.internal.update.ProductTabChild.SafetyStock
+import ru.pavlig43.product.internal.update.ProductTabChild.Specification
 import ru.pavlig43.product.internal.update.tabs.ProductFilesComponent
 import ru.pavlig43.product.internal.update.tabs.composition.CompositionComponent
 import ru.pavlig43.product.internal.update.tabs.declaration.ProductDeclarationComponent
 import ru.pavlig43.product.internal.update.tabs.essential.ProductUpdateSingleLineComponent
 import ru.pavlig43.product.internal.update.tabs.safety.SafetyStockComponent
+import ru.pavlig43.product.internal.update.tabs.specification.ProductSpecificationComponent
+import ru.pavlig43.product.internal.update.tabs.composition.CompositionUi
 import ru.pavlig43.update.component.IItemFormTabsComponent
 import ru.pavlig43.update.component.getDefaultUpdateComponent
 
@@ -54,6 +57,7 @@ internal class ProductFormTabsComponent(
     override val transactionExecutor: TransactionExecutor = scope.get()
     private val coroutineScope = componentCoroutineScope()
     private val productEssentials = MutableStateFlow(componentFactory.initItem)
+    private var compositionComponent: CompositionComponent? = null
 
     /**
      * Синхронизирует состояние вкладки "Основное" в двух направлениях:
@@ -72,6 +76,7 @@ internal class ProductFormTabsComponent(
             componentContext = childContext("tab"),
             startConfigurations = listOf(
                 ProductTab.Essentials,
+                ProductTab.Specification,
                 ProductTab.Files,
                 ProductTab.SafetyStock,
                 ProductTab.Declaration
@@ -99,6 +104,19 @@ internal class ProductFormTabsComponent(
                         )
                     )
 
+                    ProductTab.Specification -> Specification(
+                        ProductSpecificationComponent(
+                            componentContext = context,
+                            productId = productId,
+                            updateRepository = scope.get(SingleRepositoryType.SPECIFICATION.qualifier),
+                            pdfRepository = scope.get(),
+                            compositionGenerator = scope.get(),
+                            getCurrentComposition = ::getCurrentComposition,
+                            getProductName = { productEssentials.value.displayName },
+                            onPdfGenerated = ::refreshFilesTabAfterSpecificationPdfGenerated,
+                        )
+                    )
+
                     ProductTab.Composition -> Composition(
                         CompositionComponent(
                             componentContext = context,
@@ -106,7 +124,7 @@ internal class ProductFormTabsComponent(
                             repository = scope.get(UpdateCollectionRepositoryType.Composition.qualifier),
                             immutableTableDependencies = scope.get(),
                             tabOpener = tabOpener
-                        )
+                        ).also { compositionComponent = it }
                     )
 
                     ProductTab.Declaration -> ProductTabChild.Declaration1(
@@ -139,6 +157,18 @@ internal class ProductFormTabsComponent(
             }
             tabNavigationComponent.onSelectTab(0)
         }
+    }
+
+    private suspend fun refreshFilesTabAfterSpecificationPdfGenerated() {
+        tabNavigationComponent.tabChildren.value.items.forEach { child ->
+            if (child.configuration == ProductTab.Files) {
+                child.instance.component.refreshDataAfterUpsert()
+            }
+        }
+    }
+
+    private fun getCurrentComposition(): List<CompositionUi> {
+        return compositionComponent?.itemList?.value.orEmpty()
     }
 
     override val updateComponent = getDefaultUpdateComponent(componentContext)

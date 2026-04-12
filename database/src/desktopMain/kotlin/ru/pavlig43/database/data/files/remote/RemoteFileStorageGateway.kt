@@ -46,6 +46,13 @@ interface RemoteFileStorageGateway {
     ): Result<Unit>
 
     /**
+     * Возвращает список object key, которые реально существуют в удалённом storage.
+     *
+     * Нужен для диагностических сценариев вроде поиска orphan-объектов в bucket.
+     */
+    suspend fun listObjects(): Result<List<RemoteStorageObject>>
+
+    /**
      * Удаляет объект из удаленного storage по его object key.
      */
     suspend fun delete(
@@ -59,4 +66,9 @@ interface RemoteFileStorageGateway {
 data class RemoteFileRef(
     val providerId: String,
     val objectKey: String,
+)
+
+data class RemoteStorageObject(
+    val objectKey: String,
+    val sizeBytes: Long? = null,
 )

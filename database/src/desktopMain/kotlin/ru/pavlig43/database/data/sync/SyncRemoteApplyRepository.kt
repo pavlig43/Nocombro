@@ -22,10 +22,12 @@ import ru.pavlig43.database.data.files.buildManagedLocalFilePath
 import ru.pavlig43.database.data.files.extractFileName
 import ru.pavlig43.database.data.product.COMPOSITION_TABLE_NAME
 import ru.pavlig43.database.data.product.PRODUCT_DECLARATION_TABLE_NAME
+import ru.pavlig43.database.data.product.PRODUCT_SPECIFICATION_TABLE_NAME
 import ru.pavlig43.database.data.product.PRODUCT_TABLE_NAME
 import ru.pavlig43.database.data.product.CompositionIn
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductDeclarationIn
+import ru.pavlig43.database.data.product.ProductSpecification
 import ru.pavlig43.database.data.product.SAFETY_STOCK_TABLE_NAME
 import ru.pavlig43.database.data.product.SafetyStock
 import ru.pavlig43.database.data.transact.TRANSACTION_TABLE_NAME
@@ -66,6 +68,7 @@ class SyncRemoteApplyRepository(
             VENDOR_TABLE_NAME -> applyVendor(change)
             DOCUMENT_TABLE_NAME -> applyDocument(change)
             PRODUCT_TABLE_NAME -> applyProduct(change)
+            PRODUCT_SPECIFICATION_TABLE_NAME -> applyProductSpecification(change)
             SAFETY_STOCK_TABLE_NAME -> applySafetyStock(change)
             TRANSACTION_TABLE_NAME -> applyTransaction(change)
             DECLARATIONS_TABLE_NAME -> applyDeclaration(change)
@@ -197,6 +200,44 @@ class SyncRemoteApplyRepository(
         )
         if (existing != null && isStale(existing.updatedAt, incoming.updatedAt)) return
         db.safetyStockDao.upsert(incoming)
+    }
+
+    private suspend fun applyProductSpecification(change: RemotePullChange) {
+        val existing = db.productSpecificationDao.getBySyncId(change.entitySyncId)
+        if (change.changeType == SyncChangeType.DELETE) {
+            existing?.let {
+                if (!isStale(it.updatedAt, change.changedAt)) {
+                    db.productSpecificationDao.upsert(it.copy(deletedAt = change.changedAt, updatedAt = change.changedAt))
+                }
+            }
+            return
+        }
+
+        val payload = change.decodePayload<ProductSpecificationSyncPayload>()
+        val product = requireProduct(payload.productSyncId)
+        val incoming = ProductSpecification(
+            productId = product.id,
+            description = payload.description,
+            dosage = payload.dosage,
+            composition = payload.composition,
+            shelfLifeText = payload.shelfLifeText,
+            storageConditions = payload.storageConditions,
+            appearance = payload.appearance,
+            color = payload.color,
+            smell = payload.smell,
+            taste = payload.taste,
+            physicalChemicalIndicators = payload.physicalChemicalIndicators,
+            microbiologicalIndicators = payload.microbiologicalIndicators,
+            toxicElements = payload.toxicElements,
+            allergens = payload.allergens,
+            gmoInfo = payload.gmoInfo,
+            id = existing?.id ?: 0,
+            syncId = payload.syncId,
+            updatedAt = payload.updatedAt,
+            deletedAt = payload.deletedAt,
+        )
+        if (existing != null && isStale(existing.updatedAt, incoming.updatedAt)) return
+        db.productSpecificationDao.upsert(incoming)
     }
 
     private suspend fun applyTransaction(change: RemotePullChange) {
@@ -517,6 +558,7 @@ class SyncRemoteApplyRepository(
         val incoming = FileBD(
             ownerId = ownerId,
             ownerFileType = payload.ownerType,
+            displayName = payload.displayName,
             path = existing?.path ?: buildManagedLocalFilePath(
                 payload.remoteObjectKey ?: buildCanonicalFileKey(
                     ownerType = payload.ownerType,
@@ -600,18 +642,19 @@ private fun entityPriority(entityTable: String): Int {
         VENDOR_TABLE_NAME -> 0
         DOCUMENT_TABLE_NAME -> 1
         PRODUCT_TABLE_NAME -> 2
-        SAFETY_STOCK_TABLE_NAME -> 3
-        TRANSACTION_TABLE_NAME -> 4
-        DECLARATIONS_TABLE_NAME -> 5
-        BATCH_TABLE_NAME -> 6
-        PRODUCT_DECLARATION_TABLE_NAME -> 7
-        COMPOSITION_TABLE_NAME -> 8
-        BATCH_MOVEMENT_TABLE_NAME -> 9
-        REMINDER_TABLE_NAME -> 10
-        EXPENSE_TABLE_NAME -> 11
-        BUY_TABLE_NAME -> 12
-        SALE_TABLE_NAME -> 13
-        FILE_TABLE_NAME -> 14
+        PRODUCT_SPECIFICATION_TABLE_NAME -> 3
+        SAFETY_STOCK_TABLE_NAME -> 4
+        TRANSACTION_TABLE_NAME -> 5
+        DECLARATIONS_TABLE_NAME -> 6
+        BATCH_TABLE_NAME -> 7
+        PRODUCT_DECLARATION_TABLE_NAME -> 8
+        COMPOSITION_TABLE_NAME -> 9
+        BATCH_MOVEMENT_TABLE_NAME -> 10
+        REMINDER_TABLE_NAME -> 11
+        EXPENSE_TABLE_NAME -> 12
+        BUY_TABLE_NAME -> 13
+        SALE_TABLE_NAME -> 14
+        FILE_TABLE_NAME -> 15
         else -> 100
     }
 }

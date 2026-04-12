@@ -1,4 +1,4 @@
-package ru.pavlig43.rootnocombro.api.component
+package ru.pavlig43.files.api.model
 
 data class LocalOrphanFile(
     val name: String,

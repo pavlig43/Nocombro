@@ -1,5 +1,8 @@
 package ru.pavlig43.database.data.sync
 
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.datetime.LocalDateTime
 
 class SyncService(
@@ -10,6 +13,8 @@ class SyncService(
     private val syncRemoteGateway: SyncRemoteGateway,
     private val syncRemoteApplyRepository: SyncRemoteApplyRepository,
 ) {
+    private val _status = MutableStateFlow<SyncStatusSnapshot?>(null)
+    val status: StateFlow<SyncStatusSnapshot?> = _status.asStateFlow()
 
     suspend fun getStatus(): SyncStatusSnapshot {
         val syncState = syncStateRepository.getSyncState()
@@ -26,7 +31,13 @@ class SyncService(
             lastRemoteCursor = syncState?.lastRemoteCursor,
             payloadVersion = CURRENT_SYNC_PAYLOAD_VERSION,
             remoteError = remoteStatus.error,
-        )
+        ).also { snapshot ->
+            _status.value = snapshot
+        }
+    }
+
+    suspend fun loadCurrentRemoteFileStates(): Result<List<RemoteFileSyncState>> {
+        return syncRemoteGateway.loadCurrentRemoteFileStates()
     }
 
     suspend fun syncOnce(): SyncRunResult {

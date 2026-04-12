@@ -1,0 +1,4 @@
+interface:
+  display_name: "Nocombro Forms"
+  short_description: "Document and CRUD form changes"
+  default_prompt: "Use $nocombro-forms to update a Nocombro form screen or trace how a form receives its id."

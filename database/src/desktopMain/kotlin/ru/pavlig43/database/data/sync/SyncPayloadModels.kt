@@ -68,6 +68,28 @@ data class ProductSyncPayload(
 )
 
 @Serializable
+data class ProductSpecificationSyncPayload(
+    val syncId: String,
+    val productSyncId: String,
+    val description: String,
+    val dosage: String,
+    val composition: String,
+    val shelfLifeText: String,
+    val storageConditions: String,
+    val appearance: String,
+    val color: String,
+    val smell: String,
+    val taste: String,
+    val physicalChemicalIndicators: String,
+    val microbiologicalIndicators: String,
+    val toxicElements: String,
+    val allergens: String,
+    val gmoInfo: String,
+    val updatedAt: LocalDateTime,
+    val deletedAt: LocalDateTime? = null,
+)
+
+@Serializable
 data class SafetyStockSyncPayload(
     val syncId: String,
     val productSyncId: String,
@@ -181,6 +203,7 @@ data class FileSyncPayload(
     val syncId: String,
     val ownerType: OwnerType,
     val ownerSyncId: String,
+    val displayName: String,
     val path: String,
     val remoteObjectKey: String? = null,
     val remoteStorageProvider: String? = null,

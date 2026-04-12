@@ -25,9 +25,11 @@ import ru.pavlig43.immutable.internal.component.items.expense.ExpenseTableUi
 import ru.pavlig43.main.api.component.AnalyticMainComponent
 import ru.pavlig43.notification.api.component.NotificationComponent
 import ru.pavlig43.notification.api.model.NotificationItem
+import ru.pavlig43.doctor.api.component.DoctorComponent
 import ru.pavlig43.product.api.component.ProductFormComponent
 import ru.pavlig43.profitability.internal.component.ProfitabilityComponent
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.BatchMovementChild
+import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.DoctorChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ImmutableTableChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ItemFormChild.DeclarationFormChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ItemFormChild.DocumentFormChild
@@ -55,6 +57,7 @@ import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig.SafetyListConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig.TransactionListConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig.VendorListConfig
+import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.DoctorConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.NotificationConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ProfitabilityConfig
 import ru.pavlig43.rootnocombro.internal.navigation.drawer.component.DrawerComponent
@@ -101,6 +104,7 @@ internal class MainTabNavigationComponent(
             DrawerDestination.Safety -> SafetyListConfig()
             DrawerDestination.SampleTable -> MainTabConfig.SampleTableConfig()
             DrawerDestination.Storage -> MainTabConfig.StorageConfig()
+            DrawerDestination.Doctor -> DoctorConfig()
         }
 
     // Создаём tabOpener раньше, чем tabNavigationComponent
@@ -184,6 +188,15 @@ internal class MainTabNavigationComponent(
                             ProfitabilityComponent(
                                 componentContext = context,
                                 dependencies = scope.get()
+                            )
+                        )
+                    }
+
+                    is DoctorConfig -> {
+                        DoctorChild(
+                            DoctorComponent(
+                                componentContext = context,
+                                dependencies = scope.get(),
                             )
                         )
                     }

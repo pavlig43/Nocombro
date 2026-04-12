@@ -5,6 +5,8 @@ import kotlinx.datetime.LocalDateTime
 interface SyncRemoteGateway {
     suspend fun getStatus(syncState: SyncStateEntity?): RemoteSyncStatus
 
+    suspend fun loadCurrentRemoteFileStates(): Result<List<RemoteFileSyncState>>
+
     suspend fun pushChanges(
         payload: RemotePushPayload,
     ): Result<RemotePushResult>
@@ -71,4 +73,11 @@ data class RemotePullChange(
     val changeType: SyncChangeType,
     val changedAt: LocalDateTime,
     val payloadJson: String?,
+)
+
+data class RemoteFileSyncState(
+    val syncId: String,
+    val remoteObjectKey: String?,
+    val changeType: SyncChangeType,
+    val deletedAt: LocalDateTime? = null,
 )

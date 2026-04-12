@@ -7,6 +7,7 @@ import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest
 import software.amazon.awssdk.services.s3.model.GetObjectRequest
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Request
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
 import software.amazon.awssdk.core.sync.ResponseTransformer
 import java.net.URI
@@ -74,6 +75,36 @@ class S3RemoteFileStorageGateway(
         }
     }
 
+    override suspend fun listObjects(): Result<List<RemoteStorageObject>> {
+        return runCatching {
+            withClient { client ->
+                buildList {
+                    var continuationToken: String? = null
+                    do {
+                        val response = client.listObjectsV2(
+                            ListObjectsV2Request.builder()
+                                .bucket(config.bucket)
+                                .prefix(config.keyPrefix.takeIf { it.isNotBlank() })
+                                .continuationToken(continuationToken)
+                                .build()
+                        )
+                        response.contents()
+                            .mapNotNull { item ->
+                                item.key()?.let { key ->
+                                    RemoteStorageObject(
+                                        objectKey = key,
+                                        sizeBytes = item.size(),
+                                    )
+                                }
+                            }
+                            .forEach(::add)
+                        continuationToken = response.nextContinuationToken()
+                    } while (response.isTruncated)
+                }
+            }
+        }
+    }
+
     override suspend fun delete(
         objectKey: String,
     ): Result<Unit> {
@@ -93,10 +124,14 @@ class S3RemoteFileStorageGateway(
         objectKey: String,
     ): String {
         val cleanObjectKey = objectKey.trimStart('/')
-        return if (config.keyPrefix.isBlank()) {
+        val cleanPrefix = config.keyPrefix.trim('/')
+
+        return if (cleanPrefix.isBlank()) {
+            cleanObjectKey
+        } else if (cleanObjectKey == cleanPrefix || cleanObjectKey.startsWith("$cleanPrefix/")) {
             cleanObjectKey
         } else {
-            "${config.keyPrefix}/$cleanObjectKey"
+            "$cleanPrefix/$cleanObjectKey"
         }
     }
 

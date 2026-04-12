@@ -14,9 +14,11 @@ import ru.pavlig43.database.data.product.COMPOSITION_TABLE_NAME
 import ru.pavlig43.database.data.product.CompositionIn
 import ru.pavlig43.database.data.product.CompositionOut
 import ru.pavlig43.database.data.product.PRODUCT_DECLARATION_TABLE_NAME
+import ru.pavlig43.database.data.product.PRODUCT_SPECIFICATION_TABLE_NAME
 import ru.pavlig43.database.data.product.PRODUCT_TABLE_NAME
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductDeclarationIn
+import ru.pavlig43.database.data.product.ProductSpecification
 import ru.pavlig43.database.data.product.SAFETY_STOCK_TABLE_NAME
 import ru.pavlig43.database.data.product.SafetyStock
 import ru.pavlig43.database.data.sync.SyncQueueRepository
@@ -31,6 +33,10 @@ import ru.pavlig43.mutable.api.singleLine.data.SyncCreateSingleItemRepository
 import ru.pavlig43.mutable.api.singleLine.data.SyncUpdateSingleLineRepository
 import ru.pavlig43.mutable.api.singleLine.data.UpdateSingleLineRepository
 import ru.pavlig43.product.api.ProductFormDependencies
+import ru.pavlig43.product.internal.update.tabs.specification.createDefaultProductSpecification
+import ru.pavlig43.product.internal.update.tabs.specification.ProductSpecificationCompositionGenerator
+import ru.pavlig43.product.internal.update.tabs.specification.ProductSpecificationPdfGenerator
+import ru.pavlig43.product.internal.update.tabs.specification.ProductSpecificationPdfRepository
 
 internal fun createProductFormModule(dependencies: ProductFormDependencies) = listOf(
     module {
@@ -39,8 +45,21 @@ internal fun createProductFormModule(dependencies: ProductFormDependencies) = li
         single<FilesDependencies> { dependencies.filesDependencies }
         single<ImmutableTableDependencies> { dependencies.immutableTableDependencies }
         single { SyncQueueRepository(get<NocombroDatabase>().syncDao) }
+        single { ProductSpecificationPdfGenerator() }
+        single { ProductSpecificationCompositionGenerator(get<NocombroDatabase>().compositionDao) }
+        single {
+            ProductSpecificationPdfRepository(
+                fileDao = get<NocombroDatabase>().fileDao,
+                remoteFileStorageGateway = get<FilesDependencies>().remoteFileStorageGateway,
+                syncQueueRepository = get(),
+                pdfGenerator = get(),
+            )
+        }
         single<CreateSingleItemRepository<Product>> { ProductCreateRepository(get(), get()) }
         single<UpdateSingleLineRepository<Product>> (SingleRepositoryType.ESSENTIALS.qualifier){ ProductUpdateRepository(get(), get()) }
+        single<UpdateSingleLineRepository<ProductSpecification>>(SingleRepositoryType.SPECIFICATION.qualifier) {
+            ProductSpecificationUpdateRepository(get(), get())
+        }
 
         single<UpdateCollectionRepository<CompositionOut, CompositionIn>>(
             UpdateCollectionRepositoryType.Composition.qualifier
@@ -138,7 +157,33 @@ internal enum class UpdateCollectionRepositoryType {
 }
 internal enum class SingleRepositoryType{
     ESSENTIALS,
+    SPECIFICATION,
     SAFETY
+}
+
+internal class ProductSpecificationUpdateRepository(
+    private val db: NocombroDatabase,
+    private val syncQueueRepository: SyncQueueRepository,
+) : UpdateSingleLineRepository<ProductSpecification> {
+
+    private val dao = db.productSpecificationDao
+
+    override suspend fun getInit(id: Int): Result<ProductSpecification> {
+        return runCatching {
+            dao.getByProductId(id) ?: createDefaultProductSpecification(id)
+        }
+    }
+
+    override suspend fun update(changeSet: ChangeSet<ProductSpecification>): Result<Unit> {
+        if (changeSet.old == changeSet.new) return Result.success(Unit)
+        return runCatching {
+            db.inTransaction {
+                val specification = changeSet.new.copy(updatedAt = defaultUpdatedAt())
+                dao.upsert(specification)
+                syncQueueRepository.enqueueUpsert(PRODUCT_SPECIFICATION_TABLE_NAME, specification.syncId)
+            }
+        }
+    }
 }
 
 internal class SafetyStockUpdateRepository(
