@@ -35,6 +35,7 @@ sealed interface DoctorStorageOverviewLoadState {
 }
 
 sealed interface DoctorRemoteOrphanFilesLoadState {
+    data object Idle : DoctorRemoteOrphanFilesLoadState
     data object Loading : DoctorRemoteOrphanFilesLoadState
     data class Error(val message: String) : DoctorRemoteOrphanFilesLoadState
     data class Success(val files: List<RemoteOrphanFile>) : DoctorRemoteOrphanFilesLoadState

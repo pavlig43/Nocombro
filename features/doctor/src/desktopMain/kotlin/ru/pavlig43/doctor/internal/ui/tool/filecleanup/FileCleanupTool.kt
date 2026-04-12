@@ -158,6 +158,7 @@ internal fun DoctorRemoteFileCleanupTool(
     isActionsEnabled: Boolean,
     statusMessage: String,
     onDismissActionError: () -> Unit,
+    onLogCompare: () -> Unit,
     onRefresh: () -> Unit,
     onDelete: (String) -> Unit,
     onDeleteAll: () -> Unit,
@@ -165,12 +166,18 @@ internal fun DoctorRemoteFileCleanupTool(
     DoctorSectionCard(
         title = when (state) {
             is DoctorRemoteOrphanFilesLoadState.Success -> "Чистка S3: ${state.files.size}"
+            DoctorRemoteOrphanFilesLoadState.Idle -> "Чистка S3"
             DoctorRemoteOrphanFilesLoadState.Loading -> "Чистка S3"
             is DoctorRemoteOrphanFilesLoadState.Error -> "Чистка S3"
         },
         subtitle = "Поиск remote-объектов в bucket, которых больше нет в таблице file. Запускать после sync/pull.",
         headerActions = {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedButton(
+                    onClick = onLogCompare,
+                ) {
+                    Text("Сравнить БД")
+                }
                 OutlinedButton(
                     onClick = onRefresh,
                     enabled = isActionsEnabled,
@@ -196,6 +203,11 @@ internal fun DoctorRemoteFileCleanupTool(
         Spacer(Modifier.height(8.dp))
 
         when (state) {
+            DoctorRemoteOrphanFilesLoadState.Idle -> Text(
+                text = "Нажмите \"Обновить\", чтобы загрузить список orphan-объектов в S3.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
             DoctorRemoteOrphanFilesLoadState.Loading -> LoadingUi()
             is DoctorRemoteOrphanFilesLoadState.Error -> ValidationErrorsCard(
                 errorMessages = listOf(state.message)

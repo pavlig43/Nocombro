@@ -33,6 +33,12 @@ class RemoteFilesMaintenanceRepository(
         }
     }
 
+    suspend fun getAttachedRemoteObjectKeys(): Result<Set<String>> {
+        return runCatching {
+            fileDao.getAllRemoteObjectKeys().toSet()
+        }
+    }
+
     suspend fun deleteRemoteFile(
         objectKey: String,
     ): Result<Unit> {

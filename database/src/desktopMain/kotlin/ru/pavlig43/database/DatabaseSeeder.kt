@@ -10,8 +10,6 @@ import ru.pavlig43.database.data.batch.MovementType
 import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.database.data.expense.ExpenseBD
 import ru.pavlig43.database.data.expense.ExpenseType
-import ru.pavlig43.database.data.files.FileBD
-import ru.pavlig43.database.data.files.OwnerType
 import ru.pavlig43.database.data.product.CompositionIn
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductDeclarationIn
@@ -162,53 +160,7 @@ suspend fun seedDatabase(db: NocombroDatabase) {
         )
     )
 
-    // 4. FILES (6 записей с заглушками вместо локальных путей)
-    val files = listOf(
-        FileBD(
-            ownerId = 1,
-            ownerFileType = OwnerType.DECLARATION,
-            displayName = "1_decl.jpg",
-            path = "/storage/declarations/1_decl.jpg",
-            id = 1
-        ),
-        FileBD(
-            ownerId = 2,
-            ownerFileType = OwnerType.DECLARATION,
-            displayName = "2_decl.jpg",
-            path = "/storage/declarations/2_decl.jpg",
-            id = 2
-        ),
-        FileBD(
-            ownerId = 3,
-            ownerFileType = OwnerType.DECLARATION,
-            displayName = "3_decl.jpg",
-            path = "/storage/declarations/3_decl.jpg",
-            id = 3
-        ),
-        FileBD(
-            ownerId = 4,
-            ownerFileType = OwnerType.DECLARATION,
-            displayName = "4_decl.jpg",
-            path = "/storage/declarations/4_decl.jpg",
-            id = 4
-        ),
-        FileBD(
-            ownerId = 5,
-            ownerFileType = OwnerType.DECLARATION,
-            displayName = "5_decl.jpg",
-            path = "/storage/declarations/5_decl.jpg",
-            id = 5
-        ),
-        FileBD(
-            ownerId = 6,
-            ownerFileType = OwnerType.DECLARATION,
-            displayName = "6_decl.jpg",
-            path = "/storage/declarations/6_decl.jpg",
-            id = 6
-        )
-    )
-
-    // 5. PRODUCT_DECLARATIONS (5 записей)
+    // 4. PRODUCT_DECLARATIONS (5 записей)
     val productDeclarations = listOf(
         ProductDeclarationIn(productId = 1, declarationId = 1, id = 1),
         ProductDeclarationIn(productId = 2, declarationId = 2, id = 2),
@@ -217,7 +169,7 @@ suspend fun seedDatabase(db: NocombroDatabase) {
         ProductDeclarationIn(productId = 3, declarationId = 5, id = 5)
     )
 
-    // 6. SAFETY_STOCK (5 записей)
+    // 5. SAFETY_STOCK (5 записей)
     val safetyStock = listOf(
         SafetyStock(productId = 1, reorderPoint = 30000, orderQuantity = 30000, id = 1),
         SafetyStock(productId = 2, reorderPoint = 50000, orderQuantity = 50000, id = 2),
@@ -226,7 +178,7 @@ suspend fun seedDatabase(db: NocombroDatabase) {
         SafetyStock(productId = 3, reorderPoint = 36000, orderQuantity = 12000, id = 5)
     )
 
-    // 7. COMPOSITIONS (4 записи)
+    // 6. COMPOSITIONS (4 записи)
     val compositions = listOf(
         CompositionIn(parentId = 3, productId = 1, count = 450, id = 1),
         CompositionIn(parentId = 3, productId = 2, count = 450, id = 2),
@@ -234,7 +186,7 @@ suspend fun seedDatabase(db: NocombroDatabase) {
         CompositionIn(parentId = 3, productId = 5, count = 333, id = 4)
     )
 
-    // 8. TRANSACTIONS (11 записей)
+    // 7. TRANSACTIONS (11 записей)
     val transactions = listOf(
         Transact(
             transactionType = TransactionType.BUY,
@@ -315,7 +267,7 @@ suspend fun seedDatabase(db: NocombroDatabase) {
         )
     )
 
-    // 9. BATCHES (10 записей)
+    // 8. BATCHES (10 записей)
     val batches = listOf(
         BatchBD(productId = 1, dateBorn = LocalDate(2026, 2, 10), declarationId = 1, id = 1),
         BatchBD(productId = 1, dateBorn = LocalDate(2026, 2, 10), declarationId = 1, id = 2),
@@ -329,7 +281,7 @@ suspend fun seedDatabase(db: NocombroDatabase) {
         BatchBD(productId = 3, dateBorn = LocalDate(2026, 3, 10), declarationId = 5, id = 10)
     )
 
-    // 10. BATCH_MOVEMENTS (22 записи)
+    // 9. BATCH_MOVEMENTS (22 записи)
     val batchMovements = listOf(
         BatchMovement(batchId = 1, movementType = MovementType.INCOMING, count = 30000, transactionId = 1, id = 1),
         BatchMovement(batchId = 2, movementType = MovementType.INCOMING, count = 50000, transactionId = 2, id = 2),
@@ -355,7 +307,7 @@ suspend fun seedDatabase(db: NocombroDatabase) {
         BatchMovement(batchId = 9, movementType = MovementType.OUTGOING, count = 15000, transactionId = 11, id = 22)
     )
 
-    // 11. BUYS (8 записей)
+    // 10. BUYS (8 записей)
     val buys = listOf(
         BuyBDIn(transactionId = 1, movementId = 1, price = 3000, comment = "", id = 1),
         BuyBDIn(transactionId = 2, movementId = 2, price = 3500, comment = "", id = 2),
@@ -367,7 +319,7 @@ suspend fun seedDatabase(db: NocombroDatabase) {
         BuyBDIn(transactionId = 8, movementId = 8, price = 9530, comment = "", id = 8)
     )
 
-    // 12. SALES (4 записи)
+    // 11. SALES (4 записи)
     val sales = listOf(
         SaleBDIn(transactionId = 11, movementId = 19, price = 120000, comment = "", clientId = 7, id = 1),
         SaleBDIn(transactionId = 11, movementId = 20, price = 120000, comment = "", clientId = 7, id = 2),
@@ -375,7 +327,7 @@ suspend fun seedDatabase(db: NocombroDatabase) {
         SaleBDIn(transactionId = 11, movementId = 22, price = 120000, comment = "", clientId = 7, id = 4)
     )
 
-    // 13. REMINDERS (1 запись)
+    // 12. REMINDERS (1 запись)
     val reminders = listOf(
         ReminderBD(
             transactionId = 11,
@@ -385,7 +337,7 @@ suspend fun seedDatabase(db: NocombroDatabase) {
         )
     )
 
-    // 14. EXPENSES (1 запись)
+    // 13. EXPENSES (1 запись)
     val expenses = listOf(
         ExpenseBD(
             transactionId = 11,
@@ -403,7 +355,6 @@ suspend fun seedDatabase(db: NocombroDatabase) {
     products.forEach { db.productDao.create(it) }
     transactions.forEach { db.transactionDao.create(it) }
     declarations.forEach { db.declarationDao.create(it) }
-    db.fileDao.upsertFiles(files)
     db.productDeclarationDao.upsertProductDeclarations(productDeclarations)
     db.compositionDao.upsertComposition(compositions)
     safetyStock.forEach { db.safetyStockDao.upsert(it) }

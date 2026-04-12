@@ -101,6 +101,7 @@ fun DoctorScreen(
                         isActionsEnabled = isRemoteCleanupEnabled,
                         statusMessage = remoteCleanupStatusMessage,
                         onDismissActionError = component::dismissRemoteOrphanFilesActionError,
+                        onLogCompare = component::logRemoteFileComparison,
                         onRefresh = component::refreshRemoteOrphanFiles,
                         onDelete = component::deleteRemoteOrphanFile,
                         onDeleteAll = component::deleteAllRemoteOrphanFiles,

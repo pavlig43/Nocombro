@@ -5,9 +5,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 import ru.pavlig43.core.MainTabComponent
 import ru.pavlig43.core.componentCoroutineScope
+import ru.pavlig43.database.data.sync.RemoteFileSyncState
 import ru.pavlig43.database.data.sync.SyncStatusSnapshot
 import ru.pavlig43.doctor.api.DoctorDependencies
 import ru.pavlig43.doctor.internal.component.DoctorOrphanFilesLoadState
@@ -16,11 +19,13 @@ import ru.pavlig43.doctor.internal.component.DoctorStorageOverviewLoadState
 import ru.pavlig43.doctor.internal.component.DoctorTool
 import java.awt.Desktop
 import java.io.File
+import java.util.logging.Logger
 
 class DoctorComponent(
     componentContext: ComponentContext,
     dependencies: DoctorDependencies,
 ) : ComponentContext by componentContext, MainTabComponent {
+    private val logger = Logger.getLogger("DoctorS3Compare")
     private val coroutineScope = componentCoroutineScope()
     private val localFilesMaintenanceRepository = dependencies.localFilesMaintenanceRepository
     private val remoteFilesMaintenanceRepository = dependencies.remoteFilesMaintenanceRepository
@@ -46,7 +51,7 @@ class DoctorComponent(
     val orphanFilesActionError = _orphanFilesActionError.asStateFlow()
 
     private val _remoteOrphanFilesState = MutableStateFlow<DoctorRemoteOrphanFilesLoadState>(
-        DoctorRemoteOrphanFilesLoadState.Loading
+        DoctorRemoteOrphanFilesLoadState.Idle
     )
     val remoteOrphanFilesState = _remoteOrphanFilesState.asStateFlow()
 
@@ -64,6 +69,13 @@ class DoctorComponent(
     init {
         refreshStorageOverview()
         refreshOrphanFiles()
+        coroutineScope.launch {
+            syncService.status
+                .filterNotNull()
+                .collect { syncStatus ->
+                    applyRemoteCleanupAvailability(syncStatus)
+                }
+        }
         coroutineScope.launch(Dispatchers.IO) {
             refreshRemoteCleanupAvailability()
         }
@@ -110,10 +122,10 @@ class DoctorComponent(
 
     fun refreshRemoteOrphanFiles() {
         coroutineScope.launch(Dispatchers.IO) {
+            _remoteOrphanFilesState.value = DoctorRemoteOrphanFilesLoadState.Loading
             if (!refreshRemoteCleanupAvailability()) {
                 return@launch
             }
-            _remoteOrphanFilesState.value = DoctorRemoteOrphanFilesLoadState.Loading
             remoteFilesMaintenanceRepository.getOrphanRemoteFiles()
                 .onSuccess { files ->
                     _remoteOrphanFilesState.value = DoctorRemoteOrphanFilesLoadState.Success(files)
@@ -171,6 +183,7 @@ class DoctorComponent(
 
     fun deleteRemoteOrphanFile(objectKey: String) {
         coroutineScope.launch(Dispatchers.IO) {
+            _remoteOrphanFilesState.value = DoctorRemoteOrphanFilesLoadState.Loading
             if (!refreshRemoteCleanupAvailability()) {
                 return@launch
             }
@@ -189,6 +202,7 @@ class DoctorComponent(
         val currentState =
             remoteOrphanFilesState.value as? DoctorRemoteOrphanFilesLoadState.Success ?: return
         coroutineScope.launch(Dispatchers.IO) {
+            _remoteOrphanFilesState.value = DoctorRemoteOrphanFilesLoadState.Loading
             if (!refreshRemoteCleanupAvailability()) {
                 return@launch
             }
@@ -208,8 +222,50 @@ class DoctorComponent(
         _remoteOrphanFilesActionError.value = null
     }
 
+    fun logRemoteFileComparison() {
+        coroutineScope.launch(Dispatchers.IO) {
+            runCatching {
+                val localKeys = remoteFilesMaintenanceRepository.getAttachedRemoteObjectKeys().getOrThrow()
+                val remoteStates = syncService.loadCurrentRemoteFileStates().getOrThrow()
+                val remoteKeys = remoteStates.currentRemoteObjectKeys()
+                val remoteWithoutObjectKey = remoteStates.count { state ->
+                    state.changeType != ru.pavlig43.database.data.sync.SyncChangeType.DELETE &&
+                        state.deletedAt == null &&
+                        state.remoteObjectKey.isNullOrBlank()
+                }
+
+                val onlyLocal = localKeys - remoteKeys
+                val onlyRemote = remoteKeys - localKeys
+
+                logger.info(
+                    "Doctor S3 compare: " +
+                        "local=${localKeys.size}, " +
+                        "remote=${remoteKeys.size}, " +
+                        "remoteWithoutObjectKey=$remoteWithoutObjectKey, " +
+                        "onlyLocal=${onlyLocal.size}, " +
+                        "onlyRemote=${onlyRemote.size}"
+                )
+                logger.info("Doctor S3 compare local keys:\n${localKeys.toLogBlock()}")
+                logger.info("Doctor S3 compare remote keys:\n${remoteKeys.toLogBlock()}")
+                logger.info("Doctor S3 compare only local:\n${onlyLocal.toLogBlock()}")
+                logger.info("Doctor S3 compare only remote:\n${onlyRemote.toLogBlock()}")
+            }.onFailure { throwable ->
+                _remoteOrphanFilesActionError.value =
+                    throwable.message ?: "Не удалось сравнить локальную и удаленную базы по файлам."
+                logger.warning("Doctor S3 compare failed: ${throwable.message}")
+            }
+        }
+    }
+
     private suspend fun refreshRemoteCleanupAvailability(): Boolean {
         val syncStatus = syncService.getStatus()
+        applyRemoteCleanupAvailability(syncStatus)
+        return remoteCleanupUnavailableMessage(syncStatus) == null
+    }
+
+    private fun applyRemoteCleanupAvailability(
+        syncStatus: SyncStatusSnapshot,
+    ) {
         val unavailableMessage = remoteCleanupUnavailableMessage(syncStatus)
 
         _isRemoteCleanupEnabled.value = unavailableMessage == null
@@ -218,9 +274,9 @@ class DoctorComponent(
 
         if (unavailableMessage != null) {
             _remoteOrphanFilesState.value = DoctorRemoteOrphanFilesLoadState.Error(unavailableMessage)
+        } else if (_remoteOrphanFilesState.value is DoctorRemoteOrphanFilesLoadState.Error) {
+            _remoteOrphanFilesState.value = DoctorRemoteOrphanFilesLoadState.Idle
         }
-
-        return unavailableMessage == null
     }
 
     private fun remoteCleanupUnavailableMessage(
@@ -236,5 +292,21 @@ class DoctorComponent(
             return "Есть неподтянутые remote-изменения. Сначала выполните sync/pull."
         }
         return null
+    }
+
+    private fun List<RemoteFileSyncState>.currentRemoteObjectKeys(): Set<String> {
+        return asSequence()
+            .filter { it.changeType != ru.pavlig43.database.data.sync.SyncChangeType.DELETE }
+            .filter { it.deletedAt == null }
+            .mapNotNull { it.remoteObjectKey }
+            .toSet()
+    }
+
+    private fun Collection<String>.toLogBlock(): String {
+        return if (isEmpty()) {
+            "<empty>"
+        } else {
+            sorted().joinToString(separator = "\n")
+        }
     }
 }

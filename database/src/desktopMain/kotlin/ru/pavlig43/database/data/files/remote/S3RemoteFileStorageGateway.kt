@@ -124,10 +124,14 @@ class S3RemoteFileStorageGateway(
         objectKey: String,
     ): String {
         val cleanObjectKey = objectKey.trimStart('/')
-        return if (config.keyPrefix.isBlank()) {
+        val cleanPrefix = config.keyPrefix.trim('/')
+
+        return if (cleanPrefix.isBlank()) {
+            cleanObjectKey
+        } else if (cleanObjectKey == cleanPrefix || cleanObjectKey.startsWith("$cleanPrefix/")) {
             cleanObjectKey
         } else {
-            "${config.keyPrefix}/$cleanObjectKey"
+            "$cleanPrefix/$cleanObjectKey"
         }
     }
 
