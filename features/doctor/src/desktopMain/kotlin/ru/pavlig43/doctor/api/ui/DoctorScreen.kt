@@ -37,6 +37,8 @@ fun DoctorScreen(
     val orphanFilesActionError by component.orphanFilesActionError.collectAsState()
     val remoteOrphanFilesState by component.remoteOrphanFilesState.collectAsState()
     val remoteOrphanFilesActionError by component.remoteOrphanFilesActionError.collectAsState()
+    val isRemoteCleanupEnabled by component.isRemoteCleanupEnabled.collectAsState()
+    val remoteCleanupStatusMessage by component.remoteCleanupStatusMessage.collectAsState()
 
     Row(
         modifier = Modifier
@@ -96,6 +98,8 @@ fun DoctorScreen(
                     DoctorTool.RemoteFileCleanup -> DoctorRemoteFileCleanupTool(
                         state = remoteOrphanFilesState,
                         actionError = remoteOrphanFilesActionError,
+                        isActionsEnabled = isRemoteCleanupEnabled,
+                        statusMessage = remoteCleanupStatusMessage,
                         onDismissActionError = component::dismissRemoteOrphanFilesActionError,
                         onRefresh = component::refreshRemoteOrphanFiles,
                         onDelete = component::deleteRemoteOrphanFile,

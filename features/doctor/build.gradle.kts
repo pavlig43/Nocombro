@@ -8,6 +8,7 @@ kotlin {
     desktopDependencies {
         implementation(projects.core)
         implementation(projects.coreui)
+        implementation(projects.database)
         implementation(projects.theme)
         implementation(projects.features.files)
     }

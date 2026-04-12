@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import ru.pavlig43.core.MainTabComponent
 import ru.pavlig43.core.componentCoroutineScope
+import ru.pavlig43.database.data.sync.SyncStatusSnapshot
 import ru.pavlig43.doctor.api.DoctorDependencies
 import ru.pavlig43.doctor.internal.component.DoctorOrphanFilesLoadState
 import ru.pavlig43.doctor.internal.component.DoctorRemoteOrphanFilesLoadState
@@ -23,6 +24,7 @@ class DoctorComponent(
     private val coroutineScope = componentCoroutineScope()
     private val localFilesMaintenanceRepository = dependencies.localFilesMaintenanceRepository
     private val remoteFilesMaintenanceRepository = dependencies.remoteFilesMaintenanceRepository
+    private val syncService = dependencies.syncService
 
     private val _model = MutableStateFlow(MainTabComponent.NavTabState("Доктор"))
     override val model: StateFlow<MainTabComponent.NavTabState> = _model.asStateFlow()
@@ -51,14 +53,29 @@ class DoctorComponent(
     private val _remoteOrphanFilesActionError = MutableStateFlow<String?>(null)
     val remoteOrphanFilesActionError = _remoteOrphanFilesActionError.asStateFlow()
 
+    private val _isRemoteCleanupEnabled = MutableStateFlow(false)
+    val isRemoteCleanupEnabled = _isRemoteCleanupEnabled.asStateFlow()
+
+    private val _remoteCleanupStatusMessage = MutableStateFlow(
+        "Перед проверкой сначала синхронизируйте приложение."
+    )
+    val remoteCleanupStatusMessage = _remoteCleanupStatusMessage.asStateFlow()
+
     init {
         refreshStorageOverview()
         refreshOrphanFiles()
-        refreshRemoteOrphanFiles()
+        coroutineScope.launch(Dispatchers.IO) {
+            refreshRemoteCleanupAvailability()
+        }
     }
 
     fun selectTool(tool: DoctorTool) {
         _selectedTool.value = tool
+        if (tool == DoctorTool.RemoteFileCleanup) {
+            coroutineScope.launch(Dispatchers.IO) {
+                refreshRemoteCleanupAvailability()
+            }
+        }
     }
 
     fun refreshOrphanFiles() {
@@ -93,6 +110,9 @@ class DoctorComponent(
 
     fun refreshRemoteOrphanFiles() {
         coroutineScope.launch(Dispatchers.IO) {
+            if (!refreshRemoteCleanupAvailability()) {
+                return@launch
+            }
             _remoteOrphanFilesState.value = DoctorRemoteOrphanFilesLoadState.Loading
             remoteFilesMaintenanceRepository.getOrphanRemoteFiles()
                 .onSuccess { files ->
@@ -151,6 +171,9 @@ class DoctorComponent(
 
     fun deleteRemoteOrphanFile(objectKey: String) {
         coroutineScope.launch(Dispatchers.IO) {
+            if (!refreshRemoteCleanupAvailability()) {
+                return@launch
+            }
             remoteFilesMaintenanceRepository.deleteRemoteFile(objectKey)
                 .onSuccess {
                     refreshRemoteOrphanFiles()
@@ -166,6 +189,9 @@ class DoctorComponent(
         val currentState =
             remoteOrphanFilesState.value as? DoctorRemoteOrphanFilesLoadState.Success ?: return
         coroutineScope.launch(Dispatchers.IO) {
+            if (!refreshRemoteCleanupAvailability()) {
+                return@launch
+            }
             currentState.files.forEach { orphan ->
                 remoteFilesMaintenanceRepository.deleteRemoteFile(orphan.objectKey)
                     .onFailure { throwable ->
@@ -180,5 +206,35 @@ class DoctorComponent(
 
     fun dismissRemoteOrphanFilesActionError() {
         _remoteOrphanFilesActionError.value = null
+    }
+
+    private suspend fun refreshRemoteCleanupAvailability(): Boolean {
+        val syncStatus = syncService.getStatus()
+        val unavailableMessage = remoteCleanupUnavailableMessage(syncStatus)
+
+        _isRemoteCleanupEnabled.value = unavailableMessage == null
+        _remoteCleanupStatusMessage.value = unavailableMessage
+            ?: "Синхронизация выполнена, можно запускать проверку S3."
+
+        if (unavailableMessage != null) {
+            _remoteOrphanFilesState.value = DoctorRemoteOrphanFilesLoadState.Error(unavailableMessage)
+        }
+
+        return unavailableMessage == null
+    }
+
+    private fun remoteCleanupUnavailableMessage(
+        syncStatus: SyncStatusSnapshot,
+    ): String? {
+        if (!syncStatus.remoteSyncConfigured) {
+            return "Remote sync не настроен."
+        }
+        if (syncStatus.lastPullAt == null) {
+            return "Проверка S3 недоступна, пока приложение не синхронизировано."
+        }
+        if (syncStatus.hasRemoteChanges) {
+            return "Есть неподтянутые remote-изменения. Сначала выполните sync/pull."
+        }
+        return null
     }
 }

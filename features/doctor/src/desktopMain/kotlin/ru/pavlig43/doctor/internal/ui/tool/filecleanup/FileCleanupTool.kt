@@ -155,6 +155,8 @@ private fun DoctorOrphanFileRow(
 internal fun DoctorRemoteFileCleanupTool(
     state: DoctorRemoteOrphanFilesLoadState,
     actionError: String?,
+    isActionsEnabled: Boolean,
+    statusMessage: String,
     onDismissActionError: () -> Unit,
     onRefresh: () -> Unit,
     onDelete: (String) -> Unit,
@@ -166,20 +168,33 @@ internal fun DoctorRemoteFileCleanupTool(
             DoctorRemoteOrphanFilesLoadState.Loading -> "Чистка S3"
             is DoctorRemoteOrphanFilesLoadState.Error -> "Чистка S3"
         },
-        subtitle = "Поиск remote-объектов в bucket, которых больше нет в таблице file.",
+        subtitle = "Поиск remote-объектов в bucket, которых больше нет в таблице file. Запускать после sync/pull.",
         headerActions = {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedButton(onClick = onRefresh) {
+                OutlinedButton(
+                    onClick = onRefresh,
+                    enabled = isActionsEnabled,
+                ) {
                     Text("Обновить")
                 }
                 if (state is DoctorRemoteOrphanFilesLoadState.Success && state.files.isNotEmpty()) {
-                    Button(onClick = onDeleteAll) {
+                    Button(
+                        onClick = onDeleteAll,
+                        enabled = isActionsEnabled,
+                    ) {
                         Text("Удалить все")
                     }
                 }
             }
         }
     ) {
+        Text(
+            text = statusMessage,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Spacer(Modifier.height(8.dp))
+
         when (state) {
             DoctorRemoteOrphanFilesLoadState.Loading -> LoadingUi()
             is DoctorRemoteOrphanFilesLoadState.Error -> ValidationErrorsCard(
@@ -197,6 +212,7 @@ internal fun DoctorRemoteFileCleanupTool(
                         state.files.forEach { file ->
                             DoctorRemoteOrphanFileRow(
                                 file = file,
+                                enabled = isActionsEnabled,
                                 onDelete = { onDelete(file.objectKey) },
                             )
                         }
@@ -218,6 +234,7 @@ internal fun DoctorRemoteFileCleanupTool(
 @Composable
 private fun DoctorRemoteOrphanFileRow(
     file: RemoteOrphanFile,
+    enabled: Boolean,
     onDelete: () -> Unit,
 ) {
     Card(
@@ -255,6 +272,7 @@ private fun DoctorRemoteOrphanFileRow(
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(
                     onClick = onDelete,
+                    enabled = enabled,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.errorContainer,
                         contentColor = MaterialTheme.colorScheme.onErrorContainer,
