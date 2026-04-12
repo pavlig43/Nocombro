@@ -116,13 +116,14 @@ internal class FilesRepository(
         return runCatching {
             database.inTransaction {
                 val existing = dao.getFileByOwnerAndDisplayName(ownerId, ownerType, displayName)
+                val existingRemoteObjectKey = existing?.remoteObjectKey
                 if (
                     existing != null &&
-                    existing.remoteObjectKey != null &&
-                    existing.remoteObjectKey != remoteObjectKey &&
+                    existingRemoteObjectKey != null &&
+                    existingRemoteObjectKey != remoteObjectKey &&
                     remoteFileStorageGateway.isConfigured()
                 ) {
-                    remoteFileStorageGateway.delete(existing.remoteObjectKey).getOrThrow()
+                    remoteFileStorageGateway.delete(existingRemoteObjectKey).getOrThrow()
                 }
 
                 val file = FileBD(
