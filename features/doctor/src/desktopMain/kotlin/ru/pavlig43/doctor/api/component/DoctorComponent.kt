@@ -10,6 +10,7 @@ import ru.pavlig43.core.MainTabComponent
 import ru.pavlig43.core.componentCoroutineScope
 import ru.pavlig43.doctor.api.DoctorDependencies
 import ru.pavlig43.doctor.internal.component.DoctorOrphanFilesLoadState
+import ru.pavlig43.doctor.internal.component.DoctorRemoteOrphanFilesLoadState
 import ru.pavlig43.doctor.internal.component.DoctorStorageOverviewLoadState
 import ru.pavlig43.doctor.internal.component.DoctorTool
 import java.awt.Desktop
@@ -21,6 +22,7 @@ class DoctorComponent(
 ) : ComponentContext by componentContext, MainTabComponent {
     private val coroutineScope = componentCoroutineScope()
     private val localFilesMaintenanceRepository = dependencies.localFilesMaintenanceRepository
+    private val remoteFilesMaintenanceRepository = dependencies.remoteFilesMaintenanceRepository
 
     private val _model = MutableStateFlow(MainTabComponent.NavTabState("Доктор"))
     override val model: StateFlow<MainTabComponent.NavTabState> = _model.asStateFlow()
@@ -41,9 +43,18 @@ class DoctorComponent(
     private val _orphanFilesActionError = MutableStateFlow<String?>(null)
     val orphanFilesActionError = _orphanFilesActionError.asStateFlow()
 
+    private val _remoteOrphanFilesState = MutableStateFlow<DoctorRemoteOrphanFilesLoadState>(
+        DoctorRemoteOrphanFilesLoadState.Loading
+    )
+    val remoteOrphanFilesState = _remoteOrphanFilesState.asStateFlow()
+
+    private val _remoteOrphanFilesActionError = MutableStateFlow<String?>(null)
+    val remoteOrphanFilesActionError = _remoteOrphanFilesActionError.asStateFlow()
+
     init {
         refreshStorageOverview()
         refreshOrphanFiles()
+        refreshRemoteOrphanFiles()
     }
 
     fun selectTool(tool: DoctorTool) {
@@ -75,6 +86,21 @@ class DoctorComponent(
                 .onFailure { throwable ->
                     _storageOverviewState.value = DoctorStorageOverviewLoadState.Error(
                         throwable.message ?: "Не удалось загрузить обзор хранилища."
+                    )
+                }
+        }
+    }
+
+    fun refreshRemoteOrphanFiles() {
+        coroutineScope.launch(Dispatchers.IO) {
+            _remoteOrphanFilesState.value = DoctorRemoteOrphanFilesLoadState.Loading
+            remoteFilesMaintenanceRepository.getOrphanRemoteFiles()
+                .onSuccess { files ->
+                    _remoteOrphanFilesState.value = DoctorRemoteOrphanFilesLoadState.Success(files)
+                }
+                .onFailure { throwable ->
+                    _remoteOrphanFilesState.value = DoctorRemoteOrphanFilesLoadState.Error(
+                        throwable.message ?: "Не удалось загрузить orphan-объекты S3."
                     )
                 }
         }
@@ -121,5 +147,38 @@ class DoctorComponent(
 
     fun dismissOrphanFilesActionError() {
         _orphanFilesActionError.value = null
+    }
+
+    fun deleteRemoteOrphanFile(objectKey: String) {
+        coroutineScope.launch(Dispatchers.IO) {
+            remoteFilesMaintenanceRepository.deleteRemoteFile(objectKey)
+                .onSuccess {
+                    refreshRemoteOrphanFiles()
+                }
+                .onFailure { throwable ->
+                    _remoteOrphanFilesActionError.value =
+                        throwable.message ?: "Не удалось удалить объект из S3."
+                }
+        }
+    }
+
+    fun deleteAllRemoteOrphanFiles() {
+        val currentState =
+            remoteOrphanFilesState.value as? DoctorRemoteOrphanFilesLoadState.Success ?: return
+        coroutineScope.launch(Dispatchers.IO) {
+            currentState.files.forEach { orphan ->
+                remoteFilesMaintenanceRepository.deleteRemoteFile(orphan.objectKey)
+                    .onFailure { throwable ->
+                        _remoteOrphanFilesActionError.value =
+                            throwable.message ?: "Не удалось удалить orphan-объекты S3."
+                        return@launch
+                    }
+            }
+            refreshRemoteOrphanFiles()
+        }
+    }
+
+    fun dismissRemoteOrphanFilesActionError() {
+        _remoteOrphanFilesActionError.value = null
     }
 }

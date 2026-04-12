@@ -30,6 +30,12 @@ class NoopRemoteFileStorageGateway : RemoteFileStorageGateway {
         )
     }
 
+    override suspend fun listObjects(): Result<List<RemoteStorageObject>> {
+        return Result.failure(
+            IllegalStateException("Remote file storage is not configured.")
+        )
+    }
+
     override suspend fun delete(
         objectKey: String,
     ): Result<Unit> {

@@ -22,6 +22,9 @@ interface FileDao {
     @Query("SELECT path FROM file")
     suspend fun getAllPaths(): List<String>
 
+    @Query("SELECT remote_object_key FROM file WHERE remote_object_key IS NOT NULL")
+    suspend fun getAllRemoteObjectKeys(): List<String>
+
     @Query("SELECT * FROM file WHERE sync_id = :syncId")
     suspend fun getFileBySyncId(syncId: String): FileBD?
 

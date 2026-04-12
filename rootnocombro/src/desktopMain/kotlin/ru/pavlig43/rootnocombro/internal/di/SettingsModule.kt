@@ -4,11 +4,13 @@ import org.koin.dsl.module
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.datastore.SettingsRepository
 import ru.pavlig43.files.api.LocalFilesMaintenanceRepository
+import ru.pavlig43.files.api.RemoteFilesMaintenanceRepository
 import ru.pavlig43.rootnocombro.api.RootDependencies
 
 internal fun settingsModule(rootDependencies: RootDependencies) = listOf(
     module {
         single<SettingsRepository> { rootDependencies.settingsRepository }
         single { LocalFilesMaintenanceRepository(get<NocombroDatabase>()) }
+        single { RemoteFilesMaintenanceRepository(get<NocombroDatabase>(), get()) }
     }
 )

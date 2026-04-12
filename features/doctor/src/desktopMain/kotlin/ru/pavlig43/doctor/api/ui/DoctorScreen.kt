@@ -24,6 +24,7 @@ import ru.pavlig43.doctor.internal.component.DoctorTool
 import ru.pavlig43.doctor.internal.ui.common.DoctorSectionCard
 import ru.pavlig43.doctor.internal.ui.common.DoctorToolCard
 import ru.pavlig43.doctor.internal.ui.tool.filecleanup.DoctorFileCleanupTool
+import ru.pavlig43.doctor.internal.ui.tool.filecleanup.DoctorRemoteFileCleanupTool
 import ru.pavlig43.doctor.internal.ui.tool.storageoverview.DoctorStorageOverviewTool
 
 @Composable
@@ -34,6 +35,8 @@ fun DoctorScreen(
     val storageOverviewState by component.storageOverviewState.collectAsState()
     val orphanFilesState by component.orphanFilesState.collectAsState()
     val orphanFilesActionError by component.orphanFilesActionError.collectAsState()
+    val remoteOrphanFilesState by component.remoteOrphanFilesState.collectAsState()
+    val remoteOrphanFilesActionError by component.remoteOrphanFilesActionError.collectAsState()
 
     Row(
         modifier = Modifier
@@ -88,6 +91,15 @@ fun DoctorScreen(
                         onOpen = component::openOrphanFile,
                         onDelete = component::deleteOrphanFile,
                         onDeleteAll = component::deleteAllOrphanFiles,
+                    )
+
+                    DoctorTool.RemoteFileCleanup -> DoctorRemoteFileCleanupTool(
+                        state = remoteOrphanFilesState,
+                        actionError = remoteOrphanFilesActionError,
+                        onDismissActionError = component::dismissRemoteOrphanFilesActionError,
+                        onRefresh = component::refreshRemoteOrphanFiles,
+                        onDelete = component::deleteRemoteOrphanFile,
+                        onDeleteAll = component::deleteAllRemoteOrphanFiles,
                     )
                 }
             }
