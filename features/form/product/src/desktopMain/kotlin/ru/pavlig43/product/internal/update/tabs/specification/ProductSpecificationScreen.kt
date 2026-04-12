@@ -20,6 +20,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import ru.pavlig43.mutable.api.singleLine.ui.SingleLineBlockScreen
 
+/**
+ * Экран вкладки "Спецификация" с кнопкой генерации PDF и диалогом результата.
+ */
 @Composable
 internal fun ProductSpecificationScreen(
     component: ProductSpecificationComponent

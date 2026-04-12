@@ -34,6 +34,7 @@ import ru.pavlig43.mutable.api.singleLine.data.SyncUpdateSingleLineRepository
 import ru.pavlig43.mutable.api.singleLine.data.UpdateSingleLineRepository
 import ru.pavlig43.product.api.ProductFormDependencies
 import ru.pavlig43.product.internal.update.tabs.specification.createDefaultProductSpecification
+import ru.pavlig43.product.internal.update.tabs.specification.ProductSpecificationCompositionGenerator
 import ru.pavlig43.product.internal.update.tabs.specification.ProductSpecificationPdfGenerator
 import ru.pavlig43.product.internal.update.tabs.specification.ProductSpecificationPdfRepository
 
@@ -45,7 +46,15 @@ internal fun createProductFormModule(dependencies: ProductFormDependencies) = li
         single<ImmutableTableDependencies> { dependencies.immutableTableDependencies }
         single { SyncQueueRepository(get<NocombroDatabase>().syncDao) }
         single { ProductSpecificationPdfGenerator() }
-        single { ProductSpecificationPdfRepository(get(), get(), get(), get()) }
+        single { ProductSpecificationCompositionGenerator(get<NocombroDatabase>().compositionDao) }
+        single {
+            ProductSpecificationPdfRepository(
+                fileDao = get<NocombroDatabase>().fileDao,
+                remoteFileStorageGateway = get<FilesDependencies>().remoteFileStorageGateway,
+                syncQueueRepository = get(),
+                pdfGenerator = get(),
+            )
+        }
         single<CreateSingleItemRepository<Product>> { ProductCreateRepository(get(), get()) }
         single<UpdateSingleLineRepository<Product>> (SingleRepositoryType.ESSENTIALS.qualifier){ ProductUpdateRepository(get(), get()) }
         single<UpdateSingleLineRepository<ProductSpecification>>(SingleRepositoryType.SPECIFICATION.qualifier) {

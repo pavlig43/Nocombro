@@ -1,29 +1,37 @@
 package ru.pavlig43.product.internal.update.tabs.specification
 
 import java.io.File
-import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.files.FILE_TABLE_NAME
 import ru.pavlig43.database.data.files.FileBD
+import ru.pavlig43.database.data.files.FileDao
 import ru.pavlig43.database.data.files.OwnerType
 import ru.pavlig43.database.data.files.PRODUCT_SPECIFICATION_FILE_NAME
 import ru.pavlig43.database.data.files.buildCanonicalFileKey
 import ru.pavlig43.database.data.files.buildManagedLocalFilePath
+import ru.pavlig43.database.data.files.remote.RemoteFileStorageGateway
 import ru.pavlig43.database.data.product.ProductSpecification
 import ru.pavlig43.database.data.sync.SyncQueueRepository
 import ru.pavlig43.database.data.sync.defaultSyncId
 import ru.pavlig43.database.data.sync.defaultUpdatedAt
-import ru.pavlig43.database.inTransaction
-import ru.pavlig43.files.api.FilesDependencies
 
+/**
+ * Генерирует и сохраняет единственный системный PDF-файл спецификации продукта.
+ *
+ * Репозиторий собирает локальный PDF, при необходимости загружает его в remote
+ * storage и обновляет запись в таблице `file` без создания дублей.
+ */
 internal class ProductSpecificationPdfRepository(
-    private val db: NocombroDatabase,
+    private val fileDao: FileDao,
+    private val remoteFileStorageGateway: RemoteFileStorageGateway,
     private val syncQueueRepository: SyncQueueRepository,
-    private val filesDependencies: FilesDependencies,
     private val pdfGenerator: ProductSpecificationPdfGenerator,
 ) {
-    private val fileDao = db.fileDao
-    private val remoteStorageGateway = filesDependencies.remoteFileStorageGateway
-
+    /**
+     * Сохраняет `Спецификация.pdf` для продукта и возвращает локальный путь.
+     *
+     * Если файл уже существует, переиспользует его запись и `syncId`, чтобы
+     * обновление было идемпотентным и корректно синхронизировалось.
+     */
     suspend fun generateAndSave(
         productName: String,
         specification: ProductSpecification,
@@ -50,8 +58,8 @@ internal class ProductSpecificationPdfRepository(
                 specification = specification,
             )
 
-            val remoteRef = if (remoteStorageGateway.isConfigured()) {
-                remoteStorageGateway.upload(
+            val remoteRef = if (remoteFileStorageGateway.isConfigured()) {
+                remoteFileStorageGateway.upload(
                     objectKey = canonicalFileKey,
                     localPath = localPath,
                 ).getOrThrow()
@@ -73,14 +81,12 @@ internal class ProductSpecificationPdfRepository(
                 deletedAt = null,
             )
 
-            db.inTransaction {
-                fileDao.upsertFiles(listOf(file))
-                syncQueueRepository.enqueueUpsert(
-                    entityTable = FILE_TABLE_NAME,
-                    entityLocalId = file.syncId,
-                    createdAt = updatedAt,
-                )
-            }
+            fileDao.upsertFiles(listOf(file))
+            syncQueueRepository.enqueueUpsert(
+                entityTable = FILE_TABLE_NAME,
+                entityLocalId = file.syncId,
+                createdAt = updatedAt,
+            )
 
             File(localPath).absolutePath
         }
