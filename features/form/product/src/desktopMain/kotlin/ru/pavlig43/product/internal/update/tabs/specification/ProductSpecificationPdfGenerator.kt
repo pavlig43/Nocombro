@@ -14,8 +14,7 @@ import ru.pavlig43.database.data.product.ProductSpecification
 
 private const val THEME_FONT_RESOURCE_ROOT = "composeResources/ru.pavlig43.theme/font"
 private const val THEME_DRAWABLE_RESOURCE_ROOT = "composeResources/ru.pavlig43.theme/drawable"
-private const val SIGNATURE_RESOURCE_PATH = "$THEME_DRAWABLE_RESOURCE_ROOT/signature.png"
-private const val STAMP_RESOURCE_PATH = "$THEME_DRAWABLE_RESOURCE_ROOT/stamp.png"
+private const val SIGNATURE_STAMP_RESOURCE_PATH = "$THEME_DRAWABLE_RESOURCE_ROOT/signature_stamp.png"
 
 /**
  * Генерирует печатную PDF-версию спецификации продукта.
@@ -53,21 +52,16 @@ internal class ProductSpecificationPdfGenerator {
                     "$THEME_FONT_RESOURCE_ROOT/MontserratAlternates-Bold.ttf",
                 ),
             ) ?: regularFont
-            val signatureImage = loadImage(
+            val signatureStampImage = loadImage(
                 document = document,
-                resourcePath = SIGNATURE_RESOURCE_PATH,
-            )
-            val stampImage = loadImage(
-                document = document,
-                resourcePath = STAMP_RESOURCE_PATH,
+                resourcePath = SIGNATURE_STAMP_RESOURCE_PATH,
             )
 
             ProductSpecificationPdfWriter(
                 document = document,
                 regularFont = regularFont,
                 boldFont = boldFont,
-                signatureImage = signatureImage,
-                stampImage = stampImage,
+                signatureStampImage = signatureStampImage,
             ).write(
                 productName = productName,
                 specification = specification,
@@ -119,8 +113,7 @@ private class ProductSpecificationPdfWriter(
     private val document: PDDocument,
     private val regularFont: PDFont,
     private val boldFont: PDFont,
-    private val signatureImage: PDImageXObject?,
-    private val stampImage: PDImageXObject?,
+    private val signatureStampImage: PDImageXObject?,
 ) {
     private val pageWidth = PDRectangle.A4.width
     private val pageHeight = PDRectangle.A4.height
@@ -317,28 +310,20 @@ private class ProductSpecificationPdfWriter(
     }
 
     /**
-     * Рисует подпись и печать как плотный общий блок внизу документа.
+     * Рисует подпись и печать единым ресурсом, чтобы сохранить нужное наложение.
      */
     private fun drawSignatureAndStamp() {
-        val signature = signatureImage ?: return
-        val stamp = stampImage ?: return
+        val signatureStamp = signatureStampImage ?: return
 
-        val signatureHeight = 50f
-        val signatureWidth = signature.width / signature.height.toFloat() * signatureHeight
-        val stampSize = 60f
-        val blockHeight = maxOf(signatureHeight, stampSize)
-        val blockWidth = signatureWidth + 26f
+        val blockHeight = 82f
+        val blockWidth = signatureStamp.width / signatureStamp.height.toFloat() * blockHeight
 
         ensureSpace(blockHeight + 12f)
 
-        val top = y
-        val signatureX = pageWidth - margin - blockWidth
-        val signatureBottom = top - signatureHeight
-        val stampX = signatureX + signatureWidth - 28f
-        val stampBottom = signatureBottom - 6f
+        val imageX = pageWidth - margin - blockWidth
+        val imageBottom = y - blockHeight
 
-        stream.drawImage(signature, signatureX, signatureBottom, signatureWidth, signatureHeight)
-        stream.drawImage(stamp, stampX, stampBottom, stampSize, stampSize)
+        stream.drawImage(signatureStamp, imageX, imageBottom, blockWidth, blockHeight)
         y -= blockHeight
     }
 
