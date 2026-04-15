@@ -7,7 +7,6 @@ The desktop app keeps `Room` as the source of truth, and reminder sync mirrors t
 
 ## What is included
 
-- `PLAN.md` - simplified implementation plan.
 - `ydb/001_email_reminder_schema.sql` - YDB schema:
   - `reminder_email_source`
   - `reminder_recipient`
