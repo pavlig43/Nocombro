@@ -32,6 +32,7 @@ dependencyResolutionManagement {
 
 plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
+    id("io.github.shivathapaa.aalekh") version "0.1.0"
 }
 include(
     "app:desktopApp"
@@ -83,6 +84,9 @@ include(":datetime")
 include(":features:sampletable")
 include(":features:storage")
 include(":features:doctor")
+
+include(":test:kit")
+include(":test:database-kit")
 
 
 
