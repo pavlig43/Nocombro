@@ -1,6 +1,8 @@
 package ru.pavlig43.product.internal.update.tabs.specification
 
 import java.io.File
+import java.awt.Color
+import java.awt.image.BufferedImage
 import javax.imageio.ImageIO
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.pdmodel.PDPage
@@ -8,13 +10,14 @@ import org.apache.pdfbox.pdmodel.PDPageContentStream
 import org.apache.pdfbox.pdmodel.common.PDRectangle
 import org.apache.pdfbox.pdmodel.font.PDFont
 import org.apache.pdfbox.pdmodel.font.PDType0Font
-import org.apache.pdfbox.pdmodel.graphics.image.LosslessFactory
+import org.apache.pdfbox.pdmodel.graphics.image.JPEGFactory
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject
 import ru.pavlig43.database.data.product.ProductSpecification
 
 private const val THEME_FONT_RESOURCE_ROOT = "composeResources/ru.pavlig43.theme/font"
 private const val THEME_DRAWABLE_RESOURCE_ROOT = "composeResources/ru.pavlig43.theme/drawable"
 private const val SIGNATURE_STAMP_RESOURCE_PATH = "$THEME_DRAWABLE_RESOURCE_ROOT/signature_stamp.png"
+private const val SIGNATURE_STAMP_JPEG_QUALITY = 0.7f
 
 /**
  * Генерирует печатную PDF-версию спецификации продукта.
@@ -99,9 +102,31 @@ internal class ProductSpecificationPdfGenerator {
         val classLoader = javaClass.classLoader
         classLoader.getResourceAsStream(resourcePath)?.use { inputStream ->
             val bufferedImage = ImageIO.read(inputStream) ?: return null
-            return LosslessFactory.createFromImage(document, bufferedImage)
+            // Для печати на белом листе прозрачность не нужна, а JPEG заметно
+            // уменьшает вес PDF по сравнению с lossless PNG.
+            return JPEGFactory.createFromImage(
+                document,
+                flattenOnWhite(bufferedImage),
+                SIGNATURE_STAMP_JPEG_QUALITY,
+            )
         }
         return null
+    }
+
+    private fun flattenOnWhite(source: BufferedImage): BufferedImage {
+        if (!source.colorModel.hasAlpha()) return source
+
+        val flattened = BufferedImage(
+            source.width,
+            source.height,
+            BufferedImage.TYPE_INT_RGB,
+        )
+        val graphics = flattened.createGraphics()
+        graphics.color = Color.WHITE
+        graphics.fillRect(0, 0, flattened.width, flattened.height)
+        graphics.drawImage(source, 0, 0, null)
+        graphics.dispose()
+        return flattened
     }
 }
 
