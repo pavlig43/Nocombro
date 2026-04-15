@@ -25,12 +25,10 @@ fun getNocombroDatabase(): NocombroDatabase {
         name = dbFile.absolutePath,
     )
     val database = builder
-        .fallbackToDestructiveMigration(dropAllTables = true)
         .setDriver(BundledSQLiteDriver())
         .setQueryCoroutineContext(Dispatchers.IO)
         .build()
     CoroutineScope(Dispatchers.IO).launch {
-        seedDatabase(database)
         val existingState = database.syncDao.getSyncState()
         database.syncDao.upsertSyncState(
             syncState = createInitialSyncState(
