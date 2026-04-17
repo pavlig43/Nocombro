@@ -6,9 +6,16 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import ru.pavlig43.database.data.files.FILE_TABLE_NAME
+import java.io.FileNotFoundException
+import java.net.ConnectException
+import java.net.SocketTimeoutException
+import java.net.UnknownHostException
 import java.sql.Connection
 import java.sql.DriverManager
+import java.sql.SQLInvalidAuthorizationSpecException
+import java.sql.SQLException
 import java.util.Properties
+import javax.net.ssl.SSLException
 
 class YdbJdbcSyncGateway(
     private val config: YdbJdbcConfig,
@@ -32,7 +39,7 @@ class YdbJdbcSyncGateway(
                 configured = false,
                 hasRemoteChanges = false,
                 remoteCursor = syncState?.lastRemoteCursor,
-                error = it.message,
+                error = it.toUiMessage(config),
             )
         }
     }
@@ -405,4 +412,62 @@ class YdbJdbcSyncGateway(
     ): LocalDateTime {
         return LocalDateTime.parse(rawValue.removeSuffix("Z"))
     }
+}
+
+private fun Throwable.toUiMessage(
+    config: YdbJdbcConfig,
+): String {
+    val causeChain = generateSequence(this) { it.cause }.toList()
+    val rawMessage = causeChain
+        .mapNotNull(Throwable::message)
+        .firstOrNull(String::isNotBlank)
+        .orEmpty()
+    val normalizedMessage = rawMessage.lowercase()
+    val serviceAccountFile = config.serviceAccountFile?.lowercase()
+
+    if (causeChain.any { it is UnknownHostException }) {
+        return "Не удалось найти хост удаленной БД. Проверьте интернет и JDBC URL."
+    }
+    if (causeChain.any { it is ConnectException }) {
+        return "Не удалось подключиться к удаленной БД. Проверьте интернет и доступность сервера."
+    }
+    if (causeChain.any { it is SocketTimeoutException }) {
+        return "Таймаут подключения к удаленной БД. Проверьте интернет или повторите позже."
+    }
+    if (causeChain.any { it is SSLException }) {
+        return "Не удалось установить защищенное соединение с удаленной БД."
+    }
+    if (causeChain.any { it is FileNotFoundException }) {
+        return "Не найден файл сервисного аккаунта для доступа к удаленной БД."
+    }
+    if (
+        serviceAccountFile != null &&
+        serviceAccountFile.isNotBlank() &&
+        normalizedMessage.contains(serviceAccountFile)
+    ) {
+        return "Не удалось прочитать файл сервисного аккаунта для доступа к удаленной БД."
+    }
+    if (
+        causeChain.any { it is SQLInvalidAuthorizationSpecException } ||
+        normalizedMessage.contains("auth") ||
+        normalizedMessage.contains("authentication") ||
+        normalizedMessage.contains("unauthorized") ||
+        normalizedMessage.contains("permission denied") ||
+        normalizedMessage.contains("access denied") ||
+        normalizedMessage.contains("token") ||
+        normalizedMessage.contains("credential") ||
+        normalizedMessage.contains("sakeyfile") ||
+        normalizedMessage.contains("service account")
+    ) {
+        return "Ошибка авторизации в удаленной БД."
+    }
+    if (
+        causeChain.any { it is SQLException } ||
+        normalizedMessage.contains("jdbc") ||
+        normalizedMessage.contains("driver")
+    ) {
+        return "Ошибка подключения к удаленной БД: ${rawMessage.ifBlank { "проверьте JDBC конфигурацию." }}"
+    }
+
+    return rawMessage.ifBlank { "Неизвестная ошибка подключения к удаленной БД." }
 }

@@ -116,3 +116,29 @@ SQL bootstrap лежит в:
 - не коммитить его;
 - не передавать другим пользователям.
 4. Прогнать первый sync между двумя локальными базами.
+## Быстрая настройка на новом компьютере
+
+Минимум, без которого remote sync не включится:
+
+1. Задать `NOCOMBRO_YDB_JDBC_URL`.
+2. Дать способ авторизации:
+   - либо положить `ydb-sa-key.json` в `%APPDATA%\Nocombro\`;
+   - либо задать `NOCOMBRO_YDB_SA_FILE`;
+   - либо задать `NOCOMBRO_YDB_TOKEN`, если в этом окружении используется token-based доступ.
+3. При необходимости задать `NOCOMBRO_YDB_SYNC_TABLE`, если имя таблицы не `sync_push_log`.
+
+Практически для Windows обычно достаточно двух вещей:
+
+1. Положить файл ключа в `C:\Users\<username>\AppData\Roaming\Nocombro\ydb-sa-key.json`.
+2. Задать `NOCOMBRO_YDB_JDBC_URL`.
+
+Как понять, что забыто:
+
+- Если в UI видно `Remote sync не настроен`, приложение не нашло `NOCOMBRO_YDB_JDBC_URL`.
+- Если remote sync включился, но видна ошибка авторизации, нужно проверить файл ключа или `NOCOMBRO_YDB_SA_FILE`.
+- Если видна ошибка сети, значит проблема уже не в конфиге, а в доступности хоста или интернета.
+
+Где лучше задавать `NOCOMBRO_YDB_JDBC_URL`:
+
+- Для постоянной настройки на конкретном компьютере: как переменную среды Windows.
+- Для разового запуска из IDE: как environment variable в Run Configuration или как JVM property `-Dnocombro.ydb.jdbcUrl=...`.

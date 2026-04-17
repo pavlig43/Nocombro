@@ -192,7 +192,7 @@ data class SyncRunResult(
                 pendingChangesCount = 0,
                 failedChangesCount = 0,
                 hasRemoteChanges = false,
-                remoteSyncConfigured = true,
+                remoteSyncConfigured = false,
                 lastStatusCheckAt = defaultUpdatedAt(),
                 lastSyncAt = null,
                 lastPullAt = null,

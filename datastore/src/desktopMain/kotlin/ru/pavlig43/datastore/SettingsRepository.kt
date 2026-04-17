@@ -17,7 +17,7 @@ class SettingsRepository(private val dataStore: DataStore<Preferences>) {
         preferences[PreferencesKeys.IS_DARK_MODE] ?: true
     }
 
-    suspend fun toggleDarkMode(value: Boolean) {
+    suspend fun setDarkMode(value: Boolean) {
         dataStore.updateData { preferences ->
             preferences.toMutablePreferences().apply {
                 this[PreferencesKeys.IS_DARK_MODE] = value
