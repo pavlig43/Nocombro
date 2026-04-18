@@ -125,6 +125,25 @@
 Проверка:
 - `./gradlew :rootnocombro:compileKotlinDesktop` прошла успешно
 
+## Текущий opener-шаг
+
+Цель:
+- вынести логику открытия табов из `MainTabNavigationComponent`
+- уменьшить локальный объем routing/command-кода внутри navigation-компонента
+
+Что сделано:
+- создан файл `rootnocombro/src/desktopMain/kotlin/ru/pavlig43/rootnocombro/internal/navigation/MainTabOpeners.kt`
+- в него вынесено создание `TabOpener` через `createMainTabOpener(addTab: (MainTabConfig) -> Unit)`
+- `MainTabNavigationComponent.kt` теперь использует готовый helper вместо локального анонимного объекта
+
+Почему это полезно:
+- `MainTabNavigationComponent` стал компактнее
+- routing/open-command логика становится переиспользуемой и легче читается отдельно
+- это еще один подготовительный шаг перед возможным дальнейшим дроблением route/child factory кода
+
+Проверка:
+- `./gradlew :rootnocombro:compileKotlinDesktop` прошла успешно
+
 ## Как продолжать в новой сессии
 
 1. Открыть `ARCH_REFACTOR_PROGRESS.md`

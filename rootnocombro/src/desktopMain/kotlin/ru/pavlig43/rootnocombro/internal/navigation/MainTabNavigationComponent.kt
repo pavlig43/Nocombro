@@ -2,7 +2,6 @@ package ru.pavlig43.rootnocombro.internal.navigation
 
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
-import kotlinx.datetime.LocalDateTime
 import org.koin.core.scope.Scope
 import ru.pavlig43.core.tabs.TabNavigationComponent
 import ru.pavlig43.core.tabs.TabOpener
@@ -42,8 +41,8 @@ import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.NotificationChi
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ProfitabilityChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.SampleTableChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.StorageChild
-import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.BatchMovementListConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.AnalyticConfig
+import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.BatchMovementListConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemFormConfig.DeclarationFormConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemFormConfig.DocumentFormConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemFormConfig.ExpenseFormConfig
@@ -93,45 +92,7 @@ internal class MainTabNavigationComponent(
     }
 
     // Создаём tabOpener раньше, чем tabNavigationComponent
-    private val tabOpener = object : TabOpener {
-        override fun openDocumentTab(id: Int) {
-            tabNavigationComponent.addTab(DocumentFormConfig(id))
-        }
-
-        override fun openProductTab(id: Int) {
-            tabNavigationComponent.addTab(ProductFormConfig(id))
-        }
-
-        override fun openVendorTab(id: Int) {
-            tabNavigationComponent.addTab(VendorFormConfig(id))
-        }
-
-        override fun openDeclarationTab(id: Int) {
-            tabNavigationComponent.addTab(DeclarationFormConfig(id))
-        }
-
-        override fun openTransactionTab(id: Int) {
-            tabNavigationComponent.addTab(TransactionFormConfig(id))
-        }
-
-        override fun openBatchMovementTab(
-            batchId: Int,
-            productName: String,
-            start: LocalDateTime,
-            end: LocalDateTime
-        ) {
-            tabNavigationComponent.addTab(BatchMovementListConfig(batchId, productName, start, end))
-        }
-
-        override fun openExpenseFormTab(id: Int) {
-            tabNavigationComponent.addTab(ExpenseFormConfig(id))
-        }
-
-        override fun openProfitabilityTab() {
-            tabNavigationComponent.addTab(ProfitabilityConfig())
-        }
-
-    }
+    private val tabOpener: TabOpener = createMainTabOpener { tabNavigationComponent.addTab(it) }
 
     val tabNavigationComponent: TabNavigationComponent<MainTabConfig, MainTabChild> =
         TabNavigationComponent(
