@@ -9,6 +9,7 @@ plugins {
 kotlin{
     desktopDependencies {
         implementation(projects.features.files)
+        implementation(projects.datetime)
         implementation(projects.features.table.immutable)
         implementation(projects.features.table.mutable)
         implementation(projects.features.table.core)

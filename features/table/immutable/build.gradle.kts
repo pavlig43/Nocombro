@@ -10,7 +10,7 @@ kotlin{
     desktopDependencies {
         implementation(projects.database)
         implementation(projects.features.table.core)
-        api(projects.datetime)
+        implementation(projects.datetime)
 
 
     }

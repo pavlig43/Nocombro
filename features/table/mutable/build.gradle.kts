@@ -12,7 +12,7 @@ kotlin {
         implementation(projects.features.manageitem.loadinitdata)
         implementation(projects.features.manageitem.update)
         implementation(projects.features.table.core)
-        api(projects.datetime)
+        implementation(projects.datetime)
 
     }
 }

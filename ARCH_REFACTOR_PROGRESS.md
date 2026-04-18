@@ -68,6 +68,23 @@
 2. Сделать зависимости на `projects.datetime` явными у этих модулей.
 3. После этого попробовать заменить `api(projects.datetime)` на `implementation(...)` в `table:immutable` и `table:mutable`.
 
+Статус текущего шага:
+- в работу взят cleanup по `datetime`
+- подтверждены реальные потребители `datetime` без явной Gradle-зависимости:
+  - `:rootnocombro`
+  - `:features:form:declaration`
+  - `:features:form:document`
+  - `:features:form:product`
+  - `:features:form:transaction`
+- сознательно не трогаем как ложные кандидаты:
+  - `:features:sampletable`
+  - `:features:manageitem:update`
+  - `:features:form:vendor`
+- зависимости `projects.datetime` добавлены в подтвержденные модули-потребители
+- в `features/table/immutable` и `features/table/mutable` зависимость на `projects.datetime` переведена с `api(...)` на `implementation(...)`
+- проверки `:features:form:declaration:compileKotlinDesktop`, `:features:form:document:compileKotlinDesktop`, `:features:form:product:compileKotlinDesktop`, `:features:form:transaction:compileKotlinDesktop` и `:rootnocombro:compileKotlinDesktop` прошли успешно
+- второй шаг по скрытым транзитивным зависимостям можно считать завершенным
+
 ## Следующие архитектурные шаги после Gradle cleanup
 
 1. Ослабить `rootnocombro`:
