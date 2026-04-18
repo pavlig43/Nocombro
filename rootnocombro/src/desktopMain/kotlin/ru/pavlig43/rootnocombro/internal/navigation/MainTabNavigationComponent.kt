@@ -21,9 +21,14 @@ import ru.pavlig43.immutable.api.component.SafetyImmutableTableBuilder
 import ru.pavlig43.immutable.api.component.TransactionImmutableTableBuilder
 import ru.pavlig43.immutable.api.component.VendorImmutableTableBuilder
 import ru.pavlig43.immutable.internal.component.items.expense.ExpenseTableUi
+import ru.pavlig43.main.api.component.AnalyticMainComponent
 import ru.pavlig43.notification.api.component.NotificationComponent
 import ru.pavlig43.notification.api.model.NotificationItem
+import ru.pavlig43.doctor.api.component.DoctorComponent
 import ru.pavlig43.product.api.component.ProductFormComponent
+import ru.pavlig43.profitability.internal.component.ProfitabilityComponent
+import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.BatchMovementChild
+import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.DoctorChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ImmutableTableChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ItemFormChild.DeclarationFormChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ItemFormChild.DocumentFormChild
@@ -31,6 +36,13 @@ import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ItemFormChild.E
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ItemFormChild.ProductFormChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ItemFormChild.TransactionFormChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ItemFormChild.VendorFormChild
+import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.MainMoneyChild
+import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.NotificationChild
+import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ProfitabilityChild
+import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.SampleTableChild
+import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.StorageChild
+import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.AnalyticConfig
+import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.BatchMovementListConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemFormConfig.DeclarationFormConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemFormConfig.DocumentFormConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemFormConfig.ExpenseFormConfig
@@ -44,9 +56,14 @@ import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig.SafetyListConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig.TransactionListConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig.VendorListConfig
+import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.DoctorConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.NotificationConfig
+import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ProfitabilityConfig
 import ru.pavlig43.rootnocombro.internal.navigation.drawer.component.DrawerComponent
 import ru.pavlig43.rootnocombro.internal.navigation.drawer.component.DrawerDestination
+import ru.pavlig43.sampletable.api.component.SampleTableComponentMain
+import ru.pavlig43.storage.api.component.batchMovement.BatchMovementComponent
+import ru.pavlig43.storage.api.component.storage.StorageComponent
 import ru.pavlig43.tablecore.model.IMultiLineTableUi
 import ru.pavlig43.transaction.api.component.TransactionFormComponent
 import ru.pavlig43.vendor.api.component.VendorFormComponent
@@ -82,13 +99,64 @@ internal class MainTabNavigationComponent(
             startConfigurations = defaultMainTabs(),
             serializer = MainTabConfig.serializer(),
             tabChildFactory = { context, mainTabConfig: MainTabConfig, onCloseTab: () -> Unit ->
-                createSimpleMainTabChild(
-                    config = mainTabConfig,
-                    context = context,
-                    scope = scope,
-                    tabOpener = tabOpener,
-                    notificationComponent = notificationComponent,
-                ) ?: when (mainTabConfig) {
+                when (mainTabConfig) {
+                    is NotificationConfig -> NotificationChild(notificationComponent)
+
+                    is AnalyticConfig -> MainMoneyChild(
+                        AnalyticMainComponent(
+                            componentContext = context,
+                            tabOpener = tabOpener,
+                        )
+                    )
+
+                    is MainTabConfig.SampleTableConfig -> SampleTableChild(
+                        SampleTableComponentMain(
+                            componentContext = context
+                        )
+                    )
+
+                    is MainTabConfig.StorageConfig -> {
+                        StorageChild(
+                            StorageComponent(
+                                componentContext = context,
+                                dependencies = scope.get(),
+                                tabOpener = tabOpener
+                            )
+                        )
+                    }
+
+                    is ProfitabilityConfig -> {
+                        ProfitabilityChild(
+                            ProfitabilityComponent(
+                                componentContext = context,
+                                dependencies = scope.get()
+                            )
+                        )
+                    }
+
+                    is DoctorConfig -> {
+                        DoctorChild(
+                            DoctorComponent(
+                                componentContext = context,
+                                dependencies = scope.get(),
+                            )
+                        )
+                    }
+
+                    is BatchMovementListConfig -> {
+                        BatchMovementChild(
+                            BatchMovementComponent(
+                                componentContext = context,
+                                dependencies = scope.get(),
+                                tabOpener = tabOpener,
+                                batchId = mainTabConfig.batchId,
+                                productName = mainTabConfig.productName,
+                                initStart = mainTabConfig.start,
+                                initEnd = mainTabConfig.end,
+                            )
+                        )
+                    }
+
                     is MainTabConfig.ItemListConfig -> createImmutableTableChild(
                         tabConfig = mainTabConfig,
                         context = context,
@@ -98,8 +166,6 @@ internal class MainTabNavigationComponent(
                         tabConfig = mainTabConfig,
                         context = context,
                     )
-
-                    else -> error("Unsupported tab config: $mainTabConfig")
                 }
             },
     )

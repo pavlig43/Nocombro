@@ -10,6 +10,7 @@ androidx-lifecycle = "2.9.6"
 androidx-sqlite = "2.6.2"
 androidx-test-junit = "1.3.0"
 benManesVersions = "0.53.0"
+dependencyAnalysis = "3.7.0"
 buildkonfig = "6.0.9"
 collectionsImmutable = "0.4.0"
 compose-material3 = "1.9.0"
@@ -203,6 +204,7 @@ buildkonfig = { id = "com.github.gmazzo.buildconfig", version.ref = "buildkonfig
 dokka ={id = "org.jetbrains.dokka",version.ref = "dokka"}
 roomSchemaDocs = {id = "jp.ntsk.room-schema-docs",version.ref = "roomSchemaDocs"}
 versions = { id = "com.github.ben-manes.versions", version.ref = "benManesVersions" }
+dependency-analysis = { id = "com.autonomousapps.dependency-analysis", version.ref = "dependencyAnalysis" }
 
 
 #build-logic

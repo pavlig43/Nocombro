@@ -15,6 +15,7 @@ plugins {
     alias(libs.plugins.composeHotReload) apply false
     alias(libs.plugins.detekt) apply false
     alias(libs.plugins.dokka)
+    alias(libs.plugins.dependency.analysis)
     alias(libs.plugins.versions)
     alias(libs.plugins.roomSchemaDocs) apply false
 
@@ -33,6 +34,16 @@ plugins {
 
 
 
+}
+
+dependencyAnalysis {
+    issues {
+        all {
+            onAny {
+                severity("warn")
+            }
+        }
+    }
 }
 
     dokka {
@@ -77,5 +88,7 @@ subprojects {
             dependsOn(detektTasks)
         }
     }
+
+    apply(plugin = "com.autonomousapps.dependency-analysis")
 }
 
