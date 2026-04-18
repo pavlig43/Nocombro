@@ -104,6 +104,27 @@
 - `features/table/mutable/build.gradle.kts`
 - `rootnocombro/build.gradle.kts`
 
+## Текущий navigation-шаг
+
+Цель:
+- немного сузить ответственность `MainTabNavigationComponent`
+- вынести чистые routing-правила из component assembly
+
+Что сделано:
+- создан файл `rootnocombro/src/desktopMain/kotlin/ru/pavlig43/rootnocombro/internal/navigation/MainTabRouting.kt`
+- в него вынесены:
+  - mapping `DrawerDestination -> MainTabConfig`
+  - mapping `NotificationItem -> TabOpener`
+- `MainTabNavigationComponent.kt` теперь использует эти helper-функции вместо локальных routing-блоков
+
+Почему это полезно:
+- routing knowledge больше не смешан с созданием feature-компонентов
+- `MainTabNavigationComponent` стал чуть уже по ответственности
+- это подготовка к следующему шагу, где можно будет выносить уже более крупные route/child factory правила
+
+Проверка:
+- `./gradlew :rootnocombro:compileKotlinDesktop` прошла успешно
+
 ## Как продолжать в новой сессии
 
 1. Открыть `ARCH_REFACTOR_PROGRESS.md`

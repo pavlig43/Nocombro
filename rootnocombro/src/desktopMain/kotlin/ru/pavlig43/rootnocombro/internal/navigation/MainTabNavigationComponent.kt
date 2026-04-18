@@ -42,8 +42,8 @@ import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.NotificationChi
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ProfitabilityChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.SampleTableChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.StorageChild
-import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.AnalyticConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.BatchMovementListConfig
+import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.AnalyticConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemFormConfig.DeclarationFormConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemFormConfig.DocumentFormConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemFormConfig.ExpenseFormConfig
@@ -88,24 +88,9 @@ internal class MainTabNavigationComponent(
     )
 
     fun openScreenFromDrawer(destination: DrawerDestination) {
-        val mainTabConfiguration: MainTabConfig = destination.toTabConfig()
+        val mainTabConfiguration: MainTabConfig = destination.toMainTabConfig()
         tabNavigationComponent.addTab(mainTabConfiguration)
     }
-
-    private fun DrawerDestination.toTabConfig(): MainTabConfig =
-        when (this) {
-            DrawerDestination.Analytic -> AnalyticConfig()
-            DrawerDestination.DocumentList -> DocumentListConfig()
-            DrawerDestination.ProductList -> ProductListConfig()
-            DrawerDestination.VendorList -> VendorListConfig()
-            DrawerDestination.DeclarationList -> DeclarationListConfig()
-            DrawerDestination.ProductTransactionList -> TransactionListConfig()
-            DrawerDestination.ExpenseList -> ExpenseListConfig()
-            DrawerDestination.Safety -> SafetyListConfig()
-            DrawerDestination.SampleTable -> MainTabConfig.SampleTableConfig()
-            DrawerDestination.Storage -> MainTabConfig.StorageConfig()
-            DrawerDestination.Doctor -> DoctorConfig()
-        }
 
     // Создаём tabOpener раньше, чем tabNavigationComponent
     private val tabOpener = object : TabOpener {
@@ -228,16 +213,10 @@ internal class MainTabNavigationComponent(
 
                 }
             },
-        )
+    )
 
     private fun openTabFromNotification(item: NotificationItem, id: Int) {
-        when (item) {
-            NotificationItem.Document -> tabOpener.openDocumentTab(id)
-            NotificationItem.Product -> tabOpener.openProductTab(id)
-            NotificationItem.Declaration -> tabOpener.openDeclarationTab(id)
-            NotificationItem.Transaction -> tabOpener.openTransactionTab(id)
-            NotificationItem.BatchExpiry -> tabOpener.openTransactionTab(id)
-        }
+        item.openIn(tabOpener = tabOpener, id = id)
     }
 
     @Suppress("CyclomaticComplexMethod")
