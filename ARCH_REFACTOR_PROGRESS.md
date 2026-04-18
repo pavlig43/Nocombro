@@ -163,6 +163,35 @@
 Проверка:
 - `./gradlew :rootnocombro:compileKotlinDesktop` прошла успешно
 
+## Текущий simple-children шаг
+
+Цель:
+- вынести из `MainTabNavigationComponent` простые single-screen child branches
+- оставить внутри компонента только более сложные ветки списков и форм
+
+Что сделано:
+- создан файл `rootnocombro/src/desktopMain/kotlin/ru/pavlig43/rootnocombro/internal/navigation/MainTabSimpleChildren.kt`
+- в него вынесен helper `createSimpleMainTabChild(...)`
+- helper покрывает ветки:
+  - `NotificationConfig`
+  - `AnalyticConfig`
+  - `SampleTableConfig`
+  - `StorageConfig`
+  - `ProfitabilityConfig`
+  - `DoctorConfig`
+  - `BatchMovementListConfig`
+- `MainTabNavigationComponent.kt` теперь сначала пытается построить simple child через helper, а затем обрабатывает:
+  - `ItemListConfig`
+  - `ItemFormConfig`
+
+Почему это полезно:
+- большой `when` стал заметно уже
+- простые route-to-child правила теперь отделены от более тяжелой логики таблиц и форм
+- это подготавливает следующий шаг, где можно будет отдельно разбирать list/form factories
+
+Проверка:
+- `./gradlew :rootnocombro:compileKotlinDesktop` прошла успешно
+
 ## Как продолжать в новой сессии
 
 1. Открыть `ARCH_REFACTOR_PROGRESS.md`
