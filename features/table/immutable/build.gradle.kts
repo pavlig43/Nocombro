@@ -9,7 +9,7 @@ plugins {
 kotlin{
     desktopDependencies {
         implementation(projects.database)
-        api(projects.features.table.core)
+        implementation(projects.features.table.core)
         api(projects.datetime)
 
 
