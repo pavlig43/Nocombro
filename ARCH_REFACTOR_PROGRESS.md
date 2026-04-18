@@ -144,6 +144,25 @@
 Проверка:
 - `./gradlew :rootnocombro:compileKotlinDesktop` прошла успешно
 
+## Текущий small-cleanup шаг
+
+Цель:
+- вынести еще немного служебного routing/configuration-кода из `MainTabNavigationComponent`
+- сохранить шаг очень маленьким и без изменения поведения
+
+Что сделано:
+- в `MainTabRouting.kt` добавлен helper `defaultMainTabs()`
+- `MainTabNavigationComponent.kt` теперь использует:
+  - `defaultMainTabs()` для стартовых табов
+  - прямой `tabNavigationComponent.addTab(destination.toMainTabConfig())` без промежуточной локальной переменной
+
+Почему это полезно:
+- стартовая конфигурация табов теперь объявлена рядом с остальными routing-правилами
+- основной navigation-компонент понемногу становится короче и проще читать
+
+Проверка:
+- `./gradlew :rootnocombro:compileKotlinDesktop` прошла успешно
+
 ## Как продолжать в новой сессии
 
 1. Открыть `ARCH_REFACTOR_PROGRESS.md`

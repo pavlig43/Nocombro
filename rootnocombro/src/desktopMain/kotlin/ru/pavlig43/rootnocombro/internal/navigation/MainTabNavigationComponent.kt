@@ -87,8 +87,7 @@ internal class MainTabNavigationComponent(
     )
 
     fun openScreenFromDrawer(destination: DrawerDestination) {
-        val mainTabConfiguration: MainTabConfig = destination.toMainTabConfig()
-        tabNavigationComponent.addTab(mainTabConfiguration)
+        tabNavigationComponent.addTab(destination.toMainTabConfig())
     }
 
     // Создаём tabOpener раньше, чем tabNavigationComponent
@@ -97,9 +96,7 @@ internal class MainTabNavigationComponent(
     val tabNavigationComponent: TabNavigationComponent<MainTabConfig, MainTabChild> =
         TabNavigationComponent(
             componentContext = childContext("tab"),
-            startConfigurations = listOf(
-                ProfitabilityConfig(),
-            ),
+            startConfigurations = defaultMainTabs(),
             serializer = MainTabConfig.serializer(),
             tabChildFactory = { context, mainTabConfig: MainTabConfig, onCloseTab: () -> Unit ->
 
