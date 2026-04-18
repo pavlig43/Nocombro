@@ -15,6 +15,7 @@ import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.database.data.transact.ingredient.IngredientBD
 import ru.pavlig43.datetime.emptyDate
+import kotlin.math.ceil
 
 @Dao
 abstract class CompositionDao {
@@ -94,13 +95,20 @@ private fun InternalComposition.toCompositionOut(): CompositionOut {
 
 @Suppress("MagicNumber")
 private fun InternalComposition.toIngredients(transactionId: Int, countPf: Long): IngredientBD {
+    val rawCount = (composition.count * countPf) / 1000.0 // считаем обычное пропорциональное количество
+
+    val count = if (product.type == ProductType.PACK) { // если это упаковка
+        (ceil(rawCount / 1000.0) * 1000).toLong() // округляем вверх до целой упаковки в миллиединицах
+    } else {
+        rawCount.toLong() // для остальных оставляем обычный расчет
+    }
     return IngredientBD(
         transactionId = transactionId,
         batchId = 0,
         dateBorn = emptyDate,
         movementId = 0,
         // Количество полуфабриката в кг(изначально числится в граммах)
-        count = (composition.count * countPf) / 1000,
+        count = count,
         productType = product.type,
         productId = product.id,
         productName = product.displayName,

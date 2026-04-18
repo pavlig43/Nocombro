@@ -26,9 +26,12 @@ class SettingsComponent(
     )
 
     fun toggleDarkMode() {
+        setDarkMode(!darkMode.value)
+    }
+
+    fun setDarkMode(value: Boolean) {
         coroutineScope.launch {
-            val currentDarkMode = darkMode.value
-            settingsRepository.toggleDarkMode(!currentDarkMode)
+            settingsRepository.setDarkMode(value)
         }
     }
 

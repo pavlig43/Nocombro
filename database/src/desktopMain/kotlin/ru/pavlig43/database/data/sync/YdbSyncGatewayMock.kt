@@ -10,24 +10,24 @@ class YdbSyncGatewayMock : SyncRemoteGateway {
 
     override suspend fun getStatus(syncState: SyncStateEntity?): RemoteSyncStatus {
         return RemoteSyncStatus(
-            configured = true,
+            configured = false,
             hasRemoteChanges = false,
             remoteCursor = syncState?.lastRemoteCursor,
+            error = "Remote sync не настроен.",
         )
     }
 
     override suspend fun loadCurrentRemoteFileStates(): Result<List<RemoteFileSyncState>> {
-        return Result.success(emptyList())
+        return Result.failure(
+            IllegalStateException("Remote sync не настроен.")
+        )
     }
 
     override suspend fun pushChanges(
         payload: RemotePushPayload,
     ): Result<RemotePushResult> {
-        return Result.success(
-            RemotePushResult(
-                pushedAt = defaultUpdatedAt(),
-                remoteCursor = payload.lastRemoteCursor,
-            )
+        return Result.failure(
+            IllegalStateException("Remote sync не настроен.")
         )
     }
 
@@ -36,12 +36,8 @@ class YdbSyncGatewayMock : SyncRemoteGateway {
         lastRemoteCursor: String?,
         limit: Int,
     ): Result<RemotePullResult> {
-        return Result.success(
-            RemotePullResult(
-                changes = emptyList(),
-                pulledAt = defaultUpdatedAt(),
-                remoteCursor = lastRemoteCursor,
-            )
+        return Result.failure(
+            IllegalStateException("Remote sync не настроен.")
         )
     }
 }
