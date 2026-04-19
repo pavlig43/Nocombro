@@ -32,6 +32,12 @@ import ru.pavlig43.thermallabel.api.component.ThermalLabelDialogComponent
 import ru.pavlig43.thermallabel.api.component.ThermalLabelInnerDialogChild
 import ru.pavlig43.thermallabel.api.model.ThermalLabelSize
 
+/**
+ * Compose-диалог для настройки и запуска генерации термоэтикетки.
+ *
+ * Показывает размер, дату, массу, состояние загрузки prefill-данных
+ * и возможные ошибки генерации.
+ */
 @Composable
 fun ThermalLabelDialog(
     component: ThermalLabelDialogComponent,
@@ -41,7 +47,7 @@ fun ThermalLabelDialog(
     val dialog by component.dialog.subscribeAsState()
 
     ProjectDialog(
-        onDismissRequest = component::dismiss,
+        onDismissRequest = component.onDismissRequest,
         header = { Text("Этикетка") },
         content = {
             Column(
@@ -94,7 +100,7 @@ fun ThermalLabelDialog(
                     horizontalArrangement = Arrangement.End,
                 ) {
                     TextButton(
-                        onClick = component::dismiss,
+                        onClick = component.onDismissRequest,
                         enabled = !uiState.isGenerating,
                     ) {
                         Text("Отмена")

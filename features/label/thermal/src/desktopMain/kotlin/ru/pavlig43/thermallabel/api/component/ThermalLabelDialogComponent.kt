@@ -23,8 +23,18 @@ import ru.pavlig43.datetime.single.date.DateComponent
 import ru.pavlig43.thermallabel.api.data.ThermalLabelTemplateService
 import ru.pavlig43.thermallabel.api.model.ThermalLabelDialogUi
 import ru.pavlig43.thermallabel.api.model.ThermalLabelGenerationRequest
+import ru.pavlig43.thermallabel.api.model.ThermalLabelPrefill
 import ru.pavlig43.thermallabel.api.model.ThermalLabelSize
 
+/**
+ * Decompose-компонент диалога генерации термоэтикетки.
+ *
+ * Отвечает за:
+ * - загрузку prefill-данных по продукту;
+ * - хранение пользовательского выбора размера, даты и массы;
+ * - открытие вложенного выбора даты;
+ * - запуск генерации PPTX через [ThermalLabelTemplateService].
+ */
 class ThermalLabelDialogComponent(
     componentContext: ComponentContext,
     private val productId: Int,
@@ -35,6 +45,7 @@ class ThermalLabelDialogComponent(
 ) : ComponentContext by componentContext {
     private val coroutineScope = componentCoroutineScope()
     private val dialogNavigation = SlotNavigation<ThermalLabelInnerDialog>()
+    val onDismissRequest: () -> Unit = onDismissed
 
     private val _uiState = MutableStateFlow(
         ThermalLabelDialogUi(
@@ -72,7 +83,7 @@ class ThermalLabelDialogComponent(
         }
     }
 
-    private lateinit var loadedPrefill: ru.pavlig43.thermallabel.api.model.ThermalLabelPrefill
+    private var loadedPrefill: ThermalLabelPrefill? = null
 
     fun onSelectSize(
         size: ThermalLabelSize,
@@ -90,14 +101,6 @@ class ThermalLabelDialogComponent(
     ) {
         _message.value = null
         _uiState.update { it.copy(massText = value) }
-    }
-
-    fun dismissMessage() {
-        _message.value = null
-    }
-
-    fun dismiss() {
-        onDismissed()
     }
 
     private fun createDialogChild(
@@ -120,8 +123,14 @@ class ThermalLabelDialogComponent(
 
     fun generate() {
         val current = uiState.value
+        val prefill = loadedPrefill
+
         validate(current.massText).onFailure { throwable ->
             _message.value = throwable.message ?: "Проверь поля этикетки."
+            return
+        }
+        if (prefill == null) {
+            _message.value = "Данные этикетки еще загружаются."
             return
         }
 
@@ -131,10 +140,10 @@ class ThermalLabelDialogComponent(
             service.generateLabel(
                 ThermalLabelGenerationRequest(
                     size = current.selectedSize,
-                    productName = loadedPrefill.productName,
-                    composition = loadedPrefill.composition,
-                    dosage = loadedPrefill.dosage,
-                    storageText = loadedPrefill.storageText,
+                    productName = prefill.productName,
+                    composition = prefill.composition,
+                    dosage = prefill.dosage,
+                    storageText = prefill.storageText,
                     date = current.date,
                     massText = current.massText,
                 )
@@ -155,6 +164,9 @@ class ThermalLabelDialogComponent(
     }
 }
 
+/**
+ * Минимальная валидация пользовательского ввода перед генерацией этикетки.
+ */
 private fun validate(
     massText: String,
 ): Result<Unit> {
@@ -169,6 +181,9 @@ sealed interface ThermalLabelInnerDialog {
     data object Date : ThermalLabelInnerDialog
 }
 
+/**
+ * Вложенные дочерние диалоги, которые может открывать основной диалог этикетки.
+ */
 sealed interface ThermalLabelInnerDialogChild {
     class Date(val component: DateComponent) : ThermalLabelInnerDialogChild
 }

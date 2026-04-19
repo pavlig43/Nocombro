@@ -1,5 +1,10 @@
 package ru.pavlig43.thermallabel.api.model
 
+/**
+ * Поддерживаемые размеры термоэтикеток.
+ *
+ * Каждый размер привязан к своему шаблону в resources и к суффиксу имени выходного файла.
+ */
 enum class ThermalLabelSize(
     val title: String,
     internal val templateResourcePath: String,

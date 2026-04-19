@@ -1,28 +1,32 @@
 package ru.pavlig43.thermallabel.internal
 
-import java.io.File
-import kotlinx.datetime.LocalDate
+import java.io.ByteArrayOutputStream
+import io.github.vinceglb.filekit.PlatformFile
+import io.github.vinceglb.filekit.absolutePath
+import io.github.vinceglb.filekit.createDirectories
+import io.github.vinceglb.filekit.parent
+import io.github.vinceglb.filekit.write
+import kotlinx.datetime.format
 import org.apache.poi.xslf.usermodel.XMLSlideShow
 import org.apache.poi.xslf.usermodel.XSLFShape
-import org.apache.poi.xslf.usermodel.XSLFTextParagraph
-import org.apache.poi.xslf.usermodel.XSLFTextRun
 import org.apache.poi.xslf.usermodel.XSLFTextShape
 import org.openxmlformats.schemas.drawingml.x2006.main.CTTextCharacterProperties
 import org.openxmlformats.schemas.drawingml.x2006.main.CTTextParagraphProperties
+import ru.pavlig43.datetime.dateFormat
 import ru.pavlig43.thermallabel.api.model.ThermalLabelGenerationRequest
-import ru.pavlig43.thermallabel.api.model.ThermalLabelSize
 
+/**
+ * Генерирует PPTX-файл термоэтикетки на основе шаблона из resources.
+ *
+ * Класс подставляет текст в именованные shape'ы первого слайда, стараясь
+ * сохранить форматирование, заданное в шаблоне PowerPoint.
+ */
 internal class ThermalLabelPptxGenerator {
 
-    fun generate(
+    suspend fun generate(
         request: ThermalLabelGenerationRequest,
     ): String {
-        val templateFormat = request.size.templateFormat
-        val outputFile = buildOutputFile(
-            productName = request.productName,
-            sizeSuffix = request.size.outputSuffix,
-            dateText = formatDate(request.date),
-        )
+        val outputFile = buildOutputFile()
 
         val templateStream = javaClass.classLoader
             .getResourceAsStream(request.size.templateResourcePath)
@@ -36,17 +40,22 @@ internal class ThermalLabelPptxGenerator {
 
                 replaceShapeText(slide.shapes, HEADER_SHAPE_NAME, titleParts.headerText)
                 replaceShapeText(slide.shapes, NAME_SHAPE_NAME, titleParts.nameText)
-                replaceShapeText(slide.shapes, COMPOSITION_SHAPE_NAME, templateFormat.compositionText(request.composition))
-                replaceShapeText(slide.shapes, DOSAGE_SHAPE_NAME, templateFormat.dosageText(request.dosage))
+                replaceShapeText(slide.shapes, COMPOSITION_SHAPE_NAME, prefixed("Состав:", request.composition))
+                replaceShapeText(slide.shapes, DOSAGE_SHAPE_NAME, prefixed("Дозировка:", request.dosage))
                 replaceShapeText(slide.shapes, STORAGE_SHAPE_NAME, request.storageText)
-                replaceShapeText(slide.shapes, DATE_SHAPE_NAME, templateFormat.dateText(request.date))
-                replaceShapeText(slide.shapes, MASS_SHAPE_NAME, templateFormat.massText(request.massText))
+                replaceShapeText(slide.shapes, DATE_SHAPE_NAME, "$DATE_LABEL ${request.date.format(dateFormat)}")
+                replaceShapeText(slide.shapes, MASS_SHAPE_NAME, "Масса: ${request.massText.trim()} кг")
 
-                outputFile.outputStream().use(slideShow::write)
+                val bytes = ByteArrayOutputStream().use { output ->
+                    slideShow.write(output)
+                    output.toByteArray()
+                }
+                outputFile.parent()?.createDirectories()
+                outputFile write bytes
             }
         }
 
-        return outputFile.absolutePath
+        return outputFile.absolutePath()
     }
 
     private fun replaceShapeText(
@@ -62,18 +71,15 @@ internal class ThermalLabelPptxGenerator {
         replaceTextPreservingTemplateFormatting(textShape, text)
     }
 
-    private fun buildOutputFile(
-        productName: String,
-        sizeSuffix: String,
-        dateText: String,
-    ): File {
-        val outputDir = File(getNocombroAppDataDirectory(), "thermal-labels").apply { mkdirs() }
-        val safeProductName = sanitizeFileSegment(productName.ifBlank { "label" })
-        val safeDate = sanitizeFileSegment(dateText.ifBlank { formatDate(LocalDate(2000, 1, 1)) })
-        return File(outputDir, "${safeProductName}_${sizeSuffix}_${safeDate}.pptx")
+    private fun buildOutputFile(): PlatformFile {
+        val outputDir = getThermalLabelsTempDirectory()
+        return PlatformFile(outputDir, "thermal-label.pptx")
     }
 }
 
+/**
+ * Пересобирает текстовый shape, сохраняя базовые настройки абзаца и run'а из шаблона.
+ */
 private fun replaceTextPreservingTemplateFormatting(
     textShape: XSLFTextShape,
     text: String,
@@ -120,6 +126,10 @@ private fun replaceTextPreservingTemplateFormatting(
         }
 }
 
+/**
+ * Собирает строку вида `Заголовок: значение`, а если значение пустое,
+ * оставляет только сам заголовок.
+ */
 private fun prefixed(
     prefix: String,
     value: String,
@@ -132,63 +142,15 @@ private fun prefixed(
     }
 }
 
-private fun normalizeMass(
-    raw: String,
-): String {
-    return raw
-        .trim()
-        .removeSuffix("кг")
-        .removeSuffix("kg")
-        .trim()
-        .ifBlank { "3" }
-}
-
-private fun sanitizeFileSegment(
-    raw: String,
-): String {
-    return raw
-        .replace(Regex("[\\\\/:*?\"<>|]"), "_")
-        .replace(Regex("\\s+"), "_")
-}
-
-private fun getNocombroAppDataDirectory(): File {
-    val baseDir = System.getenv("APPDATA")
-        ?.takeIf(String::isNotBlank)
-        ?.let(::File)
-        ?: File(System.getProperty("user.home"))
-    return File(baseDir, "Nocombro").apply { mkdirs() }
-}
-
-private fun formatDate(date: LocalDate): String = "%02d.%02d.%04d".format(date.day, date.month.ordinal + 1, date.year)
-
-private val ThermalLabelSize.templateFormat: ThermalLabelTemplateFormat
-    get() = when (this) {
-        ThermalLabelSize.SIZE_75_120 -> ThermalLabelTemplateFormat(
-            dateLabel = "Дата производства:",
-        )
-        ThermalLabelSize.SIZE_100_150 -> ThermalLabelTemplateFormat(
-            dateLabel = "Дата производства:",
-        )
-    }
-
-private data class ThermalLabelTemplateFormat(
-    val dateLabel: String,
-) {
-    fun compositionText(
-        composition: String,
-    ): String = prefixed("Состав:", composition)
-
-    fun dosageText(
-        dosage: String,
-    ): String = prefixed("Дозировка:", dosage)
-
-    fun dateText(
-        date: LocalDate,
-    ): String = "$dateLabel ${formatDate(date)}"
-
-    fun massText(
-        massText: String,
-    ): String = "Масса: ${normalizeMass(massText)} кг"
+/**
+ * Возвращает временный каталог, в который Nocombro складывает сгенерированные термочеки.
+ *
+ * Каталог живет внутри системной temp-директории текущего пользователя и не считается
+ * постоянным managed storage приложения.
+ */
+private fun getThermalLabelsTempDirectory(): PlatformFile {
+    val tempRoot = PlatformFile(System.getProperty("java.io.tmpdir"))
+    return PlatformFile(tempRoot, "Nocombro/thermal-labels")
 }
 
 private data class ProductTitleParts(
@@ -196,6 +158,10 @@ private data class ProductTitleParts(
     val nameText: String,
 )
 
+/**
+ * Выделяет из имени продукта служебный префикс `КПД` и, если он найден,
+ * выносит его в отдельный верхний заголовок этикетки.
+ */
 private fun splitProductTitle(
     productName: String,
 ): ProductTitleParts {
@@ -226,5 +192,6 @@ private const val DOSAGE_SHAPE_NAME = "TextBox 4"
 private const val STORAGE_SHAPE_NAME = "TextBox 5"
 private const val DATE_SHAPE_NAME = "TextBox 7"
 private const val MASS_SHAPE_NAME = "TextBox 9"
+private const val DATE_LABEL = "Дата производства:"
 private const val KPD_PREFIX = "КПД"
 private const val COMPLEX_FOOD_ADDITIVE_TEXT = "Комплексная пищевая добавка"

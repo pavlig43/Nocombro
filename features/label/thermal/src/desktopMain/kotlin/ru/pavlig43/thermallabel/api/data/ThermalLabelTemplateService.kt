@@ -6,6 +6,12 @@ import ru.pavlig43.thermallabel.api.model.ThermalLabelGenerationRequest
 import ru.pavlig43.thermallabel.api.model.ThermalLabelPrefill
 import ru.pavlig43.thermallabel.internal.ThermalLabelPptxGenerator
 
+/**
+ * Координирует подготовку данных для термоэтикетки.
+ *
+ * Сервис читает спецификацию продукта из базы, собирает prefill для диалога
+ * и делегирует фактическую генерацию PPTX в [ThermalLabelPptxGenerator].
+ */
 class ThermalLabelTemplateService(
     db: NocombroDatabase,
 ) {
@@ -29,7 +35,7 @@ class ThermalLabelTemplateService(
         }
     }
 
-    fun generateLabel(
+    suspend fun generateLabel(
         request: ThermalLabelGenerationRequest,
     ): Result<String> {
         return runCatching {
@@ -38,11 +44,20 @@ class ThermalLabelTemplateService(
     }
 }
 
+/**
+ * Собирает текст блока хранения и срока годности из спецификации продукта.
+ *
+ * Если оба поля пустые, блок целиком не выводится.
+ */
 private fun buildStorageText(
     specification: ProductSpecification,
 ): String {
     val shelfLife = specification.shelfLifeText.trim()
     val storageConditions = specification.storageConditions.trim()
+
+    if (shelfLife.isBlank() && storageConditions.isBlank()) {
+        return ""
+    }
 
     return buildList {
         add("Хранение и срок годности:")

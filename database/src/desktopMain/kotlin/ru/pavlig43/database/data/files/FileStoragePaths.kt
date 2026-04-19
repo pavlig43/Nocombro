@@ -19,6 +19,9 @@ fun buildCanonicalFileKey(
 
 /**
  * Возвращает абсолютный путь локального кэша файла в профиле текущего пользователя.
+ *
+ * [fileKey] здесь ожидается в каноническом project-формате c `/`, независимо от ОС.
+ * Функция сама адаптирует его под текущую платформу и привязывает к app-data каталогу Nocombro.
  */
 fun buildManagedLocalFilePath(
     fileKey: String,
@@ -30,6 +33,9 @@ fun buildManagedLocalFilePath(
 
 /**
  * Корневой каталог локального кэша управляемых файлов.
+ *
+ * Это не абстрактная временная папка, а стабильный app-managed storage,
+ * в котором Nocombro хранит локальные копии файлов и служебные артефакты.
  */
 fun getManagedFilesRootDirectory(): File {
     return File(getNocombroAppDataDirectory(), "files").apply { mkdirs() }
@@ -46,6 +52,12 @@ fun extractFileName(
         .substringAfterLast("/")
 }
 
+/**
+ * Возвращает корневой app-data каталог Nocombro для текущего пользователя.
+ *
+ * На Windows использует `%APPDATA%`, а если переменная окружения недоступна,
+ * откатывается к домашнему каталогу пользователя.
+ */
 private fun getNocombroAppDataDirectory(): File {
     val baseDir = System.getenv("APPDATA")
         ?.takeIf(String::isNotBlank)
