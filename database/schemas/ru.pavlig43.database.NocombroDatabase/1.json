@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "7ce1c05f62915cbfb834f3abf35403bb",
+    "identityHash": "aa3cd40df3826ed9d739fb3115d0e576",
     "entities": [
       {
         "tableName": "file",
@@ -632,18 +632,12 @@
       },
       {
         "tableName": "product_specification",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`product_id` INTEGER NOT NULL, `description` TEXT NOT NULL, `dosage` TEXT NOT NULL, `composition` TEXT NOT NULL, `shelf_life_text` TEXT NOT NULL, `storage_conditions` TEXT NOT NULL, `appearance` TEXT NOT NULL, `color` TEXT NOT NULL, `smell` TEXT NOT NULL, `taste` TEXT NOT NULL, `physical_chemical_indicators` TEXT NOT NULL, `microbiological_indicators` TEXT NOT NULL, `toxic_elements` TEXT NOT NULL, `allergens` TEXT NOT NULL, `gmo_info` TEXT NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `sync_id` TEXT NOT NULL, `updated_at` TEXT NOT NULL, `deleted_at` TEXT, FOREIGN KEY(`product_id`) REFERENCES `product`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`product_id` INTEGER NOT NULL, `dosage` TEXT NOT NULL, `composition` TEXT NOT NULL, `shelf_life_text` TEXT NOT NULL, `storage_conditions` TEXT NOT NULL, `appearance` TEXT NOT NULL, `color` TEXT NOT NULL, `smell` TEXT NOT NULL, `taste` TEXT NOT NULL, `physical_chemical_indicators` TEXT NOT NULL, `microbiological_indicators` TEXT NOT NULL, `toxic_elements` TEXT NOT NULL, `allergens` TEXT NOT NULL, `gmo_info` TEXT NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `sync_id` TEXT NOT NULL, `updated_at` TEXT NOT NULL, `deleted_at` TEXT, FOREIGN KEY(`product_id`) REFERENCES `product`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "productId",
             "columnName": "product_id",
             "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "description",
-            "columnName": "description",
-            "affinity": "TEXT",
             "notNull": true
           },
           {
@@ -1774,7 +1768,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '7ce1c05f62915cbfb834f3abf35403bb')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'aa3cd40df3826ed9d739fb3115d0e576')"
     ]
   }
 }

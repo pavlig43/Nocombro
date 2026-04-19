@@ -152,7 +152,6 @@ class SyncEntityExportRepository(
                     ProductSpecificationSyncPayload(
                         syncId = specification.syncId,
                         productSyncId = product.syncId,
-                        description = specification.description,
                         dosage = specification.dosage,
                         composition = specification.composition,
                         shelfLifeText = specification.shelfLifeText,

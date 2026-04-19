@@ -159,7 +159,6 @@ private val specificationComponentFactory = SingleLineComponentFactory<ProductSp
     initItem = ProductSpecificationUi(
         id = 0,
         productId = 0,
-        description = "",
         dosage = "",
         composition = "",
         shelfLifeText = "",

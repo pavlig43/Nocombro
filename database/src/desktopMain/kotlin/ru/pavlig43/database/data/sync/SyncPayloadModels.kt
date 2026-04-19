@@ -71,7 +71,6 @@ data class ProductSyncPayload(
 data class ProductSpecificationSyncPayload(
     val syncId: String,
     val productSyncId: String,
-    val description: String,
     val dosage: String,
     val composition: String,
     val shelfLifeText: String,

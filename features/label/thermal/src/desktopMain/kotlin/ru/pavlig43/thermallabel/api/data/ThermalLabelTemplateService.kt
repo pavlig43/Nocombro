@@ -28,7 +28,7 @@ class ThermalLabelTemplateService(
 
             ThermalLabelPrefill(
                 productName = productName,
-                composition = specification.description.trim(),
+                composition = specification.composition.trim(),
                 dosage = specification.dosage.trim(),
                 storageText = buildStorageText(specification),
             )

@@ -191,9 +191,8 @@ suspend fun seedDatabase(db: NocombroDatabase) {
     val productSpecifications = listOf(
         ProductSpecification(
             productId = 3,
-            description = "декстроза, соль пищевая, экстракт муската, экстракт мяты.",
             dosage = "4-15 г на 1 кг фарша",
-            composition = "",
+            composition = "декстроза, соль пищевая, экстракт муската, экстракт мяты.",
             shelfLifeText = "18 месяцев.",
             storageConditions = "Хранить при температуре не выше 25°C и относительной влажности 75%.",
             id = 1,

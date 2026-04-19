@@ -5,9 +5,8 @@ import ru.pavlig43.database.data.product.ProductSpecification
 internal fun createDefaultProductSpecification(productId: Int): ProductSpecification {
     return ProductSpecification(
         productId = productId,
-        description = "Комбинированная смесь для производства вареных колбас, сосисок, сарделек.",
         dosage = "4 г на 1 кг фарша.",
-        composition = "",
+        composition = "Комбинированная смесь для производства вареных колбас, сосисок, сарделек.",
         shelfLifeText = "18 месяцев.",
         storageConditions = "Хранить при температуре не выше 25°C и относительной влажности 80% в закрытой оригинальной упаковке.",
         appearance = "Порошок.",

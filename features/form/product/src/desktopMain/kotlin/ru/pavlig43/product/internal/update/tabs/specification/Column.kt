@@ -17,7 +17,6 @@ import ua.wwind.table.component.TableCellTextField
 import ua.wwind.table.editableTableColumns
 
 internal enum class ProductSpecificationField {
-    DESCRIPTION,
     DOSAGE,
     COMPOSITION,
     SHELF_LIFE_TEXT,
@@ -39,14 +38,6 @@ internal fun createProductSpecificationColumns(
     onGenerateComposition: () -> Unit,
 ): ImmutableList<ColumnSpec<ProductSpecificationUi, ProductSpecificationField, Unit>> {
     return editableTableColumns {
-        writeTextColumn(
-            headerText = "Описание",
-            column = ProductSpecificationField.DESCRIPTION,
-            valueOf = { it.description },
-            isSortable = false,
-            singleLine = false,
-            onChangeItem = { _, newValue -> onChangeItem { it.copy(description = newValue) } }
-        )
         writeTextColumn(
             headerText = "Дозировка",
             column = ProductSpecificationField.DOSAGE,

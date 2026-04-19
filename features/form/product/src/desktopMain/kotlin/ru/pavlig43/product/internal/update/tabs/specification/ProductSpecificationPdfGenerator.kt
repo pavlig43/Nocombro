@@ -165,7 +165,6 @@ private class ProductSpecificationPdfWriter(
         drawParagraph("Наименование: $productName", boldFont, 12f, 16f)
         spacer(6f)
 
-        drawSection("Описание", specification.description)
         drawSection("Дозировка", specification.dosage)
         drawSection("Состав", specification.composition)
         drawSection(

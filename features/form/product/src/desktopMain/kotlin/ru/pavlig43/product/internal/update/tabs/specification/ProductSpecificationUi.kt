@@ -9,7 +9,6 @@ import ru.pavlig43.mutable.api.singleLine.model.ISingleLineTableUi
 internal data class ProductSpecificationUi(
     val id: Int,
     val productId: Int,
-    val description: String,
     val dosage: String,
     val composition: String,
     val shelfLifeText: String,
@@ -31,7 +30,6 @@ internal data class ProductSpecificationUi(
 internal fun ProductSpecificationUi.toDto(): ProductSpecification {
     return ProductSpecification(
         productId = productId,
-        description = description,
         dosage = dosage,
         composition = composition,
         shelfLifeText = shelfLifeText,
@@ -56,7 +54,6 @@ internal fun ProductSpecification.toUi(): ProductSpecificationUi {
     return ProductSpecificationUi(
         id = id,
         productId = productId,
-        description = description,
         dosage = dosage,
         composition = composition,
         shelfLifeText = shelfLifeText,

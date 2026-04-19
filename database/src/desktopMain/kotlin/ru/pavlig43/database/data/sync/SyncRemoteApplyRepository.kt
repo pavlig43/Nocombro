@@ -217,7 +217,6 @@ class SyncRemoteApplyRepository(
         val product = requireProduct(payload.productSyncId)
         val incoming = ProductSpecification(
             productId = product.id,
-            description = payload.description,
             dosage = payload.dosage,
             composition = payload.composition,
             shelfLifeText = payload.shelfLifeText,

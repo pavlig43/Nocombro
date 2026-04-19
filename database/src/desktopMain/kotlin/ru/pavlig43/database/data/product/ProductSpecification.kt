@@ -31,8 +31,6 @@ data class ProductSpecification(
     @ColumnInfo("product_id")
     val productId: Int,
 
-    val description: String = "",
-
     val dosage: String = "",
 
     val composition: String = "",
