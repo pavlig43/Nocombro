@@ -9,6 +9,7 @@ plugins {
 kotlin{
     desktopDependencies {
         implementation(projects.features.files)
+        implementation(projects.features.label.thermal)
         implementation(projects.features.manageitem.update)
         implementation(projects.features.manageitem.loadinitdata)
         implementation(projects.datetime)

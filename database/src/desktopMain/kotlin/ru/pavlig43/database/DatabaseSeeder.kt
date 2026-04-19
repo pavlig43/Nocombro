@@ -12,6 +12,7 @@ import ru.pavlig43.database.data.expense.ExpenseBD
 import ru.pavlig43.database.data.expense.ExpenseType
 import ru.pavlig43.database.data.product.CompositionIn
 import ru.pavlig43.database.data.product.Product
+import ru.pavlig43.database.data.product.ProductSpecification
 import ru.pavlig43.database.data.product.ProductDeclarationIn
 import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.database.data.product.SafetyStock
@@ -186,6 +187,19 @@ suspend fun seedDatabase(db: NocombroDatabase) {
         CompositionIn(parentId = 3, productId = 5, count = 333, id = 4)
     )
 
+    // 6.1. PRODUCT_SPECIFICATIONS (1 запись)
+    val productSpecifications = listOf(
+        ProductSpecification(
+            productId = 3,
+            description = "декстроза, соль пищевая, экстракт муската, экстракт мяты.",
+            dosage = "4-15 г на 1 кг фарша",
+            composition = "",
+            shelfLifeText = "18 месяцев.",
+            storageConditions = "Хранить при температуре не выше 25°C и относительной влажности 75%.",
+            id = 1,
+        )
+    )
+
     // 7. TRANSACTIONS (11 записей)
     val transactions = listOf(
         Transact(
@@ -357,6 +371,7 @@ suspend fun seedDatabase(db: NocombroDatabase) {
     declarations.forEach { db.declarationDao.create(it) }
     db.productDeclarationDao.upsertProductDeclarations(productDeclarations)
     db.compositionDao.upsertComposition(compositions)
+    productSpecifications.forEach { db.productSpecificationDao.upsert(it) }
     safetyStock.forEach { db.safetyStockDao.upsert(it) }
     batches.forEach { db.batchDao.createBatch(it) }
     db.batchMovementDao.upsertMovements(batchMovements)

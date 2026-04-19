@@ -26,6 +26,7 @@ import ru.pavlig43.transaction.internal.update.tabs.component.opzs.pf.PfUi
 import ru.pavlig43.transaction.internal.update.tabs.component.reminders.RemindersComponent
 import ru.pavlig43.transaction.internal.update.tabs.component.sale.SaleComponent
 import ru.pavlig43.transaction.internal.update.tabs.essential.TransactionUpdateSingleLineComponent
+import ru.pavlig43.thermallabel.api.data.ThermalLabelTemplateService
 import ru.pavlig43.update.component.IItemFormTabsComponent
 import ru.pavlig43.update.component.UpdateComponent
 import ru.pavlig43.update.component.getDefaultUpdateComponent
@@ -156,7 +157,8 @@ internal class TransactionFormTabsComponent(
                                 onSuccessInitData = { newPf: PfUi ->
                                     pfFlow.update { newPf }
                                 },
-                                immutableTableDependencies = scope.get()
+                                immutableTableDependencies = scope.get(),
+                                thermalLabelTemplateService = scope.get<ThermalLabelTemplateService>(),
                             )
                         )
                     }

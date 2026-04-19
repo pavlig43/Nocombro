@@ -42,6 +42,7 @@ roomSchemaDocs = "1.5.0"
 sqldelight = "2.2.1"
 sqldelight-wasm-driver = "2.1.0-wasm"
 pdfbox = "3.0.7"
+apachePoi = "5.5.1"
 turbine = "1.2.1"
 versionCode = "1"
 versionName = "1.0.0"
@@ -163,6 +164,7 @@ sqldelight-desktop = { module = "app.cash.sqldelight:sqlite-driver", version.ref
 
 leakcanary-android = { module = "com.squareup.leakcanary:leakcanary-android", version.ref = "leakcanaryAndroid" }
 pdfbox = { module = "org.apache.pdfbox:pdfbox", version.ref = "pdfbox" }
+apache-poi-ooxml = { module = "org.apache.poi:poi-ooxml", version.ref = "apachePoi" }
 ydb-jdbc = { module = "tech.ydb.jdbc:ydb-jdbc-driver", version.ref = "ydbJdbc" }
 aws-s3 = { module = "software.amazon.awssdk:s3", version.ref = "awsSdk" }
 aws-url-connection-client = { module = "software.amazon.awssdk:url-connection-client", version.ref = "awsSdk" }

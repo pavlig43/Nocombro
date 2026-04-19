@@ -41,6 +41,7 @@ import ru.pavlig43.mutable.api.singleLine.data.CreateSingleItemRepository
 import ru.pavlig43.mutable.api.singleLine.data.SyncCreateSingleItemRepository
 import ru.pavlig43.mutable.api.singleLine.data.SyncUpdateSingleLineRepository
 import ru.pavlig43.mutable.api.singleLine.data.UpdateSingleLineRepository
+import ru.pavlig43.thermallabel.api.data.ThermalLabelTemplateService
 import ru.pavlig43.transaction.api.TransactionFormDependencies
 import ru.pavlig43.transaction.internal.update.tabs.component.opzs.ingredients.FillIngredientsRepository
 import kotlin.math.roundToLong
@@ -52,6 +53,7 @@ internal fun createTransactionFormModule(dependencies: TransactionFormDependenci
         single<FilesDependencies> { dependencies.filesDependencies }
         single<ImmutableTableDependencies> { dependencies.immutableTableDependencies }
         single { SyncQueueRepository(get<NocombroDatabase>().syncDao) }
+        single { ThermalLabelTemplateService(get()) }
         single<CreateSingleItemRepository<Transact>> { TransactionCreateRepository(get(), get()) }
         single<UpdateSingleLineRepository<Transact>>(UpdateSingleLineRepositoryType.TRANSACTION.qualifier) {
             TransactionUpdateRepository(

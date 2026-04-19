@@ -52,6 +52,7 @@ include(
     ":features:table:mutable",
 )
 include("features:files")
+include("features:label:thermal")
 
 
 include(

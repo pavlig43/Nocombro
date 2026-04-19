@@ -24,6 +24,8 @@ import ru.pavlig43.immutable.internal.component.items.productDeclaration.Product
 import ru.pavlig43.mutable.api.singleLine.component.SingleLineComponentFactory
 import ru.pavlig43.mutable.api.singleLine.component.UpdateSingleLineComponent
 import ru.pavlig43.mutable.api.singleLine.data.UpdateSingleLineRepository
+import ru.pavlig43.thermallabel.api.component.ThermalLabelDialogComponent
+import ru.pavlig43.thermallabel.api.data.ThermalLabelTemplateService
 import ua.wwind.table.ColumnSpec
 
 private fun factory(transactionId: Int) = SingleLineComponentFactory<PfBD, PfUi>(
@@ -43,10 +45,11 @@ private fun factory(transactionId: Int) = SingleLineComponentFactory<PfBD, PfUi>
 internal class PfComponent(
     componentContext: ComponentContext,
     transactionId: Int,
-    getDateBorn: () -> LocalDate,
+    private val getDateBorn: () -> LocalDate,
     updateSingleLineRepository: UpdateSingleLineRepository<PfBD>,
     private val tabOpener: TabOpener,
     private val immutableTableDependencies: ImmutableTableDependencies,
+    private val thermalLabelTemplateService: ThermalLabelTemplateService,
     observeOnItem: (PfUi) -> Unit,
     onSuccessInitData: (PfUi) -> Unit,
 ) : UpdateSingleLineComponent<PfBD, PfUi, PfField>(
@@ -61,6 +64,7 @@ internal class PfComponent(
     override val title: String
         get() = "ПФ"
     private val dialogNavigation = SlotNavigation<PfDialog>()
+    val isLabelButtonEnabled: Flow<Boolean> = item.map { it.productId != 0 }
 
 
     val dialog: Value<ChildSlot<PfDialog, PfDialogChild>> = childSlot(
@@ -128,7 +132,26 @@ internal class PfComponent(
                     )
                 )
             }
+
+            is PfDialog.Label -> {
+                val currentItem = item.value
+                PfDialogChild.ThermalLabel(
+                    ThermalLabelDialogComponent(
+                        componentContext = context,
+                        productId = currentItem.productId,
+                        productName = currentItem.productName,
+                        defaultDate = getDateBorn(),
+                        service = thermalLabelTemplateService,
+                        onDismissed = dialogNavigation::dismiss,
+                    )
+                )
+            }
         }
+    }
+
+    fun openThermalLabelDialog() {
+        if (item.value.productId == 0) return
+        dialogNavigation.activate(PfDialog.Label)
     }
 
     override val columns: ImmutableList<ColumnSpec<PfUi, PfField, Unit>> =
@@ -155,8 +178,12 @@ internal sealed interface PfDialog {
 
     @Serializable
     data object Declaration : PfDialog
+
+    @Serializable
+    data object Label : PfDialog
 }
 
 sealed interface PfDialogChild {
     class ImmutableMBS(val component: MBSImmutableTableComponent<*>) : PfDialogChild
+    class ThermalLabel(val component: ThermalLabelDialogComponent) : PfDialogChild
 }
