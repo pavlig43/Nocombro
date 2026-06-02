@@ -5,6 +5,7 @@ import kotlinx.datetime.LocalDateTime
 import kotlinx.serialization.Serializable
 import ru.pavlig43.database.data.batch.MovementType
 import ru.pavlig43.database.data.document.DocumentType
+import ru.pavlig43.database.data.experiment.ExperimentEntry
 import ru.pavlig43.database.data.expense.ExpenseType
 import ru.pavlig43.database.data.files.OwnerType
 import ru.pavlig43.database.data.product.ProductType
@@ -182,6 +183,26 @@ data class ExpenseSyncPayload(
     val amount: Long,
     val expenseDateTime: LocalDateTime,
     val comment: String,
+    val updatedAt: LocalDateTime,
+    val deletedAt: LocalDateTime? = null,
+)
+
+@Serializable
+data class ExperimentSyncPayload(
+    val syncId: String,
+    val title: String,
+    val ideaDescription: String,
+    val isArchived: Boolean,
+    val updatedAt: LocalDateTime,
+    val deletedAt: LocalDateTime? = null,
+)
+
+@Serializable
+data class ExperimentEntrySyncPayload(
+    val syncId: String,
+    val experimentSyncId: String,
+    val entryDate: LocalDate,
+    val content: String,
     val updatedAt: LocalDateTime,
     val deletedAt: LocalDateTime? = null,
 )

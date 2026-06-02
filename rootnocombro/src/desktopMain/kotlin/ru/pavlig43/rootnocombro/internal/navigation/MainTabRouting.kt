@@ -4,6 +4,7 @@ import ru.pavlig43.core.tabs.TabOpener
 import ru.pavlig43.notification.api.model.NotificationItem
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.AnalyticConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.DoctorConfig
+import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ExperimentsConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig.DeclarationListConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig.DocumentListConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig.ExpenseListConfig
@@ -28,6 +29,7 @@ internal fun DrawerDestination.toMainTabConfig(): MainTabConfig =
         DrawerDestination.Safety -> SafetyListConfig()
         DrawerDestination.SampleTable -> MainTabConfig.SampleTableConfig()
         DrawerDestination.Storage -> MainTabConfig.StorageConfig()
+        DrawerDestination.Experiments -> ExperimentsConfig()
         DrawerDestination.Doctor -> DoctorConfig()
     }
 

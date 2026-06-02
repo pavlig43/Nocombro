@@ -8,6 +8,8 @@ import ru.pavlig43.database.data.batch.BATCH_TABLE_NAME
 import ru.pavlig43.database.data.declaration.DECLARATIONS_TABLE_NAME
 import ru.pavlig43.database.data.document.DOCUMENT_TABLE_NAME
 import ru.pavlig43.database.data.expense.EXPENSE_TABLE_NAME
+import ru.pavlig43.database.data.experiment.EXPERIMENT_ENTRY_TABLE_NAME
+import ru.pavlig43.database.data.experiment.EXPERIMENT_TABLE_NAME
 import ru.pavlig43.database.data.files.FILE_TABLE_NAME
 import ru.pavlig43.database.data.files.OwnerType
 import ru.pavlig43.database.data.product.COMPOSITION_TABLE_NAME
@@ -313,6 +315,34 @@ class SyncEntityExportRepository(
                 )
             }
 
+            EXPERIMENT_TABLE_NAME -> db.experimentDao.getExperimentBySyncId(entitySyncId)?.let { experiment ->
+                encodePayload(
+                    ExperimentSyncPayload(
+                        syncId = experiment.syncId,
+                        title = experiment.title,
+                        ideaDescription = experiment.ideaDescription,
+                        isArchived = experiment.isArchived,
+                        updatedAt = experiment.updatedAt,
+                        deletedAt = experiment.deletedAt,
+                    )
+                )
+            }
+
+            EXPERIMENT_ENTRY_TABLE_NAME -> db.experimentEntryDao.getEntryBySyncId(entitySyncId)?.let { entry ->
+                val experiment = db.experimentDao.getExperiment(entry.experimentId)
+                    ?: error("Missing experiment owner for id=${entry.experimentId}")
+                encodePayload(
+                    ExperimentEntrySyncPayload(
+                        syncId = entry.syncId,
+                        experimentSyncId = experiment.syncId,
+                        entryDate = entry.entryDate,
+                        content = entry.content,
+                        updatedAt = entry.updatedAt,
+                        deletedAt = entry.deletedAt,
+                    )
+                )
+            }
+
             TRANSACTION_TABLE_NAME -> db.transactionDao.getTransactionBySyncId(entitySyncId)?.let { transaction ->
                 encodePayload(
                     TransactionSyncPayload(
@@ -362,6 +392,8 @@ class SyncEntityExportRepository(
             OwnerType.TRANSACTION -> db.transactionDao.getTransaction(ownerId).syncId
             OwnerType.EXPENSE -> db.expenseDao.getExpense(ownerId)?.syncId
                 ?: error("Missing expense owner for id=$ownerId")
+            OwnerType.EXPERIMENT_ENTRY -> db.experimentEntryDao.getEntry(ownerId)?.syncId
+                ?: error("Missing experiment entry owner for id=$ownerId")
         }
     }
 

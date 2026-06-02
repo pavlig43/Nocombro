@@ -27,6 +27,7 @@ import ru.pavlig43.coreui.tab.TabLazyRowNavigationContent
 import ru.pavlig43.declaration.api.DeclarationFormScreen
 import ru.pavlig43.doctor.api.ui.DoctorScreen
 import ru.pavlig43.document.api.ui.DocumentFormScreen
+import ru.pavlig43.experiments.api.ui.ExperimentsScreen
 import ru.pavlig43.expense.api.ui.ExpenseStandaloneScreen
 import ru.pavlig43.immutable.api.ui.ImmutableTableScreen
 import ru.pavlig43.main.api.ui.AnalyticMainScreen
@@ -185,6 +186,8 @@ private fun MainTabChildFactory(mainTabChild: MainTabChild?) {
         is MainTabChild.SampleTableChild -> SampleTableScreen(mainTabChild.component)
 
         is MainTabChild.StorageChild -> StorageScreen(mainTabChild.component)
+
+        is MainTabChild.ExperimentsChild -> ExperimentsScreen(mainTabChild.component)
 
         is MainTabChild.ProfitabilityChild -> ProfitabilityScreen(mainTabChild.component)
 

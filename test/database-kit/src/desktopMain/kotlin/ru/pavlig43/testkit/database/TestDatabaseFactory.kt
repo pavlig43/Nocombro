@@ -4,6 +4,7 @@ import androidx.room.Room
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import ru.pavlig43.database.MIGRATION_1_2
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.seedDatabase
 import ru.pavlig43.testkit.createTempPath
@@ -18,6 +19,7 @@ fun createManagedTestDatabase(
     val database = Room.databaseBuilder<NocombroDatabase>(
         name = databasePath.toString(),
     )
+        .addMigrations(MIGRATION_1_2)
         .setDriver(BundledSQLiteDriver())
         .setQueryCoroutineContext(queryDispatcher)
         .build()
@@ -45,6 +47,7 @@ suspend fun createManagedCopiedDatabase(
     val database = Room.databaseBuilder<NocombroDatabase>(
         name = targetDatabasePath.toString(),
     )
+        .addMigrations(MIGRATION_1_2)
         .setDriver(BundledSQLiteDriver())
         .setQueryCoroutineContext(queryDispatcher)
         .build()

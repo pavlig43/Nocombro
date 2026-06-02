@@ -37,6 +37,7 @@ enum class DrawerDestination(val title: String) {
     Safety("Нескончаемый"),
     SampleTable("Пример таблицы"),
     Storage("Склад"),
+    Experiments("Эксперименты"),
     Doctor("Доктор"),
 
 

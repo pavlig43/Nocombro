@@ -9,5 +9,6 @@ enum class OwnerType {
     VENDOR,
     DOCUMENT,
     TRANSACTION,
-    EXPENSE
+    EXPENSE,
+    EXPERIMENT_ENTRY,
 }

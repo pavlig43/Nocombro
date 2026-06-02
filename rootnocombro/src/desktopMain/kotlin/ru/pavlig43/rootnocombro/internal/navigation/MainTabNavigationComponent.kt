@@ -11,6 +11,7 @@ import ru.pavlig43.database.data.transact.TransactionType
 import ru.pavlig43.declaration.api.DeclarationFormComponent
 import ru.pavlig43.document.api.component.DocumentFormComponent
 import ru.pavlig43.expense.api.component.ExpenseFormComponent
+import ru.pavlig43.experiments.api.component.ExperimentsComponent
 import ru.pavlig43.immutable.api.component.DeclarationImmutableTableBuilder
 import ru.pavlig43.immutable.api.component.DocumentImmutableTableBuilder
 import ru.pavlig43.immutable.api.component.ExpenseImmutableTableBuilder
@@ -29,6 +30,7 @@ import ru.pavlig43.product.api.component.ProductFormComponent
 import ru.pavlig43.profitability.internal.component.ProfitabilityComponent
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.BatchMovementChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.DoctorChild
+import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ExperimentsChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ImmutableTableChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ItemFormChild.DeclarationFormChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ItemFormChild.DocumentFormChild
@@ -57,6 +59,7 @@ import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig.TransactionListConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig.VendorListConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.DoctorConfig
+import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ExperimentsConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.NotificationConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ProfitabilityConfig
 import ru.pavlig43.rootnocombro.internal.navigation.drawer.component.DrawerComponent
@@ -121,6 +124,15 @@ internal class MainTabNavigationComponent(
                                 componentContext = context,
                                 dependencies = scope.get(),
                                 tabOpener = tabOpener
+                            )
+                        )
+                    }
+
+                    is ExperimentsConfig -> {
+                        ExperimentsChild(
+                            ExperimentsComponent(
+                                componentContext = context,
+                                dependencies = scope.get(),
                             )
                         )
                     }

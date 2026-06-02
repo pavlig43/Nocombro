@@ -85,6 +85,7 @@ include(":datetime")
 include(":features:sampletable")
 include(":features:storage")
 include(":features:doctor")
+include(":features:experiments")
 
 include(":kit")
 project(":kit").projectDir = file("test/kit")

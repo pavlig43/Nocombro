@@ -4,6 +4,7 @@ import ru.pavlig43.core.MainTabComponent
 import ru.pavlig43.declaration.api.DeclarationFormComponent
 import ru.pavlig43.doctor.api.component.DoctorComponent
 import ru.pavlig43.document.api.component.DocumentFormComponent
+import ru.pavlig43.experiments.api.component.ExperimentsComponent
 import ru.pavlig43.expense.api.component.ExpenseFormComponent
 import ru.pavlig43.immutable.api.component.ImmutableTableComponentFactoryMain
 import ru.pavlig43.main.api.component.AnalyticMainComponent
@@ -24,6 +25,8 @@ internal sealed interface MainTabChild {
     class SampleTableChild(override val component: SampleTableComponent) : MainTabChild
 
     class StorageChild(override val component: StorageComponent) : MainTabChild
+
+    class ExperimentsChild(override val component: ExperimentsComponent) : MainTabChild
 
     class MainMoneyChild(override val component: AnalyticMainComponent) : MainTabChild
 

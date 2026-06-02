@@ -14,6 +14,10 @@ import ru.pavlig43.database.data.document.DOCUMENT_TABLE_NAME
 import ru.pavlig43.database.data.document.Document
 import ru.pavlig43.database.data.expense.EXPENSE_TABLE_NAME
 import ru.pavlig43.database.data.expense.ExpenseBD
+import ru.pavlig43.database.data.experiment.EXPERIMENT_ENTRY_TABLE_NAME
+import ru.pavlig43.database.data.experiment.EXPERIMENT_TABLE_NAME
+import ru.pavlig43.database.data.experiment.Experiment
+import ru.pavlig43.database.data.experiment.ExperimentEntry
 import ru.pavlig43.database.data.files.FILE_TABLE_NAME
 import ru.pavlig43.database.data.files.FileBD
 import ru.pavlig43.database.data.files.OwnerType
@@ -78,6 +82,8 @@ class SyncRemoteApplyRepository(
             BATCH_MOVEMENT_TABLE_NAME -> applyBatchMovement(change)
             REMINDER_TABLE_NAME -> applyReminder(change)
             EXPENSE_TABLE_NAME -> applyExpense(change)
+            EXPERIMENT_TABLE_NAME -> applyExperiment(change)
+            EXPERIMENT_ENTRY_TABLE_NAME -> applyExperimentEntry(change)
             BUY_TABLE_NAME -> applyBuy(change)
             SALE_TABLE_NAME -> applySale(change)
             FILE_TABLE_NAME -> applyFile(change)
@@ -476,6 +482,57 @@ class SyncRemoteApplyRepository(
         }
     }
 
+    private suspend fun applyExperiment(change: RemotePullChange) {
+        val existing = db.experimentDao.getExperimentBySyncId(change.entitySyncId)
+        if (change.changeType == SyncChangeType.DELETE) {
+            existing?.let {
+                if (!isStale(it.updatedAt, change.changedAt)) {
+                    db.experimentDao.upsert(it.copy(deletedAt = change.changedAt, updatedAt = change.changedAt))
+                }
+            }
+            return
+        }
+
+        val payload = change.decodePayload<ExperimentSyncPayload>()
+        val incoming = Experiment(
+            title = payload.title,
+            ideaDescription = payload.ideaDescription,
+            isArchived = payload.isArchived,
+            id = existing?.id ?: 0,
+            syncId = payload.syncId,
+            updatedAt = payload.updatedAt,
+            deletedAt = payload.deletedAt,
+        )
+        if (existing != null && isStale(existing.updatedAt, incoming.updatedAt)) return
+        db.experimentDao.upsert(incoming)
+    }
+
+    private suspend fun applyExperimentEntry(change: RemotePullChange) {
+        val existing = db.experimentEntryDao.getEntryBySyncId(change.entitySyncId)
+        if (change.changeType == SyncChangeType.DELETE) {
+            existing?.let {
+                if (!isStale(it.updatedAt, change.changedAt)) {
+                    db.experimentEntryDao.upsert(it.copy(deletedAt = change.changedAt, updatedAt = change.changedAt))
+                }
+            }
+            return
+        }
+
+        val payload = change.decodePayload<ExperimentEntrySyncPayload>()
+        val experiment = requireExperiment(payload.experimentSyncId)
+        val incoming = ExperimentEntry(
+            experimentId = experiment.id,
+            entryDate = payload.entryDate,
+            content = payload.content,
+            id = existing?.id ?: 0,
+            syncId = payload.syncId,
+            updatedAt = payload.updatedAt,
+            deletedAt = payload.deletedAt,
+        )
+        if (existing != null && isStale(existing.updatedAt, incoming.updatedAt)) return
+        db.experimentEntryDao.upsert(incoming)
+    }
+
     private suspend fun applyBuy(change: RemotePullChange) {
         val existing = db.buyDao.getBuyBySyncId(change.entitySyncId)
         if (change.changeType == SyncChangeType.DELETE) {
@@ -619,7 +676,14 @@ class SyncRemoteApplyRepository(
             OwnerType.TRANSACTION -> requireTransaction(ownerSyncId).id
             OwnerType.EXPENSE -> db.expenseDao.getExpenseBySyncId(ownerSyncId)?.id
                 ?: error("Missing expense dependency for syncId=$ownerSyncId")
+            OwnerType.EXPERIMENT_ENTRY -> db.experimentEntryDao.getEntryBySyncId(ownerSyncId)?.id
+                ?: error("Missing experiment entry dependency for syncId=$ownerSyncId")
         }
+    }
+
+    private suspend fun requireExperiment(syncId: String): Experiment {
+        return db.experimentDao.getExperimentBySyncId(syncId)
+            ?: error("Missing experiment dependency for syncId=$syncId")
     }
 
     private inline fun <reified T> RemotePullChange.decodePayload(): T {
@@ -645,15 +709,17 @@ private fun entityPriority(entityTable: String): Int {
         SAFETY_STOCK_TABLE_NAME -> 4
         TRANSACTION_TABLE_NAME -> 5
         DECLARATIONS_TABLE_NAME -> 6
-        BATCH_TABLE_NAME -> 7
-        PRODUCT_DECLARATION_TABLE_NAME -> 8
-        COMPOSITION_TABLE_NAME -> 9
-        BATCH_MOVEMENT_TABLE_NAME -> 10
-        REMINDER_TABLE_NAME -> 11
-        EXPENSE_TABLE_NAME -> 12
-        BUY_TABLE_NAME -> 13
-        SALE_TABLE_NAME -> 14
-        FILE_TABLE_NAME -> 15
+        EXPERIMENT_TABLE_NAME -> 7
+        EXPERIMENT_ENTRY_TABLE_NAME -> 8
+        BATCH_TABLE_NAME -> 9
+        PRODUCT_DECLARATION_TABLE_NAME -> 10
+        COMPOSITION_TABLE_NAME -> 11
+        BATCH_MOVEMENT_TABLE_NAME -> 12
+        REMINDER_TABLE_NAME -> 13
+        EXPENSE_TABLE_NAME -> 14
+        BUY_TABLE_NAME -> 15
+        SALE_TABLE_NAME -> 16
+        FILE_TABLE_NAME -> 17
         else -> 100
     }
 }
