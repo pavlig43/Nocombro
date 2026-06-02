@@ -15,10 +15,12 @@ fun getSettingsRepository(): Module {
 }
 
 private fun createDataStoreDesktop(): DataStore<Preferences> {
-    val path = System.getProperty("java.io.tmpdir").toPath() / DATASTORE_FILE_NAME
+    val path = System.getProperty(DATASTORE_PATH_PROPERTY)?.toPath()
+        ?: (System.getProperty("java.io.tmpdir").toPath() / DATASTORE_FILE_NAME)
     return PreferenceDataStoreFactory.createWithPath(
         produceFile = { path }
     )
 }
 
+const val DATASTORE_PATH_PROPERTY = "nocombro.datastore.path"
 private const val DATASTORE_FILE_NAME = "nocombro.preferences_pb"

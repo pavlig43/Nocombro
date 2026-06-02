@@ -13,7 +13,7 @@
 Во время первой работы на реальных данных:
 - проходите по рискам сверху вниз;
 - отмечайте, проявился риск или нет;
-- если проявился, фиксируйте кейс в [real-data-observations-template.md](C:\Users\user\AndroidStudioProjects\Nocombro\test\real-data-observations-template.md);
+- если проявился, фиксируйте кейс в [real-data-observations-template.md](./real-data-observations-template.md);
 - после приемки решайте, какие кейсы становятся автотестами.
 
 ## Приоритеты

@@ -30,6 +30,7 @@ import ru.pavlig43.thermallabel.api.data.ThermalLabelTemplateService
 import ru.pavlig43.update.component.IItemFormTabsComponent
 import ru.pavlig43.update.component.UpdateComponent
 import ru.pavlig43.update.component.getDefaultUpdateComponent
+import javax.swing.SwingUtilities
 
 @Suppress("LongParameterList")
 internal class TransactionFormTabsComponent(
@@ -47,6 +48,8 @@ internal class TransactionFormTabsComponent(
     private val essentialsFields =
         MutableStateFlow<TransactionEssentialsUi>(componentFactory.initItem)
     private val pfFlow = MutableStateFlow(PfUi())
+    private var tabNavigationComponentRef: TabNavigationComponent<TransactionTab, TransactionTabChild>? = null
+    private var pendingInitialTransaction: TransactionEssentialsUi? = null
 
 
     private fun observeOnTransaction(transaction: TransactionEssentialsUi) {
@@ -56,32 +59,11 @@ internal class TransactionFormTabsComponent(
 
     private fun onSuccessInitTransaction(transaction: TransactionEssentialsUi) {
         observeOnTransaction(transaction)
-        coroutineScope.launch {
-            when (transaction.transactionType) {
-                TransactionType.BUY -> {
-                    tabNavigationComponent.addTab(1, TransactionTab.Buy)
-                  tabNavigationComponent.addTab(2, TransactionTab.Expenses)
-                    tabNavigationComponent.onSelectTab(1)
-                }
-
-                TransactionType.SALE -> {
-                    tabNavigationComponent.addTab(1, TransactionTab.Sale)
-                    tabNavigationComponent.addTab(2, TransactionTab.Expenses)
-                    tabNavigationComponent.onSelectTab(1)
-                }
-
-                TransactionType.OPZS -> {
-                    tabNavigationComponent.addTab(1, TransactionTab.Pf)
-                    tabNavigationComponent.addTab(2, TransactionTab.Ingredients)
-                    tabNavigationComponent.onSelectTab(1)
-                }
-
-                TransactionType.WRITE_OFF -> TODO()
-                TransactionType.INVENTORY -> TODO()
-                null -> throw IllegalArgumentException("Transaction type is null")
-            }
-
+        val tabNavigationComponent = tabNavigationComponentRef ?: run {
+            pendingInitialTransaction = transaction
+            return
         }
+        applyInitialTabs(transaction, tabNavigationComponent)
     }
 
     override val tabNavigationComponent: TabNavigationComponent<TransactionTab, TransactionTabChild> =
@@ -178,7 +160,55 @@ internal class TransactionFormTabsComponent(
                     }
                 }
             }
-        )
+        ).also { tabNavigationComponent ->
+            tabNavigationComponentRef = tabNavigationComponent
+            pendingInitialTransaction?.let { transaction ->
+                pendingInitialTransaction = null
+                applyInitialTabs(transaction, tabNavigationComponent)
+            }
+        }
+
+    private fun applyInitialTabs(
+        transaction: TransactionEssentialsUi,
+        tabNavigationComponent: TabNavigationComponent<TransactionTab, TransactionTabChild>,
+    ) {
+        coroutineScope.launch {
+            onUiThread {
+                when (transaction.transactionType) {
+                    TransactionType.BUY -> {
+                        tabNavigationComponent.addTab(1, TransactionTab.Buy)
+                        tabNavigationComponent.addTab(2, TransactionTab.Expenses)
+                        tabNavigationComponent.onSelectTab(1)
+                    }
+
+                    TransactionType.SALE -> {
+                        tabNavigationComponent.addTab(1, TransactionTab.Sale)
+                        tabNavigationComponent.addTab(2, TransactionTab.Expenses)
+                        tabNavigationComponent.onSelectTab(1)
+                    }
+
+                    TransactionType.OPZS -> {
+                        tabNavigationComponent.addTab(1, TransactionTab.Pf)
+                        tabNavigationComponent.addTab(2, TransactionTab.Ingredients)
+                        tabNavigationComponent.onSelectTab(1)
+                    }
+
+                    TransactionType.WRITE_OFF -> TODO()
+                    TransactionType.INVENTORY -> TODO()
+                    null -> throw IllegalArgumentException("Transaction type is null")
+                }
+            }
+        }
+    }
+
+    private fun onUiThread(block: () -> Unit) {
+        if (SwingUtilities.isEventDispatchThread()) {
+            block()
+        } else {
+            SwingUtilities.invokeLater(block)
+        }
+    }
+
     private val batchCostRepository: BatchCostRepository = scope.get()
     override val updateComponent: UpdateComponent =
         getDefaultUpdateComponent(

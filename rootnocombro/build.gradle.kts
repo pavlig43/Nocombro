@@ -2,6 +2,7 @@ import ru.pavlig43.convention.extension.desktopDependencies
 
 plugins {
     alias(libs.plugins.pavlig43.feature)
+    alias(libs.plugins.pavlig43.testing)
 
 
 }
@@ -31,5 +32,13 @@ kotlin {
 
         implementation(projects.features.analytic.main)
         implementation(projects.features.analytic.profitability)
+    }
+
+    sourceSets {
+        desktopTest {
+            dependencies {
+                implementation(projects.databaseKit)
+            }
+        }
     }
 }

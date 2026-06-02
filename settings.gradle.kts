@@ -86,8 +86,11 @@ include(":features:sampletable")
 include(":features:storage")
 include(":features:doctor")
 
-include(":test:kit")
-include(":test:database-kit")
+include(":kit")
+project(":kit").projectDir = file("test/kit")
+
+include(":database-kit")
+project(":database-kit").projectDir = file("test/database-kit")
 
 
 

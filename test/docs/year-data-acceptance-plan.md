@@ -10,9 +10,9 @@
 - получить повторяемый сценарий приемки перед дальнейшими доработками и регрессией.
 
 Этот документ дополняет рабочие материалы в `test/`, в первую очередь:
-- `test/first-pass-checklist.md`
-- `test/real-data-risk-matrix.md`
-- `test/real-data-observations-template.md`
+- `test/docs/first-pass-checklist.md`
+- `test/docs/real-data-risk-matrix.md`
+- `test/docs/real-data-observations-template.md`
 
 Эти файлы помогают провести быстрый первый проход, фиксировать наблюдения и смотреть на приемку через матрицу рисков.
 Этот файл отвечает за полный сценарий ручной и полуформальной бизнес-приемки на реальных данных.

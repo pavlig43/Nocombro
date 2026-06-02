@@ -79,3 +79,36 @@ subprojects {
     }
 }
 
+val smokeCoreDesktopTasks = listOf(
+    ":database:desktopTest",
+    ":features:analytic:profitability:desktopTest",
+    ":rootnocombro:desktopTest",
+)
+
+val smokeFormsDesktopTasks = listOf(
+    ":features:form:transaction:desktopTest",
+    ":features:form:product:desktopTest",
+    ":features:form:declaration:desktopTest",
+    ":features:form:expense:desktopTest",
+    ":features:form:vendor:desktopTest",
+    ":features:form:document:desktopTest",
+)
+
+tasks.register("smokeCoreDesktop") {
+    group = "verification"
+    description = "Runs desktop smoke tests for database, analytics, and root navigation."
+    dependsOn(smokeCoreDesktopTasks)
+}
+
+tasks.register("smokeFormsDesktop") {
+    group = "verification"
+    description = "Runs desktop smoke tests for all form modules."
+    dependsOn(smokeFormsDesktopTasks)
+}
+
+tasks.register("smokeDesktop") {
+    group = "verification"
+    description = "Runs the full desktop smoke suite."
+    dependsOn("smokeCoreDesktop", "smokeFormsDesktop")
+}
+

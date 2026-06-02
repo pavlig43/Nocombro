@@ -31,6 +31,7 @@ import ru.pavlig43.product.internal.update.tabs.specification.ProductSpecificati
 import ru.pavlig43.product.internal.update.tabs.composition.CompositionUi
 import ru.pavlig43.update.component.IItemFormTabsComponent
 import ru.pavlig43.update.component.getDefaultUpdateComponent
+import javax.swing.SwingUtilities
 
 @Suppress("LongParameterList")
 /**
@@ -58,6 +59,8 @@ internal class ProductFormTabsComponent(
     private val coroutineScope = componentCoroutineScope()
     private val productEssentials = MutableStateFlow(componentFactory.initItem)
     private var compositionComponent: CompositionComponent? = null
+    private var tabNavigationComponentRef: TabNavigationComponent<ProductTab, ProductTabChild>? = null
+    private var pendingInitialProduct: ProductEssentialsUi? = null
 
     /**
      * Синхронизирует состояние вкладки "Основное" в двух направлениях:
@@ -147,15 +150,42 @@ internal class ProductFormTabsComponent(
                     )
                 }
             },
-        )
+        ).also { tabNavigationComponent ->
+            tabNavigationComponentRef = tabNavigationComponent
+            pendingInitialProduct?.let { product ->
+                pendingInitialProduct = null
+                applyInitialTabs(product, tabNavigationComponent)
+            }
+        }
 
     private fun onSuccessInitData(product: ProductEssentialsUi) {
         observeOnProductInfo(product)
+        val tabNavigationComponent = tabNavigationComponentRef ?: run {
+            pendingInitialProduct = product
+            return
+        }
+        applyInitialTabs(product, tabNavigationComponent)
+    }
+
+    private fun applyInitialTabs(
+        product: ProductEssentialsUi,
+        tabNavigationComponent: TabNavigationComponent<ProductTab, ProductTabChild>,
+    ) {
         coroutineScope.launch {
-            if (product.productType == ProductType.FOOD_PF) {
-                tabNavigationComponent.addTab(ProductTab.Composition)
+            onUiThread {
+                if (product.productType == ProductType.FOOD_PF) {
+                    tabNavigationComponent.addTab(ProductTab.Composition)
+                }
+                tabNavigationComponent.onSelectTab(0)
             }
-            tabNavigationComponent.onSelectTab(0)
+        }
+    }
+
+    private fun onUiThread(block: () -> Unit) {
+        if (SwingUtilities.isEventDispatchThread()) {
+            block()
+        } else {
+            SwingUtilities.invokeLater(block)
         }
     }
 

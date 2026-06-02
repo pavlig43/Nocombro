@@ -40,7 +40,7 @@ class TestingPlugin : Plugin<Project> {
                 implementation(libs.kotest.junit.runner)
             }
 
-            val testKitProject = rootProject.findProject(":test:kit")
+            val testKitProject = rootProject.findProject(":kit")
             if (testKitProject != null) {
                 dependencies {
                     add("desktopTestImplementation", testKitProject)

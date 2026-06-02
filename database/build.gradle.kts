@@ -28,6 +28,14 @@ kotlin{
         implementation(libs.aws.url.connection.client)
     }
 
+    sourceSets {
+        desktopTest {
+            dependencies {
+                implementation(projects.databaseKit)
+            }
+        }
+    }
+
 }
 
 roomSchemaDocs {

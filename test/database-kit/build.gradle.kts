@@ -6,6 +6,9 @@ plugins {
 }
 
 desktopDependencies {
+    api(projects.core)
     api(projects.database)
-    api(projects.test.kit)
+    api(projects.features.files)
+    api(projects.features.table.immutable)
+    api(projects.kit)
 }

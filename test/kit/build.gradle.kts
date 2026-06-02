@@ -15,5 +15,7 @@ commonMainDependencies {
 }
 
 desktopDependencies {
+    implementation(projects.core)
+    implementation(projects.datetime)
     implementation(libs.kotlinx.coroutines.swing)
 }

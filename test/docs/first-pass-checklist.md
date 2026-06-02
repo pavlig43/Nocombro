@@ -11,7 +11,7 @@
 ## Как проходить
 
 - Идти по пунктам сверху вниз.
-- Если на шаге найден дефект, зафиксировать его в [real-data-observations-template.md](C:\Users\user\AndroidStudioProjects\Nocombro\test\real-data-observations-template.md).
+- Если на шаге найден дефект, зафиксировать его в [real-data-observations-template.md](./real-data-observations-template.md).
 - Если проблема влияет на доверие к цифрам, сразу помечать как `P0`.
 - Не пытаться сразу расследовать каждую проблему до конца. Сначала собрать картину.
 

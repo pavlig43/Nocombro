@@ -46,7 +46,7 @@
 - `Compose UI Test`
 - `Kotest` или `JUnit`
 - `kotlinx-coroutines-test`
-- `test:database-kit`
+- `database-kit`
 
 Дополнительно, только где реально нужно:
 - `Turbine` для проверки `Flow`
