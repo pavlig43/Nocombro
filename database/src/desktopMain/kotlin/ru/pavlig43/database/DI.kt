@@ -36,7 +36,6 @@ fun getNocombroDatabase(): NocombroDatabase {
                 existingState = existingState,
             )
         )
-        seedDatabase(database)
     }
     return database
 }
