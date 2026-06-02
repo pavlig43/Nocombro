@@ -196,7 +196,7 @@ private fun SyncStatusButton(
                                 onPullClick()
                             }
                         ) {
-                            Text("Получить")
+                            Text("Получить и файлы")
                         }
                         FilledTonalButton(
                             modifier = Modifier.widthIn(min = 140.dp),
@@ -249,6 +249,9 @@ private fun buildSyncTooltip(syncUiState: SyncUiState): String {
         )
         syncUiState.lastError?.let {
             add("Последняя ошибка: $it")
+        }
+        syncUiState.lastFilesDownloadSummary?.let {
+            add("Файлы: $it")
         }
         if (syncUiState.pendingChangesCount > 0) {
             add("Локальных изменений: ${syncUiState.pendingChangesCount}")
@@ -325,6 +328,13 @@ private fun SyncDropdownContent(syncUiState: SyncUiState) {
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
+        syncUiState.lastFilesDownloadSummary?.let {
+            Text(
+                text = it,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
     }
 }
 
@@ -343,6 +353,7 @@ private fun copySyncSnapshotToClipboard(
         appendLine("sync.last_status_check_at=${syncUiState.lastStatusCheckAt}")
         appendLine("sync.last_remote_cursor=${syncUiState.lastRemoteCursor}")
         appendLine("sync.last_error=${syncUiState.lastError}")
+        appendLine("sync.last_files_download_summary=${syncUiState.lastFilesDownloadSummary}")
     }.trimEnd()
 
     clipboard.setContents(StringSelection(snapshot), null)

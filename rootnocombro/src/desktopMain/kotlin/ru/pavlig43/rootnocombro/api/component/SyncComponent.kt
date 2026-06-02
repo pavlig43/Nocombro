@@ -12,17 +12,21 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.core.componentCoroutineScope
+import ru.pavlig43.database.data.files.remote.RemoteFileBatchDownloadRepository
+import ru.pavlig43.database.data.files.remote.RemoteFileBatchDownloadSummary
 import ru.pavlig43.database.data.sync.SyncService
 import ru.pavlig43.database.data.sync.SyncStatusSnapshot
 
 /**
  * Компонент шапки, который держит локальное состояние синхронизации для UI.
  *
- * Компонент не знает деталей конкретного backend и работает через sync-service.
+ * Компонент не знает деталей конкретного удаленного источника и работает через
+ * `SyncService` и вспомогательные репозитории.
  */
 class SyncComponent(
     componentContext: ComponentContext,
     private val syncService: SyncService,
+    private val remoteFileBatchDownloadRepository: RemoteFileBatchDownloadRepository,
 ) : ComponentContext by componentContext {
 
     private val coroutineScope = componentCoroutineScope()
@@ -101,6 +105,15 @@ class SyncComponent(
         }
     }
 
+    /**
+     * Выполняет безопасный сценарий "получить и файлы":
+     *
+     * 1. Сначала подтягивает метаданные из удаленной БД через обычный `pull`.
+     * 2. Если `pull` прошел успешно, догружает отсутствующие локальные копии файлов из S3.
+     *
+     * Такой порядок нужен, чтобы скачивание файлов шло только по тем записям `file`,
+     * которые уже появились в локальной БД после синхронизации метаданных.
+     */
     fun onPullClick() {
         coroutineScope.launch {
             _uiState.update {
@@ -108,17 +121,39 @@ class SyncComponent(
                     isSyncRunning = true,
                     runningActionLabel = "Получение",
                     lastError = null,
+                    lastFilesDownloadSummary = null,
                 )
             }
             val result = withContext(Dispatchers.IO) {
                 syncService.pullOnce()
             }
+            if (result.error != null) {
+                updateUiState(
+                    status = result.status,
+                    isSyncRunning = false,
+                    lastError = result.error,
+                    lastSyncAt = result.lastSyncAt,
+                    lastPullAt = result.lastPullAt,
+                )
+                return@launch
+            }
+
+            _uiState.update {
+                it.copy(
+                    isSyncRunning = true,
+                    runningActionLabel = "Подгрузка файлов",
+                )
+            }
+            val downloadResult = withContext(Dispatchers.IO) {
+                remoteFileBatchDownloadRepository.downloadMissingLocalCopies()
+            }
             updateUiState(
                 status = result.status,
                 isSyncRunning = false,
-                lastError = result.error,
+                lastError = downloadResult.exceptionOrNull()?.message,
                 lastSyncAt = result.lastSyncAt,
                 lastPullAt = result.lastPullAt,
+                lastFilesDownloadSummary = downloadResult.getOrNull()?.toUiSummary(),
             )
         }
     }
@@ -129,6 +164,7 @@ class SyncComponent(
         lastError: String?,
         lastSyncAt: LocalDateTime? = null,
         lastPullAt: LocalDateTime? = null,
+        lastFilesDownloadSummary: String? = null,
     ) {
         _uiState.update {
             it.copy(
@@ -143,6 +179,7 @@ class SyncComponent(
                 lastRemoteCursor = status.lastRemoteCursor,
                 payloadVersion = status.payloadVersion,
                 lastError = lastError ?: status.remoteError,
+                lastFilesDownloadSummary = lastFilesDownloadSummary ?: it.lastFilesDownloadSummary,
                 runningActionLabel = null,
             )
         }
@@ -173,7 +210,20 @@ data class SyncUiState(
     val lastRemoteCursor: String? = null,
     val payloadVersion: Int = 0,
     val lastError: String? = null,
+    val lastFilesDownloadSummary: String? = null,
     val runningActionLabel: String? = null,
 )
 
 private const val STATUS_CHECK_INTERVAL_MILLIS = 3 * 60 * 1000L
+
+/**
+ * Сводит технический результат массовой догрузки файлов к короткой строке для UI.
+ */
+private fun RemoteFileBatchDownloadSummary.toUiSummary(): String {
+    return when {
+        scannedCount == 0 -> "Все удаленные файлы уже есть локально."
+        failedCount == 0 -> "Подгружено файлов: $downloadedCount из $scannedCount."
+        downloadedCount == 0 -> "Не удалось подгрузить ни одного файла. Ошибок: $failedCount."
+        else -> "Подгружено файлов: $downloadedCount из $scannedCount. Ошибок: $failedCount."
+    }
+}

@@ -7,6 +7,9 @@ import androidx.room.Upsert
 
 @Dao
 interface FileDao {
+    @Query("SELECT * FROM file")
+    suspend fun getAllFiles(): List<FileBD>
+
     @Query("SELECT * FROM file WHERE owner_id = :ownerId AND owner_type =:ownerFileType")
     suspend fun getFiles(ownerId: Int,ownerFileType: OwnerType):List<FileBD>
 
