@@ -59,12 +59,12 @@ class YdbJdbcSyncGateway(
         return runCatching {
             withConnection { connection ->
                 ensureSyncTable(connection)
-                ensureReminderSourceTable(connection)
+                ensureReminderSourceTables(connection)
                 upsertChanges(
                     connection = connection,
                     payload = payload,
                 )
-                upsertReminderSource(
+                upsertReminderSources(
                     connection = connection,
                     payload = payload,
                 )
@@ -85,7 +85,7 @@ class YdbJdbcSyncGateway(
         return runCatching {
             withConnection { connection ->
                 ensureSyncTable(connection)
-                ensureReminderSourceTable(connection)
+                ensureReminderSourceTables(connection)
                 val changes = loadRemoteChanges(
                     connection = connection,
                     deviceId = deviceId,
@@ -180,11 +180,11 @@ class YdbJdbcSyncGateway(
         }
     }
 
-    private fun ensureReminderSourceTable(
+    private fun ensureReminderSourceTables(
         connection: Connection,
     ) {
-        val sql = """
-            CREATE TABLE IF NOT EXISTS `${config.reminderSourceTablePath}` (
+        val transactionSql = """
+            CREATE TABLE IF NOT EXISTS `${config.transactionReminderSourceTablePath}` (
                 reminder_sync_id Utf8,
                 transaction_sync_id Utf8,
                 transaction_type Utf8,
@@ -198,21 +198,32 @@ class YdbJdbcSyncGateway(
         """.trimIndent()
 
         connection.createStatement().use { statement ->
-            statement.execute(sql)
+            statement.execute(transactionSql)
+            statement.execute(
+                """
+                CREATE TABLE IF NOT EXISTS `${config.experimentReminderSourceTablePath}` (
+                    reminder_sync_id Utf8,
+                    experiment_sync_id Utf8,
+                    experiment_title Utf8,
+                    reminder_text Utf8,
+                    reminder_at Utf8,
+                    updated_at Utf8,
+                    deleted_at Utf8,
+                    PRIMARY KEY (reminder_sync_id)
+                )
+                """.trimIndent()
+            )
         }
     }
 
-    private fun upsertReminderSource(
+    private fun upsertReminderSources(
         connection: Connection,
         payload: RemotePushPayload,
     ) {
-        val reminderChanges = payload.changes.mapNotNull { it.reminderEmailSource }
-        if (reminderChanges.isEmpty()) {
-            return
-        }
-
-        val sql = """
-            UPSERT INTO `${config.reminderSourceTablePath}` (
+        val transactionReminderChanges = payload.changes.mapNotNull { it.transactionReminderEmailSource }
+        if (transactionReminderChanges.isNotEmpty()) {
+            val transactionSql = """
+            UPSERT INTO `${config.transactionReminderSourceTablePath}` (
                 reminder_sync_id,
                 transaction_sync_id,
                 transaction_type,
@@ -233,16 +244,56 @@ class YdbJdbcSyncGateway(
             )
         """.trimIndent()
 
-        connection.prepareStatement(sql).use { statement ->
-            reminderChanges.forEach { change ->
+            connection.prepareStatement(transactionSql).use { statement ->
+                transactionReminderChanges.forEach { change ->
+                    statement.setString(1, change.reminderSyncId)
+                    statement.setString(2, change.transactionSyncId)
+                    statement.setString(3, change.transactionType)
+                    statement.setString(4, change.transactionCreatedAt.toString())
+                    statement.setString(5, change.reminderText)
+                    statement.setString(6, change.reminderAt?.toString())
+                    statement.setString(7, change.updatedAt.toString())
+                    statement.setString(8, change.deletedAt?.toString())
+                    statement.addBatch()
+                }
+                statement.executeBatch()
+            }
+        }
+
+        val experimentReminderChanges = payload.changes.mapNotNull { it.experimentReminderEmailSource }
+        if (experimentReminderChanges.isEmpty()) {
+            return
+        }
+
+        val experimentSql = """
+            UPSERT INTO `${config.experimentReminderSourceTablePath}` (
+                reminder_sync_id,
+                experiment_sync_id,
+                experiment_title,
+                reminder_text,
+                reminder_at,
+                updated_at,
+                deleted_at
+            ) VALUES (
+                CAST(? AS Utf8),
+                CAST(? AS Utf8),
+                CAST(? AS Utf8),
+                CAST(? AS Utf8),
+                CAST(? AS Utf8),
+                CAST(? AS Utf8),
+                CAST(? AS Utf8)
+            )
+        """.trimIndent()
+
+        connection.prepareStatement(experimentSql).use { statement ->
+            experimentReminderChanges.forEach { change ->
                 statement.setString(1, change.reminderSyncId)
-                statement.setString(2, change.transactionSyncId)
-                statement.setString(3, change.transactionType)
-                statement.setString(4, change.transactionCreatedAt.toString())
-                statement.setString(5, change.reminderText)
-                statement.setString(6, change.reminderAt?.toString())
-                statement.setString(7, change.updatedAt.toString())
-                statement.setString(8, change.deletedAt?.toString())
+                statement.setString(2, change.experimentSyncId)
+                statement.setString(3, change.experimentTitle)
+                statement.setString(4, change.reminderText)
+                statement.setString(5, change.reminderAt?.toString())
+                statement.setString(6, change.updatedAt.toString())
+                statement.setString(7, change.deletedAt?.toString())
                 statement.addBatch()
             }
             statement.executeBatch()

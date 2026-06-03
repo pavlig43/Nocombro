@@ -14,5 +14,6 @@ enum class NotificationItem(val title: String) {
     Declaration("Декларации"),
     Transaction("Транзакции"),
     BatchExpiry("Сроки годности"),
+    Experiment("Эксперименты"),
 
 }

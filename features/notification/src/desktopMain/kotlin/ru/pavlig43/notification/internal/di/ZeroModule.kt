@@ -24,6 +24,7 @@ internal val highModule = module {
     registerRepository { DeclarationZeroRepository(get()) }
     registerRepository { ProductZeroRepository(get()) }
     registerRepository { TransactionZeroRepository(get()) }
+    registerRepository { ExperimentZeroRepository(get()) }
     registerRepository { BatchExpiryZeroRepository(get()) }
 }
 
@@ -169,5 +170,19 @@ private class BatchExpiryZeroRepository(
                                 "Осталось $daysRemaining дн."
                     )
                 }
+        }
+}
+
+private class ExperimentZeroRepository(
+    db: NocombroDatabase
+) : INotificationRepository {
+    override val notificationLevel: NotificationLevel = NotificationLevel.HIGH
+    override val notificationItem: NotificationItem = NotificationItem.Experiment
+    override val mergedFromDBNotificationFlow: Flow<List<NotificationUi>> =
+        db.experimentReminderDao.observeTodayReminders().mapValues { notificationDTO ->
+            NotificationUi(
+                id = notificationDTO.id,
+                text = "Напоминание эксперимента: ${notificationDTO.displayName}"
+            )
         }
 }

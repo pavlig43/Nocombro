@@ -26,6 +26,7 @@ fun getNocombroDatabase(): NocombroDatabase {
     )
     val database = builder
         .addMigrations(MIGRATION_1_2)
+        .addMigrations(MIGRATION_2_3)
         .setDriver(BundledSQLiteDriver())
         .setQueryCoroutineContext(Dispatchers.IO)
         .build()

@@ -12,6 +12,17 @@ CREATE TABLE IF NOT EXISTS `reminder_email_source` (
     PRIMARY KEY (reminder_sync_id)
 );
 
+CREATE TABLE IF NOT EXISTS `experiment_reminder_email_source` (
+    reminder_sync_id Utf8,
+    experiment_sync_id Utf8,
+    experiment_title Utf8,
+    reminder_text Utf8,
+    reminder_at Utf8,
+    updated_at Utf8,
+    deleted_at Utf8,
+    PRIMARY KEY (reminder_sync_id)
+);
+
 CREATE TABLE IF NOT EXISTS `reminder_recipient` (
     email Utf8,
     is_active Bool,

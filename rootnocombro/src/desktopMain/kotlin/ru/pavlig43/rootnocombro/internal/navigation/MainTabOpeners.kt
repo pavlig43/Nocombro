@@ -3,6 +3,7 @@ package ru.pavlig43.rootnocombro.internal.navigation
 import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.core.tabs.TabOpener
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.BatchMovementListConfig
+import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ExperimentConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemFormConfig.DeclarationFormConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemFormConfig.DocumentFormConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemFormConfig.ExpenseFormConfig
@@ -32,6 +33,10 @@ internal fun createMainTabOpener(
 
     override fun openTransactionTab(id: Int) {
         addTab(TransactionFormConfig(id))
+    }
+
+    override fun openExperimentTab(id: Int) {
+        addTab(ExperimentConfig(id))
     }
 
     override fun openBatchMovementTab(

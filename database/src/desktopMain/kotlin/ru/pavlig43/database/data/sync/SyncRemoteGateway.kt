@@ -32,14 +32,25 @@ data class RemotePushChange(
     val sourceQueueIds: List<Long>,
     val lastQueuedAt: LocalDateTime,
     val payloadJson: String?,
-    val reminderEmailSource: ReminderEmailSourceChange? = null,
+    val transactionReminderEmailSource: TransactionReminderEmailSourceChange? = null,
+    val experimentReminderEmailSource: ExperimentReminderEmailSourceChange? = null,
 )
 
-data class ReminderEmailSourceChange(
+data class TransactionReminderEmailSourceChange(
     val reminderSyncId: String,
     val transactionSyncId: String,
     val transactionType: String,
     val transactionCreatedAt: LocalDateTime,
+    val reminderText: String?,
+    val reminderAt: LocalDateTime?,
+    val updatedAt: LocalDateTime,
+    val deletedAt: LocalDateTime?,
+)
+
+data class ExperimentReminderEmailSourceChange(
+    val reminderSyncId: String,
+    val experimentSyncId: String,
+    val experimentTitle: String,
     val reminderText: String?,
     val reminderAt: LocalDateTime?,
     val updatedAt: LocalDateTime,

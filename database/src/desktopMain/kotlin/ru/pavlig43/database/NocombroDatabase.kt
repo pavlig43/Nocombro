@@ -20,8 +20,10 @@ import ru.pavlig43.database.data.document.Document
 import ru.pavlig43.database.data.document.dao.DocumentDao
 import ru.pavlig43.database.data.experiment.Experiment
 import ru.pavlig43.database.data.experiment.ExperimentEntry
+import ru.pavlig43.database.data.experiment.ExperimentReminder
 import ru.pavlig43.database.data.experiment.dao.ExperimentDao
 import ru.pavlig43.database.data.experiment.dao.ExperimentEntryDao
+import ru.pavlig43.database.data.experiment.dao.ExperimentReminderDao
 import ru.pavlig43.database.data.expense.ExpenseBD
 import ru.pavlig43.database.data.expense.dao.ExpenseDao
 import ru.pavlig43.database.data.files.FileBD
@@ -86,12 +88,13 @@ import ru.pavlig43.database.data.vendor.dao.VendorDao
 
         Experiment::class,
         ExperimentEntry::class,
+        ExperimentReminder::class,
 
         SyncChangeEntity::class,
         SyncStateEntity::class,
 
     ],
-    version = 2,
+    version = 3,
 
 )
 @TypeConverters(Converters::class)
@@ -121,6 +124,7 @@ abstract class NocombroDatabase : RoomDatabase() {
     abstract val expenseDao: ExpenseDao
     abstract val experimentDao: ExperimentDao
     abstract val experimentEntryDao: ExperimentEntryDao
+    abstract val experimentReminderDao: ExperimentReminderDao
     abstract val pfDao: PfDao
     abstract val ingredientDao: IngredientDao
 

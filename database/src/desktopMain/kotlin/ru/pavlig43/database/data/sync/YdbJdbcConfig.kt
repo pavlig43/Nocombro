@@ -9,7 +9,8 @@ data class YdbJdbcConfig(
     val authToken: String?,
     val serviceAccountFile: String?,
     val tablePath: String,
-    val reminderSourceTablePath: String,
+    val transactionReminderSourceTablePath: String,
+    val experimentReminderSourceTablePath: String,
 ) {
     companion object {
         fun fromEnvironment(): YdbJdbcConfig? {
@@ -23,12 +24,19 @@ data class YdbJdbcConfig(
                 ?.takeIf(String::isNotBlank)
                 ?: "sync_push_log"
 
-            val reminderSourceTablePath = readSetting(
-                "NOCOMBRO_YDB_REMINDER_SOURCE_TABLE",
-                "nocombro.ydb.reminderSourceTable"
+            val transactionReminderSourceTablePath = readSetting(
+                "NOCOMBRO_YDB_TRANSACTION_REMINDER_SOURCE_TABLE",
+                "nocombro.ydb.transactionReminderSourceTable"
             )?.trim()
                 ?.takeIf(String::isNotBlank)
                 ?: "reminder_email_source"
+
+            val experimentReminderSourceTablePath = readSetting(
+                "NOCOMBRO_YDB_EXPERIMENT_REMINDER_SOURCE_TABLE",
+                "nocombro.ydb.experimentReminderSourceTable"
+            )?.trim()
+                ?.takeIf(String::isNotBlank)
+                ?: "experiment_reminder_email_source"
 
             val serviceAccountFile = readSetting(
                 "NOCOMBRO_YDB_SA_FILE",
@@ -42,7 +50,8 @@ data class YdbJdbcConfig(
                 authToken = readSetting("NOCOMBRO_YDB_TOKEN", "nocombro.ydb.token")?.trim(),
                 serviceAccountFile = serviceAccountFile,
                 tablePath = tablePath,
-                reminderSourceTablePath = reminderSourceTablePath,
+                transactionReminderSourceTablePath = transactionReminderSourceTablePath,
+                experimentReminderSourceTablePath = experimentReminderSourceTablePath,
             )
         }
 

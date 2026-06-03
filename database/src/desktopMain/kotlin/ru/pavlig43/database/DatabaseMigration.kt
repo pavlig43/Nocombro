@@ -59,3 +59,34 @@ val MIGRATION_1_2 = object : Migration(1, 2) {
         )
     }
 }
+
+val MIGRATION_2_3 = object : Migration(2, 3) {
+    override fun migrate(connection: SQLiteConnection) {
+        connection.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS experiment_reminder (
+                experiment_id INTEGER NOT NULL,
+                text TEXT NOT NULL,
+                reminder_date_time TEXT NOT NULL,
+                id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                sync_id TEXT NOT NULL,
+                updated_at TEXT NOT NULL,
+                deleted_at TEXT,
+                FOREIGN KEY(experiment_id) REFERENCES experiment(id) ON DELETE CASCADE
+            )
+            """.trimIndent()
+        )
+        connection.execSQL(
+            """
+            CREATE UNIQUE INDEX IF NOT EXISTS index_experiment_reminder_sync_id
+            ON experiment_reminder(sync_id)
+            """.trimIndent()
+        )
+        connection.execSQL(
+            """
+            CREATE INDEX IF NOT EXISTS index_experiment_reminder_experiment_id
+            ON experiment_reminder(experiment_id)
+            """.trimIndent()
+        )
+    }
+}

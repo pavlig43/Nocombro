@@ -12,6 +12,7 @@ import ru.pavlig43.datastore.DATASTORE_PATH_PROPERTY
 import ru.pavlig43.rootnocombro.api.RootDependencies
 import ru.pavlig43.rootnocombro.internal.di.initKoin
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild
+import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig
 import ru.pavlig43.rootnocombro.internal.navigation.drawer.component.DrawerDestination
 import ru.pavlig43.testkit.DesktopMainDispatcherFunSpec
 import ru.pavlig43.testkit.database.createSeededManagedTestDatabase
@@ -21,7 +22,9 @@ import java.nio.file.Files
 
 class ExperimentsNavigationSmokeTest : DesktopMainDispatcherFunSpec({
 
-    suspend fun withRootComponent(block: suspend (RootNocombroComponent) -> Unit) {
+    suspend fun withRootComponent(
+        block: suspend (RootNocombroComponent, NocombroDatabase) -> Unit,
+    ) {
         val managedDatabase = createSeededManagedTestDatabase()
         val dataStorePath = Files.createTempDirectory("nocombro-experiments-nav")
             .resolve("preferences.preferences_pb")
@@ -46,7 +49,7 @@ class ExperimentsNavigationSmokeTest : DesktopMainDispatcherFunSpec({
         }
 
         try {
-            block(component)
+            block(component, managedDatabase.database)
         } finally {
             stopKoin()
             System.clearProperty(DATASTORE_PATH_PROPERTY)
@@ -61,7 +64,7 @@ class ExperimentsNavigationSmokeTest : DesktopMainDispatcherFunSpec({
             thenResult = "the experiments tab is created successfully",
         )
     ) {
-        withRootComponent { root ->
+        withRootComponent { root, _ ->
             val tabsComponent = root.stack.value.active.instance
                 .shouldBeInstanceOf<RootChild.Tabs>()
                 .component
@@ -74,6 +77,28 @@ class ExperimentsNavigationSmokeTest : DesktopMainDispatcherFunSpec({
                 items[selectedIndex!!].instance
             }
             selected.shouldBeInstanceOf<MainTabChild.ExperimentsChild>()
+        }
+    }
+
+    test(
+        scenario(
+            given = "a seeded test environment",
+            whenAction = "navigation opens a concrete experiment tab by id",
+            thenResult = "the experiments screen selects that experiment immediately",
+        )
+    ) {
+        withRootComponent { root, _ ->
+            val tabsComponent = root.stack.value.active.instance
+                .shouldBeInstanceOf<RootChild.Tabs>()
+                .component
+
+            runOnUiThread {
+                tabsComponent.tabNavigationComponent.addTab(MainTabConfig.ExperimentConfig(id = 1))
+            }
+
+            tabsComponent.tabNavigationComponent.tabChildren.value.run {
+                items[selectedIndex!!].instance
+            }.shouldBeInstanceOf<MainTabChild.ExperimentsChild>()
         }
     }
 })

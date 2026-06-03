@@ -9,6 +9,7 @@ import ru.pavlig43.database.data.declaration.DECLARATIONS_TABLE_NAME
 import ru.pavlig43.database.data.document.DOCUMENT_TABLE_NAME
 import ru.pavlig43.database.data.expense.EXPENSE_TABLE_NAME
 import ru.pavlig43.database.data.experiment.EXPERIMENT_ENTRY_TABLE_NAME
+import ru.pavlig43.database.data.experiment.EXPERIMENT_REMINDER_TABLE_NAME
 import ru.pavlig43.database.data.experiment.EXPERIMENT_TABLE_NAME
 import ru.pavlig43.database.data.files.FILE_TABLE_NAME
 import ru.pavlig43.database.data.files.OwnerType
@@ -34,7 +35,8 @@ class SyncEntityExportRepository(
         } else {
             loadPayloadJson(change.entityTable, change.entityLocalId)
         }
-        val reminderEmailSource = loadReminderEmailSourceChange(change)
+        val transactionReminderEmailSource = loadTransactionReminderEmailSourceChange(change)
+        val experimentReminderEmailSource = loadExperimentReminderEmailSourceChange(change)
 
         return RemotePushChange(
             entityTable = change.entityTable,
@@ -43,19 +45,20 @@ class SyncEntityExportRepository(
             sourceQueueIds = change.sourceQueueIds,
             lastQueuedAt = change.lastQueuedAt,
             payloadJson = payloadJson,
-            reminderEmailSource = reminderEmailSource,
+            transactionReminderEmailSource = transactionReminderEmailSource,
+            experimentReminderEmailSource = experimentReminderEmailSource,
         )
     }
 
-    private suspend fun loadReminderEmailSourceChange(
+    private suspend fun loadTransactionReminderEmailSourceChange(
         change: SyncPushChange,
-    ): ReminderEmailSourceChange? {
+    ): TransactionReminderEmailSourceChange? {
         if (change.entityTable != REMINDER_TABLE_NAME) {
             return null
         }
 
         if (change.changeType == SyncChangeType.DELETE) {
-            return ReminderEmailSourceChange(
+            return TransactionReminderEmailSourceChange(
                 reminderSyncId = change.entityLocalId,
                 transactionSyncId = "",
                 transactionType = "",
@@ -69,11 +72,44 @@ class SyncEntityExportRepository(
 
         val reminder = db.reminderDao.getReminderBySyncId(change.entityLocalId) ?: return null
         val transaction = db.transactionDao.getTransaction(reminder.transactionId)
-        return ReminderEmailSourceChange(
+        return TransactionReminderEmailSourceChange(
             reminderSyncId = reminder.syncId,
             transactionSyncId = transaction.syncId,
             transactionType = transaction.transactionType.displayName,
             transactionCreatedAt = transaction.createdAt,
+            reminderText = reminder.text,
+            reminderAt = reminder.reminderDateTime,
+            updatedAt = reminder.updatedAt,
+            deletedAt = reminder.deletedAt,
+        )
+    }
+
+    private suspend fun loadExperimentReminderEmailSourceChange(
+        change: SyncPushChange,
+    ): ExperimentReminderEmailSourceChange? {
+        if (change.entityTable != EXPERIMENT_REMINDER_TABLE_NAME) {
+            return null
+        }
+
+        if (change.changeType == SyncChangeType.DELETE) {
+            return ExperimentReminderEmailSourceChange(
+                reminderSyncId = change.entityLocalId,
+                experimentSyncId = "",
+                experimentTitle = "",
+                reminderText = null,
+                reminderAt = null,
+                updatedAt = change.lastQueuedAt,
+                deletedAt = change.lastQueuedAt,
+            )
+        }
+
+        val reminder = db.experimentReminderDao.getReminderBySyncId(change.entityLocalId) ?: return null
+        val experiment = db.experimentDao.getExperiment(reminder.experimentId)
+            ?: error("Missing experiment owner for id=${reminder.experimentId}")
+        return ExperimentReminderEmailSourceChange(
+            reminderSyncId = reminder.syncId,
+            experimentSyncId = experiment.syncId,
+            experimentTitle = experiment.title,
             reminderText = reminder.text,
             reminderAt = reminder.reminderDateTime,
             updatedAt = reminder.updatedAt,
@@ -339,6 +375,21 @@ class SyncEntityExportRepository(
                         content = entry.content,
                         updatedAt = entry.updatedAt,
                         deletedAt = entry.deletedAt,
+                    )
+                )
+            }
+
+            EXPERIMENT_REMINDER_TABLE_NAME -> db.experimentReminderDao.getReminderBySyncId(entitySyncId)?.let { reminder ->
+                val experiment = db.experimentDao.getExperiment(reminder.experimentId)
+                    ?: error("Missing experiment owner for id=${reminder.experimentId}")
+                encodePayload(
+                    ExperimentReminderSyncPayload(
+                        syncId = reminder.syncId,
+                        experimentSyncId = experiment.syncId,
+                        text = reminder.text,
+                        reminderDateTime = reminder.reminderDateTime,
+                        updatedAt = reminder.updatedAt,
+                        deletedAt = reminder.deletedAt,
                     )
                 )
             }

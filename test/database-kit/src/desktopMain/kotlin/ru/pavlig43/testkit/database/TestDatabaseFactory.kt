@@ -5,6 +5,7 @@ import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import ru.pavlig43.database.MIGRATION_1_2
+import ru.pavlig43.database.MIGRATION_2_3
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.seedDatabase
 import ru.pavlig43.testkit.createTempPath
@@ -20,6 +21,7 @@ fun createManagedTestDatabase(
         name = databasePath.toString(),
     )
         .addMigrations(MIGRATION_1_2)
+        .addMigrations(MIGRATION_2_3)
         .setDriver(BundledSQLiteDriver())
         .setQueryCoroutineContext(queryDispatcher)
         .build()
@@ -48,6 +50,7 @@ suspend fun createManagedCopiedDatabase(
         name = targetDatabasePath.toString(),
     )
         .addMigrations(MIGRATION_1_2)
+        .addMigrations(MIGRATION_2_3)
         .setDriver(BundledSQLiteDriver())
         .setQueryCoroutineContext(queryDispatcher)
         .build()

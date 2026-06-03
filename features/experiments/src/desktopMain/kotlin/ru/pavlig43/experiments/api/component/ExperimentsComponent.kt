@@ -7,6 +7,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -15,31 +16,34 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.format
 import ru.pavlig43.core.MainTabComponent
 import ru.pavlig43.core.componentCoroutineScope
 import ru.pavlig43.corekoin.ComponentKoinContext
 import ru.pavlig43.database.data.experiment.Experiment
 import ru.pavlig43.database.data.experiment.ExperimentEntry
+import ru.pavlig43.database.data.experiment.ExperimentReminder
 import ru.pavlig43.database.data.sync.defaultUpdatedAt
 import ru.pavlig43.datetime.dateFormat
 import ru.pavlig43.datetime.dateTimeFormat
 import ru.pavlig43.datetime.getCurrentLocalDate
+import ru.pavlig43.datetime.getCurrentLocalDateTime
 import ru.pavlig43.experiments.api.ExperimentsDependencies
 import ru.pavlig43.experiments.internal.component.ExperimentEntryFilesComponent
 import ru.pavlig43.experiments.internal.data.ExperimentsRepository
 import ru.pavlig43.experiments.internal.di.createExperimentsModule
 import ru.pavlig43.files.api.component.FilesComponent
-import kotlinx.datetime.format
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ExperimentsComponent(
     componentContext: ComponentContext,
     private val dependencies: ExperimentsDependencies,
+    initialSelectedExperimentId: Int? = null,
 ) : ComponentContext by componentContext, MainTabComponent {
     private val coroutineScope = componentCoroutineScope()
     private val koinContext = instanceKeeper.getOrCreate { ComponentKoinContext() }
@@ -52,22 +56,23 @@ class ExperimentsComponent(
     private val _showArchived = MutableStateFlow(false)
     val showArchived = _showArchived.asStateFlow()
 
-    private val _selectedExperimentId = MutableStateFlow<Int?>(null)
+    private val _selectedExperimentId = MutableStateFlow(initialSelectedExperimentId)
     private val _selectedEntryId = MutableStateFlow<Int?>(null)
 
     private val _experimentDraft = MutableStateFlow(ExperimentDraft())
     private val _entryDraft = MutableStateFlow("")
     private val _message = MutableStateFlow<String?>(null)
     private val _filesComponent = MutableStateFlow<ExperimentEntryFilesComponent?>(null)
+    private val _reminderEditorState = MutableStateFlow<ExperimentReminderEditorState?>(null)
 
     val message = _message.asStateFlow()
     val experimentDraft = _experimentDraft.asStateFlow()
     val entryDraft = _entryDraft.asStateFlow()
     val filesComponent: StateFlow<FilesComponent?> = _filesComponent.asStateFlow()
+    val reminderEditorState = _reminderEditorState.asStateFlow()
 
     val experiments = _showArchived
         .flatMapLatest(repository::observeExperiments)
-        .map { items -> items.filter { experiment -> experiment.deletedAt == null } }
         .stateInComponent(emptyList())
 
     val selectedExperiment = _selectedExperimentId
@@ -76,7 +81,10 @@ class ExperimentsComponent(
 
     val entries = _selectedExperimentId
         .flatMapLatest { id -> id?.let(repository::observeEntries) ?: flowOf(emptyList()) }
-        .map { items -> items.filter { entry -> entry.deletedAt == null } }
+        .stateInComponent(emptyList())
+
+    val reminders = _selectedExperimentId
+        .flatMapLatest { id -> id?.let(repository::observeReminders) ?: flowOf(emptyList()) }
         .stateInComponent(emptyList())
 
     val selectedEntry = _selectedEntryId
@@ -84,33 +92,46 @@ class ExperimentsComponent(
         .stateInComponent(null)
 
     val uiState: StateFlow<ExperimentsUiState> = combine(
-        experiments,
-        selectedExperiment,
-        entries,
-        selectedEntry,
+        combine(
+            experiments,
+            selectedExperiment,
+            entries,
+            reminders,
+            selectedEntry,
+        ) { experimentsList, experiment, entryList, reminderList, entry ->
+            ExperimentsUiState(
+                experiments = experimentsList.map { it.toListItem() },
+                selectedExperiment = experiment?.toDetails(),
+                entries = entryList.map { it.toListItem() },
+                reminders = reminderList.map { it.toListItem() },
+                selectedEntry = entry?.toDetails(),
+            )
+        },
         _showArchived,
-    ) { experimentsList, experiment, entryList, entry, showArchived ->
-        ExperimentsUiState(
-            experiments = experimentsList.map { it.toListItem() },
-            selectedExperiment = experiment?.toDetails(),
-            entries = entryList.map { it.toListItem() },
-            selectedEntry = entry?.toDetails(),
-            showArchived = showArchived,
-        )
+    ) { state, showArchived ->
+        state.copy(showArchived = showArchived)
     }.stateInComponent(ExperimentsUiState())
 
     init {
         coroutineScope.launch {
             experiments.collectLatest { list ->
                 val selectedId = _selectedExperimentId.value
-                val selectedStillExists = list.any { it.id == selectedId }
-                if (!selectedStillExists) {
+                if (selectedId == null) {
+                    _selectedExperimentId.value = list.firstOrNull()?.id
+                    return@collectLatest
+                }
+
+                val selectedLoaded = selectedExperiment.value?.id == selectedId
+                if (!selectedLoaded && list.none { it.id == selectedId }) {
                     _selectedExperimentId.value = list.firstOrNull()?.id
                 }
             }
         }
         coroutineScope.launch {
             selectedExperiment.collectLatest { experiment ->
+                if (experiment?.isArchived == true && !_showArchived.value) {
+                    _showArchived.value = true
+                }
                 _experimentDraft.value = ExperimentDraft(
                     title = experiment?.title.orEmpty(),
                     ideaDescription = experiment?.ideaDescription.orEmpty(),
@@ -206,6 +227,80 @@ class ExperimentsComponent(
         openTodayEntry()
     }
 
+    fun openCreateReminderDialog() {
+        val experimentId = _selectedExperimentId.value ?: return
+        _reminderEditorState.value = ExperimentReminderEditorState(
+            experimentId = experimentId,
+            reminderDateTime = getCurrentLocalDateTime(),
+        )
+    }
+
+    fun openEditReminderDialog(reminderId: Int) {
+        val reminder = reminders.value.firstOrNull { it.id == reminderId } ?: return
+        _reminderEditorState.value = ExperimentReminderEditorState(
+            reminderId = reminder.id,
+            experimentId = reminder.experimentId,
+            text = reminder.text,
+            reminderDateTime = reminder.reminderDateTime,
+        )
+    }
+
+    fun dismissReminderDialog() {
+        _reminderEditorState.value = null
+    }
+
+    fun onReminderTextChange(value: String) {
+        _reminderEditorState.update { state ->
+            state?.copy(text = value)
+        }
+    }
+
+    fun onReminderDateTimeChange(value: LocalDateTime) {
+        _reminderEditorState.update { state ->
+            state?.copy(reminderDateTime = value)
+        }
+    }
+
+    fun saveReminder() {
+        val editorState = _reminderEditorState.value ?: return
+        if (editorState.text.isBlank()) {
+            _message.value = "Текст напоминания не должен быть пустым"
+            return
+        }
+
+        coroutineScope.launch(Dispatchers.IO) {
+            val result = if (editorState.reminderId == null) {
+                repository.createReminder(
+                    experimentId = editorState.experimentId,
+                    text = editorState.text.trim(),
+                    reminderDateTime = editorState.reminderDateTime,
+                ).map { }
+            } else {
+                val current = reminders.value.firstOrNull { it.id == editorState.reminderId }
+                    ?: return@launch showError(IllegalStateException("Напоминание не найдено"))
+                repository.updateReminder(
+                    current.copy(
+                        text = editorState.text.trim(),
+                        reminderDateTime = editorState.reminderDateTime,
+                        updatedAt = defaultUpdatedAt(),
+                    )
+                )
+            }
+
+            result
+                .onSuccess { _reminderEditorState.value = null }
+                .onFailure(::showError)
+        }
+    }
+
+    fun deleteReminder(reminderId: Int) {
+        val reminder = reminders.value.firstOrNull { it.id == reminderId } ?: return
+        coroutineScope.launch(Dispatchers.IO) {
+            repository.deleteReminder(reminder)
+                .onFailure(::showError)
+        }
+    }
+
     @OptIn(FlowPreview::class)
     private fun observeDraftSaves() {
         coroutineScope.launch(Dispatchers.IO) {
@@ -253,7 +348,7 @@ class ExperimentsComponent(
 
     private fun openEntryForDate(
         experimentId: Int,
-        date: kotlinx.datetime.LocalDate,
+        date: LocalDate,
     ) {
         coroutineScope.launch(Dispatchers.IO) {
             repository.getOrCreateEntry(experimentId, date)
@@ -300,12 +395,30 @@ class ExperimentsComponent(
         dateText = entryDate.format(dateFormat),
         isToday = entryDate == getCurrentLocalDate(),
     )
+
+    private fun ExperimentReminder.toListItem(): ExperimentReminderListItem {
+        val today = getCurrentLocalDate()
+        val status = when {
+            reminderDateTime.date < today -> "Просрочено"
+            reminderDateTime.date == today -> "Сегодня"
+            else -> null
+        }
+        return ExperimentReminderListItem(
+            id = id,
+            experimentId = experimentId,
+            text = text,
+            reminderDateTime = reminderDateTime,
+            reminderDateTimeText = reminderDateTime.format(dateTimeFormat),
+            status = status,
+        )
+    }
 }
 
 data class ExperimentsUiState(
     val experiments: List<ExperimentListItem> = emptyList(),
     val selectedExperiment: ExperimentDetails? = null,
     val entries: List<ExperimentEntryListItem> = emptyList(),
+    val reminders: List<ExperimentReminderListItem> = emptyList(),
     val selectedEntry: ExperimentEntryDetails? = null,
     val showArchived: Boolean = false,
 )
@@ -331,6 +444,15 @@ data class ExperimentEntryListItem(
     val preview: String,
 )
 
+data class ExperimentReminderListItem(
+    val id: Int,
+    val experimentId: Int,
+    val text: String,
+    val reminderDateTime: LocalDateTime,
+    val reminderDateTimeText: String,
+    val status: String?,
+)
+
 data class ExperimentEntryDetails(
     val id: Int,
     val dateText: String,
@@ -341,3 +463,13 @@ data class ExperimentDraft(
     val title: String = "",
     val ideaDescription: String = "",
 )
+
+data class ExperimentReminderEditorState(
+    val reminderId: Int? = null,
+    val experimentId: Int,
+    val text: String = "",
+    val reminderDateTime: LocalDateTime,
+) {
+    val isEdit: Boolean
+        get() = reminderId != null
+}

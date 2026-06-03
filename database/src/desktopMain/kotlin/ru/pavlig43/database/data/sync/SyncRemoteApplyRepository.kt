@@ -15,9 +15,11 @@ import ru.pavlig43.database.data.document.Document
 import ru.pavlig43.database.data.expense.EXPENSE_TABLE_NAME
 import ru.pavlig43.database.data.expense.ExpenseBD
 import ru.pavlig43.database.data.experiment.EXPERIMENT_ENTRY_TABLE_NAME
+import ru.pavlig43.database.data.experiment.EXPERIMENT_REMINDER_TABLE_NAME
 import ru.pavlig43.database.data.experiment.EXPERIMENT_TABLE_NAME
 import ru.pavlig43.database.data.experiment.Experiment
 import ru.pavlig43.database.data.experiment.ExperimentEntry
+import ru.pavlig43.database.data.experiment.ExperimentReminder
 import ru.pavlig43.database.data.files.FILE_TABLE_NAME
 import ru.pavlig43.database.data.files.FileBD
 import ru.pavlig43.database.data.files.OwnerType
@@ -84,6 +86,7 @@ class SyncRemoteApplyRepository(
             EXPENSE_TABLE_NAME -> applyExpense(change)
             EXPERIMENT_TABLE_NAME -> applyExperiment(change)
             EXPERIMENT_ENTRY_TABLE_NAME -> applyExperimentEntry(change)
+            EXPERIMENT_REMINDER_TABLE_NAME -> applyExperimentReminder(change)
             BUY_TABLE_NAME -> applyBuy(change)
             SALE_TABLE_NAME -> applySale(change)
             FILE_TABLE_NAME -> applyFile(change)
@@ -533,6 +536,32 @@ class SyncRemoteApplyRepository(
         db.experimentEntryDao.upsert(incoming)
     }
 
+    private suspend fun applyExperimentReminder(change: RemotePullChange) {
+        val existing = db.experimentReminderDao.getReminderBySyncId(change.entitySyncId)
+        if (change.changeType == SyncChangeType.DELETE) {
+            existing?.let {
+                if (!isStale(it.updatedAt, change.changedAt)) {
+                    db.experimentReminderDao.upsert(it.copy(deletedAt = change.changedAt, updatedAt = change.changedAt))
+                }
+            }
+            return
+        }
+
+        val payload = change.decodePayload<ExperimentReminderSyncPayload>()
+        val experiment = requireExperiment(payload.experimentSyncId)
+        val incoming = ExperimentReminder(
+            experimentId = experiment.id,
+            text = payload.text,
+            reminderDateTime = payload.reminderDateTime,
+            id = existing?.id ?: 0,
+            syncId = payload.syncId,
+            updatedAt = payload.updatedAt,
+            deletedAt = payload.deletedAt,
+        )
+        if (existing != null && isStale(existing.updatedAt, incoming.updatedAt)) return
+        db.experimentReminderDao.upsert(incoming)
+    }
+
     private suspend fun applyBuy(change: RemotePullChange) {
         val existing = db.buyDao.getBuyBySyncId(change.entitySyncId)
         if (change.changeType == SyncChangeType.DELETE) {
@@ -711,15 +740,16 @@ private fun entityPriority(entityTable: String): Int {
         DECLARATIONS_TABLE_NAME -> 6
         EXPERIMENT_TABLE_NAME -> 7
         EXPERIMENT_ENTRY_TABLE_NAME -> 8
-        BATCH_TABLE_NAME -> 9
-        PRODUCT_DECLARATION_TABLE_NAME -> 10
-        COMPOSITION_TABLE_NAME -> 11
-        BATCH_MOVEMENT_TABLE_NAME -> 12
-        REMINDER_TABLE_NAME -> 13
-        EXPENSE_TABLE_NAME -> 14
-        BUY_TABLE_NAME -> 15
-        SALE_TABLE_NAME -> 16
-        FILE_TABLE_NAME -> 17
+        EXPERIMENT_REMINDER_TABLE_NAME -> 9
+        BATCH_TABLE_NAME -> 10
+        PRODUCT_DECLARATION_TABLE_NAME -> 11
+        COMPOSITION_TABLE_NAME -> 12
+        BATCH_MOVEMENT_TABLE_NAME -> 13
+        REMINDER_TABLE_NAME -> 14
+        EXPENSE_TABLE_NAME -> 15
+        BUY_TABLE_NAME -> 16
+        SALE_TABLE_NAME -> 17
+        FILE_TABLE_NAME -> 18
         else -> 100
     }
 }

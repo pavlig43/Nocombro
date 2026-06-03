@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.HorizontalDivider
@@ -26,15 +25,24 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import ru.pavlig43.coreui.ProjectDialog
+import ru.pavlig43.datetime.dateTimeFormat
+import ru.pavlig43.datetime.single.datetime.DateTimePickerDialog
 import ru.pavlig43.experiments.api.component.ExperimentEntryListItem
 import ru.pavlig43.experiments.api.component.ExperimentListItem
+import ru.pavlig43.experiments.api.component.ExperimentReminderEditorState
+import ru.pavlig43.experiments.api.component.ExperimentReminderListItem
 import ru.pavlig43.experiments.api.component.ExperimentsComponent
 import ru.pavlig43.files.api.component.FilesComponent
 import ru.pavlig43.files.api.ui.FilesScreen
+import kotlinx.datetime.format
 
 @Composable
 fun ExperimentsScreen(
@@ -46,17 +54,33 @@ fun ExperimentsScreen(
     val entryDraft by component.entryDraft.collectAsState()
     val message by component.message.collectAsState()
     val filesComponent by component.filesComponent.collectAsState()
+    val reminderEditorState by component.reminderEditorState.collectAsState()
 
     message?.let { text ->
-        AlertDialog(
+        ProjectDialog(
             onDismissRequest = component::dismissMessage,
-            confirmButton = {
+            header = { Text("Ошибка") },
+        ) {
+            Column(
+                modifier = Modifier.padding(horizontal = 16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                Text(text)
                 Button(onClick = component::dismissMessage) {
                     Text("Закрыть")
                 }
-            },
-            title = { Text("Ошибка") },
-            text = { Text(text) },
+            }
+        }
+    }
+
+    reminderEditorState?.let { editor ->
+        ReminderEditorDialog(
+            state = editor,
+            onDismiss = component::dismissReminderDialog,
+            onTextChange = component::onReminderTextChange,
+            onDateTimeChange = component::onReminderDateTimeChange,
+            onSave = component::saveReminder,
         )
     }
 
@@ -80,12 +104,16 @@ fun ExperimentsScreen(
             hasSelection = uiState.selectedExperiment != null,
             isArchived = uiState.selectedExperiment?.isArchived == true,
             entries = uiState.entries,
+            reminders = uiState.reminders,
             selectedEntryId = uiState.selectedEntry?.id,
             onTitleChange = component::onTitleChange,
             onIdeaDescriptionChange = component::onIdeaDescriptionChange,
             onOpenToday = component::openTodayEntry,
             onCreateTodayEntry = component::createTodayEntry,
             onToggleArchive = component::toggleArchiveSelected,
+            onOpenCreateReminder = component::openCreateReminderDialog,
+            onEditReminder = component::openEditReminderDialog,
+            onDeleteReminder = component::deleteReminder,
             onSelectEntry = component::selectEntry,
             modifier = Modifier.weight(1f).fillMaxHeight(),
         )
@@ -189,12 +217,16 @@ private fun ExperimentDetailsPane(
     hasSelection: Boolean,
     isArchived: Boolean,
     entries: List<ExperimentEntryListItem>,
+    reminders: List<ExperimentReminderListItem>,
     selectedEntryId: Int?,
     onTitleChange: (String) -> Unit,
     onIdeaDescriptionChange: (String) -> Unit,
     onOpenToday: () -> Unit,
     onCreateTodayEntry: () -> Unit,
     onToggleArchive: () -> Unit,
+    onOpenCreateReminder: () -> Unit,
+    onEditReminder: (Int) -> Unit,
+    onDeleteReminder: (Int) -> Unit,
     onSelectEntry: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -225,7 +257,7 @@ private fun ExperimentDetailsPane(
                     onValueChange = onIdeaDescriptionChange,
                     modifier = Modifier.fillMaxWidth(),
                     label = { Text("Идея") },
-                    minLines = 6,
+                    minLines = 4,
                 )
                 updatedAtText?.let {
                     Text(
@@ -241,7 +273,14 @@ private fun ExperimentDetailsPane(
                         Text(if (isArchived) "Вернуть в активные" else "В архив")
                     }
                 }
+                ReminderBlock(
+                    reminders = reminders,
+                    onCreateReminder = onOpenCreateReminder,
+                    onEditReminder = onEditReminder,
+                    onDeleteReminder = onDeleteReminder,
+                )
                 HorizontalDivider()
+                Text("Дни", style = MaterialTheme.typography.titleMedium)
                 if (entries.isEmpty()) {
                     Box(
                         modifier = Modifier.fillMaxSize(),
@@ -259,7 +298,6 @@ private fun ExperimentDetailsPane(
                         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
-                        Text("Дни", style = MaterialTheme.typography.titleMedium)
                         entries.forEach { item ->
                             Card(
                                 modifier = Modifier
@@ -291,6 +329,131 @@ private fun ExperimentDetailsPane(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun ReminderBlock(
+    reminders: List<ExperimentReminderListItem>,
+    onCreateReminder: () -> Unit,
+    onEditReminder: (Int) -> Unit,
+    onDeleteReminder: (Int) -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text("Напоминания", style = MaterialTheme.typography.titleMedium)
+            OutlinedButton(onClick = onCreateReminder) {
+                Text("Добавить")
+            }
+        }
+        if (reminders.isEmpty()) {
+            Text(
+                "Напоминаний пока нет",
+                style = MaterialTheme.typography.bodySmall,
+            )
+        } else {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                reminders.forEach { reminder ->
+                    Card(modifier = Modifier.fillMaxWidth()) {
+                        Column(
+                            modifier = Modifier.fillMaxWidth().padding(12.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            Text(reminder.text, fontWeight = FontWeight.SemiBold)
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                                    Text(
+                                        reminder.reminderDateTimeText,
+                                        style = MaterialTheme.typography.bodySmall,
+                                    )
+                                    reminder.status?.let {
+                                        Text(
+                                            it,
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.primary,
+                                        )
+                                    }
+                                }
+                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    OutlinedButton(onClick = { onEditReminder(reminder.id) }) {
+                                        Text("Изменить")
+                                    }
+                                    OutlinedButton(onClick = { onDeleteReminder(reminder.id) }) {
+                                        Text("Удалить")
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ReminderEditorDialog(
+    state: ExperimentReminderEditorState,
+    onDismiss: () -> Unit,
+    onTextChange: (String) -> Unit,
+    onDateTimeChange: (kotlinx.datetime.LocalDateTime) -> Unit,
+    onSave: () -> Unit,
+) {
+    var showDateTimePicker by rememberSaveable { mutableStateOf(false) }
+
+    ProjectDialog(
+        onDismissRequest = onDismiss,
+        header = {
+            Text(if (state.isEdit) "Изменить напоминание" else "Новое напоминание")
+        },
+    ) {
+        Column(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            OutlinedTextField(
+                value = state.text,
+                onValueChange = onTextChange,
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text("Текст напоминания") },
+                minLines = 3,
+            )
+            OutlinedButton(
+                onClick = { showDateTimePicker = true },
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(state.reminderDateTime.format(dateTimeFormat))
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+            ) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedButton(onClick = onDismiss) {
+                        Text("Отмена")
+                    }
+                    Button(onClick = onSave) {
+                        Text("Сохранить")
+                    }
+                }
+            }
+        }
+    }
+
+    if (showDateTimePicker) {
+        DateTimePickerDialog(
+            dateTime = state.reminderDateTime,
+            onDismissRequest = { showDateTimePicker = false },
+            onSelectDateTime = onDateTimeChange,
+        )
     }
 }
 

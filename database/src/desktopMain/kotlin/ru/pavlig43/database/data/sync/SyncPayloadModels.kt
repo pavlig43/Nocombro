@@ -208,6 +208,16 @@ data class ExperimentEntrySyncPayload(
 )
 
 @Serializable
+data class ExperimentReminderSyncPayload(
+    val syncId: String,
+    val experimentSyncId: String,
+    val text: String,
+    val reminderDateTime: LocalDateTime,
+    val updatedAt: LocalDateTime,
+    val deletedAt: LocalDateTime? = null,
+)
+
+@Serializable
 data class TransactionSyncPayload(
     val syncId: String,
     val transactionType: TransactionType,

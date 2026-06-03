@@ -40,5 +40,6 @@ internal fun NotificationItem.openIn(tabOpener: TabOpener, id: Int) {
         NotificationItem.Declaration -> tabOpener.openDeclarationTab(id)
         NotificationItem.Transaction -> tabOpener.openTransactionTab(id)
         NotificationItem.BatchExpiry -> tabOpener.openTransactionTab(id)
+        NotificationItem.Experiment -> tabOpener.openExperimentTab(id)
     }
 }

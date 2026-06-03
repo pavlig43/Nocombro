@@ -20,9 +20,8 @@ _POOL = None
 @dataclass(frozen=True)
 class DueReminder:
     reminder_sync_id: str
-    transaction_sync_id: str
-    transaction_type: str
-    transaction_created_at: datetime
+    owner_label: str
+    owner_subtitle: str
     reminder_text: str
     reminder_at: datetime
 
@@ -76,52 +75,89 @@ class DeliveryRepository:
 
 class YdbDeliveryRepository(DeliveryRepository):
     def __init__(self) -> None:
-        self.source_table = os.getenv("YDB_REMINDER_SOURCE_TABLE", "reminder_email_source")
+        self.transaction_source_table = os.getenv(
+            "YDB_TRANSACTION_REMINDER_SOURCE_TABLE",
+            "reminder_email_source",
+        )
+        self.experiment_source_table = os.getenv(
+            "YDB_EXPERIMENT_REMINDER_SOURCE_TABLE",
+            "experiment_reminder_email_source",
+        )
         self.recipient_table = os.getenv("YDB_REMINDER_RECIPIENT_TABLE", "reminder_recipient")
         self.delivery_table = os.getenv("YDB_REMINDER_DELIVERY_TABLE", "reminder_email_delivery")
 
     def list_due_reminders(self, target_date: date) -> list[DueReminder]:
         target_until = f"{target_date.isoformat()}T23:59:59"
 
-        query = f"""
+        transaction_query = f"""
         DECLARE $target_until AS Utf8;
 
         SELECT
             reminder_sync_id,
-            transaction_sync_id,
             transaction_type,
             transaction_created_at,
             reminder_text,
             reminder_at
-        FROM `{self.source_table}`
+        FROM `{self.transaction_source_table}`
         WHERE deleted_at IS NULL
             AND reminder_at IS NOT NULL
             AND reminder_at <= $target_until
         ORDER BY reminder_at ASC;
         """
 
-        result_sets = get_pool().execute_with_retries(
-            query,
+        experiment_query = f"""
+        DECLARE $target_until AS Utf8;
+
+        SELECT
+            reminder_sync_id,
+            experiment_title,
+            reminder_text,
+            reminder_at
+        FROM `{self.experiment_source_table}`
+        WHERE deleted_at IS NULL
+            AND reminder_at IS NOT NULL
+            AND reminder_at <= $target_until
+        ORDER BY reminder_at ASC;
+        """
+
+        transaction_result_sets = get_pool().execute_with_retries(
+            transaction_query,
+            {"$target_until": target_until},
+        )
+        experiment_result_sets = get_pool().execute_with_retries(
+            experiment_query,
             {"$target_until": target_until},
         )
 
         reminders: list[DueReminder] = []
-        for result_set in result_sets:
+        for result_set in transaction_result_sets:
             for row in result_set.rows:
                 reminders.append(
                     DueReminder(
                         reminder_sync_id=row["reminder_sync_id"],
-                        transaction_sync_id=row["transaction_sync_id"],
-                        transaction_type=row["transaction_type"] or "",
-                        transaction_created_at=parse_datetime(
+                        owner_label=row["transaction_type"] or "Транзакция",
+                        owner_subtitle=parse_datetime(
                             row["transaction_created_at"],
                             fallback=parse_datetime(row["reminder_at"]),
-                        ),
+                        ).strftime("%d.%m.%Y %H:%M"),
                         reminder_text=row["reminder_text"] or "",
                         reminder_at=parse_datetime(row["reminder_at"]),
                     )
                 )
 
+        for result_set in experiment_result_sets:
+            for row in result_set.rows:
+                reminders.append(
+                    DueReminder(
+                        reminder_sync_id=row["reminder_sync_id"],
+                        owner_label="Эксперимент",
+                        owner_subtitle=row["experiment_title"] or "",
+                        reminder_text=row["reminder_text"] or "",
+                        reminder_at=parse_datetime(row["reminder_at"]),
+                    )
+                )
+
+        reminders.sort(key=lambda item: item.reminder_at)
         return reminders
 
     def list_recipients(self) -> list[str]:
@@ -236,8 +272,8 @@ def build_digest_body(reminders: list[DueReminder]) -> str:
                 f"{reminder.reminder_at.strftime('%d.%m.%Y %H:%M')}\n\n"
                 "Напоминание\n"
                 f"{reminder.reminder_text}\n\n"
-                f"{reminder.transaction_type}\n"
-                f"{reminder.transaction_created_at.strftime('%d.%m.%Y %H:%M')}\n"
+                f"{reminder.owner_label}\n"
+                f"{reminder.owner_subtitle}\n"
             )
         )
 

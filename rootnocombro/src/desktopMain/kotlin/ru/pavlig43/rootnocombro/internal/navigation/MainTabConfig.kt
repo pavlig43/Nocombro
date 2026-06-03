@@ -22,6 +22,9 @@ sealed interface MainTabConfig{
     class ExperimentsConfig: MainTabConfig
 
     @Serializable
+    class ExperimentConfig(val id: Int) : MainTabConfig
+
+    @Serializable
     class ProfitabilityConfig: MainTabConfig
 
     @Serializable

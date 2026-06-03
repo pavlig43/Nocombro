@@ -4,9 +4,11 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.LocalDate
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.experiment.EXPERIMENT_ENTRY_TABLE_NAME
+import ru.pavlig43.database.data.experiment.EXPERIMENT_REMINDER_TABLE_NAME
 import ru.pavlig43.database.data.experiment.EXPERIMENT_TABLE_NAME
 import ru.pavlig43.database.data.experiment.Experiment
 import ru.pavlig43.database.data.experiment.ExperimentEntry
+import ru.pavlig43.database.data.experiment.ExperimentReminder
 import ru.pavlig43.database.data.sync.SyncQueueRepository
 import ru.pavlig43.database.data.sync.defaultUpdatedAt
 import ru.pavlig43.database.inTransaction
@@ -18,6 +20,7 @@ internal class ExperimentsRepository(
     private val database = db
     private val experimentDao = db.experimentDao
     private val experimentEntryDao = db.experimentEntryDao
+    private val experimentReminderDao = db.experimentReminderDao
 
     fun observeExperiments(
         isArchived: Boolean,
@@ -34,6 +37,10 @@ internal class ExperimentsRepository(
     fun observeEntry(
         entryId: Int,
     ): Flow<ExperimentEntry?> = experimentEntryDao.observeEntry(entryId)
+
+    fun observeReminders(
+        experimentId: Int,
+    ): Flow<List<ExperimentReminder>> = experimentReminderDao.observeReminders(experimentId)
 
     suspend fun createExperiment(): Result<Experiment> {
         return runCatching {
@@ -127,6 +134,68 @@ internal class ExperimentsRepository(
                     entityTable = EXPERIMENT_ENTRY_TABLE_NAME,
                     entityLocalId = entry.syncId,
                     createdAt = entry.updatedAt,
+                )
+            }
+        }
+    }
+
+    suspend fun createReminder(
+        experimentId: Int,
+        text: String,
+        reminderDateTime: kotlinx.datetime.LocalDateTime,
+    ): Result<ExperimentReminder> {
+        return runCatching {
+            database.inTransaction {
+                val reminder = ExperimentReminder(
+                    experimentId = experimentId,
+                    text = text,
+                    reminderDateTime = reminderDateTime,
+                )
+                val id = experimentReminderDao.create(reminder).toInt()
+                val saved = reminder.copy(id = id)
+                touchExperiment(experimentId)
+                syncQueueRepository.enqueueUpsert(
+                    entityTable = EXPERIMENT_REMINDER_TABLE_NAME,
+                    entityLocalId = saved.syncId,
+                    createdAt = saved.updatedAt,
+                )
+                saved
+            }
+        }
+    }
+
+    suspend fun updateReminder(
+        reminder: ExperimentReminder,
+    ): Result<Unit> {
+        return runCatching {
+            database.inTransaction {
+                experimentReminderDao.upsert(reminder)
+                touchExperiment(reminder.experimentId)
+                syncQueueRepository.enqueueUpsert(
+                    entityTable = EXPERIMENT_REMINDER_TABLE_NAME,
+                    entityLocalId = reminder.syncId,
+                    createdAt = reminder.updatedAt,
+                )
+            }
+        }
+    }
+
+    suspend fun deleteReminder(
+        reminder: ExperimentReminder,
+    ): Result<Unit> {
+        return runCatching {
+            database.inTransaction {
+                val updatedAt = defaultUpdatedAt()
+                val deleted = reminder.copy(
+                    updatedAt = updatedAt,
+                    deletedAt = updatedAt,
+                )
+                experimentReminderDao.upsert(deleted)
+                touchExperiment(reminder.experimentId)
+                syncQueueRepository.enqueueUpsert(
+                    entityTable = EXPERIMENT_REMINDER_TABLE_NAME,
+                    entityLocalId = deleted.syncId,
+                    createdAt = deleted.updatedAt,
                 )
             }
         }

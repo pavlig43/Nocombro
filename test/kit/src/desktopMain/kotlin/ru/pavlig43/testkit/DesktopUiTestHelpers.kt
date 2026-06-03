@@ -29,6 +29,7 @@ object NoopTabOpener : TabOpener {
     override fun openVendorTab(id: Int) = Unit
     override fun openDeclarationTab(id: Int) = Unit
     override fun openTransactionTab(id: Int) = Unit
+    override fun openExperimentTab(id: Int) = Unit
     override fun openBatchMovementTab(
         batchId: Int,
         productName: String,

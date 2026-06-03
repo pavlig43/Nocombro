@@ -59,6 +59,7 @@ import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig.TransactionListConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig.VendorListConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.DoctorConfig
+import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ExperimentConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ExperimentsConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.NotificationConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ProfitabilityConfig
@@ -133,6 +134,16 @@ internal class MainTabNavigationComponent(
                             ExperimentsComponent(
                                 componentContext = context,
                                 dependencies = scope.get(),
+                            )
+                        )
+                    }
+
+                    is ExperimentConfig -> {
+                        ExperimentsChild(
+                            ExperimentsComponent(
+                                componentContext = context,
+                                dependencies = scope.get(),
+                                initialSelectedExperimentId = mainTabConfig.id,
                             )
                         )
                     }
