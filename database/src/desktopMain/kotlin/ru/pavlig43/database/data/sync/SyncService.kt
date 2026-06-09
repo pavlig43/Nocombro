@@ -40,6 +40,16 @@ class SyncService(
         return syncRemoteGateway.loadCurrentRemoteFileStates()
     }
 
+    suspend fun loadBrokenRemoteChanges(): Result<List<BrokenRemoteSyncChange>> {
+        return syncRemoteGateway.loadBrokenRemoteChanges()
+    }
+
+    suspend fun deleteBrokenRemoteChanges(
+        changes: List<BrokenRemoteSyncChange>,
+    ): Result<Int> {
+        return syncRemoteGateway.deleteBrokenRemoteChanges(changes)
+    }
+
     suspend fun syncOnce(): SyncRunResult {
         val pushResult = pushOnce()
         if (pushResult.error != null) {
@@ -111,41 +121,63 @@ class SyncService(
         val syncState = syncStateRepository.getSyncState()
             ?: return SyncRunResult.failure("Sync state is not initialized")
 
-        val pullResult = syncRemoteGateway.pullChanges(
-            deviceId = syncState.deviceId,
-            lastRemoteCursor = syncState.lastRemoteCursor,
-        ).fold(
-            onSuccess = { it },
-            onFailure = { throwable ->
+        // Remote gateway отдает изменения страницами. Если остановиться после первой
+        // страницы, UI будет продолжать видеть hasRemoteChanges=true, а lastPullAt
+        // останется "не до конца" актуальным относительно сервера.
+        var currentCursor = syncState.lastRemoteCursor
+        var lastPullAt = syncState.lastPullAt
+        var hasMoreChanges = true
+
+        while (hasMoreChanges) {
+            val pullResult = syncRemoteGateway.pullChanges(
+                deviceId = syncState.deviceId,
+                lastRemoteCursor = currentCursor,
+            ).fold(
+                onSuccess = { it },
+                onFailure = { throwable ->
+                    return SyncRunResult.failure(
+                        message = throwable.message ?: "Pull failed",
+                        status = getStatus(),
+                    )
+                }
+            )
+
+            runCatching {
+                syncRemoteApplyRepository.applyChanges(pullResult.changes)
+            }.getOrElse { throwable ->
                 return SyncRunResult.failure(
-                    message = throwable.message ?: "Pull failed",
+                    message = throwable.message ?: "Apply remote changes failed",
                     status = getStatus(),
                 )
             }
-        )
 
-        runCatching {
-            syncRemoteApplyRepository.applyChanges(pullResult.changes)
-        }.getOrElse { throwable ->
-            return SyncRunResult.failure(
-                message = throwable.message ?: "Apply remote changes failed",
-                status = getStatus(),
+            syncStateRepository.updateLastPullAt(
+                pulledAt = pullResult.pulledAt,
+                remoteCursor = pullResult.remoteCursor,
             )
+
+            // После успешного применения страницы двигаем локальный курсор вперед.
+            // Следующий запрос читает только хвост после уже обработанных изменений.
+            currentCursor = pullResult.remoteCursor ?: currentCursor
+            lastPullAt = pullResult.pulledAt
+
+            // Если страница заполнена целиком, считаем, что на сервере может быть
+            // еще хвост, и делаем следующий pull. Когда пришло меньше limit, хвост
+            // закончился.
+            hasMoreChanges = pullResult.changes.size >= DEFAULT_PULL_PAGE_SIZE
         }
-        syncStateRepository.updateLastPullAt(
-            pulledAt = pullResult.pulledAt,
-            remoteCursor = pullResult.remoteCursor,
-        )
 
         val status = getStatus()
         return SyncRunResult(
             status = status,
             lastSyncAt = status.lastSyncAt,
             lastPushAt = status.lastSyncAt,
-            lastPullAt = pullResult.pulledAt,
+            lastPullAt = lastPullAt,
         )
     }
 }
+
+private const val DEFAULT_PULL_PAGE_SIZE = 100
 
 private suspend fun SyncPushBatch.toRemotePushPayload(
     syncState: SyncStateEntity,

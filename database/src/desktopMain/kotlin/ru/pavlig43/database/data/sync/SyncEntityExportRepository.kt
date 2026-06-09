@@ -30,10 +30,17 @@ class SyncEntityExportRepository(
 ) {
 
     suspend fun export(change: SyncPushChange): RemotePushChange {
-        val payloadJson = if (change.changeType == SyncChangeType.DELETE) {
-            null
-        } else {
-            loadPayloadJson(change.entityTable, change.entityLocalId)
+        val payloadJson = when (change.changeType) {
+            SyncChangeType.DELETE -> null
+            // Для UPSERT серверу всегда нужен снимок текущего состояния сущности.
+            // Если локальная запись уже исчезла или не читается, отправлять такой
+            // change дальше нельзя: на удаленной стороне появится "битая" строка,
+            // которую потом невозможно корректно применить при pull.
+            SyncChangeType.UPSERT -> loadPayloadJson(change.entityTable, change.entityLocalId)
+                ?: error(
+                    "Missing local payload for `${change.entityTable}:${change.entityLocalId}`. " +
+                        "Sync batch cannot export UPSERT without payload."
+                )
         }
         val transactionReminderEmailSource = loadTransactionReminderEmailSourceChange(change)
         val experimentReminderEmailSource = loadExperimentReminderEmailSourceChange(change)

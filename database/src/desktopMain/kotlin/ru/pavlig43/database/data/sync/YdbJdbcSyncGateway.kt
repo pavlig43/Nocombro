@@ -50,7 +50,27 @@ class YdbJdbcSyncGateway(
                 ensureSyncTable(connection)
                 loadCurrentRemoteFileStates(connection)
             }
-        }
+        }.mapGatewayFailure(config)
+    }
+
+    override suspend fun loadBrokenRemoteChanges(): Result<List<BrokenRemoteSyncChange>> {
+        return runCatching {
+            withConnection { connection ->
+                ensureSyncTable(connection)
+                loadBrokenRemoteChanges(connection)
+            }
+        }.mapGatewayFailure(config)
+    }
+
+    override suspend fun deleteBrokenRemoteChanges(
+        changes: List<BrokenRemoteSyncChange>,
+    ): Result<Int> {
+        return runCatching {
+            withConnection { connection ->
+                ensureSyncTable(connection)
+                deleteBrokenRemoteChanges(connection, changes)
+            }
+        }.mapGatewayFailure(config)
     }
 
     override suspend fun pushChanges(
@@ -74,7 +94,7 @@ class YdbJdbcSyncGateway(
                 pushedAt = defaultUpdatedAt(),
                 remoteCursor = payload.lastRemoteCursor,
             )
-        }
+        }.mapGatewayFailure(config)
     }
 
     override suspend fun pullChanges(
@@ -98,7 +118,7 @@ class YdbJdbcSyncGateway(
                     remoteCursor = changes.lastOrNull()?.cursor ?: lastRemoteCursor,
                 )
             }
-        }
+        }.mapGatewayFailure(config)
     }
 
     private fun upsertChanges(
@@ -308,6 +328,8 @@ class YdbJdbcSyncGateway(
             append("SELECT COUNT(*) FROM `")
             append(config.tablePath)
             append("` WHERE device_id <> ?")
+            append(" AND ")
+            append(validRemoteChangePredicate())
             if (!syncState?.lastRemoteCursor.isNullOrBlank()) {
                 append(" AND change_cursor > ?")
             }
@@ -343,6 +365,7 @@ class YdbJdbcSyncGateway(
                     payload_json
                 FROM `${config.tablePath}`
                 WHERE device_id <> ?
+                  AND ${validRemoteChangePredicate()}
                 """.trimIndent()
             )
             if (!lastRemoteCursor.isNullOrBlank()) {
@@ -386,6 +409,7 @@ class YdbJdbcSyncGateway(
                 payload_json
             FROM `${config.tablePath}`
             WHERE entity_table = ?
+              AND ${validRemoteChangePredicate()}
         """.trimIndent()
 
         connection.prepareStatement(sql).use { statement ->
@@ -397,7 +421,15 @@ class YdbJdbcSyncGateway(
                     val changeType = enumValueOf<SyncChangeType>(resultSet.getString("change_type"))
                     val payloadJson = resultSet.getString("payload_json")
                     val payload = payloadJson
-                        ?.let(::decodeFilePayload)
+                        ?.let { rawPayload ->
+                            runCatching { decodeFilePayload(rawPayload) }
+                                .getOrElse { throwable ->
+                                    throw IllegalStateException(
+                                        "Не удалось разобрать remote payload для file syncId=$syncId.",
+                                        throwable,
+                                    )
+                                }
+                        }
 
                     items += RemoteFileSyncState(
                         syncId = syncId,
@@ -407,6 +439,71 @@ class YdbJdbcSyncGateway(
                     )
                 }
                 return items
+            }
+        }
+    }
+
+    private fun loadBrokenRemoteChanges(
+        connection: Connection,
+    ): List<BrokenRemoteSyncChange> {
+        val sql = """
+            SELECT
+                change_cursor,
+                device_id,
+                entity_table,
+                entity_sync_id,
+                change_type,
+                pushed_at
+            FROM `${config.tablePath}`
+            WHERE ${brokenRemoteChangePredicate()}
+            ORDER BY change_cursor ASC
+        """.trimIndent()
+
+        connection.prepareStatement(sql).use { statement ->
+            statement.executeQuery().use { resultSet ->
+                val changes = mutableListOf<BrokenRemoteSyncChange>()
+                while (resultSet.next()) {
+                    val changeType = enumValueOf<SyncChangeType>(resultSet.getString("change_type"))
+                    changes += BrokenRemoteSyncChange(
+                        cursor = resultSet.getString("change_cursor"),
+                        sourceDeviceId = resultSet.getString("device_id"),
+                        entityTable = resultSet.getString("entity_table"),
+                        entitySyncId = resultSet.getString("entity_sync_id"),
+                        changeType = changeType,
+                        changedAt = parseYdbTimestamp(resultSet.getString("pushed_at")),
+                        reason = brokenRemoteChangeReason(changeType),
+                    )
+                }
+                return changes
+            }
+        }
+    }
+
+    private fun deleteBrokenRemoteChanges(
+        connection: Connection,
+        changes: List<BrokenRemoteSyncChange>,
+    ): Int {
+        if (changes.isEmpty()) {
+            return 0
+        }
+
+        val sql = """
+            DELETE FROM `${config.tablePath}`
+            WHERE entity_table = CAST(? AS Utf8)
+              AND entity_sync_id = CAST(? AS Utf8)
+              AND change_cursor = CAST(? AS Utf8)
+              AND ${brokenRemoteChangePredicate()}
+        """.trimIndent()
+
+        connection.prepareStatement(sql).use { statement ->
+            changes.forEach { change ->
+                statement.setString(1, change.entityTable)
+                statement.setString(2, change.entitySyncId)
+                statement.setString(3, change.cursor)
+                statement.addBatch()
+            }
+            return statement.executeBatch().sumOf { affectedRows ->
+                affectedRows.takeIf { it > 0 } ?: 0
             }
         }
     }
@@ -462,6 +559,27 @@ class YdbJdbcSyncGateway(
         rawValue: String,
     ): LocalDateTime {
         return LocalDateTime.parse(rawValue.removeSuffix("Z"))
+    }
+}
+
+private fun validRemoteChangePredicate(): String {
+    // DELETE допустим без payload: для удаления нам достаточно syncId и типа change.
+    // UPSERT без payload применять нельзя, потому что на локальной стороне нечего
+    // десериализовать в сущность. Такие строки считаем поврежденными и исключаем
+    // из status/pull, чтобы одна битая запись не блокировала всю синхронизацию.
+    return "(change_type = 'DELETE' OR (payload_json IS NOT NULL AND payload_json <> ''))"
+}
+
+private fun brokenRemoteChangePredicate(): String {
+    return "(change_type <> 'DELETE' AND (payload_json IS NULL OR payload_json = ''))"
+}
+
+private fun brokenRemoteChangeReason(
+    changeType: SyncChangeType,
+): String {
+    return when (changeType) {
+        SyncChangeType.UPSERT -> "UPSERT без payload_json"
+        SyncChangeType.DELETE -> "Поврежденная remote-строка"
     }
 }
 
@@ -521,4 +639,15 @@ private fun Throwable.toUiMessage(
     }
 
     return rawMessage.ifBlank { "Неизвестная ошибка подключения к удаленной БД." }
+}
+
+private fun <T> Result<T>.mapGatewayFailure(
+    config: YdbJdbcConfig,
+): Result<T> {
+    return fold(
+        onSuccess = { Result.success(it) },
+        onFailure = { throwable ->
+            Result.failure(IllegalStateException(throwable.toUiMessage(config), throwable))
+        },
+    )
 }

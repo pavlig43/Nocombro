@@ -7,6 +7,12 @@ interface SyncRemoteGateway {
 
     suspend fun loadCurrentRemoteFileStates(): Result<List<RemoteFileSyncState>>
 
+    suspend fun loadBrokenRemoteChanges(): Result<List<BrokenRemoteSyncChange>>
+
+    suspend fun deleteBrokenRemoteChanges(
+        changes: List<BrokenRemoteSyncChange>,
+    ): Result<Int>
+
     suspend fun pushChanges(
         payload: RemotePushPayload,
     ): Result<RemotePushResult>
@@ -91,4 +97,14 @@ data class RemoteFileSyncState(
     val remoteObjectKey: String?,
     val changeType: SyncChangeType,
     val deletedAt: LocalDateTime? = null,
+)
+
+data class BrokenRemoteSyncChange(
+    val cursor: String,
+    val sourceDeviceId: String,
+    val entityTable: String,
+    val entitySyncId: String,
+    val changeType: SyncChangeType,
+    val changedAt: LocalDateTime,
+    val reason: String,
 )

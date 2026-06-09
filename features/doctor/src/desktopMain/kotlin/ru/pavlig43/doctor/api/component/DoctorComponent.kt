@@ -10,8 +10,10 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 import ru.pavlig43.core.MainTabComponent
 import ru.pavlig43.core.componentCoroutineScope
+import ru.pavlig43.database.data.sync.BrokenRemoteSyncChange
 import ru.pavlig43.database.data.sync.RemoteFileSyncState
 import ru.pavlig43.database.data.sync.SyncStatusSnapshot
+import ru.pavlig43.doctor.internal.component.DoctorBrokenRemoteSyncLoadState
 import ru.pavlig43.doctor.api.DoctorDependencies
 import ru.pavlig43.doctor.internal.component.DoctorOrphanFilesLoadState
 import ru.pavlig43.doctor.internal.component.DoctorRemoteOrphanFilesLoadState
@@ -58,6 +60,14 @@ class DoctorComponent(
     private val _remoteOrphanFilesActionError = MutableStateFlow<String?>(null)
     val remoteOrphanFilesActionError = _remoteOrphanFilesActionError.asStateFlow()
 
+    private val _brokenRemoteSyncState = MutableStateFlow<DoctorBrokenRemoteSyncLoadState>(
+        DoctorBrokenRemoteSyncLoadState.Idle
+    )
+    val brokenRemoteSyncState = _brokenRemoteSyncState.asStateFlow()
+
+    private val _brokenRemoteSyncActionError = MutableStateFlow<String?>(null)
+    val brokenRemoteSyncActionError = _brokenRemoteSyncActionError.asStateFlow()
+
     private val _isRemoteCleanupEnabled = MutableStateFlow(false)
     val isRemoteCleanupEnabled = _isRemoteCleanupEnabled.asStateFlow()
 
@@ -65,6 +75,14 @@ class DoctorComponent(
         "Перед проверкой сначала синхронизируйте приложение."
     )
     val remoteCleanupStatusMessage = _remoteCleanupStatusMessage.asStateFlow()
+
+    private val _isBrokenRemoteSyncCleanupEnabled = MutableStateFlow(false)
+    val isBrokenRemoteSyncCleanupEnabled = _isBrokenRemoteSyncCleanupEnabled.asStateFlow()
+
+    private val _brokenRemoteSyncStatusMessage = MutableStateFlow(
+        "Проверьте подключение к удаленной базе."
+    )
+    val brokenRemoteSyncStatusMessage = _brokenRemoteSyncStatusMessage.asStateFlow()
 
     init {
         refreshStorageOverview()
@@ -86,6 +104,11 @@ class DoctorComponent(
         if (tool == DoctorTool.RemoteFileCleanup) {
             coroutineScope.launch(Dispatchers.IO) {
                 refreshRemoteCleanupAvailability()
+            }
+        } else if (tool == DoctorTool.BrokenRemoteSyncCleanup) {
+            coroutineScope.launch(Dispatchers.IO) {
+                refreshBrokenRemoteSyncAvailability()
+                refreshBrokenRemoteSyncChanges()
             }
         }
     }
@@ -222,6 +245,66 @@ class DoctorComponent(
         _remoteOrphanFilesActionError.value = null
     }
 
+    fun refreshBrokenRemoteSyncChanges() {
+        coroutineScope.launch(Dispatchers.IO) {
+            _brokenRemoteSyncState.value = DoctorBrokenRemoteSyncLoadState.Loading
+            if (!refreshBrokenRemoteSyncAvailability()) {
+                return@launch
+            }
+            syncService.loadBrokenRemoteChanges()
+                .onSuccess { changes ->
+                    _brokenRemoteSyncState.value = DoctorBrokenRemoteSyncLoadState.Success(changes)
+                }
+                .onFailure { throwable ->
+                    _brokenRemoteSyncState.value = DoctorBrokenRemoteSyncLoadState.Error(
+                        throwable.message ?: "Не удалось загрузить битые remote-строки sync."
+                    )
+                }
+        }
+    }
+
+    fun deleteBrokenRemoteSyncChange(
+        change: BrokenRemoteSyncChange,
+    ) {
+        coroutineScope.launch(Dispatchers.IO) {
+            _brokenRemoteSyncState.value = DoctorBrokenRemoteSyncLoadState.Loading
+            if (!refreshBrokenRemoteSyncAvailability()) {
+                return@launch
+            }
+            syncService.deleteBrokenRemoteChanges(listOf(change))
+                .onSuccess {
+                    refreshBrokenRemoteSyncChanges()
+                }
+                .onFailure { throwable ->
+                    _brokenRemoteSyncActionError.value =
+                        throwable.message ?: "Не удалось удалить битую remote-строку sync."
+                }
+        }
+    }
+
+    fun deleteAllBrokenRemoteSyncChanges() {
+        val currentState =
+            brokenRemoteSyncState.value as? DoctorBrokenRemoteSyncLoadState.Success ?: return
+        coroutineScope.launch(Dispatchers.IO) {
+            _brokenRemoteSyncState.value = DoctorBrokenRemoteSyncLoadState.Loading
+            if (!refreshBrokenRemoteSyncAvailability()) {
+                return@launch
+            }
+            syncService.deleteBrokenRemoteChanges(currentState.changes)
+                .onSuccess {
+                    refreshBrokenRemoteSyncChanges()
+                }
+                .onFailure { throwable ->
+                    _brokenRemoteSyncActionError.value =
+                        throwable.message ?: "Не удалось удалить битые remote-строки sync."
+                }
+        }
+    }
+
+    fun dismissBrokenRemoteSyncActionError() {
+        _brokenRemoteSyncActionError.value = null
+    }
+
     fun logRemoteFileComparison() {
         coroutineScope.launch(Dispatchers.IO) {
             runCatching {
@@ -263,6 +346,12 @@ class DoctorComponent(
         return remoteCleanupUnavailableMessage(syncStatus) == null
     }
 
+    private suspend fun refreshBrokenRemoteSyncAvailability(): Boolean {
+        val syncStatus = syncService.getStatus()
+        applyBrokenRemoteSyncAvailability(syncStatus)
+        return brokenRemoteSyncUnavailableMessage(syncStatus) == null
+    }
+
     private fun applyRemoteCleanupAvailability(
         syncStatus: SyncStatusSnapshot,
     ) {
@@ -279,6 +368,22 @@ class DoctorComponent(
         }
     }
 
+    private fun applyBrokenRemoteSyncAvailability(
+        syncStatus: SyncStatusSnapshot,
+    ) {
+        val unavailableMessage = brokenRemoteSyncUnavailableMessage(syncStatus)
+
+        _isBrokenRemoteSyncCleanupEnabled.value = unavailableMessage == null
+        _brokenRemoteSyncStatusMessage.value = unavailableMessage
+            ?: "Удаленная база доступна. Можно искать и чистить битые sync-строки."
+
+        if (unavailableMessage != null) {
+            _brokenRemoteSyncState.value = DoctorBrokenRemoteSyncLoadState.Error(unavailableMessage)
+        } else if (_brokenRemoteSyncState.value is DoctorBrokenRemoteSyncLoadState.Error) {
+            _brokenRemoteSyncState.value = DoctorBrokenRemoteSyncLoadState.Idle
+        }
+    }
+
     private fun remoteCleanupUnavailableMessage(
         syncStatus: SyncStatusSnapshot,
     ): String? {
@@ -290,6 +395,15 @@ class DoctorComponent(
         }
         if (syncStatus.hasRemoteChanges) {
             return "Есть неподтянутые remote-изменения. Сначала выполните sync/pull."
+        }
+        return null
+    }
+
+    private fun brokenRemoteSyncUnavailableMessage(
+        syncStatus: SyncStatusSnapshot,
+    ): String? {
+        if (!syncStatus.remoteSyncConfigured) {
+            return "Remote sync не настроен."
         }
         return null
     }

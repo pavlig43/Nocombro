@@ -23,6 +23,20 @@ class YdbSyncGatewayMock : SyncRemoteGateway {
         )
     }
 
+    override suspend fun loadBrokenRemoteChanges(): Result<List<BrokenRemoteSyncChange>> {
+        return Result.failure(
+            IllegalStateException("Remote sync не настроен.")
+        )
+    }
+
+    override suspend fun deleteBrokenRemoteChanges(
+        changes: List<BrokenRemoteSyncChange>,
+    ): Result<Int> {
+        return Result.failure(
+            IllegalStateException("Remote sync не настроен.")
+        )
+    }
+
     override suspend fun pushChanges(
         payload: RemotePushPayload,
     ): Result<RemotePushResult> {
