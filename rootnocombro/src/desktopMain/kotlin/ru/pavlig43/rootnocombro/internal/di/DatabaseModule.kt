@@ -13,6 +13,7 @@ import ru.pavlig43.database.data.sync.SyncService
 import ru.pavlig43.database.data.sync.SyncStateRepository
 import ru.pavlig43.database.data.sync.mirror.MirrorLocalApplyRepository
 import ru.pavlig43.database.data.sync.mirror.MirrorEntityApplyRepository
+import ru.pavlig43.database.data.sync.mirror.MirrorHardDeleteRepository
 import ru.pavlig43.database.data.sync.mirror.MirrorLocalSnapshotRepository
 import ru.pavlig43.database.data.sync.mirror.MirrorReconciliationPlanner
 import ru.pavlig43.database.data.sync.mirror.MirrorReconciliationService
@@ -38,8 +39,9 @@ internal fun getDatabaseModule(rootDependencies: RootDependencies) = listOf(
         single { SyncStateRepository(get<NocombroDatabase>().syncStateDao) }
         single { RemoteFileBatchDownloadRepository(get(), get()) }
         single { MirrorEntityApplyRepository(get()) }
+        single { MirrorHardDeleteRepository(get()) }
         single { MirrorLocalSnapshotRepository(get()) }
-        single { MirrorLocalApplyRepository(get(), get()) }
+        single { MirrorLocalApplyRepository(get(), get(), get()) }
         single { MirrorReconciliationPlanner() }
         single<MirrorSyncRemoteGateway> {
             val config = YdbMirrorJdbcConfig.fromEnvironment()

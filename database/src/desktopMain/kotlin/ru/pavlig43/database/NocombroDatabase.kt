@@ -44,6 +44,7 @@ import ru.pavlig43.database.data.sync.SyncStateDao
 import ru.pavlig43.database.data.sync.SyncStateEntity
 import ru.pavlig43.database.data.sync.mirror.MirrorDeletionJournalDao
 import ru.pavlig43.database.data.sync.mirror.MirrorDeletionJournalEntity
+import ru.pavlig43.database.data.sync.mirror.MirrorHardDeleteDao
 import ru.pavlig43.database.data.transact.Transact
 import ru.pavlig43.database.data.transact.buy.BuyBDIn
 import ru.pavlig43.database.data.transact.buy.dao.BuyDao
@@ -136,6 +137,7 @@ abstract class NocombroDatabase : RoomDatabase() {
     abstract val profitabilityDao: ProfitabilityDao
     abstract val syncStateDao: SyncStateDao
     abstract val mirrorDeletionJournalDao: MirrorDeletionJournalDao
+    abstract val mirrorHardDeleteDao: MirrorHardDeleteDao
 }
 
 
