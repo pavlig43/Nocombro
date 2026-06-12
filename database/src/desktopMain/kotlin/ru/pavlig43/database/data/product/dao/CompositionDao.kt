@@ -27,6 +27,9 @@ abstract class CompositionDao {
     @Query("SELECT * FROM composition WHERE sync_id = :syncId")
     abstract suspend fun getCompositionBySyncId(syncId: String): CompositionIn?
 
+    @Query("SELECT * FROM composition")
+    abstract suspend fun getAll(): List<CompositionIn>
+
     suspend fun getCompositionOut(parentId: Int): List<CompositionOut> {
         return getComposition(parentId).map(InternalComposition::toCompositionOut)
     }

@@ -19,9 +19,11 @@ import com.arkivanov.decompose.extensions.compose.lifecycle.LifecycleController
 import com.arkivanov.essenty.backhandler.BackDispatcher
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
 import io.github.vinceglb.filekit.FileKit
+import kotlinx.coroutines.runBlocking
 import org.koin.java.KoinJavaComponent.getKoin
 import ru.pavlig43.coreui.KeyEventHandler
 import ru.pavlig43.rootnocombro.api.RootDependencies
+import ru.pavlig43.rootnocombro.api.runMirrorStartupMaintenance
 import ru.pavlig43.rootnocombro.api.component.RootNocombroComponent
 import ru.pavlig43.rootnocombro.api.ui.App
 import ru.pavlig43.rootnocombro.internal.di.initKoin
@@ -61,6 +63,8 @@ fun main() {
     FileKit.init(appId = "Nocombro")
 
     val backDispatcher = BackDispatcher()
+    val rootDependencies = getKoin().get<RootDependencies>()
+    runBlocking { runMirrorStartupMaintenance(rootDependencies) }?.let { Logger.i(it) }
 
     val rootNocombroComponent =
         runOnUiThread {
@@ -70,7 +74,7 @@ fun main() {
                     lifecycle = lifecycle,
                     backHandler = backDispatcher
                 ),
-                rootDependencies = getKoin().get<RootDependencies>()
+                rootDependencies = rootDependencies
             )
         }
 

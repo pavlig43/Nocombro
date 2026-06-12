@@ -8,8 +8,7 @@ import kotlinx.datetime.LocalDateTime
 /**
  * Таблица с техническим состоянием синхронизации текущей локальной базы.
  *
- * Здесь хранится не бизнес-данные, а служебная информация: кто мы (`deviceId`),
- * когда последний раз делали pull/push и на каком удаленном курсоре остановились.
+ * Здесь хранится не бизнес-данные, а время последнего успешного pull/push.
  */
 const val SYNC_STATE_TABLE_NAME = "sync_state"
 
@@ -31,12 +30,6 @@ data class SyncStateEntity(
     val scope: String = DEFAULT_SYNC_SCOPE,
 
     /**
-     * Постоянный идентификатор текущей установки приложения.
-     */
-    @ColumnInfo("device_id")
-    val deviceId: String,
-
-    /**
      * Время последнего успешного получения изменений с сервера.
      */
     @ColumnInfo("last_pull_at")
@@ -48,9 +41,4 @@ data class SyncStateEntity(
     @ColumnInfo("last_push_at")
     val lastPushAt: LocalDateTime? = null,
 
-    /**
-     * Последний курсор удаленной синхронизации, если сервер его использует.
-     */
-    @ColumnInfo("last_remote_cursor")
-    val lastRemoteCursor: String? = null,
 )

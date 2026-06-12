@@ -27,6 +27,9 @@ interface ReminderDao {
     @Query("SELECT * FROM $REMINDER_TABLE_NAME WHERE sync_id = :syncId")
     suspend fun getReminderBySyncId(syncId: String): ReminderBD?
 
+    @Query("SELECT * FROM $REMINDER_TABLE_NAME")
+    suspend fun getAll(): List<ReminderBD>
+
     /**
      * Получает все напоминания для уведомлений
      */

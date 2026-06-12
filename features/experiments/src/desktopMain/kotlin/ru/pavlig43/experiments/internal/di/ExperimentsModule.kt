@@ -8,6 +8,6 @@ internal fun createExperimentsModule(
     dependencies: ExperimentsDependencies,
 ) = listOf(
     module {
-        single { ExperimentsRepository(dependencies.database, dependencies.syncQueueRepository) }
+        single { ExperimentsRepository(dependencies.database) }
     }
 )

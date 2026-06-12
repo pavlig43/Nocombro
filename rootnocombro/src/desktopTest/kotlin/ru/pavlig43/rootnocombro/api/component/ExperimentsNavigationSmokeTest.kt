@@ -5,7 +5,6 @@ import com.arkivanov.essenty.backhandler.BackDispatcher
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
 import io.kotest.matchers.types.shouldBeInstanceOf
 import org.koin.core.context.stopKoin
-import org.koin.dsl.module
 import org.koin.java.KoinJavaComponent.getKoin
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.datastore.DATASTORE_PATH_PROPERTY
@@ -30,13 +29,7 @@ class ExperimentsNavigationSmokeTest : DesktopMainDispatcherFunSpec({
             .resolve("preferences.preferences_pb")
         stopKoin()
         System.setProperty(DATASTORE_PATH_PROPERTY, dataStorePath.toString())
-        initKoin {
-            modules(
-                module {
-                    single<NocombroDatabase> { managedDatabase.database }
-                }
-            )
-        }
+        initKoin(databaseOverride = managedDatabase.database)
         val rootDependencies = getKoin().get<RootDependencies>()
         val component = runOnUiThread {
             RootNocombroComponent(

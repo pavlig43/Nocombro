@@ -9,7 +9,6 @@ import org.koin.core.module.Module
 import org.koin.dsl.module
 import ru.pavlig43.database.data.sync.SyncStateEntity
 import java.io.File
-import java.util.UUID
 
 fun platformDataBaseModule(): Module = module {
     single<NocombroDatabase> { getNocombroDatabase() }
@@ -19,7 +18,6 @@ fun platformDataBaseModule(): Module = module {
 fun getNocombroDatabase(): NocombroDatabase {
     val appDataDir = getAppDataDirectory()
     val dbFile = File(appDataDir, "nocombro.db")
-    val deviceId = getOrCreateDeviceId(appDataDir)
 
     val builder =  Room.databaseBuilder<NocombroDatabase>(
         name = dbFile.absolutePath,
@@ -27,16 +25,17 @@ fun getNocombroDatabase(): NocombroDatabase {
     val database = builder
         .addMigrations(MIGRATION_1_2)
         .addMigrations(MIGRATION_2_3)
+        .addMigrations(MIGRATION_3_4)
+        .addMigrations(MIGRATION_4_5)
+        .addMigrations(MIGRATION_5_6)
+        .addMigrations(MIGRATION_6_7)
         .setDriver(BundledSQLiteDriver())
         .setQueryCoroutineContext(Dispatchers.IO)
         .build()
     CoroutineScope(Dispatchers.IO).launch {
-        val existingState = database.syncDao.getSyncState()
-        database.syncDao.upsertSyncState(
-            syncState = createInitialSyncState(
-                deviceId = deviceId,
-                existingState = existingState,
-            )
+        val existingState = database.syncStateDao.getSyncState()
+        database.syncStateDao.upsertSyncState(
+            syncState = createInitialSyncState(existingState)
         )
     }
     return database
@@ -58,34 +57,13 @@ private fun getAppDataDirectory(): File {
 }
 
 /**
- * Возвращает постоянный идентификатор текущей установки приложения.
- *
- * Этот `deviceId` нужен для будущей синхронизации: по нему можно отличать изменения,
- * пришедшие с разных компьютеров. Идентификатор создается один раз и сохраняется рядом с БД.
- */
-private fun getOrCreateDeviceId(appDataDir: File): String {
-    val deviceIdFile = File(appDataDir, "device.id")
-    if (deviceIdFile.exists()) {
-        return deviceIdFile.readText().trim()
-    }
-
-    val deviceId = UUID.randomUUID().toString()
-    deviceIdFile.writeText(deviceId)
-    return deviceId
-}
-
-/**
  * Собирает начальное состояние синхронизации для локальной базы.
  *
- * При повторном запуске сохраняем уже известные отметки pull/push и курсор,
- * но актуализируем `deviceId`, который используется этой установкой приложения.
+ * При повторном запуске сохраняем уже известные отметки pull/push.
  */
 private fun createInitialSyncState(
-    deviceId: String,
     existingState: SyncStateEntity?,
 ) = SyncStateEntity(
-    deviceId = deviceId,
     lastPullAt = existingState?.lastPullAt,
     lastPushAt = existingState?.lastPushAt,
-    lastRemoteCursor = existingState?.lastRemoteCursor,
 )

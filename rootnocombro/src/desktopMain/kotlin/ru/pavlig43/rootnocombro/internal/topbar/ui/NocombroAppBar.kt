@@ -128,18 +128,10 @@ private fun SyncStatusButton(
                         )
                     }
                     if (
-                        !syncUiState.isSyncRunning && (
-                            syncUiState.failedChangesCount > 0 ||
-                                syncUiState.pendingChangesCount > 0 ||
-                                syncUiState.hasRemoteChanges
-                            )
+                        !syncUiState.isSyncRunning && syncUiState.hasRemoteChanges
                     ) {
                         Badge(
-                            containerColor = when {
-                                syncUiState.failedChangesCount > 0 -> MaterialTheme.colorScheme.error
-                                syncUiState.hasRemoteChanges -> MaterialTheme.colorScheme.tertiary
-                                else -> MaterialTheme.colorScheme.primary
-                            },
+                            containerColor = MaterialTheme.colorScheme.tertiary,
                             modifier = Modifier.size(10.dp)
                         )
                     }
@@ -215,17 +207,13 @@ private fun SyncStatusButton(
 }
 
 private fun syncIcon(syncUiState: SyncUiState) = when {
-    syncUiState.failedChangesCount > 0 -> Res.drawable.warning
     syncUiState.hasRemoteChanges -> Res.drawable.cloud_download
-    syncUiState.pendingChangesCount > 0 -> Res.drawable.refresh
     else -> Res.drawable.check
 }
 
 @Composable
 private fun syncTint(syncUiState: SyncUiState): Color = when {
-    syncUiState.failedChangesCount > 0 -> MaterialTheme.colorScheme.error
     syncUiState.hasRemoteChanges -> MaterialTheme.colorScheme.tertiary
-    syncUiState.pendingChangesCount > 0 -> MaterialTheme.colorScheme.primary
     else -> MaterialTheme.colorScheme.onSurfaceVariant
 }
 
@@ -234,9 +222,7 @@ private fun buildSyncTooltip(syncUiState: SyncUiState): String {
         add(
             when {
                 syncUiState.isSyncRunning -> syncUiState.runningActionLabel?.let { "$it..." } ?: "Синхронизация..."
-                syncUiState.failedChangesCount > 0 -> "Есть ошибки синхронизации"
                 syncUiState.hasRemoteChanges -> "На сервере есть новые изменения"
-                syncUiState.pendingChangesCount > 0 -> "Есть локальные изменения для отправки"
                 else -> "Локальная база синхронизирована"
             }
         )
@@ -253,12 +239,6 @@ private fun buildSyncTooltip(syncUiState: SyncUiState): String {
         syncUiState.lastFilesDownloadSummary?.let {
             add("Файлы: $it")
         }
-        if (syncUiState.pendingChangesCount > 0) {
-            add("Локальных изменений: ${syncUiState.pendingChangesCount}")
-        }
-        if (syncUiState.failedChangesCount > 0) {
-            add("Ошибок очереди: ${syncUiState.failedChangesCount}")
-        }
         syncUiState.lastStatusCheckAt?.let {
             add("Последняя проверка: ${it.format(dateTimeFormat)}")
         }
@@ -268,9 +248,7 @@ private fun buildSyncTooltip(syncUiState: SyncUiState): String {
 private fun buildSyncSummary(syncUiState: SyncUiState): String {
     return when {
         syncUiState.isSyncRunning -> syncUiState.runningActionLabel?.let { "$it..." } ?: "Синхронизация..."
-        syncUiState.failedChangesCount > 0 -> "Есть ошибки синхронизации"
         syncUiState.hasRemoteChanges -> "На сервере есть новые изменения"
-        syncUiState.pendingChangesCount > 0 -> "Есть локальные изменения"
         else -> "Синхронизация"
     }
 }
@@ -302,6 +280,16 @@ private fun SyncDropdownContent(syncUiState: SyncUiState) {
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
+        Text(
+            text = "Локальных изменений: ${syncUiState.pendingLocalChangesCount}",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Text(
+            text = "Удалённых изменений: ${syncUiState.remoteChangesCount}",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
         syncUiState.lastSyncAt?.let {
             Text(
                 text = "Последняя синхронизация: ${it.format(dateTimeFormat)}",
@@ -312,18 +300,6 @@ private fun SyncDropdownContent(syncUiState: SyncUiState) {
         syncUiState.lastPullAt?.let {
             Text(
                 text = "Последнее получение: ${it.format(dateTimeFormat)}",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-        Text(
-            text = "Формат данных v${syncUiState.payloadVersion}",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        syncUiState.lastRemoteCursor?.let {
-            Text(
-                text = "Курсор синхронизации: $it",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -344,14 +320,12 @@ private fun copySyncSnapshotToClipboard(
     val clipboard = Toolkit.getDefaultToolkit().systemClipboard
     val snapshot = buildString {
         appendLine("sync.remote_configured=${syncUiState.remoteSyncConfigured}")
-        appendLine("sync.payload_version=${syncUiState.payloadVersion}")
-        appendLine("sync.pending=${syncUiState.pendingChangesCount}")
-        appendLine("sync.failed=${syncUiState.failedChangesCount}")
+        appendLine("sync.pending_local_changes=${syncUiState.pendingLocalChangesCount}")
+        appendLine("sync.remote_changes=${syncUiState.remoteChangesCount}")
         appendLine("sync.has_remote_changes=${syncUiState.hasRemoteChanges}")
         appendLine("sync.last_sync_at=${syncUiState.lastSyncAt}")
         appendLine("sync.last_pull_at=${syncUiState.lastPullAt}")
         appendLine("sync.last_status_check_at=${syncUiState.lastStatusCheckAt}")
-        appendLine("sync.last_remote_cursor=${syncUiState.lastRemoteCursor}")
         appendLine("sync.last_error=${syncUiState.lastError}")
         appendLine("sync.last_files_download_summary=${syncUiState.lastFilesDownloadSummary}")
     }.trimEnd()

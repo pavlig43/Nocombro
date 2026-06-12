@@ -106,6 +106,7 @@ fun DoctorScreen(
                         onDelete = component::deleteRemoteOrphanFile,
                         onDeleteAll = component::deleteAllRemoteOrphanFiles,
                     )
+
                 }
             }
         }

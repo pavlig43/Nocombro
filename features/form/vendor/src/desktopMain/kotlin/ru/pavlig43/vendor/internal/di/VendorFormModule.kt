@@ -4,15 +4,13 @@ import org.koin.dsl.module
 import ru.pavlig43.core.TransactionExecutor
 import ru.pavlig43.core.model.ChangeSet
 import ru.pavlig43.database.NocombroDatabase
-import ru.pavlig43.database.data.sync.SyncQueueRepository
 import ru.pavlig43.database.data.sync.defaultUpdatedAt
 import ru.pavlig43.database.data.vendor.Vendor
-import ru.pavlig43.database.data.vendor.VENDOR_TABLE_NAME
 import ru.pavlig43.database.inTransaction
 import ru.pavlig43.files.api.FilesDependencies
 import ru.pavlig43.mutable.api.singleLine.data.CreateSingleItemRepository
-import ru.pavlig43.mutable.api.singleLine.data.SyncCreateSingleItemRepository
-import ru.pavlig43.mutable.api.singleLine.data.SyncUpdateSingleLineRepository
+import ru.pavlig43.mutable.api.singleLine.data.TransactionalCreateSingleItemRepository
+import ru.pavlig43.mutable.api.singleLine.data.TransactionalUpdateSingleLineRepository
 import ru.pavlig43.mutable.api.singleLine.data.UpdateSingleLineRepository
 import ru.pavlig43.vendor.api.VendorFormDependencies
 
@@ -21,20 +19,15 @@ internal fun createVendorFormModule(dependencies: VendorFormDependencies) = list
         single<NocombroDatabase> { dependencies.db }
         single<TransactionExecutor> { dependencies.transaction }
         single<FilesDependencies> {dependencies.filesDependencies  }
-        single { SyncQueueRepository(get<NocombroDatabase>().syncDao) }
-        single<CreateSingleItemRepository<Vendor>> { VendorCreateRepository(get(), get()) }
-        single<UpdateSingleLineRepository<Vendor>> { VendorUpdateRepository(get(), get()) }
+        single<CreateSingleItemRepository<Vendor>> { VendorCreateRepository(get()) }
+        single<UpdateSingleLineRepository<Vendor>> { VendorUpdateRepository(get()) }
 
     }
 )
 
 private class VendorCreateRepository(
     db: NocombroDatabase,
-    syncQueueRepository: SyncQueueRepository,
-) : SyncCreateSingleItemRepository<Vendor>(
-    tableName = VENDOR_TABLE_NAME,
-    entitySyncKeyOf = Vendor::syncId,
-    enqueueSyncUpsert = syncQueueRepository::enqueueUpsert,
+) : TransactionalCreateSingleItemRepository<Vendor>(
     inWriteTransaction = { block -> db.inTransaction(block) },
 ) {
     private val dao = db.vendorDao
@@ -46,11 +39,7 @@ private class VendorCreateRepository(
 
 private class VendorUpdateRepository(
     db: NocombroDatabase,
-    syncQueueRepository: SyncQueueRepository,
-) : SyncUpdateSingleLineRepository<Vendor>(
-    tableName = VENDOR_TABLE_NAME,
-    entitySyncKeyOf = Vendor::syncId,
-    enqueueSyncUpsert = syncQueueRepository::enqueueUpsert,
+) : TransactionalUpdateSingleLineRepository<Vendor>(
     inWriteTransaction = { block -> db.inTransaction(block) },
 ) {
 

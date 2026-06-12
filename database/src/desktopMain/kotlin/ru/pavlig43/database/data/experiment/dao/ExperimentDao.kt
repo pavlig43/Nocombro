@@ -23,6 +23,9 @@ interface ExperimentDao {
     @Query("SELECT * FROM $EXPERIMENT_TABLE_NAME WHERE sync_id = :syncId")
     suspend fun getExperimentBySyncId(syncId: String): Experiment?
 
+    @Query("SELECT * FROM $EXPERIMENT_TABLE_NAME")
+    suspend fun getAll(): List<Experiment>
+
     @Query(
         """
         SELECT * FROM $EXPERIMENT_TABLE_NAME

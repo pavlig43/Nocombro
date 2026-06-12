@@ -10,7 +10,6 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 import ru.pavlig43.core.MainTabComponent
 import ru.pavlig43.core.componentCoroutineScope
-import ru.pavlig43.database.data.sync.RemoteFileSyncState
 import ru.pavlig43.database.data.sync.SyncStatusSnapshot
 import ru.pavlig43.doctor.api.DoctorDependencies
 import ru.pavlig43.doctor.internal.component.DoctorOrphanFilesLoadState
@@ -206,14 +205,13 @@ class DoctorComponent(
             if (!refreshRemoteCleanupAvailability()) {
                 return@launch
             }
-            currentState.files.forEach { orphan ->
-                remoteFilesMaintenanceRepository.deleteRemoteFile(orphan.objectKey)
-                    .onFailure { throwable ->
-                        _remoteOrphanFilesActionError.value =
-                            throwable.message ?: "Не удалось удалить orphan-объекты S3."
-                        return@launch
-                    }
-            }
+            remoteFilesMaintenanceRepository
+                .deleteRemoteFiles(currentState.files.mapTo(mutableSetOf()) { it.objectKey })
+                .onFailure { throwable ->
+                    _remoteOrphanFilesActionError.value =
+                        throwable.message ?: "Не удалось удалить orphan-объекты S3."
+                    return@launch
+                }
             refreshRemoteOrphanFiles()
         }
     }
@@ -226,29 +224,28 @@ class DoctorComponent(
         coroutineScope.launch(Dispatchers.IO) {
             runCatching {
                 val localKeys = remoteFilesMaintenanceRepository.getAttachedRemoteObjectKeys().getOrThrow()
-                val remoteStates = syncService.loadCurrentRemoteFileStates().getOrThrow()
-                val remoteKeys = remoteStates.currentRemoteObjectKeys()
-                val remoteWithoutObjectKey = remoteStates.count { state ->
-                    state.changeType != ru.pavlig43.database.data.sync.SyncChangeType.DELETE &&
-                        state.deletedAt == null &&
-                        state.remoteObjectKey.isNullOrBlank()
-                }
+                val remoteKeys = remoteFilesMaintenanceRepository.getActiveMirrorObjectKeys().getOrThrow()
+                val s3Keys = remoteFilesMaintenanceRepository.getS3ObjectKeys().getOrThrow()
 
                 val onlyLocal = localKeys - remoteKeys
                 val onlyRemote = remoteKeys - localKeys
+                val onlyS3 = s3Keys - remoteKeys
 
                 logger.info(
                     "Doctor S3 compare: " +
                         "local=${localKeys.size}, " +
-                        "remote=${remoteKeys.size}, " +
-                        "remoteWithoutObjectKey=$remoteWithoutObjectKey, " +
+                        "mirror=${remoteKeys.size}, " +
+                        "s3=${s3Keys.size}, " +
                         "onlyLocal=${onlyLocal.size}, " +
-                        "onlyRemote=${onlyRemote.size}"
+                        "onlyMirror=${onlyRemote.size}, " +
+                        "onlyS3=${onlyS3.size}"
                 )
                 logger.info("Doctor S3 compare local keys:\n${localKeys.toLogBlock()}")
-                logger.info("Doctor S3 compare remote keys:\n${remoteKeys.toLogBlock()}")
+                logger.info("Doctor S3 compare mirror keys:\n${remoteKeys.toLogBlock()}")
+                logger.info("Doctor S3 compare S3 keys:\n${s3Keys.toLogBlock()}")
                 logger.info("Doctor S3 compare only local:\n${onlyLocal.toLogBlock()}")
-                logger.info("Doctor S3 compare only remote:\n${onlyRemote.toLogBlock()}")
+                logger.info("Doctor S3 compare only mirror:\n${onlyRemote.toLogBlock()}")
+                logger.info("Doctor S3 compare only S3:\n${onlyS3.toLogBlock()}")
             }.onFailure { throwable ->
                 _remoteOrphanFilesActionError.value =
                     throwable.message ?: "Не удалось сравнить локальную и удаленную базы по файлам."
@@ -292,14 +289,6 @@ class DoctorComponent(
             return "Есть неподтянутые remote-изменения. Сначала выполните sync/pull."
         }
         return null
-    }
-
-    private fun List<RemoteFileSyncState>.currentRemoteObjectKeys(): Set<String> {
-        return asSequence()
-            .filter { it.changeType != ru.pavlig43.database.data.sync.SyncChangeType.DELETE }
-            .filter { it.deletedAt == null }
-            .mapNotNull { it.remoteObjectKey }
-            .toSet()
     }
 
     private fun Collection<String>.toLogBlock(): String {

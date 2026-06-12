@@ -2,6 +2,7 @@ import ru.pavlig43.convention.extension.desktopDependencies
 
 plugins {
   alias(libs.plugins.pavlig43.feature)  
+  alias(libs.plugins.pavlig43.testing)
   }
 
 
@@ -13,5 +14,13 @@ kotlin{
         implementation(projects.features.manageitem.loadinitdata)
         implementation(projects.features.manageitem.update)
 
+    }
+
+    sourceSets {
+        desktopTest {
+            dependencies {
+                implementation(projects.databaseKit)
+            }
+        }
     }
 }

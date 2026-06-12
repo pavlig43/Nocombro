@@ -28,6 +28,9 @@ suspend fun create(transaction: Transact): Long
     @Query("SELECT * FROM $TRANSACTION_TABLE_NAME WHERE sync_id = :syncId")
     suspend fun getTransactionBySyncId(syncId: String): Transact?
 
+    @Query("SELECT * FROM $TRANSACTION_TABLE_NAME")
+    suspend fun getAll(): List<Transact>
+
     @Query("""
     SELECT * FROM $TRANSACTION_TABLE_NAME
     ORDER BY created_at DESC

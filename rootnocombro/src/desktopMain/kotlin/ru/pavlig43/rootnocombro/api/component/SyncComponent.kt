@@ -11,8 +11,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.LocalDateTime
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import ru.pavlig43.core.componentCoroutineScope
-import ru.pavlig43.database.data.files.remote.RemoteFileBatchDownloadRepository
 import ru.pavlig43.database.data.files.remote.RemoteFileBatchDownloadSummary
 import ru.pavlig43.database.data.sync.SyncService
 import ru.pavlig43.database.data.sync.SyncStatusSnapshot
@@ -26,10 +27,14 @@ import ru.pavlig43.database.data.sync.SyncStatusSnapshot
 class SyncComponent(
     componentContext: ComponentContext,
     private val syncService: SyncService,
-    private val remoteFileBatchDownloadRepository: RemoteFileBatchDownloadRepository,
 ) : ComponentContext by componentContext {
 
     private val coroutineScope = componentCoroutineScope()
+    // В этом компоненте есть несколько конкурирующих действий:
+    // ручной pull/push/sync и периодический refreshStatus().
+    // Без общей блокировки они могут выполняться параллельно и перетирать друг другу
+    // uiState: например, refresh завершится посередине pull и вернет старый статус в UI.
+    private val syncActionMutex = Mutex()
 
     private val _uiState = MutableStateFlow(SyncUiState())
     val uiState: StateFlow<SyncUiState> = _uiState.asStateFlow()
@@ -44,17 +49,21 @@ class SyncComponent(
      */
     fun refreshStatus() {
         coroutineScope.launch {
-            _uiState.update {
-                it.copy(
-                    isSyncRunning = true,
-                    runningActionLabel = "Проверка",
-                    lastError = null,
-                )
+            // Mutex здесь нужен не для потокобезопасности StateFlow как такового,
+            // а чтобы логически сериализовать sync-операции для UI.
+            syncActionMutex.withLock {
+                _uiState.update {
+                    it.copy(
+                        isSyncRunning = true,
+                        runningActionLabel = "Проверка",
+                        lastError = null,
+                    )
+                }
+                val status = withContext(Dispatchers.IO) {
+                    syncService.getStatus()
+                }
+                updateUiState(status, isSyncRunning = false, lastError = null)
             }
-            val status = withContext(Dispatchers.IO) {
-                syncService.getStatus()
-            }
-            updateUiState(status, isSyncRunning = false, lastError = null)
         }
     }
 
@@ -63,45 +72,49 @@ class SyncComponent(
      */
     fun onSyncClick() {
         coroutineScope.launch {
-            _uiState.update {
-                it.copy(
-                    isSyncRunning = true,
-                    runningActionLabel = "Синхронизация",
-                    lastError = null,
+            syncActionMutex.withLock {
+                _uiState.update {
+                    it.copy(
+                        isSyncRunning = true,
+                        runningActionLabel = "Синхронизация",
+                        lastError = null,
+                    )
+                }
+                val result = withContext(Dispatchers.IO) {
+                    syncService.syncOnce()
+                }
+                updateUiState(
+                    status = result.status,
+                    isSyncRunning = false,
+                    lastError = result.error,
+                    lastSyncAt = result.lastSyncAt,
+                    lastPullAt = result.lastPullAt,
                 )
             }
-            val result = withContext(Dispatchers.IO) {
-                syncService.syncOnce()
-            }
-            updateUiState(
-                status = result.status,
-                isSyncRunning = false,
-                lastError = result.error,
-                lastSyncAt = result.lastSyncAt,
-                lastPullAt = result.lastPullAt,
-            )
         }
     }
 
     fun onPushClick() {
         coroutineScope.launch {
-            _uiState.update {
-                it.copy(
-                    isSyncRunning = true,
-                    runningActionLabel = "Отправка",
-                    lastError = null,
+            syncActionMutex.withLock {
+                _uiState.update {
+                    it.copy(
+                        isSyncRunning = true,
+                        runningActionLabel = "Отправка",
+                        lastError = null,
+                    )
+                }
+                val result = withContext(Dispatchers.IO) {
+                    syncService.pushOnce()
+                }
+                updateUiState(
+                    status = result.status,
+                    isSyncRunning = false,
+                    lastError = result.error,
+                    lastSyncAt = result.lastSyncAt,
+                    lastPullAt = result.lastPullAt,
                 )
             }
-            val result = withContext(Dispatchers.IO) {
-                syncService.pushOnce()
-            }
-            updateUiState(
-                status = result.status,
-                isSyncRunning = false,
-                lastError = result.error,
-                lastSyncAt = result.lastSyncAt,
-                lastPullAt = result.lastPullAt,
-            )
         }
     }
 
@@ -116,45 +129,41 @@ class SyncComponent(
      */
     fun onPullClick() {
         coroutineScope.launch {
-            _uiState.update {
-                it.copy(
-                    isSyncRunning = true,
-                    runningActionLabel = "Получение",
-                    lastError = null,
-                    lastFilesDownloadSummary = null,
-                )
-            }
-            val result = withContext(Dispatchers.IO) {
-                syncService.pullOnce()
-            }
-            if (result.error != null) {
+            // Весь сценарий pull -> download files должен быть для UI одной операцией.
+            // Если в середине вклинится periodic refresh, пользователь увидит
+            // скачущий статус, старые timestamps или потерю текста текущего шага.
+            syncActionMutex.withLock {
+                _uiState.update {
+                    it.copy(
+                        isSyncRunning = true,
+                        runningActionLabel = "Получение",
+                        lastError = null,
+                        lastFilesDownloadSummary = null,
+                    )
+                }
+                val result = withContext(Dispatchers.IO) {
+                    syncService.pullOnce()
+                }
+                if (result.error != null) {
+                    updateUiState(
+                        status = result.status,
+                        isSyncRunning = false,
+                        lastError = result.error,
+                        lastSyncAt = result.lastSyncAt,
+                        lastPullAt = result.lastPullAt,
+                    )
+                    return@withLock
+                }
+
                 updateUiState(
                     status = result.status,
                     isSyncRunning = false,
-                    lastError = result.error,
+                    lastError = null,
                     lastSyncAt = result.lastSyncAt,
                     lastPullAt = result.lastPullAt,
-                )
-                return@launch
-            }
-
-            _uiState.update {
-                it.copy(
-                    isSyncRunning = true,
-                    runningActionLabel = "Подгрузка файлов",
+                    lastFilesDownloadSummary = result.filesDownloadSummary?.toUiSummary(),
                 )
             }
-            val downloadResult = withContext(Dispatchers.IO) {
-                remoteFileBatchDownloadRepository.downloadMissingLocalCopies()
-            }
-            updateUiState(
-                status = result.status,
-                isSyncRunning = false,
-                lastError = downloadResult.exceptionOrNull()?.message,
-                lastSyncAt = result.lastSyncAt,
-                lastPullAt = result.lastPullAt,
-                lastFilesDownloadSummary = downloadResult.getOrNull()?.toUiSummary(),
-            )
         }
     }
 
@@ -168,16 +177,14 @@ class SyncComponent(
     ) {
         _uiState.update {
             it.copy(
-                pendingChangesCount = status.pendingChangesCount,
-                failedChangesCount = status.failedChangesCount,
+                pendingLocalChangesCount = status.pendingLocalChangesCount,
+                remoteChangesCount = status.remoteChangesCount,
                 hasRemoteChanges = status.hasRemoteChanges,
                 isSyncRunning = isSyncRunning,
                 remoteSyncConfigured = status.remoteSyncConfigured,
                 lastStatusCheckAt = status.lastStatusCheckAt,
                 lastSyncAt = lastSyncAt ?: status.lastSyncAt,
                 lastPullAt = lastPullAt ?: status.lastPullAt,
-                lastRemoteCursor = status.lastRemoteCursor,
-                payloadVersion = status.payloadVersion,
                 lastError = lastError ?: status.remoteError,
                 lastFilesDownloadSummary = lastFilesDownloadSummary ?: it.lastFilesDownloadSummary,
                 runningActionLabel = null,
@@ -199,16 +206,14 @@ class SyncComponent(
 }
 
 data class SyncUiState(
-    val pendingChangesCount: Int = 0,
-    val failedChangesCount: Int = 0,
+    val pendingLocalChangesCount: Int = 0,
+    val remoteChangesCount: Int = 0,
     val hasRemoteChanges: Boolean = false,
     val isSyncRunning: Boolean = false,
     val remoteSyncConfigured: Boolean = false,
     val lastStatusCheckAt: LocalDateTime? = null,
     val lastSyncAt: LocalDateTime? = null,
     val lastPullAt: LocalDateTime? = null,
-    val lastRemoteCursor: String? = null,
-    val payloadVersion: Int = 0,
     val lastError: String? = null,
     val lastFilesDownloadSummary: String? = null,
     val runningActionLabel: String? = null,

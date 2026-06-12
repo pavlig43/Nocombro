@@ -28,6 +28,9 @@ interface ExperimentReminderDao {
     @Query("SELECT * FROM $EXPERIMENT_REMINDER_TABLE_NAME WHERE sync_id = :syncId")
     suspend fun getReminderBySyncId(syncId: String): ExperimentReminder?
 
+    @Query("SELECT * FROM $EXPERIMENT_REMINDER_TABLE_NAME")
+    suspend fun getAll(): List<ExperimentReminder>
+
     @Query(
         """
         SELECT * FROM $EXPERIMENT_REMINDER_TABLE_NAME
