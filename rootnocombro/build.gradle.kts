@@ -33,6 +33,7 @@ kotlin {
 
         implementation(projects.features.analytic.main)
         implementation(projects.features.analytic.profitability)
+        implementation(libs.filekit.dialogs)
     }
 
     sourceSets {

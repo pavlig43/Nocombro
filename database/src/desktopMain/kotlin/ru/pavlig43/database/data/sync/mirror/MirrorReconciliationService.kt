@@ -24,6 +24,23 @@ class MirrorReconciliationService(
     suspend fun getStatus(): MirrorRemoteStatus = remoteGateway.getStatus()
 
     /**
+     * Загружает локальный и удаленный snapshot и строит план без изменения данных.
+     */
+    suspend fun buildPreview(): Result<MirrorReconciliationPreview> = runCatching {
+        val status = remoteGateway.getStatus()
+        require(status.configured) { status.error ?: "Mirror sync is not configured" }
+        require(status.error == null) { status.error ?: "Mirror remote is unavailable" }
+
+        val local = localSnapshotRepository.loadSnapshot(MirrorSyncTable.mirroredBusinessTables)
+        val remote = remoteGateway.loadRemoteSnapshot().getOrThrow()
+        MirrorReconciliationPreview(
+            localSnapshot = local,
+            remoteSnapshot = remote,
+            plan = planner.plan(local, remote),
+        )
+    }
+
+    /**
      * Загружает оба snapshot и подсчитывает расхождения без изменения данных.
      *
      * Если transport не настроен или status уже содержит ошибку, тяжелая загрузка
@@ -158,6 +175,13 @@ data class MirrorRemoteRebuildResult(
     val rebuiltAt: LocalDateTime,
     val pushedRows: Int,
     val tombstonedRows: Int,
+)
+
+/** Read-only результат сравнения Room и remote mirror. */
+data class MirrorReconciliationPreview(
+    val localSnapshot: MirrorLocalSnapshot,
+    val remoteSnapshot: MirrorRemoteSnapshot,
+    val plan: MirrorReconciliationPlan,
 )
 
 /** Статус gateway и количество победителей на каждой стороне. */

@@ -1,6 +1,9 @@
 package ru.pavlig43.rootnocombro.api.component
 
 import com.arkivanov.decompose.ComponentContext
+import io.github.vinceglb.filekit.FileKit
+import io.github.vinceglb.filekit.PlatformFile
+import io.github.vinceglb.filekit.dialogs.openFileWithDefaultApplication
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -114,6 +117,36 @@ class SyncComponent(
                     lastSyncAt = result.lastSyncAt,
                     lastPullAt = result.lastPullAt,
                 )
+            }
+        }
+    }
+
+    /**
+     * Формирует read-only Markdown-анализ Room/YDB и открывает его системным приложением.
+     */
+    fun onCreateReportClick() {
+        coroutineScope.launch {
+            syncActionMutex.withLock {
+                _uiState.update {
+                    it.copy(
+                        isSyncRunning = true,
+                        runningActionLabel = "Формирование отчёта",
+                        lastError = null,
+                    )
+                }
+                val result = withContext(Dispatchers.IO) {
+                    syncService.createSyncAnalysisReport().mapCatching { file ->
+                        FileKit.openFileWithDefaultApplication(PlatformFile(file))
+                        file
+                    }
+                }
+                _uiState.update {
+                    it.copy(
+                        isSyncRunning = false,
+                        runningActionLabel = null,
+                        lastError = result.exceptionOrNull()?.message,
+                    )
+                }
             }
         }
     }

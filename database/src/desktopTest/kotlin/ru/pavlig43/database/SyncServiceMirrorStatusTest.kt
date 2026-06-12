@@ -7,6 +7,7 @@ import ru.pavlig43.database.data.files.remote.RemoteFileRef
 import ru.pavlig43.database.data.files.remote.RemoteFileStorageGateway
 import ru.pavlig43.database.data.files.remote.RemoteStorageObject
 import ru.pavlig43.database.data.sync.SyncService
+import ru.pavlig43.database.data.sync.SyncAnalysisReportWriter
 import ru.pavlig43.database.data.sync.SyncStateEntity
 import ru.pavlig43.database.data.sync.SyncStateRepository
 import ru.pavlig43.database.data.sync.mirror.MirrorEntityApplyRepository
@@ -25,6 +26,7 @@ import ru.pavlig43.database.data.sync.mirror.MirrorSyncTable
 import ru.pavlig43.database.data.sync.mirror.VendorMirrorRow
 import ru.pavlig43.testkit.DesktopMainDispatcherFunSpec
 import ru.pavlig43.testkit.database.withEmptyTestDatabase
+import java.nio.file.Files
 
 class SyncServiceMirrorStatusTest : DesktopMainDispatcherFunSpec({
 
@@ -63,12 +65,41 @@ class SyncServiceMirrorStatusTest : DesktopMainDispatcherFunSpec({
             result.filesDownloadSummary?.scannedCount shouldBe 0
         }
     }
+
+    test("sync analysis report does not write mirror state timestamps or files") {
+        withEmptyTestDatabase { db ->
+            val initialState = SyncStateEntity(
+                lastPushAt = LocalDateTime(2026, 6, 10, 10, 0),
+                lastPullAt = LocalDateTime(2026, 6, 10, 11, 0),
+            )
+            db.syncStateDao.upsertSyncState(initialState)
+            val gateway = StatusMirrorGateway(LocalDateTime(2026, 6, 11, 15, 0))
+            val fileGateway = ConfiguredFileStorageGateway()
+            val service = createSyncService(
+                db = db,
+                gateway = gateway,
+                fileRepository = RemoteFileBatchDownloadRepository(db, fileGateway),
+                reportWriter = SyncAnalysisReportWriter(
+                    reportDirectory = { Files.createTempDirectory("sync-report-service").toFile() },
+                ),
+            )
+
+            val result = service.createSyncAnalysisReport()
+
+            result.isSuccess shouldBe true
+            gateway.pushCalls shouldBe 0
+            gateway.pullCalls shouldBe 0
+            fileGateway.downloadCalls shouldBe 0
+            db.syncStateDao.getSyncState() shouldBe initialState
+        }
+    }
 })
 
 private fun createSyncService(
     db: NocombroDatabase,
     gateway: MirrorSyncRemoteGateway,
     fileRepository: RemoteFileBatchDownloadRepository? = null,
+    reportWriter: SyncAnalysisReportWriter = SyncAnalysisReportWriter(),
 ): SyncService {
     val applyRepository = MirrorLocalApplyRepository(
         db = db,
@@ -83,15 +114,20 @@ private fun createSyncService(
             localApplyRepository = applyRepository,
         ),
         remoteFileBatchDownloadRepository = fileRepository,
+        syncAnalysisReportWriter = reportWriter,
     )
 }
 
 private class ConfiguredFileStorageGateway : RemoteFileStorageGateway {
+    var downloadCalls = 0
     override val providerId = "fake"
     override fun isConfigured() = true
     override suspend fun upload(objectKey: String, localPath: String) =
         Result.success(RemoteFileRef(providerId, objectKey))
-    override suspend fun download(objectKey: String, localPath: String) = Result.success(Unit)
+    override suspend fun download(objectKey: String, localPath: String): Result<Unit> {
+        downloadCalls++
+        return Result.success(Unit)
+    }
     override suspend fun listObjects() = Result.success(emptyList<RemoteStorageObject>())
     override suspend fun delete(objectKey: String) = Result.success(Unit)
 }
@@ -99,6 +135,8 @@ private class ConfiguredFileStorageGateway : RemoteFileStorageGateway {
 private class StatusMirrorGateway(
     private val checkedAt: LocalDateTime,
 ) : MirrorSyncRemoteGateway {
+    var pushCalls = 0
+    var pullCalls = 0
     private val remoteRow = VendorMirrorRow(
         syncId = "remote-vendor",
         displayName = "Remote vendor",
@@ -123,11 +161,14 @@ private class StatusMirrorGateway(
             )
         )
 
-    override suspend fun pushMirrorState(changes: List<MirrorPushEntityChange>) =
-        Result.success(MirrorPushResult(checkedAt, changes.mapTo(mutableSetOf()) { it.table }))
+    override suspend fun pushMirrorState(changes: List<MirrorPushEntityChange>): Result<MirrorPushResult> {
+        pushCalls++
+        return Result.success(MirrorPushResult(checkedAt, changes.mapTo(mutableSetOf()) { it.table }))
+    }
 
-    override suspend fun pullMirrorState(request: MirrorPullRequest) =
-        Result.success(
+    override suspend fun pullMirrorState(request: MirrorPullRequest): Result<MirrorPullResult> {
+        pullCalls++
+        return Result.success(
             MirrorPullResult(
                 pulledAt = checkedAt,
                 changes = request.tables.flatMap { table ->
@@ -139,4 +180,5 @@ private class StatusMirrorGateway(
                 },
             )
         )
+    }
 }

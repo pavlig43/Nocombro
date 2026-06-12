@@ -42,6 +42,7 @@ import ru.pavlig43.theme.Res
 import ru.pavlig43.theme.check
 import ru.pavlig43.theme.cloud_download
 import ru.pavlig43.theme.dark_mode
+import ru.pavlig43.theme.description
 import ru.pavlig43.theme.light_mode
 import ru.pavlig43.theme.menu
 import ru.pavlig43.theme.refresh
@@ -76,6 +77,7 @@ internal fun NocombroAppBar(
                 onSyncClick = syncComponent::onSyncClick,
                 onPushClick = syncComponent::onPushClick,
                 onPullClick = syncComponent::onPullClick,
+                onCreateReportClick = syncComponent::onCreateReportClick,
                 onRefreshClick = syncComponent::refreshStatus,
             )
             IconButton(onClick = settingsComponent::openSettings) {
@@ -103,6 +105,7 @@ private fun SyncStatusButton(
     onSyncClick: () -> Unit,
     onPushClick: () -> Unit,
     onPullClick: () -> Unit,
+    onCreateReportClick: () -> Unit,
     onRefreshClick: () -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -149,6 +152,22 @@ private fun SyncStatusButton(
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     SyncDropdownContent(syncUiState = syncUiState)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End,
+                    ) {
+                        ToolTipProject(tooltipText = "Сформировать отчёт синхронизации") {
+                            IconButton(
+                                enabled = !syncUiState.isSyncRunning,
+                                onClick = onCreateReportClick,
+                            ) {
+                                Icon(
+                                    painter = painterResource(Res.drawable.description),
+                                    contentDescription = "Сформировать отчёт синхронизации",
+                                )
+                            }
+                        }
+                    }
                     FlowRow(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp),

@@ -7,6 +7,7 @@ import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.database.data.files.remote.RemoteFileBatchDownloadRepository
 import ru.pavlig43.database.data.files.remote.RemoteFileBatchDownloadSummary
 import ru.pavlig43.database.data.sync.mirror.MirrorReconciliationService
+import java.io.File
 
 /**
  * Прикладной facade синхронизации для UI и root-компонентов.
@@ -23,6 +24,7 @@ class SyncService(
     private val syncStateRepository: SyncStateRepository,
     private val mirrorReconciliationService: MirrorReconciliationService,
     private val remoteFileBatchDownloadRepository: RemoteFileBatchDownloadRepository? = null,
+    private val syncAnalysisReportWriter: SyncAnalysisReportWriter = SyncAnalysisReportWriter(),
 ) {
     private val _status = MutableStateFlow<SyncStatusSnapshot?>(null)
     val status: StateFlow<SyncStatusSnapshot?> = _status.asStateFlow()
@@ -49,6 +51,14 @@ class SyncService(
         ).also { snapshot ->
             _status.value = snapshot
         }
+    }
+
+    /**
+     * Сравнивает Room/YDB и сохраняет Markdown-отчёт, не изменяя sync state.
+     */
+    suspend fun createSyncAnalysisReport(): Result<File> {
+        return mirrorReconciliationService.buildPreview()
+            .mapCatching(syncAnalysisReportWriter::write)
     }
 
     /**
