@@ -1,35 +1,16 @@
-﻿# Reminder Email Pipeline (YDB + Postbox)
+# Reminder Email Pipeline (YDB mirror + SMTP)
 
-## Scope
+The daily function reads reminders directly from typed mirror tables:
 
-This package prepares cloud-side daily email delivery for reminders.
-The desktop app keeps `Room` as the source of truth, and reminder sync mirrors the current reminder state into dedicated YDB sources for transaction and experiment reminders.
+- `reminder` joined with `transact`
+- `experiment_reminder` joined with `experiment`
 
-## What is included
+Legacy `reminder_email_source` and `experiment_reminder_email_source` tables are
+not used and can be removed with `database/ydb/drop_legacy_sync_tables.sql`.
 
-- `ydb/001_email_reminder_schema.sql` - YDB schema:
-  - `reminder_email_source`
-  - `experiment_reminder_email_source`
-  - `reminder_recipient`
-  - `reminder_email_delivery`
-- `functions/send_daily_emails.py` - daily sender template:
-  - loads due reminders from both reminder source tables
-  - resolves global recipient emails from `reminder_recipient`
-  - sends via SMTP (Postbox)
-  - stores results in `reminder_email_delivery`
-- `functions/.env.example` - required environment variables.
+`reminder_recipient` and `reminder_email_delivery` remain function-owned state,
+not part of the desktop synchronization transport. Their DDL is in
+`ydb/001_email_reminder_schema.sql`.
 
-## Runtime topology
-
-1. App sync exports transaction reminders to `reminder_email_source` and experiment reminders to `experiment_reminder_email_source`.
-2. Cloud Function `send-daily-reminders` runs once per day.
-3. Every run sends all reminders where `deleted_at IS NULL` and `reminder_at <= today`.
-
-## Notes
-
-- No extra DB needed, only extra tables in existing YDB.
-- `reminder_recipient` stores a global mailing list for all reminders.
-- `reminder_email_source` stays transaction-specific and mirrors transaction type and creation time.
-- `experiment_reminder_email_source` mirrors experiment title for experiment digest lines.
-- `reminder_email_delivery` is a send log, not a daily send blocker.
-- `send_daily_emails.py` still contains TODOs for concrete YDB SDK queries.
+Set `YDB_MIRROR_ROOT` only when desktop mirror tables are stored under a
+directory. Leave it empty for root-level mirror tables.

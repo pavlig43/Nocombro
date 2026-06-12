@@ -14,7 +14,6 @@ import kotlinx.datetime.LocalDateTime
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import ru.pavlig43.core.componentCoroutineScope
-import ru.pavlig43.database.data.files.remote.RemoteFileBatchDownloadRepository
 import ru.pavlig43.database.data.files.remote.RemoteFileBatchDownloadSummary
 import ru.pavlig43.database.data.sync.SyncService
 import ru.pavlig43.database.data.sync.SyncStatusSnapshot
@@ -28,7 +27,6 @@ import ru.pavlig43.database.data.sync.SyncStatusSnapshot
 class SyncComponent(
     componentContext: ComponentContext,
     private val syncService: SyncService,
-    private val remoteFileBatchDownloadRepository: RemoteFileBatchDownloadRepository,
 ) : ComponentContext by componentContext {
 
     private val coroutineScope = componentCoroutineScope()
@@ -157,22 +155,13 @@ class SyncComponent(
                     return@withLock
                 }
 
-                _uiState.update {
-                    it.copy(
-                        isSyncRunning = true,
-                        runningActionLabel = "Подгрузка файлов",
-                    )
-                }
-                val downloadResult = withContext(Dispatchers.IO) {
-                    remoteFileBatchDownloadRepository.downloadMissingLocalCopies()
-                }
                 updateUiState(
                     status = result.status,
                     isSyncRunning = false,
-                    lastError = downloadResult.exceptionOrNull()?.message,
+                    lastError = null,
                     lastSyncAt = result.lastSyncAt,
                     lastPullAt = result.lastPullAt,
-                    lastFilesDownloadSummary = downloadResult.getOrNull()?.toUiSummary(),
+                    lastFilesDownloadSummary = result.filesDownloadSummary?.toUiSummary(),
                 )
             }
         }
@@ -188,16 +177,14 @@ class SyncComponent(
     ) {
         _uiState.update {
             it.copy(
-                pendingChangesCount = status.pendingChangesCount,
-                failedChangesCount = status.failedChangesCount,
+                pendingLocalChangesCount = status.pendingLocalChangesCount,
+                remoteChangesCount = status.remoteChangesCount,
                 hasRemoteChanges = status.hasRemoteChanges,
                 isSyncRunning = isSyncRunning,
                 remoteSyncConfigured = status.remoteSyncConfigured,
                 lastStatusCheckAt = status.lastStatusCheckAt,
                 lastSyncAt = lastSyncAt ?: status.lastSyncAt,
                 lastPullAt = lastPullAt ?: status.lastPullAt,
-                lastRemoteCursor = status.lastRemoteCursor,
-                payloadVersion = status.payloadVersion,
                 lastError = lastError ?: status.remoteError,
                 lastFilesDownloadSummary = lastFilesDownloadSummary ?: it.lastFilesDownloadSummary,
                 runningActionLabel = null,
@@ -219,16 +206,14 @@ class SyncComponent(
 }
 
 data class SyncUiState(
-    val pendingChangesCount: Int = 0,
-    val failedChangesCount: Int = 0,
+    val pendingLocalChangesCount: Int = 0,
+    val remoteChangesCount: Int = 0,
     val hasRemoteChanges: Boolean = false,
     val isSyncRunning: Boolean = false,
     val remoteSyncConfigured: Boolean = false,
     val lastStatusCheckAt: LocalDateTime? = null,
     val lastSyncAt: LocalDateTime? = null,
     val lastPullAt: LocalDateTime? = null,
-    val lastRemoteCursor: String? = null,
-    val payloadVersion: Int = 0,
     val lastError: String? = null,
     val lastFilesDownloadSummary: String? = null,
     val runningActionLabel: String? = null,

@@ -30,6 +30,9 @@ abstract class BuyDao {
     @Query("SELECT * FROM $BUY_TABLE_NAME WHERE sync_id = :syncId")
     abstract suspend fun getBuyBySyncId(syncId: String): BuyBDIn?
 
+    @Query("SELECT * FROM $BUY_TABLE_NAME")
+    abstract suspend fun getAll(): List<BuyBDIn>
+
     @Query("DELETE FROM $BUY_TABLE_NAME WHERE id IN (:ids)")
     abstract suspend fun deleteByIds(ids: List<Int>)
 

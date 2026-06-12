@@ -9,37 +9,30 @@ import ru.pavlig43.core.TransactionExecutor
 import ru.pavlig43.core.model.ChangeSet
 import ru.pavlig43.core.model.UpsertListChangeSet
 import ru.pavlig43.database.NocombroDatabase
-import ru.pavlig43.database.data.batch.BATCH_TABLE_NAME
 import ru.pavlig43.database.data.batch.BatchCostPriceEntity
-import ru.pavlig43.database.data.batch.BATCH_MOVEMENT_TABLE_NAME
 import ru.pavlig43.database.data.batch.BatchBD
 import ru.pavlig43.database.data.batch.BatchMovement
 import ru.pavlig43.database.data.batch.MovementType
-import ru.pavlig43.database.data.expense.EXPENSE_TABLE_NAME
 import ru.pavlig43.database.data.expense.ExpenseBD
-import ru.pavlig43.database.data.sync.SyncQueueRepository
 import ru.pavlig43.database.data.sync.defaultUpdatedAt
+import ru.pavlig43.database.data.sync.mirror.MirrorDeletionJournalRepository
 import ru.pavlig43.database.data.transact.Transact
-import ru.pavlig43.database.data.transact.TRANSACTION_TABLE_NAME
 import ru.pavlig43.database.data.transact.TransactionType
-import ru.pavlig43.database.data.transact.buy.BUY_TABLE_NAME
 import ru.pavlig43.database.data.transact.buy.BuyBDIn
 import ru.pavlig43.database.data.transact.buy.BuyBDOut
 import ru.pavlig43.database.data.transact.ingredient.IngredientBD
 import ru.pavlig43.database.data.transact.pf.PfBD
-import ru.pavlig43.database.data.transact.reminder.REMINDER_TABLE_NAME
 import ru.pavlig43.database.data.transact.reminder.ReminderBD
-import ru.pavlig43.database.data.transact.sale.SALE_TABLE_NAME
 import ru.pavlig43.database.data.transact.sale.SaleBDIn
 import ru.pavlig43.database.data.transact.sale.SaleBDOut
 import ru.pavlig43.database.inTransaction
 import ru.pavlig43.files.api.FilesDependencies
 import ru.pavlig43.immutable.api.ImmutableTableDependencies
-import ru.pavlig43.mutable.api.multiLine.data.SyncUpdateCollectionRepository
+import ru.pavlig43.mutable.api.multiLine.data.TransactionalUpdateCollectionRepository
 import ru.pavlig43.mutable.api.multiLine.data.UpdateCollectionRepository
 import ru.pavlig43.mutable.api.singleLine.data.CreateSingleItemRepository
-import ru.pavlig43.mutable.api.singleLine.data.SyncCreateSingleItemRepository
-import ru.pavlig43.mutable.api.singleLine.data.SyncUpdateSingleLineRepository
+import ru.pavlig43.mutable.api.singleLine.data.TransactionalCreateSingleItemRepository
+import ru.pavlig43.mutable.api.singleLine.data.TransactionalUpdateSingleLineRepository
 import ru.pavlig43.mutable.api.singleLine.data.UpdateSingleLineRepository
 import ru.pavlig43.thermallabel.api.data.ThermalLabelTemplateService
 import ru.pavlig43.transaction.api.TransactionFormDependencies
@@ -52,31 +45,29 @@ internal fun createTransactionFormModule(dependencies: TransactionFormDependenci
         single<TransactionExecutor> { dependencies.dbTransaction }
         single<FilesDependencies> { dependencies.filesDependencies }
         single<ImmutableTableDependencies> { dependencies.immutableTableDependencies }
-        single { SyncQueueRepository(get<NocombroDatabase>().syncDao) }
         single { ThermalLabelTemplateService(get()) }
-        single<CreateSingleItemRepository<Transact>> { TransactionCreateRepository(get(), get()) }
+        single<CreateSingleItemRepository<Transact>> { TransactionCreateRepository(get()) }
         single<UpdateSingleLineRepository<Transact>>(UpdateSingleLineRepositoryType.TRANSACTION.qualifier) {
             TransactionUpdateRepository(
-                get(),
                 get(),
             )
         }
         single<UpdateCollectionRepository<BuyBDOut, BuyBDOut>>(UpdateCollectionRepositoryType.BUY.qualifier) {
-            BuyCollectionRepository(get(), get())
+            BuyCollectionRepository(get())
         }
         single<UpdateCollectionRepository<ReminderBD, ReminderBD>>(UpdateCollectionRepositoryType.REMINDERS.qualifier) {
-            RemindersCollectionRepository(get(), get())
+            RemindersCollectionRepository(get())
         }
         single<UpdateCollectionRepository<ExpenseBD, ExpenseBD>>(UpdateCollectionRepositoryType.EXPENSES.qualifier) {
-            ExpensesCollectionRepository(get(), get())
+            ExpensesCollectionRepository(get())
         }
         single<UpdateCollectionRepository<IngredientBD, IngredientBD>>(
             UpdateCollectionRepositoryType.INGREDIENTS.qualifier
         ) {
-            IngredientsCollectionRepository(get(), get())
+            IngredientsCollectionRepository(get())
         }
         single<UpdateCollectionRepository<SaleBDOut, SaleBDOut>>(UpdateCollectionRepositoryType.SALE.qualifier) {
-            SaleCollectionRepository(get(), get())
+            SaleCollectionRepository(get())
         }
         single<UpdateSingleLineRepository<PfBD>>(UpdateSingleLineRepositoryType.PF.qualifier) {
             PfUpdateRepository(
@@ -105,11 +96,7 @@ internal enum class UpdateSingleLineRepositoryType {
 
 private class TransactionCreateRepository(
     db: NocombroDatabase,
-    syncQueueRepository: SyncQueueRepository,
-) : SyncCreateSingleItemRepository<Transact>(
-    tableName = TRANSACTION_TABLE_NAME,
-    entitySyncKeyOf = Transact::syncId,
-    enqueueSyncUpsert = syncQueueRepository::enqueueUpsert,
+) : TransactionalCreateSingleItemRepository<Transact>(
     inWriteTransaction = { block -> db.inTransaction(block) },
 ) {
     private val dao = db.transactionDao
@@ -121,11 +108,7 @@ private class TransactionCreateRepository(
 
 private class TransactionUpdateRepository(
     db: NocombroDatabase,
-    syncQueueRepository: SyncQueueRepository,
-) : SyncUpdateSingleLineRepository<Transact>(
-    tableName = TRANSACTION_TABLE_NAME,
-    entitySyncKeyOf = Transact::syncId,
-    enqueueSyncUpsert = syncQueueRepository::enqueueUpsert,
+) : TransactionalUpdateSingleLineRepository<Transact>(
     inWriteTransaction = { block -> db.inTransaction(block) },
 ) {
 
@@ -149,7 +132,6 @@ private class TransactionUpdateRepository(
 
 private class BuyCollectionRepository(
     private val db: NocombroDatabase,
-    private val syncQueueRepository: SyncQueueRepository,
 ) : UpdateCollectionRepository<BuyBDOut, BuyBDOut> {
 
     private val buyDao = db.buyDao
@@ -170,21 +152,13 @@ private class BuyCollectionRepository(
 
         return runCatching {
             db.inTransaction {
-                if (diff.buyIdsForDelete.isNotEmpty()) {
-                    deleteBuysWithMovement(diff.buyIdsForDelete)
-                }
-                if (diff.buysForUpsert.isNotEmpty()) {
-                    upsertAllEntity(diff.buysForUpsert)
-                }
-
-                diff.buysForDelete.forEach { buy ->
-                    syncQueueRepository.enqueueDelete(BUY_TABLE_NAME, buy.syncId)
-                    syncQueueRepository.enqueueDelete(BATCH_MOVEMENT_TABLE_NAME, buy.movementSyncId)
-                }
-                diff.buysForUpsert.forEach { buy ->
-                    syncQueueRepository.enqueueUpsert(BATCH_TABLE_NAME, buy.batchSyncId)
-                    syncQueueRepository.enqueueUpsert(BATCH_MOVEMENT_TABLE_NAME, buy.movementSyncId)
-                    syncQueueRepository.enqueueUpsert(BUY_TABLE_NAME, buy.syncId)
+                MirrorDeletionJournalRepository(db).captureHardDeletesInCurrentTransaction {
+                    if (diff.buyIdsForDelete.isNotEmpty()) {
+                        deleteBuysWithMovement(diff.buyIdsForDelete)
+                    }
+                    if (diff.buysForUpsert.isNotEmpty()) {
+                        upsertAllEntity(diff.buysForUpsert)
+                    }
                 }
             }
         }
@@ -275,13 +249,10 @@ private data class BuySyncDiff(
 
 private class RemindersCollectionRepository(
     db: NocombroDatabase,
-    syncQueueRepository: SyncQueueRepository,
-) : SyncUpdateCollectionRepository<ReminderBD, ReminderBD>(
-    tableName = REMINDER_TABLE_NAME,
+) : TransactionalUpdateCollectionRepository<ReminderBD, ReminderBD>(
     entitySyncKeyOf = ReminderBD::syncId,
-    enqueueSyncUpsert = syncQueueRepository::enqueueUpsert,
-    enqueueSyncDelete = syncQueueRepository::enqueueDelete,
     inWriteTransaction = { block -> db.inTransaction(block) },
+    captureHardDeletes = MirrorDeletionJournalRepository(db)::captureHardDeletesInCurrentTransaction,
 ) {
 
     private val dao = db.reminderDao
@@ -308,13 +279,10 @@ private class RemindersCollectionRepository(
 
 private class ExpensesCollectionRepository(
     db: NocombroDatabase,
-    syncQueueRepository: SyncQueueRepository,
-) : SyncUpdateCollectionRepository<ExpenseBD, ExpenseBD>(
-    tableName = EXPENSE_TABLE_NAME,
+) : TransactionalUpdateCollectionRepository<ExpenseBD, ExpenseBD>(
     entitySyncKeyOf = ExpenseBD::syncId,
-    enqueueSyncUpsert = syncQueueRepository::enqueueUpsert,
-    enqueueSyncDelete = syncQueueRepository::enqueueDelete,
     inWriteTransaction = { block -> db.inTransaction(block) },
+    captureHardDeletes = MirrorDeletionJournalRepository(db)::captureHardDeletesInCurrentTransaction,
 ) {
 
     private val dao = db.expenseDao
@@ -393,13 +361,10 @@ private class PfUpdateRepository(
 
 private class IngredientsCollectionRepository(
     db: NocombroDatabase,
-    syncQueueRepository: SyncQueueRepository,
-) : SyncUpdateCollectionRepository<IngredientBD, IngredientBD>(
-    tableName = BATCH_MOVEMENT_TABLE_NAME,
+) : TransactionalUpdateCollectionRepository<IngredientBD, IngredientBD>(
     entitySyncKeyOf = IngredientBD::syncId,
-    enqueueSyncUpsert = syncQueueRepository::enqueueUpsert,
-    enqueueSyncDelete = syncQueueRepository::enqueueDelete,
     inWriteTransaction = { block -> db.inTransaction(block) },
+    captureHardDeletes = MirrorDeletionJournalRepository(db)::captureHardDeletesInCurrentTransaction,
 ) {
 
     private val ingredientDao = db.ingredientDao
@@ -434,7 +399,6 @@ private class IngredientsCollectionRepository(
 
 private class SaleCollectionRepository(
     private val db: NocombroDatabase,
-    private val syncQueueRepository: SyncQueueRepository,
 ) : UpdateCollectionRepository<SaleBDOut, SaleBDOut> {
 
     private val saleDao = db.saleDao
@@ -453,20 +417,13 @@ private class SaleCollectionRepository(
 
         return runCatching {
             db.inTransaction {
-                if (diff.saleIdsForDelete.isNotEmpty()) {
-                    deleteSalesWithMovement(diff.saleIdsForDelete)
-                }
-                if (diff.salesForUpsert.isNotEmpty()) {
-                    upsertAllEntity(diff.salesForUpsert)
-                }
-
-                diff.salesForDelete.forEach { sale ->
-                    syncQueueRepository.enqueueDelete(SALE_TABLE_NAME, sale.syncId)
-                    syncQueueRepository.enqueueDelete(BATCH_MOVEMENT_TABLE_NAME, sale.movementSyncId)
-                }
-                diff.salesForUpsert.forEach { sale ->
-                    syncQueueRepository.enqueueUpsert(SALE_TABLE_NAME, sale.syncId)
-                    syncQueueRepository.enqueueUpsert(BATCH_MOVEMENT_TABLE_NAME, sale.movementSyncId)
+                MirrorDeletionJournalRepository(db).captureHardDeletesInCurrentTransaction {
+                    if (diff.saleIdsForDelete.isNotEmpty()) {
+                        deleteSalesWithMovement(diff.saleIdsForDelete)
+                    }
+                    if (diff.salesForUpsert.isNotEmpty()) {
+                        upsertAllEntity(diff.salesForUpsert)
+                    }
                 }
             }
         }
@@ -545,6 +502,7 @@ internal class BatchCostRepository(
     db: NocombroDatabase
 ) {
     private val batchCostDao = db.batchCostDao
+    private val batchDao = db.batchDao
     private val transactionDao = db.transactionDao
 
     private val buyDao = db.buyDao
@@ -571,10 +529,19 @@ internal class BatchCostRepository(
 
         val quantityAmount = buys.sumOf { it.count }
         val expenseOnOneKg = (transactionExpenses / quantityAmount.toDouble()) * 1000
+        val existingCosts = batchCostDao
+            .getBatchesCostPriceByIds(buys.map(BuyBDOut::batchId))
+            .associateBy(BatchCostPriceEntity::batchId)
         val batchCostPriceEntities = buys.map { buyBDOut ->
-            BatchCostPriceEntity(
+            val existing = existingCosts[buyBDOut.batchId]
+            existing?.copy(
+                costPricePerUnit = (buyBDOut.price + expenseOnOneKg).roundToLong(),
+                updatedAt = defaultUpdatedAt(),
+                deletedAt = null,
+            ) ?: BatchCostPriceEntity(
                 batchId = buyBDOut.batchId,
-                costPricePerUnit = (buyBDOut.price + expenseOnOneKg).roundToLong()
+                costPricePerUnit = (buyBDOut.price + expenseOnOneKg).roundToLong(),
+                batchSyncId = batchDao.getBatch(buyBDOut.batchId).syncId,
             )
         }
         batchCostDao.upsert(batchCostPriceEntities)
@@ -614,10 +581,18 @@ internal class BatchCostRepository(
             (totalCost / pfMovement.movement.count.toDouble()) * 1000
         } else 0.0
         val pfBatchId = pfMovement.movement.batchId
+        val existing = batchCostDao.getBatchesCostPriceByIds(listOf(pfBatchId)).firstOrNull()
+        val updatedCost = existing?.copy(
+            costPricePerUnit = costPricePerKg.roundToLong(),
+            updatedAt = defaultUpdatedAt(),
+            deletedAt = null,
+        ) ?: BatchCostPriceEntity(
+            batchId = pfBatchId,
+            costPricePerUnit = costPricePerKg.roundToLong(),
+            batchSyncId = batchDao.getBatch(pfBatchId).syncId,
+        )
         batchCostDao.upsert(
-            listOf(
-                BatchCostPriceEntity(pfBatchId, costPricePerKg.roundToLong())
-            )
+            listOf(updatedCost)
         )
         return listOf(pfBatchId)
     }

@@ -1,7 +1,6 @@
 package ru.pavlig43.product.internal.update.tabs.specification
 
 import java.io.File
-import ru.pavlig43.database.data.files.FILE_TABLE_NAME
 import ru.pavlig43.database.data.files.FileBD
 import ru.pavlig43.database.data.files.FileDao
 import ru.pavlig43.database.data.files.OwnerType
@@ -10,7 +9,6 @@ import ru.pavlig43.database.data.files.buildCanonicalFileKey
 import ru.pavlig43.database.data.files.buildManagedLocalFilePath
 import ru.pavlig43.database.data.files.remote.RemoteFileStorageGateway
 import ru.pavlig43.database.data.product.ProductSpecification
-import ru.pavlig43.database.data.sync.SyncQueueRepository
 import ru.pavlig43.database.data.sync.defaultSyncId
 import ru.pavlig43.database.data.sync.defaultUpdatedAt
 
@@ -23,7 +21,6 @@ import ru.pavlig43.database.data.sync.defaultUpdatedAt
 internal class ProductSpecificationPdfRepository(
     private val fileDao: FileDao,
     private val remoteFileStorageGateway: RemoteFileStorageGateway,
-    private val syncQueueRepository: SyncQueueRepository,
     private val pdfGenerator: ProductSpecificationPdfGenerator,
 ) {
     /**
@@ -82,11 +79,6 @@ internal class ProductSpecificationPdfRepository(
             )
 
             fileDao.upsertFiles(listOf(file))
-            syncQueueRepository.enqueueUpsert(
-                entityTable = FILE_TABLE_NAME,
-                entityLocalId = file.syncId,
-                createdAt = updatedAt,
-            )
 
             File(localPath).absolutePath
         }

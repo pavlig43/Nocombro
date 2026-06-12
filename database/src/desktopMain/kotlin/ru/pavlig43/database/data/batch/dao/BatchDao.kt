@@ -24,6 +24,9 @@ interface BatchDao {
     @Query("SELECT * FROM $BATCH_TABLE_NAME WHERE sync_id = :syncId")
     suspend fun getBatchBySyncId(syncId: String): BatchBD?
 
+    @Query("SELECT * FROM $BATCH_TABLE_NAME")
+    suspend fun getAll(): List<BatchBD>
+
 
     /**
      * Получает все движения для вычисления остатков.

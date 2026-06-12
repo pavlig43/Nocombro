@@ -21,8 +21,15 @@ class RemoteFileBatchDownloadRepository(
 ) {
     private val fileDao = db.fileDao
 
+    /** Проверяет, настроен ли underlying remote storage gateway. */
+    fun isConfigured(): Boolean = remoteFileStorageGateway.isConfigured()
+
     /**
      * Подгружает все отсутствующие локальные копии файлов, известные текущей локальной БД.
+     *
+     * Удаленные metadata, строки без object key и уже существующие локальные файлы
+     * пропускаются. Ошибка отдельного файла не прерывает batch: имя добавляется в
+     * [RemoteFileBatchDownloadSummary.failedFiles].
      */
     suspend fun downloadMissingLocalCopies(): Result<RemoteFileBatchDownloadSummary> {
         return runCatching {
@@ -62,12 +69,18 @@ class RemoteFileBatchDownloadRepository(
 }
 
 /**
- * Краткий итог массовой догрузки файлов для UI.
+ * Итог массовой догрузки файлов для UI и sync result.
+ *
+ * @property scannedCount количество отсутствующих локальных файлов, для которых
+ * была предпринята попытка скачивания.
+ * @property downloadedCount количество успешных скачиваний.
+ * @property failedFiles display names файлов, которые не удалось восстановить.
  */
 data class RemoteFileBatchDownloadSummary(
     val scannedCount: Int,
     val downloadedCount: Int,
     val failedFiles: List<String>,
 ) {
+    /** Количество неуспешных попыток, производное от [failedFiles]. */
     val failedCount: Int get() = failedFiles.size
 }

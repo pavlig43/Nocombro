@@ -25,7 +25,6 @@ import ru.pavlig43.doctor.internal.ui.common.DoctorSectionCard
 import ru.pavlig43.doctor.internal.ui.common.DoctorToolCard
 import ru.pavlig43.doctor.internal.ui.tool.filecleanup.DoctorFileCleanupTool
 import ru.pavlig43.doctor.internal.ui.tool.filecleanup.DoctorRemoteFileCleanupTool
-import ru.pavlig43.doctor.internal.ui.tool.synccleanup.DoctorBrokenRemoteSyncTool
 import ru.pavlig43.doctor.internal.ui.tool.storageoverview.DoctorStorageOverviewTool
 
 @Composable
@@ -40,10 +39,6 @@ fun DoctorScreen(
     val remoteOrphanFilesActionError by component.remoteOrphanFilesActionError.collectAsState()
     val isRemoteCleanupEnabled by component.isRemoteCleanupEnabled.collectAsState()
     val remoteCleanupStatusMessage by component.remoteCleanupStatusMessage.collectAsState()
-    val brokenRemoteSyncState by component.brokenRemoteSyncState.collectAsState()
-    val brokenRemoteSyncActionError by component.brokenRemoteSyncActionError.collectAsState()
-    val isBrokenRemoteSyncCleanupEnabled by component.isBrokenRemoteSyncCleanupEnabled.collectAsState()
-    val brokenRemoteSyncStatusMessage by component.brokenRemoteSyncStatusMessage.collectAsState()
 
     Row(
         modifier = Modifier
@@ -112,16 +107,6 @@ fun DoctorScreen(
                         onDeleteAll = component::deleteAllRemoteOrphanFiles,
                     )
 
-                    DoctorTool.BrokenRemoteSyncCleanup -> DoctorBrokenRemoteSyncTool(
-                        state = brokenRemoteSyncState,
-                        actionError = brokenRemoteSyncActionError,
-                        isActionsEnabled = isBrokenRemoteSyncCleanupEnabled,
-                        statusMessage = brokenRemoteSyncStatusMessage,
-                        onDismissActionError = component::dismissBrokenRemoteSyncActionError,
-                        onRefresh = component::refreshBrokenRemoteSyncChanges,
-                        onDelete = component::deleteBrokenRemoteSyncChange,
-                        onDeleteAll = component::deleteAllBrokenRemoteSyncChanges,
-                    )
                 }
             }
         }

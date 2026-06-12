@@ -3,19 +3,14 @@ package ru.pavlig43.experiments.internal.data
 import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.LocalDate
 import ru.pavlig43.database.NocombroDatabase
-import ru.pavlig43.database.data.experiment.EXPERIMENT_ENTRY_TABLE_NAME
-import ru.pavlig43.database.data.experiment.EXPERIMENT_REMINDER_TABLE_NAME
-import ru.pavlig43.database.data.experiment.EXPERIMENT_TABLE_NAME
 import ru.pavlig43.database.data.experiment.Experiment
 import ru.pavlig43.database.data.experiment.ExperimentEntry
 import ru.pavlig43.database.data.experiment.ExperimentReminder
-import ru.pavlig43.database.data.sync.SyncQueueRepository
 import ru.pavlig43.database.data.sync.defaultUpdatedAt
 import ru.pavlig43.database.inTransaction
 
 internal class ExperimentsRepository(
     db: NocombroDatabase,
-    private val syncQueueRepository: SyncQueueRepository,
 ) {
     private val database = db
     private val experimentDao = db.experimentDao
@@ -47,13 +42,7 @@ internal class ExperimentsRepository(
             database.inTransaction {
                 val experiment = Experiment(title = "Новый эксперимент")
                 val id = experimentDao.create(experiment).toInt()
-                val saved = experiment.copy(id = id)
-                syncQueueRepository.enqueueUpsert(
-                    entityTable = EXPERIMENT_TABLE_NAME,
-                    entityLocalId = saved.syncId,
-                    createdAt = saved.updatedAt,
-                )
-                saved
+                experiment.copy(id = id)
             }
         }
     }
@@ -64,11 +53,6 @@ internal class ExperimentsRepository(
         return runCatching {
             database.inTransaction {
                 experimentDao.upsert(experiment)
-                syncQueueRepository.enqueueUpsert(
-                    entityTable = EXPERIMENT_TABLE_NAME,
-                    entityLocalId = experiment.syncId,
-                    createdAt = experiment.updatedAt,
-                )
             }
         }
     }
@@ -87,11 +71,6 @@ internal class ExperimentsRepository(
                     updatedAt = defaultUpdatedAt(),
                 )
                 experimentDao.upsert(updated)
-                syncQueueRepository.enqueueUpsert(
-                    entityTable = EXPERIMENT_TABLE_NAME,
-                    entityLocalId = updated.syncId,
-                    createdAt = updated.updatedAt,
-                )
                 updated
             }
         }
@@ -112,11 +91,6 @@ internal class ExperimentsRepository(
                         val id = experimentEntryDao.create(entry).toInt()
                         val saved = entry.copy(id = id)
                         touchExperiment(experimentId)
-                        syncQueueRepository.enqueueUpsert(
-                            entityTable = EXPERIMENT_ENTRY_TABLE_NAME,
-                            entityLocalId = saved.syncId,
-                            createdAt = saved.updatedAt,
-                        )
                         saved
                     }
             }
@@ -130,11 +104,6 @@ internal class ExperimentsRepository(
             database.inTransaction {
                 experimentEntryDao.upsert(entry)
                 touchExperiment(entry.experimentId)
-                syncQueueRepository.enqueueUpsert(
-                    entityTable = EXPERIMENT_ENTRY_TABLE_NAME,
-                    entityLocalId = entry.syncId,
-                    createdAt = entry.updatedAt,
-                )
             }
         }
     }
@@ -154,11 +123,6 @@ internal class ExperimentsRepository(
                 val id = experimentReminderDao.create(reminder).toInt()
                 val saved = reminder.copy(id = id)
                 touchExperiment(experimentId)
-                syncQueueRepository.enqueueUpsert(
-                    entityTable = EXPERIMENT_REMINDER_TABLE_NAME,
-                    entityLocalId = saved.syncId,
-                    createdAt = saved.updatedAt,
-                )
                 saved
             }
         }
@@ -171,11 +135,6 @@ internal class ExperimentsRepository(
             database.inTransaction {
                 experimentReminderDao.upsert(reminder)
                 touchExperiment(reminder.experimentId)
-                syncQueueRepository.enqueueUpsert(
-                    entityTable = EXPERIMENT_REMINDER_TABLE_NAME,
-                    entityLocalId = reminder.syncId,
-                    createdAt = reminder.updatedAt,
-                )
             }
         }
     }
@@ -192,11 +151,6 @@ internal class ExperimentsRepository(
                 )
                 experimentReminderDao.upsert(deleted)
                 touchExperiment(reminder.experimentId)
-                syncQueueRepository.enqueueUpsert(
-                    entityTable = EXPERIMENT_REMINDER_TABLE_NAME,
-                    entityLocalId = deleted.syncId,
-                    createdAt = deleted.updatedAt,
-                )
             }
         }
     }
@@ -207,10 +161,5 @@ internal class ExperimentsRepository(
         }
         val updated = experiment.copy(updatedAt = defaultUpdatedAt())
         experimentDao.upsert(updated)
-        syncQueueRepository.enqueueUpsert(
-            entityTable = EXPERIMENT_TABLE_NAME,
-            entityLocalId = updated.syncId,
-            createdAt = updated.updatedAt,
-        )
     }
 }

@@ -415,6 +415,7 @@ suspend fun seedDatabase(db: NocombroDatabase) {
         buildBatchCostPrices(
             transactions = transactions,
             batchMovements = batchMovements,
+            batches = batches,
             buys = buys,
             expenses = expenses,
         )
@@ -424,10 +425,12 @@ suspend fun seedDatabase(db: NocombroDatabase) {
 private fun buildBatchCostPrices(
     transactions: List<Transact>,
     batchMovements: List<BatchMovement>,
+    batches: List<BatchBD>,
     buys: List<BuyBDIn>,
     expenses: List<ExpenseBD>,
 ): List<BatchCostPriceEntity> {
     val movementById = batchMovements.associateBy { it.id }
+    val batchSyncIdById = batches.associate { it.id to it.syncId }
     val expensesByTransactionId = expenses.groupBy { it.transactionId }
     val costByBatchId = mutableMapOf<Int, Long>()
 
@@ -452,6 +455,7 @@ private fun buildBatchCostPrices(
                 BatchCostPriceEntity(
                     batchId = movement.batchId,
                     costPricePerUnit = cost,
+                    batchSyncId = batchSyncIdById.getValue(movement.batchId),
                 )
             }
         }
@@ -489,6 +493,7 @@ private fun buildBatchCostPrices(
                     BatchCostPriceEntity(
                         batchId = incomingMovement.batchId,
                         costPricePerUnit = costPricePerUnit,
+                        batchSyncId = batchSyncIdById.getValue(incomingMovement.batchId),
                     )
                 )
                 iterator.remove()

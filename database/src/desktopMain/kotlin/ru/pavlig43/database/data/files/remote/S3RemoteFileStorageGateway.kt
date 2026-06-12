@@ -91,8 +91,11 @@ class S3RemoteFileStorageGateway(
                         response.contents()
                             .mapNotNull { item ->
                                 item.key()?.let { key ->
+                                    val logicalObjectKey = toLogicalObjectKey(key)
+                                        .takeIf(String::isNotBlank)
+                                        ?: return@let null
                                     RemoteStorageObject(
-                                        objectKey = key,
+                                        objectKey = logicalObjectKey,
                                         sizeBytes = item.size(),
                                     )
                                 }
@@ -132,6 +135,21 @@ class S3RemoteFileStorageGateway(
             cleanObjectKey
         } else {
             "$cleanPrefix/$cleanObjectKey"
+        }
+    }
+
+    internal fun toLogicalObjectKey(
+        objectKey: String,
+    ): String {
+        val cleanObjectKey = objectKey.trimStart('/')
+        val cleanPrefix = config.keyPrefix.trim('/')
+
+        return when {
+            cleanPrefix.isBlank() -> cleanObjectKey
+            cleanObjectKey == cleanPrefix -> ""
+            cleanObjectKey.startsWith("$cleanPrefix/") ->
+                cleanObjectKey.removePrefix("$cleanPrefix/")
+            else -> cleanObjectKey
         }
     }
 

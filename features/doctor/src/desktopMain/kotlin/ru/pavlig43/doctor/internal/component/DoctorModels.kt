@@ -1,7 +1,6 @@
 package ru.pavlig43.doctor.internal.component
 
 import ru.pavlig43.files.api.LocalFilesStorageOverview
-import ru.pavlig43.database.data.sync.BrokenRemoteSyncChange
 import ru.pavlig43.files.api.model.LocalOrphanFile
 import ru.pavlig43.files.api.model.RemoteOrphanFile
 
@@ -20,10 +19,6 @@ enum class DoctorTool(
     RemoteFileCleanup(
         title = "Чистка S3",
         subtitle = "Найти и удалить orphan-объекты из удалённого bucket.",
-    ),
-    BrokenRemoteSyncCleanup(
-        title = "Чистка sync",
-        subtitle = "Найти и удалить битые remote-строки sync без payload.",
     ),
 }
 
@@ -44,11 +39,4 @@ sealed interface DoctorRemoteOrphanFilesLoadState {
     data object Loading : DoctorRemoteOrphanFilesLoadState
     data class Error(val message: String) : DoctorRemoteOrphanFilesLoadState
     data class Success(val files: List<RemoteOrphanFile>) : DoctorRemoteOrphanFilesLoadState
-}
-
-sealed interface DoctorBrokenRemoteSyncLoadState {
-    data object Idle : DoctorBrokenRemoteSyncLoadState
-    data object Loading : DoctorBrokenRemoteSyncLoadState
-    data class Error(val message: String) : DoctorBrokenRemoteSyncLoadState
-    data class Success(val changes: List<BrokenRemoteSyncChange>) : DoctorBrokenRemoteSyncLoadState
 }

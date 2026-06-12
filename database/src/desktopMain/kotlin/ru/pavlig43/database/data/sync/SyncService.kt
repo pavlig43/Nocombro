@@ -4,52 +4,59 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.datetime.LocalDateTime
+import ru.pavlig43.database.data.files.remote.RemoteFileBatchDownloadRepository
+import ru.pavlig43.database.data.files.remote.RemoteFileBatchDownloadSummary
+import ru.pavlig43.database.data.sync.mirror.MirrorReconciliationService
 
+/**
+ * Прикладной facade синхронизации для UI и root-компонентов.
+ *
+ * Сервис последовательно координирует mirror reconciliation, сохраняет даты
+ * успешных push/pull и после pull восстанавливает отсутствующие локальные файлы.
+ * Он не содержит алгоритма сравнения строк: это ответственность
+ * [MirrorReconciliationService].
+ *
+ * [status] публикует последний явно рассчитанный snapshot. Он изначально равен
+ * `null` и обновляется каждым успешным вызовом [getStatus].
+ */
 class SyncService(
-    private val syncQueueRepository: SyncQueueRepository,
     private val syncStateRepository: SyncStateRepository,
-    private val syncRunner: SyncRunner,
-    private val syncEntityExportRepository: SyncEntityExportRepository,
-    private val syncRemoteGateway: SyncRemoteGateway,
-    private val syncRemoteApplyRepository: SyncRemoteApplyRepository,
+    private val mirrorReconciliationService: MirrorReconciliationService,
+    private val remoteFileBatchDownloadRepository: RemoteFileBatchDownloadRepository? = null,
 ) {
     private val _status = MutableStateFlow<SyncStatusSnapshot?>(null)
     val status: StateFlow<SyncStatusSnapshot?> = _status.asStateFlow()
 
+    /**
+     * Пересчитывает расхождения Room/YDB и публикует актуальный UI status.
+     *
+     * `pendingLocalChangesCount` означает число local winners для следующего push,
+     * а `remoteChangesCount` - число remote winners для следующего pull.
+     */
     suspend fun getStatus(): SyncStatusSnapshot {
         val syncState = syncStateRepository.getSyncState()
-        val remoteStatus = syncRemoteGateway.getStatus(syncState)
+        val mirrorStatus = mirrorReconciliationService.getSyncStatus()
 
         return SyncStatusSnapshot(
-            pendingChangesCount = syncQueueRepository.getChangesCount(SyncQueueStatus.PENDING),
-            failedChangesCount = syncQueueRepository.getChangesCount(SyncQueueStatus.FAILED),
-            hasRemoteChanges = remoteStatus.hasRemoteChanges,
-            remoteSyncConfigured = remoteStatus.configured,
-            lastStatusCheckAt = remoteStatus.checkedAt,
+            pendingLocalChangesCount = mirrorStatus.pushChangesCount,
+            remoteChangesCount = mirrorStatus.pullChangesCount,
+            hasRemoteChanges = mirrorStatus.hasRemoteChanges,
+            remoteSyncConfigured = mirrorStatus.status.configured,
+            lastStatusCheckAt = mirrorStatus.status.checkedAt,
             lastSyncAt = syncState?.lastPushAt,
             lastPullAt = syncState?.lastPullAt,
-            lastRemoteCursor = syncState?.lastRemoteCursor,
-            payloadVersion = CURRENT_SYNC_PAYLOAD_VERSION,
-            remoteError = remoteStatus.error,
+            remoteError = mirrorStatus.status.error,
         ).also { snapshot ->
             _status.value = snapshot
         }
     }
 
-    suspend fun loadCurrentRemoteFileStates(): Result<List<RemoteFileSyncState>> {
-        return syncRemoteGateway.loadCurrentRemoteFileStates()
-    }
-
-    suspend fun loadBrokenRemoteChanges(): Result<List<BrokenRemoteSyncChange>> {
-        return syncRemoteGateway.loadBrokenRemoteChanges()
-    }
-
-    suspend fun deleteBrokenRemoteChanges(
-        changes: List<BrokenRemoteSyncChange>,
-    ): Result<Int> {
-        return syncRemoteGateway.deleteBrokenRemoteChanges(changes)
-    }
-
+    /**
+     * Выполняет полный пользовательский цикл: сначала push, затем pull.
+     *
+     * Pull не запускается после ошибки push, чтобы не маскировать первичную причину.
+     * Итог включает результат восстановления файлов, выполненного после pull.
+     */
     suspend fun syncOnce(): SyncRunResult {
         val pushResult = pushOnce()
         if (pushResult.error != null) {
@@ -66,170 +73,135 @@ class SyncService(
             lastSyncAt = pushResult.lastSyncAt ?: pullResult.lastSyncAt,
             lastPushAt = pushResult.lastPushAt,
             lastPullAt = pullResult.lastPullAt,
+            filesDownloadSummary = pullResult.filesDownloadSummary,
         )
     }
 
+    /**
+     * Отправляет локальных победителей и сохраняет `lastPushAt`.
+     *
+     * Отсутствующая remote-конфигурация считается явной ошибкой операции, а не
+     * успешным no-op.
+     */
     suspend fun pushOnce(): SyncRunResult {
-        val syncState = syncStateRepository.getSyncState()
-            ?: return SyncRunResult.failure("Sync state is not initialized")
-
-        var lastSyncAt = syncState.lastPushAt
-
-        val batch = syncRunner.reservePendingBatch().getOrElse { throwable ->
-            return SyncRunResult.failure(throwable.message ?: "Failed to reserve sync batch")
-        }
-
-        if (batch != null) {
-            val pushPayload = runCatching {
-                batch.toRemotePushPayload(syncState, syncEntityExportRepository)
-            }.getOrElse { throwable ->
-                syncRunner.markBatchFailed(batch, throwable.message)
+        val mirrorPush = mirrorReconciliationService.pushLocalWinners().fold(
+            onSuccess = { it },
+            onFailure = { throwable ->
                 return SyncRunResult.failure(
-                    message = throwable.message ?: "Failed to export sync batch",
+                    message = throwable.message ?: "Mirror push failed",
                     status = getStatus(),
                 )
             }
-
-            val pushResult = syncRemoteGateway.pushChanges(pushPayload).fold(
-                onSuccess = { it },
-                onFailure = { throwable ->
-                    syncRunner.markBatchFailed(batch, throwable.message)
-                    return SyncRunResult.failure(
-                        message = throwable.message ?: "Push failed",
-                        status = getStatus(),
-                    )
-                }
+        )
+        if (!mirrorPush.configured) {
+            return SyncRunResult.failure(
+                message = "Mirror sync is not configured",
+                status = getStatus(),
             )
-
-            syncRunner.markBatchSucceeded(batch)
-            syncStateRepository.updateLastPushAt(
-                pushedAt = pushResult.pushedAt,
-            )
-            lastSyncAt = pushResult.pushedAt
         }
+        syncStateRepository.updateLastPushAt(mirrorPush.completedAt)
 
         val status = getStatus()
         return SyncRunResult(
             status = status,
-            lastSyncAt = lastSyncAt,
-            lastPushAt = lastSyncAt,
+            lastSyncAt = mirrorPush.completedAt,
+            lastPushAt = mirrorPush.completedAt,
             lastPullAt = status.lastPullAt,
         )
     }
 
+    /**
+     * Применяет remote winners, сохраняет `lastPullAt` и восстанавливает файлы.
+     *
+     * Ошибка S3-восстановления возвращается после успешного mirror pull: данные
+     * Room уже применены, но UI получает точную информацию о неполном file recovery.
+     */
     suspend fun pullOnce(): SyncRunResult {
-        val syncState = syncStateRepository.getSyncState()
-            ?: return SyncRunResult.failure("Sync state is not initialized")
-
-        // Remote gateway отдает изменения страницами. Если остановиться после первой
-        // страницы, UI будет продолжать видеть hasRemoteChanges=true, а lastPullAt
-        // останется "не до конца" актуальным относительно сервера.
-        var currentCursor = syncState.lastRemoteCursor
-        var lastPullAt = syncState.lastPullAt
-        var hasMoreChanges = true
-
-        while (hasMoreChanges) {
-            val pullResult = syncRemoteGateway.pullChanges(
-                deviceId = syncState.deviceId,
-                lastRemoteCursor = currentCursor,
-            ).fold(
-                onSuccess = { it },
-                onFailure = { throwable ->
-                    return SyncRunResult.failure(
-                        message = throwable.message ?: "Pull failed",
-                        status = getStatus(),
-                    )
-                }
-            )
-
-            runCatching {
-                syncRemoteApplyRepository.applyChanges(pullResult.changes)
-            }.getOrElse { throwable ->
+        val mirrorPull = mirrorReconciliationService.pullRemoteWinners().fold(
+            onSuccess = { it },
+            onFailure = { throwable ->
                 return SyncRunResult.failure(
-                    message = throwable.message ?: "Apply remote changes failed",
+                    message = throwable.message ?: "Mirror pull failed",
                     status = getStatus(),
                 )
             }
-
-            syncStateRepository.updateLastPullAt(
-                pulledAt = pullResult.pulledAt,
-                remoteCursor = pullResult.remoteCursor,
+        )
+        if (!mirrorPull.configured) {
+            return SyncRunResult.failure(
+                message = "Mirror sync is not configured",
+                status = getStatus(),
             )
-
-            // После успешного применения страницы двигаем локальный курсор вперед.
-            // Следующий запрос читает только хвост после уже обработанных изменений.
-            currentCursor = pullResult.remoteCursor ?: currentCursor
-            lastPullAt = pullResult.pulledAt
-
-            // Если страница заполнена целиком, считаем, что на сервере может быть
-            // еще хвост, и делаем следующий pull. Когда пришло меньше limit, хвост
-            // закончился.
-            hasMoreChanges = pullResult.changes.size >= DEFAULT_PULL_PAGE_SIZE
         }
-
+        syncStateRepository.updateLastPullAt(
+            pulledAt = mirrorPull.completedAt,
+        )
         val status = getStatus()
+        val filesDownloadSummary = downloadMissingFilesAfterMirrorPull().getOrElse { throwable ->
+            return SyncRunResult.failure(
+                message = throwable.message ?: "File recovery after mirror pull failed",
+                status = status,
+            )
+        }
         return SyncRunResult(
             status = status,
             lastSyncAt = status.lastSyncAt,
             lastPushAt = status.lastSyncAt,
-            lastPullAt = lastPullAt,
+            lastPullAt = mirrorPull.completedAt,
+            filesDownloadSummary = filesDownloadSummary,
         )
+    }
+
+    private suspend fun downloadMissingFilesAfterMirrorPull(): Result<RemoteFileBatchDownloadSummary?> {
+        val repository = remoteFileBatchDownloadRepository
+            ?: return Result.success(null)
+        if (!repository.isConfigured()) {
+            return Result.success(null)
+        }
+        return repository.downloadMissingLocalCopies()
     }
 }
 
-private const val DEFAULT_PULL_PAGE_SIZE = 100
-
-private suspend fun SyncPushBatch.toRemotePushPayload(
-    syncState: SyncStateEntity,
-    syncEntityExportRepository: SyncEntityExportRepository,
-): RemotePushPayload {
-    return RemotePushPayload(
-        deviceId = syncState.deviceId,
-        lastRemoteCursor = syncState.lastRemoteCursor,
-        reservedAt = reservedAt,
-        changes = buildList {
-            changes.forEach { change ->
-                add(syncEntityExportRepository.export(change))
-            }
-        }
-    )
-}
-
+/** Иммутабельный snapshot состояния синхронизации для UI. */
 data class SyncStatusSnapshot(
-    val pendingChangesCount: Int,
-    val failedChangesCount: Int,
+    val pendingLocalChangesCount: Int,
+    val remoteChangesCount: Int,
     val hasRemoteChanges: Boolean,
     val remoteSyncConfigured: Boolean,
     val lastStatusCheckAt: LocalDateTime,
     val lastSyncAt: LocalDateTime?,
     val lastPullAt: LocalDateTime?,
-    val lastRemoteCursor: String?,
-    val payloadVersion: Int,
     val remoteError: String? = null,
 )
 
+/**
+ * Итог одной sync-команды.
+ *
+ * Поля времени заполняются только для реально завершенных стадий. [error] не равен
+ * `null`, если команда завершилась неуспешно, даже когда часть предыдущих стадий уже
+ * успела выполниться.
+ */
 data class SyncRunResult(
     val status: SyncStatusSnapshot,
     val lastSyncAt: LocalDateTime? = null,
     val lastPushAt: LocalDateTime? = null,
     val lastPullAt: LocalDateTime? = null,
+    val filesDownloadSummary: RemoteFileBatchDownloadSummary? = null,
     val error: String? = null,
 ) {
     companion object {
+        /** Создает единообразный failure result с переданным или безопасным status. */
         fun failure(
             message: String,
             status: SyncStatusSnapshot? = null,
         ): SyncRunResult {
             val fallbackStatus = status ?: SyncStatusSnapshot(
-                pendingChangesCount = 0,
-                failedChangesCount = 0,
+                pendingLocalChangesCount = 0,
+                remoteChangesCount = 0,
                 hasRemoteChanges = false,
                 remoteSyncConfigured = false,
                 lastStatusCheckAt = defaultUpdatedAt(),
                 lastSyncAt = null,
                 lastPullAt = null,
-                lastRemoteCursor = null,
-                payloadVersion = CURRENT_SYNC_PAYLOAD_VERSION,
                 remoteError = null,
             )
             return SyncRunResult(

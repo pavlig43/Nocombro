@@ -9,16 +9,17 @@ import ru.pavlig43.database.data.files.remote.RemoteFileBatchDownloadRepository
 import ru.pavlig43.database.data.files.remote.RemoteFileStorageGateway
 import ru.pavlig43.database.data.files.remote.S3RemoteFileStorageConfig
 import ru.pavlig43.database.data.files.remote.S3RemoteFileStorageGateway
-import ru.pavlig43.database.data.sync.SyncQueueRepository
-import ru.pavlig43.database.data.sync.SyncEntityExportRepository
-import ru.pavlig43.database.data.sync.SyncRemoteApplyRepository
-import ru.pavlig43.database.data.sync.SyncRemoteGateway
-import ru.pavlig43.database.data.sync.SyncRunner
 import ru.pavlig43.database.data.sync.SyncService
 import ru.pavlig43.database.data.sync.SyncStateRepository
-import ru.pavlig43.database.data.sync.YdbJdbcConfig
-import ru.pavlig43.database.data.sync.YdbJdbcSyncGateway
-import ru.pavlig43.database.data.sync.YdbSyncGatewayMock
+import ru.pavlig43.database.data.sync.mirror.MirrorLocalApplyRepository
+import ru.pavlig43.database.data.sync.mirror.MirrorEntityApplyRepository
+import ru.pavlig43.database.data.sync.mirror.MirrorLocalSnapshotRepository
+import ru.pavlig43.database.data.sync.mirror.MirrorReconciliationPlanner
+import ru.pavlig43.database.data.sync.mirror.MirrorReconciliationService
+import ru.pavlig43.database.data.sync.mirror.MirrorSyncRemoteGateway
+import ru.pavlig43.database.data.sync.mirror.NoopMirrorSyncRemoteGateway
+import ru.pavlig43.database.data.sync.mirror.YdbJdbcMirrorSyncGateway
+import ru.pavlig43.database.data.sync.mirror.YdbMirrorJdbcConfig
 import ru.pavlig43.rootnocombro.api.RootDependencies
 
 
@@ -34,20 +35,21 @@ internal fun getDatabaseModule(rootDependencies: RootDependencies) = listOf(
                 NoopRemoteFileStorageGateway()
             }
         }
-        single { SyncQueueRepository(get<NocombroDatabase>().syncDao) }
-        single { SyncStateRepository(get<NocombroDatabase>().syncDao) }
+        single { SyncStateRepository(get<NocombroDatabase>().syncStateDao) }
         single { RemoteFileBatchDownloadRepository(get(), get()) }
-        single { SyncRunner(get(), get()) }
-        single { SyncEntityExportRepository(get()) }
-        single { SyncRemoteApplyRepository(get()) }
-        single<SyncRemoteGateway> {
-            val config = YdbJdbcConfig.fromEnvironment()
+        single { MirrorEntityApplyRepository(get()) }
+        single { MirrorLocalSnapshotRepository(get()) }
+        single { MirrorLocalApplyRepository(get(), get()) }
+        single { MirrorReconciliationPlanner() }
+        single<MirrorSyncRemoteGateway> {
+            val config = YdbMirrorJdbcConfig.fromEnvironment()
             if (config != null) {
-                YdbJdbcSyncGateway(config)
+                YdbJdbcMirrorSyncGateway(config)
             } else {
-                YdbSyncGatewayMock()
+                NoopMirrorSyncRemoteGateway()
             }
         }
-        single { SyncService(get(), get(), get(), get(), get(), get()) }
+        single { MirrorReconciliationService(get(), get(), get(), get()) }
+        single { SyncService(get(), get(), get()) }
     }
 )

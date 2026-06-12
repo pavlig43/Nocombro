@@ -1,27 +1,5 @@
-﻿-- Reminder email pipeline schema for YDB (single daily sender flow).
-
-CREATE TABLE IF NOT EXISTS `reminder_email_source` (
-    reminder_sync_id Utf8,
-    transaction_sync_id Utf8,
-    transaction_type Utf8,
-    transaction_created_at Utf8,
-    reminder_text Utf8,
-    reminder_at Utf8,
-    updated_at Utf8,
-    deleted_at Utf8,
-    PRIMARY KEY (reminder_sync_id)
-);
-
-CREATE TABLE IF NOT EXISTS `experiment_reminder_email_source` (
-    reminder_sync_id Utf8,
-    experiment_sync_id Utf8,
-    experiment_title Utf8,
-    reminder_text Utf8,
-    reminder_at Utf8,
-    updated_at Utf8,
-    deleted_at Utf8,
-    PRIMARY KEY (reminder_sync_id)
-);
+-- Reminder email delivery state.
+-- Reminder sources are the typed mirror tables created by mirror_sync_v1.sql.
 
 CREATE TABLE IF NOT EXISTS `reminder_recipient` (
     email Utf8,

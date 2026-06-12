@@ -29,6 +29,9 @@ interface DocumentDao {
     @Query("SELECT * from document WHERE sync_id = :syncId")
     suspend fun getDocumentBySyncId(syncId: String): Document?
 
+    @Query("SELECT * FROM $DOCUMENT_TABLE_NAME")
+    suspend fun getAll(): List<Document>
+
 
     @Query(
         """

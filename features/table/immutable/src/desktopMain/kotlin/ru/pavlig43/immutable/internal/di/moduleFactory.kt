@@ -15,6 +15,7 @@ import ru.pavlig43.database.data.product.ProductDeclarationOut
 import ru.pavlig43.database.data.safety.SafetyTableItem
 import ru.pavlig43.database.data.transact.Transact
 import ru.pavlig43.database.data.vendor.Vendor
+import ru.pavlig43.database.data.sync.mirror.MirrorDeletionJournalRepository
 import ru.pavlig43.immutable.api.ImmutableTableDependencies
 import ru.pavlig43.immutable.internal.data.ImmutableListRepository
 
@@ -106,8 +107,9 @@ private fun createImmutableRepository(
  */
 private class DocumentRepository(db: NocombroDatabase) : ImmutableListRepository<Document> {
     private val dao = db.documentDao
+    private val deletionJournal = MirrorDeletionJournalRepository(db)
     override suspend fun deleteByIds(ids: Set<Int>): Result<Unit> {
-        return runCatching { dao.deleteDocumentsByIds(ids) }
+        return runCatching { deletionJournal.captureHardDeletes { dao.deleteDocumentsByIds(ids) } }
     }
 
     @Suppress("UNUSED_PARAMETER")
@@ -122,8 +124,9 @@ private class DocumentRepository(db: NocombroDatabase) : ImmutableListRepository
  */
 private class DeclarationRepository(db: NocombroDatabase) : ImmutableListRepository<Declaration> {
     private val dao = db.declarationDao
+    private val deletionJournal = MirrorDeletionJournalRepository(db)
     override suspend fun deleteByIds(ids: Set<Int>): Result<Unit> {
-        return runCatching { dao.deleteDeclarationsByIds(ids) }
+        return runCatching { deletionJournal.captureHardDeletes { dao.deleteDeclarationsByIds(ids) } }
     }
 
     @Suppress("UNUSED_PARAMETER")
@@ -138,8 +141,9 @@ private class DeclarationRepository(db: NocombroDatabase) : ImmutableListReposit
  */
 private class ProductRepository(db: NocombroDatabase) : ImmutableListRepository<Product> {
     private val dao = db.productDao
+    private val deletionJournal = MirrorDeletionJournalRepository(db)
     override suspend fun deleteByIds(ids: Set<Int>): Result<Unit> {
-        return runCatching { dao.deleteProductsByIds(ids) }
+        return runCatching { deletionJournal.captureHardDeletes { dao.deleteProductsByIds(ids) } }
     }
 
     @Suppress("UNUSED_PARAMETER")
@@ -154,8 +158,9 @@ private class ProductRepository(db: NocombroDatabase) : ImmutableListRepository<
  */
 private class VendorRepository(db: NocombroDatabase) : ImmutableListRepository<Vendor> {
     private val dao = db.vendorDao
+    private val deletionJournal = MirrorDeletionJournalRepository(db)
     override suspend fun deleteByIds(ids: Set<Int>): Result<Unit> {
-        return runCatching { dao.deleteVendorsByIds(ids) }
+        return runCatching { deletionJournal.captureHardDeletes { dao.deleteVendorsByIds(ids) } }
     }
 
     @Suppress("UNUSED_PARAMETER")
@@ -170,8 +175,9 @@ private class VendorRepository(db: NocombroDatabase) : ImmutableListRepository<V
  */
 private class TransactionRepository(db: NocombroDatabase) : ImmutableListRepository<Transact> {
     private val dao = db.transactionDao
+    private val deletionJournal = MirrorDeletionJournalRepository(db)
     override suspend fun deleteByIds(ids: Set<Int>): Result<Unit> {
-        return runCatching { dao.deleteTransactionsByIds(ids) }
+        return runCatching { deletionJournal.captureHardDeletes { dao.deleteTransactionsByIds(ids) } }
     }
 
     @Suppress("UNUSED_PARAMETER")
@@ -252,9 +258,10 @@ private class SafetyRepository(db: NocombroDatabase) :
 private class ExpenseRepository(db: NocombroDatabase) :
     ImmutableListRepository<MainExpenseBD> {
     private val dao = db.expenseDao
+    private val deletionJournal = MirrorDeletionJournalRepository(db)
 
     override suspend fun deleteByIds(ids: Set<Int>): Result<Unit> {
-        return runCatching { dao.deleteByIds(ids.toList()) }
+        return runCatching { deletionJournal.captureHardDeletes { dao.deleteByIds(ids.toList()) } }
     }
 
     @Suppress("UNUSED_PARAMETER")

@@ -3,11 +3,10 @@ package ru.pavlig43.files.internal.data
 import java.io.File
 import ru.pavlig43.core.model.ChangeSet
 import ru.pavlig43.database.NocombroDatabase
-import ru.pavlig43.database.data.files.FILE_TABLE_NAME
 import ru.pavlig43.database.data.files.FileBD
 import ru.pavlig43.database.data.files.OwnerType
 import ru.pavlig43.database.data.files.remote.RemoteFileStorageGateway
-import ru.pavlig43.database.data.sync.SyncQueueRepository
+import ru.pavlig43.database.data.sync.mirror.MirrorDeletionJournalRepository
 import ru.pavlig43.database.inTransaction
 
 /**
@@ -23,7 +22,6 @@ import ru.pavlig43.database.inTransaction
 internal class FilesRepository(
     db: NocombroDatabase,
     private val remoteFileStorageGateway: RemoteFileStorageGateway,
-    private val syncQueueRepository: SyncQueueRepository,
 )  {
     private val dao = db.fileDao
     private val database = db
@@ -140,11 +138,6 @@ internal class FilesRepository(
                 )
 
                 dao.upsertFiles(listOf(file))
-                syncQueueRepository.enqueueUpsert(
-                    entityTable = FILE_TABLE_NAME,
-                    entityLocalId = file.syncId,
-                    createdAt = file.updatedAt,
-                )
                 file
             }
         }
@@ -174,13 +167,8 @@ internal class FilesRepository(
                             remoteFileStorageGateway.delete(remoteObjectKey).getOrThrow()
                         }
                     }
-                    dao.deleteFiles(removedFiles.map(FileBD::id))
-                    removedFiles.forEach { file ->
-                        syncQueueRepository.enqueueDelete(
-                            entityTable = FILE_TABLE_NAME,
-                            entityLocalId = file.syncId,
-                            createdAt = file.updatedAt,
-                        )
+                    MirrorDeletionJournalRepository(database).captureHardDeletesInCurrentTransaction {
+                        dao.deleteFiles(removedFiles.map(FileBD::id))
                     }
                 }
 
@@ -195,13 +183,6 @@ internal class FilesRepository(
                 }
                 if (filesForUpsert.isNotEmpty()) {
                     dao.upsertFiles(filesForUpsert)
-                    filesForUpsert.forEach { file ->
-                        syncQueueRepository.enqueueUpsert(
-                            entityTable = FILE_TABLE_NAME,
-                            entityLocalId = file.syncId,
-                            createdAt = file.updatedAt,
-                        )
-                    }
                 }
             }
         }

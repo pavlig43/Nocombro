@@ -11,6 +11,6 @@ internal fun settingsModule(rootDependencies: RootDependencies) = listOf(
     module {
         single<SettingsRepository> { rootDependencies.settingsRepository }
         single { LocalFilesMaintenanceRepository(get<NocombroDatabase>()) }
-        single { RemoteFilesMaintenanceRepository(get<NocombroDatabase>(), get()) }
+        single { RemoteFilesMaintenanceRepository(get<NocombroDatabase>(), get(), get()) }
     }
 )

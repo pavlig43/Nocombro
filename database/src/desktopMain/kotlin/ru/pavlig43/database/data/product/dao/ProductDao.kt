@@ -26,6 +26,9 @@ interface ProductDao {
     @Query("SELECT * from product WHERE sync_id = :syncId")
     suspend fun getProductBySyncId(syncId: String): Product?
 
+    @Query("SELECT * FROM $PRODUCT_TABLE_NAME")
+    suspend fun getAll(): List<Product>
+
     @Query("""
     SELECT * FROM $PRODUCT_TABLE_NAME
     ORDER BY created_at DESC

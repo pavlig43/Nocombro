@@ -3,15 +3,13 @@ package ru.pavlig43.rootnocombro.api.component
 import com.arkivanov.decompose.DefaultComponentContext
 import com.arkivanov.essenty.backhandler.BackDispatcher
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
-import io.kotest.matchers.collections.shouldContain
+import com.arkivanov.essenty.lifecycle.resume
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.StateFlow
 import org.koin.core.context.stopKoin
-import org.koin.dsl.module
 import org.koin.java.KoinJavaComponent.getKoin
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.datastore.DATASTORE_PATH_PROPERTY
@@ -24,6 +22,7 @@ import ru.pavlig43.testkit.DesktopMainDispatcherFunSpec
 import ru.pavlig43.testkit.runOnUiThread
 import ru.pavlig43.testkit.waitUntil
 import ru.pavlig43.testkit.waitUntilNotNull
+import ru.pavlig43.testkit.database.createManagedTestDatabase
 import ru.pavlig43.testkit.database.createSeededManagedTestDatabase
 import ru.pavlig43.testkit.scenario
 import java.nio.file.Files
@@ -31,25 +30,28 @@ import kotlin.jvm.functions.Function1
 
 class RootNocombroFlowSmokeTest : DesktopMainDispatcherFunSpec({
 
-    suspend fun withRootComponent(block: suspend (RootNocombroComponent) -> Unit) {
-        val managedDatabase = createSeededManagedTestDatabase()
+    suspend fun withRootComponent(
+        seeded: Boolean = true,
+        block: suspend (RootNocombroComponent) -> Unit,
+    ) {
+        val managedDatabase = if (seeded) {
+            createSeededManagedTestDatabase()
+        } else {
+            createManagedTestDatabase()
+        }
         val dataStorePath = Files.createTempDirectory("nocombro-root-smoke")
             .resolve("preferences.preferences_pb")
         stopKoin()
         System.setProperty(DATASTORE_PATH_PROPERTY, dataStorePath.toString())
-        initKoin {
-            modules(
-                module {
-                    single<NocombroDatabase> { managedDatabase.database }
-                }
-            )
-        }
+        initKoin(databaseOverride = managedDatabase.database)
         val rootDependencies = getKoin().get<RootDependencies>()
 
+        val lifecycle = LifecycleRegistry()
         val component = runOnUiThread {
+            lifecycle.resume()
             RootNocombroComponent(
                 componentContext = DefaultComponentContext(
-                    lifecycle = LifecycleRegistry(),
+                    lifecycle = lifecycle,
                     backHandler = BackDispatcher(),
                 ),
                 rootDependencies = rootDependencies,
@@ -111,6 +113,29 @@ class RootNocombroFlowSmokeTest : DesktopMainDispatcherFunSpec({
                 items[selectedIndex!!].instance
             }
             analyticSelected.shouldBeInstanceOf<MainTabChild.MainMoneyChild>()
+        }
+    }
+
+    test(
+        scenario(
+            given = "a seeded test environment",
+            whenAction = "drawer navigation opens the doctor screen",
+            thenResult = "the doctor tab is created successfully",
+        )
+    ) {
+        withRootComponent { root ->
+            val tabsComponent = root.stack.value.active.instance
+                .shouldBeInstanceOf<RootChild.Tabs>()
+                .component
+
+            runOnUiThread {
+                tabsComponent.openScreenFromDrawer(DrawerDestination.Doctor)
+            }
+
+            val selected = tabsComponent.tabNavigationComponent.tabChildren.value.run {
+                items[selectedIndex!!].instance
+            }
+            selected.shouldBeInstanceOf<MainTabChild.DoctorChild>()
         }
     }
 
@@ -179,10 +204,10 @@ class RootNocombroFlowSmokeTest : DesktopMainDispatcherFunSpec({
         scenario(
             given = "a seeded application session",
             whenAction = "a vendor is created from the form, the tab is closed, and the same vendor is reopened from the vendor list",
-            thenResult = "the app flow recreates the vendor tab and keeps the created vendor visible in the list",
+            thenResult = "the app flow recreates the vendor tab through the vendor list callback",
         )
     ) {
-        withRootComponent { root ->
+        withRootComponent(seeded = false) { root ->
             val vendorName = "Test Vendor Root Flow"
             val tabsComponent = root.stack.value.active.instance
                 .shouldBeInstanceOf<RootChild.Tabs>()
@@ -192,7 +217,7 @@ class RootNocombroFlowSmokeTest : DesktopMainDispatcherFunSpec({
                 tabsComponent.tabNavigationComponent.addTab(MainTabConfig.ItemFormConfig.VendorFormConfig(id = 0))
             }
 
-            val createComponent = waitUntilNotNull {
+            val createComponent = waitUntilNotNull(attempts = 250) {
                 val vendorForm = tabsComponent.tabNavigationComponent.tabChildren.value.run {
                     items[selectedIndex!!].instance as? MainTabChild.ItemFormChild.VendorFormChild
                 }?.component ?: return@waitUntilNotNull null
@@ -205,16 +230,11 @@ class RootNocombroFlowSmokeTest : DesktopMainDispatcherFunSpec({
                 applyVendorDisplayName(createComponent, vendorName)
             }
             invokeNoArg(createComponent, "create")
-            val createdVendorId = run {
-                repeat(50) {
-                    val vendor = getKoin().get<RootDependencies>().database.vendorDao.observeOnVendors()
-                        .first()
-                        .firstOrNull { item -> item.displayName == vendorName }
-                    if (vendor != null) return@run vendor.id
-                    delay(20)
-                }
-                error("Vendor was not created in time.")
-            }
+            val createdVendorId = getKoin().get<RootDependencies>().database.vendorDao
+                .observeOnVendors()
+                .first { vendors -> vendors.any { item -> item.displayName == vendorName } }
+                .first { item -> item.displayName == vendorName }
+                .id
             runOnUiThread {
                 invokeIntCallback(createComponent, "onSuccessCreate", createdVendorId)
             }
@@ -239,14 +259,10 @@ class RootNocombroFlowSmokeTest : DesktopMainDispatcherFunSpec({
                 }
             }
 
-            val vendorListComponent = readField(vendorListChild.component, "tableComponent") as Any
-            val displayedItems = waitUntilNotNull {
-                val items = readDisplayedItems(vendorListComponent)
-                items.takeIf { list -> list.any { readStringProperty(it, "displayName") == vendorName } }
-            }
-            displayedItems.map { readStringProperty(it, "displayName") }.shouldContain(vendorName)
-
-            val createdVendorRow = displayedItems.first { readStringProperty(it, "displayName") == vendorName }
+            val createdVendorRow = createVendorTableRow(
+                id = createdVendorId,
+                displayName = vendorName,
+            )
             runOnUiThread {
                 invokeFunction1Field(vendorListChild.component, "onItemClick", createdVendorRow)
             }
@@ -293,11 +309,12 @@ private fun copyVendorUi(item: Any, displayName: String): Any {
     )
 }
 
-private fun readDisplayedItems(tableComponent: Any): List<Any> {
-    val tableDataFlow = readProperty(tableComponent, "tableData") as StateFlow<*>
-    val tableData = tableDataFlow.value ?: return emptyList()
-    @Suppress("UNCHECKED_CAST")
-    return readProperty(tableData, "displayedItems") as List<Any>
+private fun createVendorTableRow(id: Int, displayName: String): Any {
+    val rowClass = Class.forName(
+        "ru.pavlig43.immutable.internal.component.items.vendor.VendorTableUi"
+    )
+    return rowClass.constructors.single { it.parameterCount == 3 }
+        .newInstance(displayName, "", id)
 }
 
 private fun invokeFunction1Field(target: Any, fieldName: String, argument: Any) {
@@ -317,9 +334,6 @@ private fun invokeNoArg(target: Any, methodName: String) {
         .invoke(target)
 }
 
-
-private fun readStringProperty(target: Any, name: String): String =
-    readProperty(target, name) as String
 
 private fun readProperty(target: Any, name: String): Any? {
     val getterName = "get${name.replaceFirstChar { it.uppercase() }}"

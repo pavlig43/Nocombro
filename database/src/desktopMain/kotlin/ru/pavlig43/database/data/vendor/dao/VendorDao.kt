@@ -27,20 +27,32 @@ interface VendorDao {
     @Query("SELECT * from $VENDOR_TABLE_NAME WHERE sync_id = :syncId")
     suspend fun getVendorBySyncId(syncId: String): Vendor?
 
+    @Query("SELECT * FROM $VENDOR_TABLE_NAME")
+    suspend fun getAll(): List<Vendor>
+
     @Query(
         """
-    SELECT * FROM $VENDOR_TABLE_NAME
-    """
+        SELECT * FROM $VENDOR_TABLE_NAME
+        WHERE deleted_at IS NULL
+        """
     )
     fun observeOnVendors(): Flow<List<Vendor>>
 
     @Query(
         """
         SELECT CASE
-            WHEN (SELECT display_name FROM $VENDOR_TABLE_NAME WHERE id =:id) =:name THEN TRUE
-            ELSE NOT EXISTS (SELECT 1 FROM $VENDOR_TABLE_NAME WHERE display_name = :name AND id != :id)
+            WHEN (
+                SELECT display_name FROM $VENDOR_TABLE_NAME
+                WHERE id = :id AND deleted_at IS NULL
+            ) = :name THEN TRUE
+            ELSE NOT EXISTS (
+                SELECT 1 FROM $VENDOR_TABLE_NAME
+                WHERE display_name = :name
+                    AND id != :id
+                    AND deleted_at IS NULL
+            )
         END
-    """
+        """
     )
     suspend fun isNameAllowed(id: Int, name: String): Boolean
 

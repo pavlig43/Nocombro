@@ -14,6 +14,9 @@ interface ProductSpecificationDao {
     @Query("SELECT * FROM $PRODUCT_SPECIFICATION_TABLE_NAME WHERE sync_id = :syncId")
     suspend fun getBySyncId(syncId: String): ProductSpecification?
 
+    @Query("SELECT * FROM $PRODUCT_SPECIFICATION_TABLE_NAME")
+    suspend fun getAll(): List<ProductSpecification>
+
     @Upsert
     suspend fun upsert(specification: ProductSpecification)
 }

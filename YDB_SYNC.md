@@ -1,144 +1,131 @@
-# YDB Sync
+# YDB Mirror Sync
 
-## Текущее решение
+## Архитектура
 
-- Удаленный backend для синхронизации: `YDB Serverless`.
-- Локальная база остается в `Room/SQLite`.
-- Синхронизация идет не на уровне файлов БД, а на уровне бизнес-сущностей с `syncId`.
+Синхронизация работает только через typed mirror tables в YDB.
 
-## Что уже готово локально
+- Каждая business table имеет отдельную remote-таблицу.
+- Ключ строки: `sync_id`.
+- Межтабличные ссылки хранятся через `*_sync_id`.
+- Победитель определяется по `updated_at` / `deleted_at`.
+- Удаления распространяются как tombstone через `deleted_at`.
+- Бинарные файлы хранятся в S3, в YDB синхронизируются только metadata.
 
-- `sync_change` хранит локальную очередь изменений.
-- `sync_state` хранит состояние последнего `push/pull`.
-- Все syncable бизнес-таблицы имеют:
-  - `syncId`
-  - `updatedAt`
-  - `deletedAt`
-- Export и apply работают через стабильные `syncId`, а не через локальные `id`.
+Legacy transport удалён:
 
-## Что считаем syncable сейчас
+- нет `sync_push_log`;
+- нет cursor paging;
+- нет legacy gateway или mock fallback;
+- нет queue runner и JSON remote payload;
+- `SyncService` выполняет только mirror reconciliation.
+- локальная таблица `sync_change` удаляется миграцией Room 6 -> 7;
+- legacy-колонка `sync_state.last_remote_cursor` удаляется той же миграцией;
+- typed mirror rows применяются к Room напрямую, без legacy payload-моделей.
 
-- `vendor`
+## Mirror Tables
+
+- `file`
 - `document`
+- `vendor`
 - `declaration`
 - `product`
-- `safety_stock`
 - `composition`
 - `product_declaration`
+- `product_specification`
+- `safety_stock`
 - `batch`
+- `batch_cost_price`
 - `batch_movement`
-- `transaction`
+- `transact`
 - `buy`
 - `sale`
 - `reminder`
 - `expense`
+- `experiment`
+- `experiment_entry`
+- `experiment_reminder`
 
-## Что сейчас не входит в remote sync
+Инвентарь таблиц находится в
+`database/src/desktopMain/kotlin/ru/pavlig43/database/data/sync/mirror/MirrorSyncTable.kt`.
 
-- `file`
-  Файлы сознательно отложены на отдельный контур через object storage.
-- `batch_cost_price`
-  Это вычисляемая локальная таблица, не удаленная истина.
-- `pf`
-  Это форма поверх `batch + batch_movement`, а не отдельная sync-таблица.
+DDL находится в `database/ydb/mirror_sync_v1.sql`. JDBC gateway также создаёт
+отсутствующие mirror tables при первой проверке статуса или синхронизации.
 
-## Минимальная remote-схема
+Старые remote-таблицы приложение не удаляет. После выпуска новой версии,
+успешного push/pull и проверки восстановления их можно удалить вручную SQL из
+`database/ydb/drop_legacy_sync_tables.sql`.
 
-Пока используем одну универсальную таблицу `sync_push_log`.
+## Локальные удаления
 
-Она хранит:
-- источник изменения (`device_id`)
-- тип сущности (`entity_table`)
-- глобальный ключ сущности (`entity_sync_id`)
-- тип изменения (`UPSERT` / `DELETE`)
-- сериализованный payload (`payload_json`)
-- технические поля очереди и курсора
+Физические удаления и SQLite cascade проходят через
+`mirror_deletion_journal`.
 
-SQL bootstrap лежит в:
-- [sync_push_log.sql](/C:/Users/user/AndroidStudioProjects/Nocombro/database/ydb/sync_push_log.sql)
+Перед удалением сохраняются typed mirror rows, затем локальный snapshot
+возвращает их как tombstone. Это позволяет отправлять удаления в порядке
+child -> parent, не меняя существующее UI-поведение.
 
-## Почему одна таблица пока нормально
+## Настройки
 
-- для `2-5` компьютеров и маленькой нагрузки это проще всего поднять и отладить
-- push/pull уже реализованы под универсальный payload
-- позже можно перейти к более предметной remote-схеме без переписывания локального sync-слоя
+- `NOCOMBRO_YDB_JDBC_URL` или `nocombro.ydb.jdbcUrl`
+- `NOCOMBRO_YDB_SA_FILE` или `nocombro.ydb.saFile`
+- `NOCOMBRO_YDB_TOKEN` или `nocombro.ydb.token`
+- `NOCOMBRO_YDB_MIRROR_ROOT` или `nocombro.ydb.mirrorRoot`
 
-## Runtime-настройки
+Если `jdbcUrl` не задан, mirror sync отображается как ненастроенный.
 
-Для включения реального JDBC gateway:
+На Windows service-account key по умолчанию также ищется в:
 
-- `NOCOMBRO_YDB_JDBC_URL` или JVM property `nocombro.ydb.jdbcUrl`
-- `NOCOMBRO_YDB_SA_FILE` или JVM property `nocombro.ydb.saFile`
-- `NOCOMBRO_YDB_TOKEN` или JVM property `nocombro.ydb.token`
-- `NOCOMBRO_YDB_SYNC_TABLE` или JVM property `nocombro.ydb.syncTable`
+```text
+%APPDATA%\Nocombro\ydb-sa-key.json
+```
 
-Если `jdbcUrl` не задан, приложение работает через `YdbSyncGatewayMock`.
+## Runtime
 
-## Следующий практический шаг
+- Push сравнивает local и remote snapshots, применяет remote winners локально и
+  отправляет local winners в mirror tables.
+- Pull применяет remote winners локально.
+- После pull отсутствующие бинарные файлы догружаются из S3.
+- Doctor показывает доступность mirror tables и расхождения local/remote.
+- Doctor S3 cleanup сравнивает S3 только с активными строками mirror `file` и
+  повторно загружает mirror непосредственно перед удалением.
+- Восстановление пустой Room-БД выполняется обычной кнопкой синхронизации.
 
-1. Создать serverless БД в Yandex Cloud.
-2. Подготовить таблицу `sync_push_log`.
-3. Прописать `jdbcUrl` и либо `saFile`, либо `token`, а также имя таблицы.
+## Удаление legacy tables
 
-Для Windows по умолчанию также ищется файл:
+1. Установить новую версию на все рабочие машины.
+2. Проверить, что status показывает доступный mirror без ошибки.
+3. Выполнить push/pull и убедиться, что local и mirror совпадают в Doctor.
+4. Проверить восстановление тестовой пустой Room-БД.
+5. Сделать резервную копию или экспорт старых YDB-таблиц.
+6. Выполнить `database/ydb/drop_legacy_sync_tables.sql` вручную в YDB Query.
 
-`%APPDATA%\Nocombro\ydb-sa-key.json`
+Приложение этот SQL не запускает.
 
-Если он существует, JDBC-драйвер YDB использует его как `saFile` без ручной передачи токена.
+## Проверки
 
-### Где взять `ydb-sa-key.json`
+Обычные локальные тесты:
 
-1. Открыть `IAM` в Yandex Cloud.
-2. Перейти в `Сервисные аккаунты`.
-3. Выбрать сервисный аккаунт с доступом к YDB.
-4. Нажать `Создать ключ`.
-5. Выбрать `Создать авторизованный ключ`.
-6. Сохранить скачанный JSON-файл.
+```powershell
+.\gradlew :database:desktopTest
+.\gradlew :rootnocombro:desktopTest
+```
 
-Документация:
+Реальный YDB smoke test:
 
-- `Service account`: https://yandex.cloud/en/docs/iam/concepts/users/service-accounts
-- `Authorized keys`: https://yandex.cloud/en/docs/iam/concepts/authorization/key
-- `Manage authorized keys`: https://yandex.cloud/en/docs/iam/operations/authentication/manage-authorized-keys
+```powershell
+$env:NOCOMBRO_YDB_SMOKE = "true"
+.\gradlew :database:desktopTest --tests "ru.pavlig43.database.YdbMirrorIntegrationTest" --no-parallel
+```
 
-### Куда положить файл на Windows
+Disaster recovery test:
 
-1. Открыть папку `%APPDATA%`.
-2. Создать папку `Nocombro`, если ее еще нет.
-3. Переименовать скачанный JSON в `ydb-sa-key.json`.
-4. Положить файл сюда:
+```powershell
+$env:NOCOMBRO_YDB_DISASTER_RECOVERY = "true"
+.\gradlew :database:desktopTest --tests "ru.pavlig43.database.YdbMirrorDisasterRecoveryTest" --no-parallel
+```
 
-`C:\Users\<username>\AppData\Roaming\Nocombro\ydb-sa-key.json`
+## Известное ограничение
 
-Важно:
-
-- не класть этот файл в репозиторий;
-- не коммитить его;
-- не передавать другим пользователям.
-4. Прогнать первый sync между двумя локальными базами.
-## Быстрая настройка на новом компьютере
-
-Минимум, без которого remote sync не включится:
-
-1. Задать `NOCOMBRO_YDB_JDBC_URL`.
-2. Дать способ авторизации:
-   - либо положить `ydb-sa-key.json` в `%APPDATA%\Nocombro\`;
-   - либо задать `NOCOMBRO_YDB_SA_FILE`;
-   - либо задать `NOCOMBRO_YDB_TOKEN`, если в этом окружении используется token-based доступ.
-3. При необходимости задать `NOCOMBRO_YDB_SYNC_TABLE`, если имя таблицы не `sync_push_log`.
-
-Практически для Windows обычно достаточно двух вещей:
-
-1. Положить файл ключа в `C:\Users\<username>\AppData\Roaming\Nocombro\ydb-sa-key.json`.
-2. Задать `NOCOMBRO_YDB_JDBC_URL`.
-
-Как понять, что забыто:
-
-- Если в UI видно `Remote sync не настроен`, приложение не нашло `NOCOMBRO_YDB_JDBC_URL`.
-- Если remote sync включился, но видна ошибка авторизации, нужно проверить файл ключа или `NOCOMBRO_YDB_SA_FILE`.
-- Если видна ошибка сети, значит проблема уже не в конфиге, а в доступности хоста или интернета.
-
-Где лучше задавать `NOCOMBRO_YDB_JDBC_URL`:
-
-- Для постоянной настройки на конкретном компьютере: как переменную среды Windows.
-- Для разового запуска из IDE: как environment variable в Run Configuration или как JVM property `-Dnocombro.ydb.jdbcUrl=...`.
+YDB `UPSERT` пока не защищён server-side сравнением версии. Поздний push
+устаревшего snapshot теоретически может перезаписать более новую строку.
+Отложенная задача: https://github.com/pavlig43/Nocombro/issues/131

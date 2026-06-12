@@ -30,7 +30,7 @@ internal fun DrawerDestination.toMainTabConfig(): MainTabConfig =
         DrawerDestination.SampleTable -> MainTabConfig.SampleTableConfig()
         DrawerDestination.Storage -> MainTabConfig.StorageConfig()
         DrawerDestination.Experiments -> ExperimentsConfig()
-        DrawerDestination.Doctor -> DoctorConfig()
+        DrawerDestination.Doctor -> DoctorConfig
     }
 
 internal fun NotificationItem.openIn(tabOpener: TabOpener, id: Int) {

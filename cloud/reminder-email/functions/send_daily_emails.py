@@ -75,16 +75,20 @@ class DeliveryRepository:
 
 class YdbDeliveryRepository(DeliveryRepository):
     def __init__(self) -> None:
-        self.transaction_source_table = os.getenv(
-            "YDB_TRANSACTION_REMINDER_SOURCE_TABLE",
-            "reminder_email_source",
-        )
-        self.experiment_source_table = os.getenv(
-            "YDB_EXPERIMENT_REMINDER_SOURCE_TABLE",
-            "experiment_reminder_email_source",
+        mirror_root = os.getenv("YDB_MIRROR_ROOT", "").strip().strip("/")
+        self.transaction_table = self._table_path(mirror_root, "transact")
+        self.reminder_table = self._table_path(mirror_root, "reminder")
+        self.experiment_table = self._table_path(mirror_root, "experiment")
+        self.experiment_reminder_table = self._table_path(
+            mirror_root,
+            "experiment_reminder",
         )
         self.recipient_table = os.getenv("YDB_REMINDER_RECIPIENT_TABLE", "reminder_recipient")
         self.delivery_table = os.getenv("YDB_REMINDER_DELIVERY_TABLE", "reminder_email_delivery")
+
+    @staticmethod
+    def _table_path(root: str, table: str) -> str:
+        return f"{root}/{table}" if root else table
 
     def list_due_reminders(self, target_date: date) -> list[DueReminder]:
         target_until = f"{target_date.isoformat()}T23:59:59"
@@ -93,31 +97,35 @@ class YdbDeliveryRepository(DeliveryRepository):
         DECLARE $target_until AS Utf8;
 
         SELECT
-            reminder_sync_id,
-            transaction_type,
-            transaction_created_at,
-            reminder_text,
-            reminder_at
-        FROM `{self.transaction_source_table}`
-        WHERE deleted_at IS NULL
-            AND reminder_at IS NOT NULL
-            AND reminder_at <= $target_until
-        ORDER BY reminder_at ASC;
+            reminder.sync_id AS reminder_sync_id,
+            transact.transaction_type AS transaction_type,
+            transact.created_at AS transaction_created_at,
+            reminder.text AS reminder_text,
+            reminder.reminder_date_time AS reminder_at
+        FROM `{self.reminder_table}` AS reminder
+        INNER JOIN `{self.transaction_table}` AS transact
+            ON transact.sync_id = reminder.transaction_sync_id
+        WHERE reminder.deleted_at IS NULL
+            AND transact.deleted_at IS NULL
+            AND reminder.reminder_date_time <= $target_until
+        ORDER BY reminder.reminder_date_time ASC;
         """
 
         experiment_query = f"""
         DECLARE $target_until AS Utf8;
 
         SELECT
-            reminder_sync_id,
-            experiment_title,
-            reminder_text,
-            reminder_at
-        FROM `{self.experiment_source_table}`
-        WHERE deleted_at IS NULL
-            AND reminder_at IS NOT NULL
-            AND reminder_at <= $target_until
-        ORDER BY reminder_at ASC;
+            reminder.sync_id AS reminder_sync_id,
+            experiment.title AS experiment_title,
+            reminder.text AS reminder_text,
+            reminder.reminder_date_time AS reminder_at
+        FROM `{self.experiment_reminder_table}` AS reminder
+        INNER JOIN `{self.experiment_table}` AS experiment
+            ON experiment.sync_id = reminder.experiment_sync_id
+        WHERE reminder.deleted_at IS NULL
+            AND experiment.deleted_at IS NULL
+            AND reminder.reminder_date_time <= $target_until
+        ORDER BY reminder.reminder_date_time ASC;
         """
 
         transaction_result_sets = get_pool().execute_with_retries(

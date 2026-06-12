@@ -37,4 +37,7 @@ interface FileDao {
     @Query("DELETE FROM file WHERE id in(:ids)")
     suspend fun deleteFiles(ids:List<Int>)
 
+    @Query("DELETE FROM file WHERE sync_id IN (:syncIds)")
+    suspend fun deleteFilesBySyncIds(syncIds: List<String>)
+
 }
