@@ -2,10 +2,21 @@ param(
     [switch]$Reset
 )
 
+$ErrorActionPreference = "Stop"
+Set-StrictMode -Version Latest
+
 $projectRoot = Split-Path -Parent $PSScriptRoot
+$gradleWrapper = Join-Path $projectRoot "gradlew.bat"
 $deviceRoot = Join-Path $env:USERPROFILE "NocombroDevice2"
 $deviceAppData = Join-Path $deviceRoot "Nocombro"
-$primaryAppData = Join-Path $env:APPDATA "Nocombro"
+$primaryAppDataRoot = [Environment]::GetFolderPath(
+    [Environment+SpecialFolder]::ApplicationData
+)
+$primaryAppData = Join-Path $primaryAppDataRoot "Nocombro"
+
+if (!(Test-Path -LiteralPath $gradleWrapper -PathType Leaf)) {
+    throw "Gradle wrapper not found: $gradleWrapper"
+}
 
 if ($Reset -and (Test-Path -LiteralPath $deviceRoot)) {
     $resolvedDeviceRoot = (Resolve-Path -LiteralPath $deviceRoot).Path
@@ -38,4 +49,7 @@ $env:NOCOMBRO_YDB_JDBC_URL =
 Write-Host "Starting Nocombro Device2"
 Write-Host "App data: $deviceAppData"
 
-& (Join-Path $projectRoot "gradlew.bat") :app:desktopApp:run
+& $gradleWrapper :app:desktopApp:run --no-daemon
+if ($LASTEXITCODE -ne 0) {
+    throw "Nocombro Device2 exited with code $LASTEXITCODE"
+}
