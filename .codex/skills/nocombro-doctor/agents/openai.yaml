@@ -1,0 +1,5 @@
+interface:
+  display_name: "Nocombro Doctor"
+  short_description: "Doctor diagnostics and cleanup workflows"
+  default_prompt: "Use $nocombro-doctor when working on Doctor diagnostics, storage overview, file cleanup, or S3 orphan cleanup."
+

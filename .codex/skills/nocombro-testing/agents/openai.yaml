@@ -1,0 +1,5 @@
+interface:
+  display_name: "Nocombro Testing"
+  short_description: "Smoke, real-data, and YDB test routing"
+  default_prompt: "Use $nocombro-testing to choose and interpret Nocombro smoke, real-data, database, or YDB tests."
+

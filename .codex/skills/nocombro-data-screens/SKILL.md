@@ -22,6 +22,9 @@ Read these files first:
    - `features/files`
 3. `database` or `datastore` only if the bug smells like persistence rather than UI logic
 
+Use `nocombro-sync` as a companion when files, storage, or tables interact with YDB mirror sync, tombstones, or S3 recovery.
+Use `nocombro-testing` when choosing smoke or real-data coverage for analytics/storage/table behavior.
+
 Read navigation files only if the screen is not opening:
 
 - `rootnocombro/src/desktopMain/kotlin/ru/pavlig43/rootnocombro/internal/navigation/MainTabConfig.kt`
@@ -45,6 +48,8 @@ Start in `features/table/*` and look for column definitions, row models, and int
 
 Start in the owning feature. Use persistence modules only when data source wiring appears wrong.
 
+If storage or files disagree after sync, read `YDB_SYNC.md` and use the sync skill before changing calculations.
+
 ### Screen missing from app flow
 
 Escalate to navigation after proving the feature module itself looks correct.
@@ -54,3 +59,4 @@ Escalate to navigation after proving the feature module itself looks correct.
 - Do not read every analytics/table/storage module for one task.
 - Do not blame persistence before checking feature state and screen logic.
 - Use the Gradle source helper only when a third-party table API is the real blocker.
+- Do not treat local Room state as the only truth for remote file cleanup.

@@ -1,0 +1,5 @@
+interface:
+  display_name: "Nocombro Experiments"
+  short_description: "Experiments lab journal feature workflow"
+  default_prompt: "Use $nocombro-experiments when working on experiments, entries, reminders, files, or cloud reminder email integration."
+

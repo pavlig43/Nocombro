@@ -1,0 +1,5 @@
+interface:
+  display_name: "Nocombro Labels"
+  short_description: "Thermal labels and PPTX/PDF generation"
+  default_prompt: "Use $nocombro-labels when working on thermal labels, PPTX templates, label generation, or related product PDF output."
+

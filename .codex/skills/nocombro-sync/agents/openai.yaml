@@ -1,0 +1,5 @@
+interface:
+  display_name: "Nocombro Sync"
+  short_description: "YDB mirror sync and file recovery workflows"
+  default_prompt: "Use $nocombro-sync when working on Nocombro YDB mirror sync, tombstones, S3 recovery, or sync UI."
+

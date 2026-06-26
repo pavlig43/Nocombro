@@ -44,6 +44,8 @@ Check:
 3. root scope can resolve every constructor parameter
 4. component factory path is reachable from navigation
 
+Recent modules that commonly need root wiring checks include `features/experiments`, `features/doctor`, `features/label/thermal`, and sync/file dependencies exposed through `database` or `features/files`.
+
 ### `scope.get()` or injection failure
 
 Treat this as wiring first, UI second. Verify the exact binding source before touching screens.

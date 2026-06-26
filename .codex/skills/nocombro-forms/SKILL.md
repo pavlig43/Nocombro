@@ -15,6 +15,8 @@ Read these files first:
 2. matching module under `features/form/*`
 3. `rootnocombro/src/desktopMain/kotlin/ru/pavlig43/rootnocombro/internal/navigation/MainTabConfig.kt` only if the task mentions opening the form, editing an `id`, or route arguments
 
+Use `nocombro-sync` as a companion when form create/update/delete behavior affects mirror metadata, hard deletes, tombstones, or file sync.
+
 Form modules:
 
 - `features/form/document`
@@ -49,8 +51,13 @@ Check in this order:
 
 Use the navigation and DI skills as companions only after the form module itself is ready.
 
+### Change save/delete behavior
+
+Check whether the repository updates `updated_at`, preserves `sync_id`, and captures hard deletes through the mirror deletion journal.
+
 ## Guardrails
 
 - Do not scan all form modules; pick one module first.
 - Do not jump into root navigation unless the bug is about opening, arguments, or reachability.
 - Keep reads narrow: screen/component/state first, repositories later.
+- Do not bypass sync/tombstone handling when changing destructive form operations.

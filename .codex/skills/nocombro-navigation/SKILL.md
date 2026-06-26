@@ -45,6 +45,8 @@ Usually touch all of these:
 5. `rootnocombro/internal/navigation/MainTabNavigationComponent.kt`
 6. Drawer or tab UI if the screen must be user-reachable
 
+Recent feature examples that may need this full path: `features/experiments`, `features/doctor`, and dialog/entry points for `features/label/thermal`.
+
 ### Screen exists but does not open
 
 Check in this order:
