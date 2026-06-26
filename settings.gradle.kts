@@ -35,7 +35,8 @@ plugins {
     id("io.github.shivathapaa.aalekh") version "0.1.0"
 }
 include(
-    "app:desktopApp"
+    "app:desktopApp",
+    "app:nocombroMobile",
 )
 
 include(":rootnocombro")

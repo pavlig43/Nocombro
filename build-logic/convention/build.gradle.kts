@@ -89,6 +89,10 @@ gradlePlugin {
             id = libs.plugins.pavlig43.testing.get().pluginId
             implementationClass = "TestingPlugin"
         }
+        register("androidApplication") {
+            id = libs.plugins.pavlig43.androidapp.get().pluginId
+            implementationClass = "AndroidApplicationPlugin"
+        }
 
     }
 }

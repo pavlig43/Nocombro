@@ -225,6 +225,7 @@ pavlig43-room = { id = "pavlig43.room" }
 pavlig43-detekt = { id = "pavlig43.detekt" }
 pavlig43-table ={id="pavlig43.table"}
 pavlig43-testing = { id = "pavlig43.testing" }
+pavlig43-androidapp = { id = "pavlig43.androidapp" }
 
 android-kotlin-multiplatform-library = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
 
