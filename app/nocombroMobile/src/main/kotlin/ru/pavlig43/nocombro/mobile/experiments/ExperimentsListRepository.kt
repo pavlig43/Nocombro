@@ -35,9 +35,9 @@ class ExperimentsListRepository(
     /**
      * Следит за живым экспериментом по локальному id.
      */
-    fun observeExperiment(id: Int): Flow<MobileExperiment> {
+    fun observeExperiment(id: Int): Flow<MobileExperiment?> {
         return experimentDao.observeExperiment(id)
-            .map(MobileExperimentEntity::toModel)
+            .map { experiment -> experiment?.toModel() }
     }
 
     /**
@@ -46,7 +46,7 @@ class ExperimentsListRepository(
     suspend fun createExperiment(): Result<MobileExperiment> {
         return runCatching {
             val experiment = MobileExperimentEntity(
-                title = "Новый эксперимент",
+                title = "",
                 syncId = UUID.randomUUID().toString(),
                 updatedAt = getCurrentLocalDateTime(),
             )

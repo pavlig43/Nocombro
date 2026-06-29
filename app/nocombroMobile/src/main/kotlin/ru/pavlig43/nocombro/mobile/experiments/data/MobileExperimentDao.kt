@@ -58,7 +58,7 @@ interface MobileExperimentDao {
         WHERE id = :id AND deleted_at IS NULL
         """
     )
-    fun observeExperiment(id: Int): Flow<MobileExperimentEntity>
+    fun observeExperiment(id: Int): Flow<MobileExperimentEntity?>
 }
 
 /**

@@ -1,4 +1,4 @@
-import ru.pavlig43.convention.extension.desktopDependencies
+import ru.pavlig43.convention.extension.commonMainDependencies
 
 plugins {
     alias(libs.plugins.pavlig43.kmplibrary)
@@ -9,7 +9,7 @@ plugins {
 }
 
 
-desktopDependencies {
+commonMainDependencies {
     implementation(projects.core)
     implementation(projects.theme)
 }

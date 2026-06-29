@@ -164,43 +164,34 @@ private fun ExperimentListPane(
                 onClick = onCreateExperiment,
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                Text("Новый эксперимент")
+                Text("Добавить")
             }
-            if (experiments.isEmpty()) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text("Пока пусто.\nСоздай первый эксперимент.")
-                }
-            } else {
-                Column(
-                    modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    experiments.forEach { item ->
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { onSelectExperiment(item.id) }
-                                .background(
-                                    if (item.id == selectedExperimentId) {
-                                        MaterialTheme.colorScheme.secondaryContainer
-                                    } else {
-                                        MaterialTheme.colorScheme.surface
-                                    }
-                                )
+            Column(
+                modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                experiments.forEach { item ->
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onSelectExperiment(item.id) }
+                            .background(
+                                if (item.id == selectedExperimentId) {
+                                    MaterialTheme.colorScheme.secondaryContainer
+                                } else {
+                                    MaterialTheme.colorScheme.surface
+                                }
+                            )
+                    ) {
+                        Column(
+                            modifier = Modifier.fillMaxWidth().padding(12.dp),
+                            verticalArrangement = Arrangement.spacedBy(4.dp),
                         ) {
-                            Column(
-                                modifier = Modifier.fillMaxWidth().padding(12.dp),
-                                verticalArrangement = Arrangement.spacedBy(4.dp),
-                            ) {
-                                Text(item.title, fontWeight = FontWeight.SemiBold)
-                                Text(
-                                    "Обновлен: ${item.updatedAtText}",
-                                    style = MaterialTheme.typography.bodySmall,
-                                )
-                            }
+                            Text(item.title, fontWeight = FontWeight.SemiBold)
+                            Text(
+                                "Обновлен: ${item.updatedAtText}",
+                                style = MaterialTheme.typography.bodySmall,
+                            )
                         }
                     }
                 }

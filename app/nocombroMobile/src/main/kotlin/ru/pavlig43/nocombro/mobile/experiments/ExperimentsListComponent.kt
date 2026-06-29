@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.koin.core.module.Module
 import org.koin.dsl.module
 import ru.pavlig43.core.componentCoroutineScope
@@ -39,6 +40,7 @@ private fun createExperimentsMobileModule(
 class ExperimentsListComponent(
     componentContext: ComponentContext,
     dependencies: ExperimentDependencies,
+    private val onExperimentCreated: (Int) -> Unit,
 ) : ComponentContext by componentContext {
     private val koinContext = instanceKeeper.getOrCreate { ComponentKoinContext() }
     private val scope = koinContext.getOrCreateKoinScope(createExperimentsMobileModule(dependencies))
@@ -81,6 +83,11 @@ class ExperimentsListComponent(
     fun createExperiment() {
         coroutineScope.launch(Dispatchers.IO) {
             repository.createExperiment()
+                .onSuccess { experiment ->
+                    withContext(Dispatchers.Main) {
+                        onExperimentCreated(experiment.id)
+                    }
+                }
         }
     }
 

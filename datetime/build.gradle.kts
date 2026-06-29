@@ -1,4 +1,4 @@
-import ru.pavlig43.convention.extension.desktopDependencies
+import ru.pavlig43.convention.extension.commonMainDependencies
 
 plugins {
     alias(libs.plugins.pavlig43.kmplibrary)
@@ -7,7 +7,7 @@ plugins {
     alias(libs.plugins.pavlig43.decompose)
   }
 kotlin{
-    desktopDependencies {
+    commonMainDependencies {
         implementation(projects.core)
         implementation(projects.coreui)
         implementation(projects.theme)

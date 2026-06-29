@@ -40,7 +40,7 @@ internal class ExperimentsRepository(
     suspend fun createExperiment(): Result<Experiment> {
         return runCatching {
             database.inTransaction {
-                val experiment = Experiment(title = "Новый эксперимент")
+                val experiment = Experiment(title = "")
                 val id = experimentDao.create(experiment).toInt()
                 experiment.copy(id = id)
             }

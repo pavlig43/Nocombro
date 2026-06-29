@@ -60,10 +60,17 @@ class ExperimentsMobileComponent(
                 ExperimentsListComponent(
                     componentContext = componentContext,
                     dependencies = dependencies,
+                    onExperimentCreated = ::selectExperiment,
                 )
             )
             is ExperimentsMobileConfig.Details -> {
-                ExperimentsMobileChild.Details(config.experimentId)
+                ExperimentsMobileChild.Details(
+                    ExperimentDetailsComponent(
+                        componentContext = componentContext,
+                        experimentId = config.experimentId,
+                        dependencies = dependencies,
+                    )
+                )
             }
         }
     }
@@ -103,7 +110,7 @@ sealed interface ExperimentsMobileChild {
     /**
      * Child экрана одного эксперимента.
      */
-    data class Details(
-        val experimentId: Int,
+    class Details(
+        val component: ExperimentDetailsComponent,
     ) : ExperimentsMobileChild
 }
