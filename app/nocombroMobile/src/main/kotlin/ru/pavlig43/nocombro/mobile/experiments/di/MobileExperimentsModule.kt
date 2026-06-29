@@ -3,6 +3,7 @@ package ru.pavlig43.nocombro.mobile.experiments.di
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
 import ru.pavlig43.nocombro.mobile.experiments.ExperimentSyncTransport
+import ru.pavlig43.nocombro.mobile.experiments.ExperimentsListRepository
 import ru.pavlig43.nocombro.mobile.experiments.ExperimentsMobileDependencies
 import ru.pavlig43.nocombro.mobile.experiments.RoomExperimentsRepository
 import ru.pavlig43.nocombro.mobile.experiments.data.MobileExperimentsDatabase
@@ -16,6 +17,11 @@ import ru.pavlig43.nocombro.mobile.navigation.NocombroMobileRootDependencies
 val mobileExperimentsModule = module {
     single {
         MobileExperimentsDatabase.create(androidContext())
+    }
+    single {
+        ExperimentsListRepository(
+            db = get(),
+        )
     }
     single<ExperimentSyncTransport> {
         AndroidExperimentSyncTransport(
