@@ -15,32 +15,92 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import ru.pavlig43.datetime.getCurrentLocalDate
+import ru.pavlig43.datetime.getCurrentLocalDateTime
 import ru.pavlig43.nocombro.mobile.experiments.data.MobileExperimentEntryEntity
 import ru.pavlig43.nocombro.mobile.experiments.data.MobileExperimentEntity
 import ru.pavlig43.nocombro.mobile.experiments.data.MobileExperimentReminderEntity
 import ru.pavlig43.nocombro.mobile.experiments.data.MobileExperimentsDatabase
 import ru.pavlig43.nocombro.mobile.experiments.data.toModel
 
+/**
+ * Контракт хранилища и команд для mobile-экрана экспериментов.
+ */
 interface ExperimentsRepository {
+    /**
+     * Единый state экрана.
+     */
     val state: StateFlow<ExperimentsMobileState>
 
+    /**
+     * Переключает показ архивных экспериментов.
+     */
     fun toggleArchivedVisibility()
+
+    /**
+     * Выбирает эксперимент по локальному id.
+     */
     fun selectExperiment(id: Int)
+
+    /**
+     * Выбирает запись журнала по локальному id.
+     */
     fun selectEntry(id: Int)
+
+    /**
+     * Создаёт новый эксперимент.
+     */
     fun createExperiment()
+
+    /**
+     * Обновляет выбранный эксперимент.
+     */
     fun updateSelectedExperiment(title: String, description: String)
+
+    /**
+     * Меняет архивный статус выбранного эксперимента.
+     */
     fun setSelectedExperimentArchived(isArchived: Boolean)
+
+    /**
+     * Открывает или создаёт запись за сегодня.
+     */
     fun createTodayEntry()
+
+    /**
+     * Обновляет выбранную запись журнала.
+     */
     fun updateSelectedEntry(content: String)
+
+    /**
+     * Создаёт напоминание для выбранного эксперимента.
+     */
     fun createReminder(text: String)
+
+    /**
+     * Помечает напоминание удалённым.
+     */
     fun deleteReminder(id: Int)
+
+    /**
+     * Запускает синхронизацию snapshot-а.
+     */
     suspend fun sync()
 }
 
+/**
+ * Транспорт синхронизации экспериментов.
+ */
 interface ExperimentSyncTransport {
+    /**
+     * Отправляет локальный snapshot во внешний backend.
+     */
     suspend fun sync(snapshot: ExperimentSyncSnapshot): Result<Unit>
 }
 
+/**
+ * Room-реализация [ExperimentsRepository] для mobile-приложения.
+ */
 @OptIn(ExperimentalCoroutinesApi::class)
 class RoomExperimentsRepository(
     private val db: MobileExperimentsDatabase,
@@ -143,9 +203,9 @@ class RoomExperimentsRepository(
     override fun createExperiment() {
         coroutineScope.launch {
             val experiment = MobileExperimentEntity(
-                title = "New experiment",
+                title = "Новый эксперимент",
                 syncId = newSyncId(),
-                updatedAt = currentDateTime(),
+                updatedAt = getCurrentLocalDateTime(),
             )
             selectedExperimentId.value = experimentDao.create(experiment).toInt()
             selectedEntryId.value = null
@@ -162,7 +222,7 @@ class RoomExperimentsRepository(
                     title = title,
                     ideaDescription = description,
                     isArchived = selected.isArchived,
-                    updatedAt = currentDateTime(),
+                    updatedAt = getCurrentLocalDateTime(),
                     deletedAt = selected.deletedAt,
                 )
             )
@@ -179,7 +239,7 @@ class RoomExperimentsRepository(
                     title = selected.title,
                     ideaDescription = selected.ideaDescription,
                     isArchived = isArchived,
-                    updatedAt = currentDateTime(),
+                    updatedAt = getCurrentLocalDateTime(),
                     deletedAt = selected.deletedAt,
                 )
             )
@@ -191,7 +251,7 @@ class RoomExperimentsRepository(
         coroutineScope.launch {
             val existing = experimentEntryDao.getEntryByExperimentAndDate(
                 experimentId = experiment.id,
-                entryDate = currentDate(),
+                entryDate = getCurrentLocalDate(),
             )
             if (existing != null) {
                 selectedEntryId.value = existing.id
@@ -200,9 +260,9 @@ class RoomExperimentsRepository(
 
             val entry = MobileExperimentEntryEntity(
                 experimentId = experiment.id,
-                entryDate = currentDate(),
+                entryDate = getCurrentLocalDate(),
                 syncId = newSyncId(),
-                updatedAt = currentDateTime(),
+                updatedAt = getCurrentLocalDateTime(),
             )
             selectedEntryId.value = experimentEntryDao.create(entry).toInt()
             touchExperiment(experiment.id)
@@ -219,7 +279,7 @@ class RoomExperimentsRepository(
                     experimentId = selected.experimentId,
                     entryDate = selected.entryDate,
                     content = content,
-                    updatedAt = currentDateTime(),
+                    updatedAt = getCurrentLocalDateTime(),
                     deletedAt = selected.deletedAt,
                 )
             )
@@ -236,9 +296,9 @@ class RoomExperimentsRepository(
                 MobileExperimentReminderEntity(
                     experimentId = experiment.id,
                     text = text.trim(),
-                    reminderDateTime = currentDateTime(),
+                    reminderDateTime = getCurrentLocalDateTime(),
                     syncId = newSyncId(),
-                    updatedAt = currentDateTime(),
+                    updatedAt = getCurrentLocalDateTime(),
                 )
             )
             touchExperiment(experiment.id)
@@ -248,7 +308,7 @@ class RoomExperimentsRepository(
     override fun deleteReminder(id: Int) {
         coroutineScope.launch {
             val reminder = experimentReminderDao.getReminder(id) ?: return@launch
-            val deletedAt = currentDateTime()
+            val deletedAt = getCurrentLocalDateTime()
             experimentReminderDao.upsert(
                 reminder.copy(
                     updatedAt = deletedAt,
@@ -263,36 +323,73 @@ class RoomExperimentsRepository(
         syncStatus.value = SyncStatus.Running
         val result = syncTransport.sync(buildSyncSnapshot())
         syncStatus.value = result.fold(
-            onSuccess = { SyncStatus.Synced(currentDateTime()) },
-            onFailure = { SyncStatus.Failed(it.message ?: "Sync failed") },
+            onSuccess = { SyncStatus.Synced(getCurrentLocalDateTime()) },
+            onFailure = { SyncStatus.Failed(it.message ?: "Не удалось синхронизировать") },
         )
     }
 
     private suspend fun seedIfEmpty() {
-        if (experimentDao.getAll().isNotEmpty()) return
+        if (experimentDao.getAll().isNotEmpty()) {
+            localizeLegacySeedData()
+            return
+        }
 
         val experiment = MobileExperimentEntity(
-            title = "New experiment",
-            ideaDescription = "Check a hypothesis and keep a journal of changes.",
+            title = "Новый эксперимент",
+            ideaDescription = "Проверьте гипотезу и ведите журнал изменений.",
             syncId = newSyncId(),
-            updatedAt = currentDateTime(),
+            updatedAt = getCurrentLocalDateTime(),
         )
         val experimentId = experimentDao.create(experiment).toInt()
         experimentEntryDao.create(
             MobileExperimentEntryEntity(
                 experimentId = experimentId,
-                entryDate = currentDate(),
-                content = "Initial experiment note.",
+                entryDate = getCurrentLocalDate(),
+                content = "Первая заметка по эксперименту.",
                 syncId = newSyncId(),
-                updatedAt = currentDateTime(),
+                updatedAt = getCurrentLocalDateTime(),
             )
         )
         selectedExperimentId.value = experimentId
     }
 
+    private suspend fun localizeLegacySeedData() {
+        experimentDao.getAll()
+            .filter {
+                it.title == LEGACY_SEED_EXPERIMENT_TITLE ||
+                    it.ideaDescription == LEGACY_SEED_EXPERIMENT_DESCRIPTION
+            }
+            .forEach { experiment ->
+                experimentDao.upsert(
+                    experiment.copy(
+                        title = if (experiment.title == LEGACY_SEED_EXPERIMENT_TITLE) {
+                            "Новый эксперимент"
+                        } else {
+                            experiment.title
+                        },
+                        ideaDescription = if (
+                            experiment.ideaDescription == LEGACY_SEED_EXPERIMENT_DESCRIPTION
+                        ) {
+                            "Проверьте гипотезу и ведите журнал изменений."
+                        } else {
+                            experiment.ideaDescription
+                        },
+                    )
+                )
+            }
+
+        experimentEntryDao.getAll()
+            .filter { it.content == LEGACY_SEED_ENTRY_CONTENT }
+            .forEach { entry ->
+                experimentEntryDao.upsert(
+                    entry.copy(content = "Первая заметка по эксперименту.")
+                )
+            }
+    }
+
     private suspend fun touchExperiment(id: Int) {
         val experiment = experimentDao.getExperiment(id) ?: return
-        experimentDao.upsert(experiment.copy(updatedAt = currentDateTime()))
+        experimentDao.upsert(experiment.copy(updatedAt = getCurrentLocalDateTime()))
     }
 
     private suspend fun buildSyncSnapshot(): ExperimentSyncSnapshot {
@@ -339,3 +436,8 @@ class RoomExperimentsRepository(
 
     private fun newSyncId(): String = UUID.randomUUID().toString()
 }
+
+private const val LEGACY_SEED_EXPERIMENT_TITLE = "New experiment"
+private const val LEGACY_SEED_EXPERIMENT_DESCRIPTION =
+    "Check a hypothesis and keep a journal of changes."
+private const val LEGACY_SEED_ENTRY_CONTENT = "Initial experiment note."

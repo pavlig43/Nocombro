@@ -2,31 +2,28 @@ package ru.pavlig43.nocombro.mobile
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.compose.setContent
-import com.arkivanov.decompose.DefaultComponentContext
-import com.arkivanov.essenty.lifecycle.LifecycleRegistry
-import ru.pavlig43.nocombro.mobile.experiments.ExperimentsApp
-import ru.pavlig43.nocombro.mobile.experiments.ExperimentsMobileComponent
+import com.arkivanov.decompose.defaultComponentContext
+import org.koin.android.ext.android.get
+import ru.pavlig43.nocombro.mobile.navigation.NocombroMobileRootComponent
+import ru.pavlig43.nocombro.mobile.navigation.NocombroMobileRootDependencies
 
+/**
+ * Android entrypoint для mobile-приложения Nocombro.
+ */
 class MainActivity : ComponentActivity() {
-    private val decomposeLifecycle = LifecycleRegistry()
-    private lateinit var component: ExperimentsMobileComponent
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
 
-        component = ExperimentsMobileComponent(
-            componentContext = DefaultComponentContext(lifecycle = decomposeLifecycle),
-            appContext = applicationContext,
+        val component = NocombroMobileRootComponent(
+            componentContext = defaultComponentContext(),
+            dependencies = get<NocombroMobileRootDependencies>(),
         )
 
         setContent {
-            ExperimentsApp(component)
+            NocombroMobileApp(component)
         }
-    }
-
-    override fun onDestroy() {
-        component.close()
-        super.onDestroy()
     }
 }

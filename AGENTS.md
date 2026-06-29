@@ -68,6 +68,24 @@ Room/SQLite, схемы и data layer infrastructure.
 
 Если задача касается sync или file cleanup, сначала читать `YDB_SYNC.md`, потом уже код. Для sync/file cleanup нельзя опираться только на локальную Room-БД: S3 cleanup должен сверяться с активной remote mirror `file` metadata.
 
+## Как ходить в удалённую YDB
+
+Если нужно проверить удалённые mirror-таблицы, не угадывать способ доступа заново.
+
+1. Убедиться у пользователя, что синхронизация уже завершена, если он сам пишет, что ещё синхронизирует.
+2. Локальная БД: `%APPDATA%\Nocombro\nocombro.db`; читать через `sqlite3`, он видит актуальный WAL.
+3. YDB JDBC URL брать из `tools/run-device2.ps1`, если env `NOCOMBRO_YDB_JDBC_URL` не задан:
+
+```powershell
+jdbc:ydb:grpcs://ydb.serverless.yandexcloud.net:2135/?database=/ru-central1/b1g87p6oufggn8merjua/etn8eb6ujifrk8lp7b73
+```
+
+4. Service-account key по умолчанию: `%APPDATA%\Nocombro\ydb-sa-key.json`. Не печатать его содержимое и не вставлять в ответ.
+5. Если `ydb` CLI и Python-пакет `ydb` не установлены, идти через Java/JDBC: драйвер уже есть в Gradle cache как `tech.ydb.jdbc:ydb-jdbc-driver`. Не тащить весь Compose/Room classpath; собрать короткий classpath только из YDB/JDBC зависимостей.
+6. Для писем по экспериментам проверять `experiment_reminder` + `experiment`, а не общую таблицу `reminder`.
+7. Журнал отправок писем: `reminder_email_delivery`; получатели: `reminder_recipient`.
+8. Для причин дублей смотреть `sync_id`, `updated_at`, `deleted_at`, `reminder_date_time`; активная строка имеет `deleted_at IS NULL`.
+
 ## Типовые маршруты изменений
 
 ### Добавить новый экран/таб

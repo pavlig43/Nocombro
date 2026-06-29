@@ -1,11 +1,11 @@
 package ru.pavlig43.nocombro.mobile.experiments
 
-import kotlinx.datetime.Clock
-import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
+import kotlinx.datetime.LocalDate
 
+/**
+ * UI-модель mobile-эксперимента.
+ */
 data class MobileExperiment(
     val id: Int,
     val syncId: String,
@@ -16,6 +16,9 @@ data class MobileExperiment(
     val deletedAt: LocalDateTime?,
 )
 
+/**
+ * UI-модель записи журнала эксперимента.
+ */
 data class MobileExperimentEntry(
     val id: Int,
     val syncId: String,
@@ -26,6 +29,9 @@ data class MobileExperimentEntry(
     val deletedAt: LocalDateTime?,
 )
 
+/**
+ * UI-модель напоминания по эксперименту.
+ */
 data class MobileExperimentReminder(
     val id: Int,
     val syncId: String,
@@ -36,6 +42,9 @@ data class MobileExperimentReminder(
     val deletedAt: LocalDateTime?,
 )
 
+/**
+ * Состояние mobile-экрана экспериментов.
+ */
 data class ExperimentsMobileState(
     val experiments: List<MobileExperiment> = emptyList(),
     val selectedExperiment: MobileExperiment? = null,
@@ -46,12 +55,18 @@ data class ExperimentsMobileState(
     val syncStatus: SyncStatus = SyncStatus.Idle,
 )
 
+/**
+ * Snapshot локальных данных для отправки во внешний sync transport.
+ */
 data class ExperimentSyncSnapshot(
     val experiments: List<ExperimentSyncRow>,
     val entries: List<ExperimentEntrySyncRow>,
     val reminders: List<ExperimentReminderSyncRow>,
 )
 
+/**
+ * Sync-строка эксперимента.
+ */
 data class ExperimentSyncRow(
     val syncId: String,
     val title: String,
@@ -61,6 +76,9 @@ data class ExperimentSyncRow(
     val deletedAt: LocalDateTime?,
 )
 
+/**
+ * Sync-строка записи журнала эксперимента.
+ */
 data class ExperimentEntrySyncRow(
     val syncId: String,
     val experimentSyncId: String,
@@ -70,6 +88,9 @@ data class ExperimentEntrySyncRow(
     val deletedAt: LocalDateTime?,
 )
 
+/**
+ * Sync-строка напоминания по эксперименту.
+ */
 data class ExperimentReminderSyncRow(
     val syncId: String,
     val experimentSyncId: String,
@@ -79,16 +100,27 @@ data class ExperimentReminderSyncRow(
     val deletedAt: LocalDateTime?,
 )
 
+/**
+ * Статус sync-операции mobile-экрана.
+ */
 sealed interface SyncStatus {
+    /**
+     * Sync не запускался.
+     */
     data object Idle : SyncStatus
+
+    /**
+     * Sync выполняется.
+     */
     data object Running : SyncStatus
+
+    /**
+     * Sync завершился ошибкой.
+     */
     data class Failed(val message: String) : SyncStatus
+
+    /**
+     * Sync завершился успешно.
+     */
     data class Synced(val at: LocalDateTime) : SyncStatus
 }
-
-fun currentDate(): LocalDate = Clock.System.now()
-    .toLocalDateTime(TimeZone.currentSystemDefault())
-    .date
-
-fun currentDateTime(): LocalDateTime = Clock.System.now()
-    .toLocalDateTime(TimeZone.currentSystemDefault())

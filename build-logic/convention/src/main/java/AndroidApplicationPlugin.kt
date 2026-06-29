@@ -26,6 +26,8 @@ class AndroidApplicationPlugin : Plugin<Project> {
             }
 
             extensions.configure<ApplicationExtension> {
+                val projectJavaVersion = JavaVersion.toVersion(libs.versions.java.get())
+
                 compileSdk = libs.versions.android.compileSdk.get().toInt()
 
                 defaultConfig {
@@ -40,8 +42,8 @@ class AndroidApplicationPlugin : Plugin<Project> {
                 }
 
                 compileOptions {
-                    sourceCompatibility = JavaVersion.VERSION_21
-                    targetCompatibility = JavaVersion.VERSION_21
+                    sourceCompatibility = projectJavaVersion
+                    targetCompatibility = projectJavaVersion
                 }
             }
 
@@ -59,6 +61,7 @@ class AndroidApplicationPlugin : Plugin<Project> {
                 add("implementation", libs.compose.ui.tooling.preview)
                 add("implementation", libs.kotlinx.coroutines.android)
                 add("implementation", libs.kotlinx.datetime)
+                add("implementation", libs.koin.android)
                 add("debugImplementation", libs.compose.ui.tooling)
                 add("ksp", libs.androidx.room.compiler)
             }
