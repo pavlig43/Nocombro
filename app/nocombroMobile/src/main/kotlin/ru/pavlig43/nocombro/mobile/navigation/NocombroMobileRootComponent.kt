@@ -8,8 +8,8 @@ import com.arkivanov.decompose.router.stack.pop
 import com.arkivanov.decompose.router.stack.pushToFront
 import com.arkivanov.decompose.value.Value
 import kotlinx.serialization.Serializable
+import ru.pavlig43.nocombro.mobile.experiments.ExperimentDependencies
 import ru.pavlig43.nocombro.mobile.experiments.ExperimentsMobileComponent
-import ru.pavlig43.nocombro.mobile.experiments.ExperimentsMobileDependencies
 
 /**
  * Root Decompose-компонент mobile-приложения.
@@ -77,7 +77,7 @@ class NocombroMobileRootComponent(
  * Зависимости root-компонента mobile-приложения.
  */
 class NocombroMobileRootDependencies(
-    val experimentsDependencies: ExperimentsMobileDependencies,
+    val experimentsDependencies: ExperimentDependencies,
 )
 
 /**

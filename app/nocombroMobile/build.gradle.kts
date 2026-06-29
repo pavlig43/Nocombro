@@ -15,5 +15,6 @@ dependencies {
     implementation(projects.core)
     implementation(projects.corekoin)
     implementation(projects.datetime)
+    implementation(projects.theme)
     implementation(libs.kotlinx.serialization.json)
 }

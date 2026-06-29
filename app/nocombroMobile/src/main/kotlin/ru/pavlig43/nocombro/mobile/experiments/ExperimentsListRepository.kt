@@ -1,5 +1,6 @@
 package ru.pavlig43.nocombro.mobile.experiments
 
+import java.util.UUID
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import ru.pavlig43.datetime.getCurrentLocalDateTime
@@ -37,6 +38,21 @@ class ExperimentsListRepository(
     fun observeExperiment(id: Int): Flow<MobileExperiment> {
         return experimentDao.observeExperiment(id)
             .map(MobileExperimentEntity::toModel)
+    }
+
+    /**
+     * Создаёт новый эксперимент.
+     */
+    suspend fun createExperiment(): Result<MobileExperiment> {
+        return runCatching {
+            val experiment = MobileExperimentEntity(
+                title = "Новый эксперимент",
+                syncId = UUID.randomUUID().toString(),
+                updatedAt = getCurrentLocalDateTime(),
+            )
+            val id = experimentDao.create(experiment).toInt()
+            experiment.copy(id = id).toModel()
+        }
     }
 
     /**
