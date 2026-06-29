@@ -12,6 +12,8 @@ android {
 }
 
 dependencies {
+    implementation(projects.core)
+    implementation(projects.corekoin)
     implementation(projects.datetime)
     implementation(libs.kotlinx.serialization.json)
 }
