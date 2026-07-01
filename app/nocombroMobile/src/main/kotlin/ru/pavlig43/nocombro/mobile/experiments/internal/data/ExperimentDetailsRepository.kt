@@ -8,17 +8,17 @@ import kotlinx.coroutines.flow.map
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.datetime.getCurrentLocalDateTime
-import ru.pavlig43.nocombro.mobile.experiments.data.MobileExperimentEntity
-import ru.pavlig43.nocombro.mobile.experiments.data.MobileExperimentEntryEntity
-import ru.pavlig43.nocombro.mobile.experiments.data.MobileExperimentReminderEntity
-import ru.pavlig43.nocombro.mobile.experiments.data.MobileExperimentsDatabase
-import ru.pavlig43.nocombro.mobile.experiments.data.toModel
 import ru.pavlig43.nocombro.mobile.experiments.internal.component.MobileExperiment
 import ru.pavlig43.nocombro.mobile.experiments.internal.component.MobileExperimentEntry
 import ru.pavlig43.nocombro.mobile.experiments.internal.component.MobileExperimentReminder
+import ru.pavlig43.nocombro.mobile.internal.database.NocombroMobileDatabase
+import ru.pavlig43.nocombro.mobile.internal.database.entity.MobileExperimentEntity
+import ru.pavlig43.nocombro.mobile.internal.database.entity.MobileExperimentEntryEntity
+import ru.pavlig43.nocombro.mobile.internal.database.entity.MobileExperimentReminderEntity
+import ru.pavlig43.nocombro.mobile.internal.database.entity.toModel
 
 class ExperimentDetailsRepository(
-    private val db: MobileExperimentsDatabase,
+    private val db: NocombroMobileDatabase,
 ) {
     private val experimentDao = db.experimentDao
     private val entryDao = db.experimentEntryDao

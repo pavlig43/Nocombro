@@ -1,4 +1,4 @@
-package ru.pavlig43.nocombro.mobile.experiments.data
+package ru.pavlig43.nocombro.mobile.internal.database.dao
 
 import androidx.room.Dao
 import androidx.room.Insert
@@ -6,39 +6,27 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
+import ru.pavlig43.nocombro.mobile.internal.database.entity.EXPERIMENT_ENTRY_TABLE_NAME
+import ru.pavlig43.nocombro.mobile.internal.database.entity.EXPERIMENT_REMINDER_TABLE_NAME
+import ru.pavlig43.nocombro.mobile.internal.database.entity.EXPERIMENT_TABLE_NAME
+import ru.pavlig43.nocombro.mobile.internal.database.entity.MobileExperimentEntity
+import ru.pavlig43.nocombro.mobile.internal.database.entity.MobileExperimentEntryEntity
+import ru.pavlig43.nocombro.mobile.internal.database.entity.MobileExperimentReminderEntity
 
-/**
- * DAO для таблицы экспериментов.
- */
 @Dao
 interface MobileExperimentDao {
-    /**
-     * Создаёт эксперимент и возвращает локальный id.
-     */
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun create(experiment: MobileExperimentEntity): Long
 
-    /**
-     * Вставляет или обновляет эксперимент.
-     */
     @Upsert
     suspend fun upsert(experiment: MobileExperimentEntity)
 
-    /**
-     * Возвращает эксперимент по локальному id.
-     */
     @Query("SELECT * FROM $EXPERIMENT_TABLE_NAME WHERE id = :id")
     suspend fun getExperiment(id: Int): MobileExperimentEntity?
 
-    /**
-     * Возвращает все строки экспериментов, включая tombstone.
-     */
     @Query("SELECT * FROM $EXPERIMENT_TABLE_NAME")
     suspend fun getAll(): List<MobileExperimentEntity>
 
-    /**
-     * Следит за активными экспериментами в выбранном архивном состоянии.
-     */
     @Query(
         """
         SELECT * FROM $EXPERIMENT_TABLE_NAME
@@ -48,9 +36,6 @@ interface MobileExperimentDao {
     )
     fun observeExperiments(isArchived: Boolean): Flow<List<MobileExperimentEntity>>
 
-    /**
-     * Следит за активным экспериментом по локальному id.
-     */
     @Query(
         """
         SELECT * FROM $EXPERIMENT_TABLE_NAME
@@ -60,38 +45,20 @@ interface MobileExperimentDao {
     fun observeExperiment(id: Int): Flow<MobileExperimentEntity?>
 }
 
-/**
- * DAO для записей журнала эксперимента.
- */
 @Dao
 interface MobileExperimentEntryDao {
-    /**
-     * Создаёт запись журнала и возвращает локальный id.
-     */
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun create(entry: MobileExperimentEntryEntity): Long
 
-    /**
-     * Вставляет или обновляет запись журнала.
-     */
     @Upsert
     suspend fun upsert(entry: MobileExperimentEntryEntity)
 
-    /**
-     * Возвращает запись журнала по локальному id.
-     */
     @Query("SELECT * FROM $EXPERIMENT_ENTRY_TABLE_NAME WHERE id = :id")
     suspend fun getEntry(id: Int): MobileExperimentEntryEntity?
 
-    /**
-     * Возвращает все записи журнала, включая tombstone.
-     */
     @Query("SELECT * FROM $EXPERIMENT_ENTRY_TABLE_NAME")
     suspend fun getAll(): List<MobileExperimentEntryEntity>
 
-    /**
-     * Следит за активными записями выбранного эксперимента.
-     */
     @Query(
         """
         SELECT * FROM $EXPERIMENT_ENTRY_TABLE_NAME
@@ -101,9 +68,6 @@ interface MobileExperimentEntryDao {
     )
     fun observeEntries(experimentId: Int): Flow<List<MobileExperimentEntryEntity>>
 
-    /**
-     * Следит за активной записью журнала по локальному id.
-     */
     @Query(
         """
         SELECT * FROM $EXPERIMENT_ENTRY_TABLE_NAME
@@ -113,38 +77,20 @@ interface MobileExperimentEntryDao {
     fun observeEntry(id: Int): Flow<MobileExperimentEntryEntity?>
 }
 
-/**
- * DAO для напоминаний по эксперименту.
- */
 @Dao
 interface MobileExperimentReminderDao {
-    /**
-     * Создаёт напоминание и возвращает локальный id.
-     */
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun create(reminder: MobileExperimentReminderEntity): Long
 
-    /**
-     * Вставляет или обновляет напоминание.
-     */
     @Upsert
     suspend fun upsert(reminder: MobileExperimentReminderEntity)
 
-    /**
-     * Возвращает напоминание по локальному id.
-     */
     @Query("SELECT * FROM $EXPERIMENT_REMINDER_TABLE_NAME WHERE id = :id")
     suspend fun getReminder(id: Int): MobileExperimentReminderEntity?
 
-    /**
-     * Возвращает все напоминания, включая tombstone.
-     */
     @Query("SELECT * FROM $EXPERIMENT_REMINDER_TABLE_NAME")
     suspend fun getAll(): List<MobileExperimentReminderEntity>
 
-    /**
-     * Следит за активными напоминаниями выбранного эксперимента.
-     */
     @Query(
         """
         SELECT * FROM $EXPERIMENT_REMINDER_TABLE_NAME

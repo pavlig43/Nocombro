@@ -77,8 +77,8 @@ internal fun ExperimentDetailsScreen(
                     state = state,
                     onTitleChange = detailsComponent::onTitleChange,
                     onIdeaChange = detailsComponent::onIdeaChange,
-                    onOpenToday = detailsComponent::openTodayEntry,
-                    onToggleArchive = detailsComponent::toggleArchive,
+                    onCreateEntry = detailsComponent::createEntryForCurrentDate,
+                    onArchiveChange = detailsComponent::setArchived,
                 )
             }
             item {
@@ -104,7 +104,7 @@ internal fun ExperimentDetailsScreen(
             }
             item {
                 ReminderSectionHeader(
-                    onCreateReminder = detailsComponent::openCreateReminder,
+                    onCreateReminder = detailsComponent::showNewReminderEditor,
                 )
             }
             if (state.reminders.isEmpty()) {
@@ -118,7 +118,7 @@ internal fun ExperimentDetailsScreen(
                 items(state.reminders) { reminder ->
                     ExperimentReminderItem(
                         reminder = reminder,
-                        onEdit = { detailsComponent.openEditReminder(reminder.id) },
+                        onEdit = { detailsComponent.showReminderEditor(reminder.id) },
                         onDelete = { detailsComponent.deleteReminder(reminder.id) },
                     )
                 }
@@ -131,7 +131,7 @@ internal fun ExperimentDetailsScreen(
             editor = editor,
             onTextChange = detailsComponent::onReminderTextChange,
             onDateTimeChange = detailsComponent::onReminderDateTimeChange,
-            onDismiss = detailsComponent::dismissReminderEditor,
+            onDismiss = detailsComponent::closeReminderEditor,
             onSave = detailsComponent::saveReminder,
         )
     }
@@ -168,8 +168,8 @@ private fun ExperimentFieldsSection(
     state: ExperimentDetailsUiState,
     onTitleChange: (String) -> Unit,
     onIdeaChange: (String) -> Unit,
-    onOpenToday: () -> Unit,
-    onToggleArchive: () -> Unit,
+    onCreateEntry: () -> Unit,
+    onArchiveChange: (Boolean) -> Unit,
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -196,15 +196,17 @@ private fun ExperimentFieldsSection(
         ) {
             Button(
                 modifier = Modifier.weight(1f),
-                onClick = onOpenToday,
+                onClick = onCreateEntry,
             ) {
                 Text("Новая запись")
             }
-            OutlinedButton(
-                modifier = Modifier.weight(1f),
-                onClick = onToggleArchive,
-            ) {
-                Text(if (state.experiment?.isArchived == true) "Вернуть" else "Архив")
+            state.experiment?.let { experiment ->
+                OutlinedButton(
+                    modifier = Modifier.weight(1f),
+                    onClick = { onArchiveChange(!experiment.isArchived) },
+                ) {
+                    Text(if (experiment.isArchived) "Вернуть" else "Архив")
+                }
             }
         }
         state.experiment?.let { experiment ->

@@ -26,9 +26,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.stack.Children
+import ru.pavlig43.nocombro.mobile.api.component.MobileChild
 import ru.pavlig43.nocombro.mobile.api.component.NocombroMobileRootComponent
 import ru.pavlig43.nocombro.mobile.experiments.api.ui.ExperimentsRoute
-import ru.pavlig43.nocombro.mobile.internal.navigation.MobileChild
 import ru.pavlig43.theme.NocombroTheme
 
 @Composable

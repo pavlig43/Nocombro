@@ -20,9 +20,9 @@ import kotlinx.datetime.format
 import ru.pavlig43.core.componentCoroutineScope
 import ru.pavlig43.corekoin.ComponentKoinContext
 import ru.pavlig43.datetime.dateTimeFormat
-import ru.pavlig43.nocombro.mobile.experiments.api.component.ExperimentDependencies
+import ru.pavlig43.nocombro.mobile.experiments.api.ExperimentDependencies
 import ru.pavlig43.nocombro.mobile.experiments.internal.data.ExperimentDetailsRepository
-import ru.pavlig43.nocombro.mobile.internal.di.createMobileExperimentsComponentModule
+import ru.pavlig43.nocombro.mobile.experiments.internal.di.createMobileExperimentsModule
 
 class ExperimentEntryComponent(
     componentContext: ComponentContext,
@@ -30,7 +30,7 @@ class ExperimentEntryComponent(
     dependencies: ExperimentDependencies,
 ) : ComponentContext by componentContext {
     private val koinContext = instanceKeeper.getOrCreate { ComponentKoinContext() }
-    private val scope = koinContext.getOrCreateKoinScope(createMobileExperimentsComponentModule(dependencies))
+    private val scope = koinContext.getOrCreateKoinScope(createMobileExperimentsModule(dependencies))
     private val repository: ExperimentDetailsRepository = scope.get()
     private val coroutineScope = componentCoroutineScope()
 

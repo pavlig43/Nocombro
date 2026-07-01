@@ -6,10 +6,8 @@ import com.arkivanov.decompose.router.stack.StackNavigation
 import com.arkivanov.decompose.router.stack.childStack
 import com.arkivanov.decompose.router.stack.pushToFront
 import com.arkivanov.decompose.value.Value
-import ru.pavlig43.nocombro.mobile.experiments.api.component.ExperimentDependencies
+import kotlinx.serialization.Serializable
 import ru.pavlig43.nocombro.mobile.experiments.api.component.ExperimentsMobileComponent
-import ru.pavlig43.nocombro.mobile.internal.navigation.MobileChild
-import ru.pavlig43.nocombro.mobile.internal.navigation.MobileConfig
 
 class NocombroMobileRootComponent(
     componentContext: ComponentContext,
@@ -56,11 +54,24 @@ class NocombroMobileRootComponent(
     }
 }
 
-class NocombroMobileRootDependencies(
-    val experimentsDependencies: ExperimentDependencies,
-)
-
 data class MobileMenuItem(
     val config: MobileConfig,
     val title: String,
 )
+
+@Serializable
+sealed interface MobileConfig {
+    @Serializable
+    data object Menu : MobileConfig
+
+    @Serializable
+    data object Experiments : MobileConfig
+}
+
+sealed interface MobileChild {
+    data object Menu : MobileChild
+
+    class Experiments(
+        val component: ExperimentsMobileComponent,
+    ) : MobileChild
+}

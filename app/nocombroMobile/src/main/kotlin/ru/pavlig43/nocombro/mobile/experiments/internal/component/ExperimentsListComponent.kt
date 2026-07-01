@@ -15,9 +15,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import ru.pavlig43.core.componentCoroutineScope
 import ru.pavlig43.corekoin.ComponentKoinContext
-import ru.pavlig43.nocombro.mobile.experiments.api.component.ExperimentDependencies
+import ru.pavlig43.nocombro.mobile.experiments.api.ExperimentDependencies
 import ru.pavlig43.nocombro.mobile.experiments.internal.data.ExperimentsListRepository
-import ru.pavlig43.nocombro.mobile.internal.di.createMobileExperimentsComponentModule
+import ru.pavlig43.nocombro.mobile.experiments.internal.di.createMobileExperimentsModule
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ExperimentsListComponent(
@@ -26,7 +26,7 @@ class ExperimentsListComponent(
     private val onExperimentCreated: (Int) -> Unit,
 ) : ComponentContext by componentContext {
     private val koinContext = instanceKeeper.getOrCreate { ComponentKoinContext() }
-    private val scope = koinContext.getOrCreateKoinScope(createMobileExperimentsComponentModule(dependencies))
+    private val scope = koinContext.getOrCreateKoinScope(createMobileExperimentsModule(dependencies))
     private val repository: ExperimentsListRepository = scope.get()
     private val coroutineScope = componentCoroutineScope()
     private val showArchived = MutableStateFlow(false)

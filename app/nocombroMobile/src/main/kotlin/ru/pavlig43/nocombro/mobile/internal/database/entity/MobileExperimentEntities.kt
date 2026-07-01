@@ -1,4 +1,4 @@
-package ru.pavlig43.nocombro.mobile.experiments.data
+package ru.pavlig43.nocombro.mobile.internal.database.entity
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
@@ -11,24 +11,10 @@ import ru.pavlig43.nocombro.mobile.experiments.internal.component.MobileExperime
 import ru.pavlig43.nocombro.mobile.experiments.internal.component.MobileExperimentEntry
 import ru.pavlig43.nocombro.mobile.experiments.internal.component.MobileExperimentReminder
 
-/**
- * Имя таблицы экспериментов.
- */
 const val EXPERIMENT_TABLE_NAME = "experiment"
-
-/**
- * Имя таблицы записей журнала эксперимента.
- */
 const val EXPERIMENT_ENTRY_TABLE_NAME = "experiment_entry"
-
-/**
- * Имя таблицы напоминаний по эксперименту.
- */
 const val EXPERIMENT_REMINDER_TABLE_NAME = "experiment_reminder"
 
-/**
- * Room entity эксперимента в mobile-БД.
- */
 @Entity(
     tableName = EXPERIMENT_TABLE_NAME,
     indices = [Index(value = ["sync_id"], unique = true)],
@@ -55,9 +41,6 @@ data class MobileExperimentEntity(
     val deletedAt: LocalDateTime? = null,
 )
 
-/**
- * Room entity записи журнала эксперимента.
- */
 @Entity(
     tableName = EXPERIMENT_ENTRY_TABLE_NAME,
     foreignKeys = [
@@ -98,9 +81,6 @@ data class MobileExperimentEntryEntity(
     val deletedAt: LocalDateTime? = null,
 )
 
-/**
- * Room entity напоминания по эксперименту.
- */
 @Entity(
     tableName = EXPERIMENT_REMINDER_TABLE_NAME,
     foreignKeys = [
@@ -139,9 +119,6 @@ data class MobileExperimentReminderEntity(
     val deletedAt: LocalDateTime? = null,
 )
 
-/**
- * Преобразует Room entity эксперимента в UI-модель.
- */
 fun MobileExperimentEntity.toModel(): MobileExperiment = MobileExperiment(
     id = id,
     syncId = syncId,
@@ -152,9 +129,6 @@ fun MobileExperimentEntity.toModel(): MobileExperiment = MobileExperiment(
     deletedAt = deletedAt,
 )
 
-/**
- * Преобразует Room entity записи журнала в UI-модель.
- */
 fun MobileExperimentEntryEntity.toModel(): MobileExperimentEntry = MobileExperimentEntry(
     id = id,
     syncId = syncId,
@@ -166,9 +140,6 @@ fun MobileExperimentEntryEntity.toModel(): MobileExperimentEntry = MobileExperim
     deletedAt = deletedAt,
 )
 
-/**
- * Преобразует Room entity напоминания в UI-модель.
- */
 fun MobileExperimentReminderEntity.toModel(): MobileExperimentReminder = MobileExperimentReminder(
     id = id,
     syncId = syncId,

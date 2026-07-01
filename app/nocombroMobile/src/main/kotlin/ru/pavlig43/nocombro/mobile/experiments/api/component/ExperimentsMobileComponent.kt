@@ -7,14 +7,10 @@ import com.arkivanov.decompose.router.stack.pop
 import com.arkivanov.decompose.router.stack.pushToFront
 import com.arkivanov.decompose.value.Value
 import kotlinx.serialization.Serializable
-import ru.pavlig43.nocombro.mobile.experiments.data.MobileExperimentsDatabase
+import ru.pavlig43.nocombro.mobile.experiments.api.ExperimentDependencies
 import ru.pavlig43.nocombro.mobile.experiments.internal.component.ExperimentDetailsComponent
 import ru.pavlig43.nocombro.mobile.experiments.internal.component.ExperimentEntryComponent
 import ru.pavlig43.nocombro.mobile.experiments.internal.component.ExperimentsListComponent
-
-class ExperimentDependencies(
-    val database: MobileExperimentsDatabase,
-)
 
 class ExperimentsMobileComponent(
     componentContext: ComponentContext,
