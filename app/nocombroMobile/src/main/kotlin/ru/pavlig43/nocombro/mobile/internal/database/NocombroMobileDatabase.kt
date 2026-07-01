@@ -10,15 +10,18 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.nocombro.mobile.internal.database.dao.MobileExperimentDao
 import ru.pavlig43.nocombro.mobile.internal.database.dao.MobileExperimentEntryDao
+import ru.pavlig43.nocombro.mobile.internal.database.dao.MobileExperimentEntryFileDao
 import ru.pavlig43.nocombro.mobile.internal.database.dao.MobileExperimentReminderDao
 import ru.pavlig43.nocombro.mobile.internal.database.entity.MobileExperimentEntity
 import ru.pavlig43.nocombro.mobile.internal.database.entity.MobileExperimentEntryEntity
+import ru.pavlig43.nocombro.mobile.internal.database.entity.MobileExperimentEntryFileEntity
 import ru.pavlig43.nocombro.mobile.internal.database.entity.MobileExperimentReminderEntity
 
 @Database(
     entities = [
         MobileExperimentEntity::class,
         MobileExperimentEntryEntity::class,
+        MobileExperimentEntryFileEntity::class,
         MobileExperimentReminderEntity::class,
     ],
     version = 1,
@@ -28,6 +31,8 @@ abstract class NocombroMobileDatabase : RoomDatabase() {
     abstract val experimentDao: MobileExperimentDao
 
     abstract val experimentEntryDao: MobileExperimentEntryDao
+
+    abstract val experimentEntryFileDao: MobileExperimentEntryFileDao
 
     abstract val experimentReminderDao: MobileExperimentReminderDao
 

@@ -30,6 +30,22 @@ data class MobileExperimentEntry(
 )
 
 /**
+ * Локальный файл записи эксперимента.
+ */
+data class MobileExperimentEntryFile(
+    val id: Int,
+    val syncId: String,
+    val entryId: Int,
+    val displayName: String,
+    val localPath: String,
+    val objectKey: String,
+    val mimeType: String?,
+    val sizeBytes: Long?,
+    val updatedAt: LocalDateTime,
+    val deletedAt: LocalDateTime?,
+)
+
+/**
  * UI-модель напоминания по эксперименту.
  */
 data class MobileExperimentReminder(

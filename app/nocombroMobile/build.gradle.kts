@@ -16,5 +16,6 @@ dependencies {
     implementation(projects.corekoin)
     implementation(projects.datetime)
     implementation(projects.theme)
+    implementation(libs.filekit.dialogs.compose)
     implementation(libs.kotlinx.serialization.json)
 }

@@ -17,6 +17,8 @@ internal fun createMobileExperimentsModule(
         single {
             ExperimentDetailsRepository(
                 db = dependencies.database,
+                filesDirPath = dependencies.filesDirPath,
+                fileProviderAuthority = dependencies.fileProviderAuthority,
             )
         }
     }

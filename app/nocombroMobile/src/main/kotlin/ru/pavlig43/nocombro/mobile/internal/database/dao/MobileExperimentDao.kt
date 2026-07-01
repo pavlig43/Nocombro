@@ -7,10 +7,12 @@ import androidx.room.Query
 import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
 import ru.pavlig43.nocombro.mobile.internal.database.entity.EXPERIMENT_ENTRY_TABLE_NAME
+import ru.pavlig43.nocombro.mobile.internal.database.entity.EXPERIMENT_ENTRY_FILE_TABLE_NAME
 import ru.pavlig43.nocombro.mobile.internal.database.entity.EXPERIMENT_REMINDER_TABLE_NAME
 import ru.pavlig43.nocombro.mobile.internal.database.entity.EXPERIMENT_TABLE_NAME
 import ru.pavlig43.nocombro.mobile.internal.database.entity.MobileExperimentEntity
 import ru.pavlig43.nocombro.mobile.internal.database.entity.MobileExperimentEntryEntity
+import ru.pavlig43.nocombro.mobile.internal.database.entity.MobileExperimentEntryFileEntity
 import ru.pavlig43.nocombro.mobile.internal.database.entity.MobileExperimentReminderEntity
 
 @Dao
@@ -75,6 +77,27 @@ interface MobileExperimentEntryDao {
         """
     )
     fun observeEntry(id: Int): Flow<MobileExperimentEntryEntity?>
+}
+
+@Dao
+interface MobileExperimentEntryFileDao {
+    @Insert(onConflict = OnConflictStrategy.ABORT)
+    suspend fun create(file: MobileExperimentEntryFileEntity): Long
+
+    @Upsert
+    suspend fun upsert(file: MobileExperimentEntryFileEntity)
+
+    @Query("SELECT * FROM $EXPERIMENT_ENTRY_FILE_TABLE_NAME WHERE id = :id")
+    suspend fun getFile(id: Int): MobileExperimentEntryFileEntity?
+
+    @Query(
+        """
+        SELECT * FROM $EXPERIMENT_ENTRY_FILE_TABLE_NAME
+        WHERE entry_id = :entryId AND deleted_at IS NULL
+        ORDER BY updated_at DESC, id DESC
+        """
+    )
+    fun observeFiles(entryId: Int): Flow<List<MobileExperimentEntryFileEntity>>
 }
 
 @Dao

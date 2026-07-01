@@ -11,7 +11,12 @@ val nocombroMobileModule = module {
         NocombroMobileDatabase.create(androidContext())
     }
     single {
-        ExperimentDependencies(database = get())
+        val context = androidContext()
+        ExperimentDependencies(
+            database = get(),
+            filesDirPath = context.filesDir.absolutePath,
+            fileProviderAuthority = "${context.packageName}.fileprovider",
+        )
     }
     single {
         NocombroMobileRootDependencies(experimentsDependencies = get())

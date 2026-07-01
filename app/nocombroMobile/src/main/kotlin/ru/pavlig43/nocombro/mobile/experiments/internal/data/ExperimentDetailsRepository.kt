@@ -1,6 +1,15 @@
 package ru.pavlig43.nocombro.mobile.experiments.internal.data
 
 import androidx.room.withTransaction
+import io.github.vinceglb.filekit.FileKit
+import io.github.vinceglb.filekit.PlatformFile
+import io.github.vinceglb.filekit.dialogs.FileKitOpenFileSettings
+import io.github.vinceglb.filekit.dialogs.openFileWithDefaultApplication
+import io.github.vinceglb.filekit.mimeType
+import io.github.vinceglb.filekit.name
+import io.github.vinceglb.filekit.size
+import io.github.vinceglb.filekit.write
+import java.io.File
 import java.util.UUID
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filterNotNull
@@ -10,18 +19,23 @@ import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.datetime.getCurrentLocalDateTime
 import ru.pavlig43.nocombro.mobile.experiments.internal.component.MobileExperiment
 import ru.pavlig43.nocombro.mobile.experiments.internal.component.MobileExperimentEntry
+import ru.pavlig43.nocombro.mobile.experiments.internal.component.MobileExperimentEntryFile
 import ru.pavlig43.nocombro.mobile.experiments.internal.component.MobileExperimentReminder
 import ru.pavlig43.nocombro.mobile.internal.database.NocombroMobileDatabase
 import ru.pavlig43.nocombro.mobile.internal.database.entity.MobileExperimentEntity
 import ru.pavlig43.nocombro.mobile.internal.database.entity.MobileExperimentEntryEntity
+import ru.pavlig43.nocombro.mobile.internal.database.entity.MobileExperimentEntryFileEntity
 import ru.pavlig43.nocombro.mobile.internal.database.entity.MobileExperimentReminderEntity
 import ru.pavlig43.nocombro.mobile.internal.database.entity.toModel
 
 class ExperimentDetailsRepository(
     private val db: NocombroMobileDatabase,
+    private val filesDirPath: String,
+    private val fileProviderAuthority: String,
 ) {
     private val experimentDao = db.experimentDao
     private val entryDao = db.experimentEntryDao
+    private val entryFileDao = db.experimentEntryFileDao
     private val reminderDao = db.experimentReminderDao
 
     fun observeExperiment(id: Int): Flow<MobileExperiment?> {
@@ -43,6 +57,11 @@ class ExperimentDetailsRepository(
         return entryDao.observeEntry(entryId)
             .filterNotNull()
             .map { entry -> entry.toModel() }
+    }
+
+    fun observeEntryFiles(entryId: Int): Flow<List<MobileExperimentEntryFile>> {
+        return entryFileDao.observeFiles(entryId)
+            .map { files -> files.map(MobileExperimentEntryFileEntity::toModel) }
     }
 
     suspend fun updateExperimentDraft(
@@ -115,6 +134,74 @@ class ExperimentDetailsRepository(
         }
     }
 
+    suspend fun addEntryFile(
+        entryId: Int,
+        sourceFile: PlatformFile,
+    ): Result<MobileExperimentEntryFile> = runCatching {
+        val now = getCurrentLocalDateTime()
+        val fileSyncId = UUID.randomUUID().toString()
+        val safeName = sourceFile.name.toSafeFileName()
+        val objectKey = "files/experiment_entry/$fileSyncId/$safeName"
+        val localFile = File(filesDirPath, "nocombro/$objectKey")
+        localFile.parentFile?.mkdirs()
+
+        PlatformFile(localFile.absolutePath).write(sourceFile)
+
+        db.withTransaction {
+            val entry = requireEntry(entryId)
+            val file = MobileExperimentEntryFileEntity(
+                entryId = entryId,
+                displayName = sourceFile.name,
+                localPath = localFile.absolutePath,
+                objectKey = objectKey,
+                mimeType = sourceFile.mimeType()?.toString(),
+                sizeBytes = sourceFile.size().takeIf { size -> size >= 0L },
+                syncId = fileSyncId,
+                updatedAt = now,
+            )
+            val id = entryFileDao.create(file).toInt()
+            touchExperiment(entry.experimentId, now)
+            file.copy(id = id).toModel()
+        }
+    }
+
+    suspend fun openEntryFile(fileId: Int): Result<Unit> = runCatching {
+        val file = requireNotNull(entryFileDao.getFile(fileId)) {
+            "File $fileId not found"
+        }
+        require(file.deletedAt == null) {
+            "Файл удалён"
+        }
+        require(File(file.localPath).exists()) {
+            "Локальный файл не найден"
+        }
+        FileKit.openFileWithDefaultApplication(
+            file = PlatformFile(file.localPath),
+            openFileSettings = FileKitOpenFileSettings(
+                authority = fileProviderAuthority,
+            ),
+        )
+    }
+
+    suspend fun deleteEntryFile(fileId: Int): Result<Unit> = runCatching {
+        val localPath = db.withTransaction {
+            val file = requireNotNull(entryFileDao.getFile(fileId)) {
+                "File $fileId not found"
+            }
+            val entry = requireEntry(file.entryId)
+            val now = getCurrentLocalDateTime()
+            entryFileDao.upsert(
+                file.copy(
+                    updatedAt = now,
+                    deletedAt = now,
+                )
+            )
+            touchExperiment(entry.experimentId, now)
+            file.localPath
+        }
+        File(localPath).delete()
+    }
+
     suspend fun createReminder(
         experimentId: Int,
         text: String,
@@ -178,6 +265,12 @@ class ExperimentDetailsRepository(
         }
     }
 
+    private suspend fun requireEntry(id: Int): MobileExperimentEntryEntity {
+        return requireNotNull(entryDao.getEntry(id)) {
+            "Entry $id not found"
+        }
+    }
+
     private suspend fun touchExperiment(
         experimentId: Int,
         updatedAt: LocalDateTime,
@@ -185,4 +278,12 @@ class ExperimentDetailsRepository(
         val experiment = requireExperiment(experimentId)
         experimentDao.upsert(experiment.copy(updatedAt = updatedAt))
     }
+}
+
+private fun String.toSafeFileName(): String {
+    val safeName = trim()
+        .replace(Regex("[\\\\/:*?\"<>|\\p{Cntrl}]"), "_")
+        .replace(Regex("\\s+"), " ")
+        .trim('.', ' ')
+    return safeName.ifBlank { "file" }
 }

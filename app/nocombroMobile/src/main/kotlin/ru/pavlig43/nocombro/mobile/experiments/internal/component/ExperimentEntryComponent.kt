@@ -2,6 +2,7 @@ package ru.pavlig43.nocombro.mobile.experiments.internal.component
 
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.essenty.instancekeeper.getOrCreate
+import io.github.vinceglb.filekit.PlatformFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,6 +17,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import kotlinx.datetime.format
 import ru.pavlig43.core.componentCoroutineScope
 import ru.pavlig43.corekoin.ComponentKoinContext
@@ -39,12 +41,14 @@ class ExperimentEntryComponent(
 
     val uiState: StateFlow<ExperimentEntryUiState> = combine(
         repository.observeEntry(entryId),
+        repository.observeEntryFiles(entryId),
         editedContent,
         errorMessage,
-    ) { entry, editedContent, errorMessage ->
+    ) { entry, files, editedContent, errorMessage ->
         ExperimentEntryUiState(
             dateText = entry.createdAt.format(dateTimeFormat),
             content = editedContent ?: entry.content,
+            files = files,
             errorMessage = errorMessage,
             isLoaded = true,
         )
@@ -57,6 +61,27 @@ class ExperimentEntryComponent(
 
     fun onContentChange(value: String) {
         editedContent.update { value }
+    }
+
+    fun addFile(file: PlatformFile) {
+        coroutineScope.launch(Dispatchers.IO) {
+            repository.addEntryFile(entryId, file)
+                .onFailure(::showError)
+        }
+    }
+
+    fun openFile(fileId: Int) {
+        coroutineScope.launch(Dispatchers.IO) {
+            repository.openEntryFile(fileId)
+                .onFailure(::showError)
+        }
+    }
+
+    fun deleteFile(fileId: Int) {
+        coroutineScope.launch(Dispatchers.IO) {
+            repository.deleteEntryFile(fileId)
+                .onFailure(::showError)
+        }
     }
 
     fun dismissMessage() {
@@ -85,6 +110,7 @@ class ExperimentEntryComponent(
 data class ExperimentEntryUiState(
     val dateText: String = "",
     val content: String = "",
+    val files: List<MobileExperimentEntryFile> = emptyList(),
     val errorMessage: String? = null,
     val isLoaded: Boolean = false,
 )
