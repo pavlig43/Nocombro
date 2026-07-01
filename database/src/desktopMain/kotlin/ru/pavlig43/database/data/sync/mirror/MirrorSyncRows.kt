@@ -217,6 +217,7 @@ data class ExperimentEntryMirrorRow(
     override val syncId: String,
     val experimentSyncId: String,
     val entryDate: LocalDate,
+    val createdAt: LocalDateTime,
     val content: String,
     override val updatedAt: LocalDateTime,
     override val deletedAt: LocalDateTime? = null,

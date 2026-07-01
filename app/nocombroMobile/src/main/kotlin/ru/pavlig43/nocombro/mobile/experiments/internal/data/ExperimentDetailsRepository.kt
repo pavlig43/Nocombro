@@ -1,8 +1,9 @@
-package ru.pavlig43.nocombro.mobile.experiments
+package ru.pavlig43.nocombro.mobile.experiments.internal.data
 
 import androidx.room.withTransaction
 import java.util.UUID
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
@@ -12,10 +13,10 @@ import ru.pavlig43.nocombro.mobile.experiments.data.MobileExperimentEntryEntity
 import ru.pavlig43.nocombro.mobile.experiments.data.MobileExperimentReminderEntity
 import ru.pavlig43.nocombro.mobile.experiments.data.MobileExperimentsDatabase
 import ru.pavlig43.nocombro.mobile.experiments.data.toModel
+import ru.pavlig43.nocombro.mobile.experiments.internal.component.MobileExperiment
+import ru.pavlig43.nocombro.mobile.experiments.internal.component.MobileExperimentEntry
+import ru.pavlig43.nocombro.mobile.experiments.internal.component.MobileExperimentReminder
 
-/**
- * Локальный репозиторий деталей mobile-эксперимента.
- */
 class ExperimentDetailsRepository(
     private val db: MobileExperimentsDatabase,
 ) {
@@ -23,41 +24,27 @@ class ExperimentDetailsRepository(
     private val entryDao = db.experimentEntryDao
     private val reminderDao = db.experimentReminderDao
 
-    /**
-     * Следит за живым экспериментом по id.
-     */
     fun observeExperiment(id: Int): Flow<MobileExperiment?> {
         return experimentDao.observeExperiment(id)
             .map { experiment -> experiment?.toModel() }
     }
 
-    /**
-     * Следит за записями эксперимента.
-     */
     fun observeEntries(experimentId: Int): Flow<List<MobileExperimentEntry>> {
         return entryDao.observeEntries(experimentId)
             .map { entries -> entries.map(MobileExperimentEntryEntity::toModel) }
     }
 
-    /**
-     * Следит за напоминаниями эксперимента.
-     */
     fun observeReminders(experimentId: Int): Flow<List<MobileExperimentReminder>> {
         return reminderDao.observeReminders(experimentId)
             .map { reminders -> reminders.map(MobileExperimentReminderEntity::toModel) }
     }
 
-    /**
-     * Следит за выбранной записью журнала.
-     */
-    fun observeEntry(entryId: Int): Flow<MobileExperimentEntry?> {
+    fun observeEntry(entryId: Int): Flow<MobileExperimentEntry> {
         return entryDao.observeEntry(entryId)
-            .map { entry -> entry?.toModel() }
+            .filterNotNull()
+            .map { entry -> entry.toModel() }
     }
 
-    /**
-     * Обновляет название и идею эксперимента.
-     */
     suspend fun updateExperimentDraft(
         experimentId: Int,
         title: String,
@@ -75,9 +62,6 @@ class ExperimentDetailsRepository(
         }
     }
 
-    /**
-     * Меняет архивный флаг эксперимента.
-     */
     suspend fun setExperimentArchived(
         experimentId: Int,
         isArchived: Boolean,
@@ -93,34 +77,25 @@ class ExperimentDetailsRepository(
         }
     }
 
-    /**
-     * Возвращает запись за дату или создаёт её.
-     */
-    suspend fun getOrCreateEntry(
+    suspend fun createEntryForDate(
         experimentId: Int,
         entryDate: LocalDate,
     ): Result<MobileExperimentEntry> = runCatching {
         db.withTransaction {
-            entryDao.getEntryByExperimentAndDate(experimentId, entryDate)
-                ?.toModel()
-                ?: run {
-                    val now = getCurrentLocalDateTime()
-                    val entry = MobileExperimentEntryEntity(
-                        experimentId = experimentId,
-                        entryDate = entryDate,
-                        syncId = UUID.randomUUID().toString(),
-                        updatedAt = now,
-                    )
-                    val id = entryDao.create(entry).toInt()
-                    touchExperiment(experimentId, now)
-                    entry.copy(id = id).toModel()
-                }
+            val now = getCurrentLocalDateTime()
+            val entry = MobileExperimentEntryEntity(
+                experimentId = experimentId,
+                entryDate = entryDate,
+                createdAt = now,
+                syncId = UUID.randomUUID().toString(),
+                updatedAt = now,
+            )
+            val id = entryDao.create(entry).toInt()
+            touchExperiment(experimentId, now)
+            entry.copy(id = id).toModel()
         }
     }
 
-    /**
-     * Обновляет текст выбранной записи.
-     */
     suspend fun updateEntryContent(
         entryId: Int,
         content: String,
@@ -140,9 +115,6 @@ class ExperimentDetailsRepository(
         }
     }
 
-    /**
-     * Создаёт локальное напоминание.
-     */
     suspend fun createReminder(
         experimentId: Int,
         text: String,
@@ -163,9 +135,6 @@ class ExperimentDetailsRepository(
         }
     }
 
-    /**
-     * Меняет локальное напоминание.
-     */
     suspend fun updateReminder(
         reminderId: Int,
         text: String,
@@ -187,9 +156,6 @@ class ExperimentDetailsRepository(
         }
     }
 
-    /**
-     * Помечает напоминание удалённым.
-     */
     suspend fun deleteReminder(reminderId: Int): Result<Unit> = runCatching {
         db.withTransaction {
             val reminder = requireNotNull(reminderDao.getReminder(reminderId)) {

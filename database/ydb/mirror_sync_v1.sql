@@ -204,6 +204,7 @@ CREATE TABLE IF NOT EXISTS `experiment_entry` (
     sync_id Utf8,
     experiment_sync_id Utf8,
     entry_date Utf8,
+    created_at Utf8,
     content Utf8,
     updated_at Utf8,
     deleted_at Utf8,

@@ -53,6 +53,11 @@ interface RemoteFileStorageGateway {
     suspend fun listObjects(): Result<List<RemoteStorageObject>>
 
     /**
+     * Приводит ключ к формату, который хранится в metadata.
+     */
+    fun normalizeObjectKey(objectKey: String): String = objectKey.trimStart('/')
+
+    /**
      * Удаляет объект из удаленного storage по его object key.
      */
     suspend fun delete(

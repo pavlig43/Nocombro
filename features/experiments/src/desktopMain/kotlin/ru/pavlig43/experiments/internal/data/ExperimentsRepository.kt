@@ -6,6 +6,7 @@ import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.experiment.Experiment
 import ru.pavlig43.database.data.experiment.ExperimentEntry
 import ru.pavlig43.database.data.experiment.ExperimentReminder
+import ru.pavlig43.database.data.files.OwnerType
 import ru.pavlig43.database.data.sync.defaultUpdatedAt
 import ru.pavlig43.database.inTransaction
 
@@ -16,6 +17,7 @@ internal class ExperimentsRepository(
     private val experimentDao = db.experimentDao
     private val experimentEntryDao = db.experimentEntryDao
     private val experimentReminderDao = db.experimentReminderDao
+    private val fileDao = db.fileDao
 
     fun observeExperiments(
         isArchived: Boolean,
@@ -57,6 +59,45 @@ internal class ExperimentsRepository(
         }
     }
 
+    suspend fun deleteExperiment(
+        experimentId: Int,
+    ): Result<Unit> {
+        return runCatching {
+            database.inTransaction {
+                val deletedAt = defaultUpdatedAt()
+                val experiment = requireNotNull(experimentDao.getExperiment(experimentId)) {
+                    "Experiment $experimentId not found"
+                }
+                val entries = experimentEntryDao.getEntriesByExperiment(experimentId)
+                val reminders = experimentReminderDao.getRemindersByExperiment(experimentId)
+                val files = entries.flatMap { entry ->
+                    fileDao.getFiles(entry.id, OwnerType.EXPERIMENT_ENTRY)
+                }
+
+                if (files.isNotEmpty()) {
+                    fileDao.upsertFiles(
+                        files.map { file ->
+                            file.copy(updatedAt = deletedAt, deletedAt = deletedAt)
+                        }
+                    )
+                }
+                reminders.forEach { reminder ->
+                    experimentReminderDao.upsert(
+                        reminder.copy(updatedAt = deletedAt, deletedAt = deletedAt)
+                    )
+                }
+                entries.forEach { entry ->
+                    experimentEntryDao.upsert(
+                        entry.copy(updatedAt = deletedAt, deletedAt = deletedAt)
+                    )
+                }
+                experimentDao.upsert(
+                    experiment.copy(updatedAt = deletedAt, deletedAt = deletedAt)
+                )
+            }
+        }
+    }
+
     suspend fun setExperimentArchived(
         experimentId: Int,
         isArchived: Boolean,
@@ -76,23 +117,20 @@ internal class ExperimentsRepository(
         }
     }
 
-    suspend fun getOrCreateEntry(
+    suspend fun createEntryForDate(
         experimentId: Int,
         entryDate: LocalDate,
     ): Result<ExperimentEntry> {
         return runCatching {
             database.inTransaction {
-                experimentEntryDao.getEntryByExperimentAndDate(experimentId, entryDate)
-                    ?: run {
-                        val entry = ExperimentEntry(
-                            experimentId = experimentId,
-                            entryDate = entryDate,
-                        )
-                        val id = experimentEntryDao.create(entry).toInt()
-                        val saved = entry.copy(id = id)
-                        touchExperiment(experimentId)
-                        saved
-                    }
+                val entry = ExperimentEntry(
+                    experimentId = experimentId,
+                    entryDate = entryDate,
+                )
+                val id = experimentEntryDao.create(entry).toInt()
+                val saved = entry.copy(id = id)
+                touchExperiment(experimentId)
+                saved
             }
         }
     }
@@ -103,6 +141,28 @@ internal class ExperimentsRepository(
         return runCatching {
             database.inTransaction {
                 experimentEntryDao.upsert(entry)
+                touchExperiment(entry.experimentId)
+            }
+        }
+    }
+
+    suspend fun deleteEntry(
+        entry: ExperimentEntry,
+    ): Result<Unit> {
+        return runCatching {
+            database.inTransaction {
+                val deletedAt = defaultUpdatedAt()
+                val files = fileDao.getFiles(entry.id, OwnerType.EXPERIMENT_ENTRY)
+                if (files.isNotEmpty()) {
+                    fileDao.upsertFiles(
+                        files.map { file ->
+                            file.copy(updatedAt = deletedAt, deletedAt = deletedAt)
+                        }
+                    )
+                }
+                experimentEntryDao.upsert(
+                    entry.copy(updatedAt = deletedAt, deletedAt = deletedAt)
+                )
                 touchExperiment(entry.experimentId)
             }
         }

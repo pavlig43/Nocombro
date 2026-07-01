@@ -1,5 +1,4 @@
-package ru.pavlig43.nocombro.mobile.experiments
-
+package ru.pavlig43.nocombro.mobile.experiments.internal.component
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalDate
 
@@ -24,6 +23,7 @@ data class MobileExperimentEntry(
     val syncId: String,
     val experimentId: Int,
     val entryDate: LocalDate,
+    val createdAt: LocalDateTime,
     val content: String,
     val updatedAt: LocalDateTime,
     val deletedAt: LocalDateTime?,

@@ -51,7 +51,7 @@ class S3RemoteFileStorageGateway(
             }
             RemoteFileRef(
                 providerId = providerId,
-                objectKey = finalObjectKey,
+                objectKey = toLogicalObjectKey(finalObjectKey),
             )
         }
     }
@@ -152,6 +152,9 @@ class S3RemoteFileStorageGateway(
             else -> cleanObjectKey
         }
     }
+
+    override fun normalizeObjectKey(objectKey: String): String =
+        toLogicalObjectKey(objectKey)
 
     private fun <T> withClient(
         block: (S3Client) -> T,

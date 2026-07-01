@@ -17,6 +17,8 @@ internal class ExperimentEntryFilesComponent(
     ownerType = OwnerType.EXPERIMENT_ENTRY,
     dependencies = dependencies,
 ) {
+    override val persistFilesOnChange: Boolean = true
+
     override val errorMessages: Flow<List<String>> = isAllFilesUpload.map { isUpload ->
         buildList {
             if (!isUpload) add("Идет загрузка файлов")

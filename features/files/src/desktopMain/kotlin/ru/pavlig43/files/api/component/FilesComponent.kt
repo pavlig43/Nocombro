@@ -69,6 +69,12 @@ abstract class FilesComponent(
     ): String? = null
 
     /**
+     * Some screens, such as experiment entries, do not have a parent form save action.
+     * They need file metadata to be written as soon as the file list changes.
+     */
+    protected open val persistFilesOnChange: Boolean = false
+
+    /**
      * Имя локальной копии файла в каталоге приложения.
      *
      * Пока оно по-прежнему привязано к локальному владельцу формы, чтобы не ломать
@@ -167,6 +173,9 @@ abstract class FilesComponent(
                 } else file
             }
         }
+        if (result.isSuccess) {
+            persistFilesIfNeeded()
+        }
 
     }
 
@@ -246,8 +255,18 @@ abstract class FilesComponent(
                 else file
             }
         }
+        persistFilesIfNeeded()
 
 
+    }
+
+    private fun persistFilesIfNeeded() {
+        if (!persistFilesOnChange) return
+        coroutineScope.launch(Dispatchers.IO) {
+            onUpdate().onFailure { throwable ->
+                _fileMessage.value = throwable.message ?: "Не удалось сохранить файлы"
+            }
+        }
     }
 
     private val _filesUi = MutableStateFlow<List<FileUi>>(emptyList())

@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -17,6 +18,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -43,6 +46,11 @@ import ru.pavlig43.experiments.api.component.ExperimentsComponent
 import ru.pavlig43.files.api.component.FilesComponent
 import ru.pavlig43.files.api.ui.FilesScreen
 import kotlinx.datetime.format
+import org.jetbrains.compose.resources.painterResource
+import ru.pavlig43.theme.Res
+import ru.pavlig43.theme.add_circle
+import ru.pavlig43.theme.delete
+import ru.pavlig43.theme.edit
 
 @Composable
 fun ExperimentsScreen(
@@ -95,6 +103,7 @@ fun ExperimentsScreen(
             onToggleArchived = component::toggleArchived,
             onCreateExperiment = component::createExperiment,
             onSelectExperiment = component::selectExperiment,
+            onDeleteExperiment = component::deleteExperiment,
             modifier = Modifier.width(280.dp).fillMaxHeight(),
         )
         ExperimentDetailsPane(
@@ -115,6 +124,7 @@ fun ExperimentsScreen(
             onEditReminder = component::openEditReminderDialog,
             onDeleteReminder = component::deleteReminder,
             onSelectEntry = component::selectEntry,
+            onDeleteEntry = component::deleteEntry,
             modifier = Modifier.weight(1f).fillMaxHeight(),
         )
         EntryEditorPane(
@@ -136,6 +146,7 @@ private fun ExperimentListPane(
     onToggleArchived: (Boolean) -> Unit,
     onCreateExperiment: () -> Unit,
     onSelectExperiment: (Int) -> Unit,
+    onDeleteExperiment: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Surface(
@@ -183,15 +194,27 @@ private fun ExperimentListPane(
                                 }
                             )
                     ) {
-                        Column(
+                        Row(
                             modifier = Modifier.fillMaxWidth().padding(12.dp),
-                            verticalArrangement = Arrangement.spacedBy(4.dp),
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            Text(item.title, fontWeight = FontWeight.SemiBold)
-                            Text(
-                                "Обновлен: ${item.updatedAtText}",
-                                style = MaterialTheme.typography.bodySmall,
-                            )
+                            Column(
+                                modifier = Modifier.weight(1f),
+                                verticalArrangement = Arrangement.spacedBy(4.dp),
+                            ) {
+                                Text(item.title, fontWeight = FontWeight.SemiBold)
+                                Text(
+                                    "Обновлен: ${item.updatedAtText}",
+                                    style = MaterialTheme.typography.bodySmall,
+                                )
+                            }
+                            IconButton(onClick = { onDeleteExperiment(item.id) }) {
+                                Icon(
+                                    painter = painterResource(Res.drawable.delete),
+                                    contentDescription = "Удалить эксперимент",
+                                    tint = MaterialTheme.colorScheme.error,
+                                )
+                            }
                         }
                     }
                 }
@@ -219,6 +242,7 @@ private fun ExperimentDetailsPane(
     onEditReminder: (Int) -> Unit,
     onDeleteReminder: (Int) -> Unit,
     onSelectEntry: (Int) -> Unit,
+    onDeleteEntry: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Surface(
@@ -258,7 +282,7 @@ private fun ExperimentDetailsPane(
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Button(onClick = onOpenToday) {
-                        Text("Сегодня")
+                        Text("Новая запись")
                     }
                     OutlinedButton(onClick = onToggleArchive) {
                         Text(if (isArchived) "Вернуть в активные" else "В архив")
@@ -271,7 +295,7 @@ private fun ExperimentDetailsPane(
                     onDeleteReminder = onDeleteReminder,
                 )
                 HorizontalDivider()
-                Text("Дни", style = MaterialTheme.typography.titleMedium)
+                Text("Записи", style = MaterialTheme.typography.titleMedium)
                 if (entries.isEmpty()) {
                     Box(
                         modifier = Modifier.fillMaxSize(),
@@ -280,7 +304,7 @@ private fun ExperimentDetailsPane(
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text("Записей еще нет")
                             Button(onClick = onCreateTodayEntry) {
-                                Text("Создать запись за сегодня")
+                                Text("Новая запись")
                             }
                         }
                     }
@@ -302,15 +326,27 @@ private fun ExperimentDetailsPane(
                                         }
                                     )
                             ) {
-                                Column(
+                                Row(
                                     modifier = Modifier.fillMaxWidth().padding(12.dp),
-                                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
                                 ) {
-                                    Text(item.dateText, fontWeight = FontWeight.SemiBold)
-                                    if (item.preview.isNotBlank()) {
-                                        Text(
-                                            item.preview,
-                                            style = MaterialTheme.typography.bodySmall,
+                                    Column(
+                                        modifier = Modifier.weight(1f),
+                                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                                    ) {
+                                        Text(item.dateText, fontWeight = FontWeight.SemiBold)
+                                        if (item.preview.isNotBlank()) {
+                                            Text(
+                                                item.preview,
+                                                style = MaterialTheme.typography.bodySmall,
+                                            )
+                                        }
+                                    }
+                                    IconButton(onClick = { onDeleteEntry(item.id) }) {
+                                        Icon(
+                                            painter = painterResource(Res.drawable.delete),
+                                            contentDescription = "Удалить запись",
+                                            tint = MaterialTheme.colorScheme.error,
                                         )
                                     }
                                 }
@@ -337,8 +373,12 @@ private fun ReminderBlock(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text("Напоминания", style = MaterialTheme.typography.titleMedium)
-            OutlinedButton(onClick = onCreateReminder) {
-                Text("Добавить")
+            IconButton(onClick = onCreateReminder) {
+                Icon(
+                    painter = painterResource(Res.drawable.add_circle),
+                    contentDescription = "Добавить напоминание",
+                    tint = MaterialTheme.colorScheme.primary,
+                )
             }
         }
         if (reminders.isEmpty()) {
@@ -347,7 +387,12 @@ private fun ReminderBlock(
                 style = MaterialTheme.typography.bodySmall,
             )
         } else {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Column(
+                modifier = Modifier.fillMaxWidth()
+                    .heightIn(max = 220.dp)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
                 reminders.forEach { reminder ->
                     Card(modifier = Modifier.fillMaxWidth()) {
                         Column(
@@ -374,11 +419,19 @@ private fun ReminderBlock(
                                     }
                                 }
                                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    OutlinedButton(onClick = { onEditReminder(reminder.id) }) {
-                                        Text("Изменить")
+                                    IconButton(onClick = { onEditReminder(reminder.id) }) {
+                                        Icon(
+                                            painter = painterResource(Res.drawable.edit),
+                                            contentDescription = "Изменить напоминание",
+                                            tint = MaterialTheme.colorScheme.primary,
+                                        )
                                     }
-                                    OutlinedButton(onClick = { onDeleteReminder(reminder.id) }) {
-                                        Text("Удалить")
+                                    IconButton(onClick = { onDeleteReminder(reminder.id) }) {
+                                        Icon(
+                                            painter = painterResource(Res.drawable.delete),
+                                            contentDescription = "Удалить напоминание",
+                                            tint = MaterialTheme.colorScheme.error,
+                                        )
                                     }
                                 }
                             }
@@ -466,7 +519,7 @@ private fun EntryEditorPane(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text("Создай или выбери запись дня")
+                    Text("Создай или выбери запись")
                 }
             }
 
@@ -475,7 +528,7 @@ private fun EntryEditorPane(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text("Выбери эксперимент и день")
+                    Text("Выбери эксперимент и запись")
                 }
             }
 
@@ -492,10 +545,10 @@ private fun EntryEditorPane(
                         value = content,
                         onValueChange = onContentChange,
                         modifier = Modifier.fillMaxWidth(),
-                        label = { Text("Запись дня") },
+                        label = { Text("Запись") },
                         minLines = 12,
                     )
-                    Text("Файлы этого дня", style = MaterialTheme.typography.titleMedium)
+                    Text("Файлы записи", style = MaterialTheme.typography.titleMedium)
                     files?.let {
                         FilesScreen(
                             component = it,

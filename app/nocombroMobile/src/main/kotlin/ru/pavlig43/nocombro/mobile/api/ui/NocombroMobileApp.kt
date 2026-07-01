@@ -1,4 +1,4 @@
-package ru.pavlig43.nocombro.mobile
+package ru.pavlig43.nocombro.mobile.api.ui
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -20,27 +20,25 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.stack.Children
-import ru.pavlig43.nocombro.mobile.experiments.ExperimentsRoute
-import ru.pavlig43.nocombro.mobile.navigation.MobileChild
-import ru.pavlig43.nocombro.mobile.navigation.NocombroMobileRootComponent
+import ru.pavlig43.nocombro.mobile.api.component.NocombroMobileRootComponent
+import ru.pavlig43.nocombro.mobile.experiments.api.ui.ExperimentsRoute
+import ru.pavlig43.nocombro.mobile.internal.navigation.MobileChild
+import ru.pavlig43.theme.NocombroTheme
 
-/**
- * Root Compose-обвязка mobile-приложения.
- */
 @Composable
 fun NocombroMobileApp(
     component: NocombroMobileRootComponent,
 ) {
-    MaterialTheme(
-
+    NocombroTheme(
+        darkTheme = true
     ) {
+
         Surface(
             modifier = Modifier
                 .fillMaxSize(),
@@ -77,7 +75,7 @@ private fun MainMenuScreen(
         modifier = Modifier
             .fillMaxSize()
             .safeDrawingPadding(),
-        topBar = {MainTopBar()},
+        topBar = { MainTopBar() },
     ) { padding ->
         LazyColumn(
             modifier = Modifier
@@ -108,34 +106,35 @@ private fun MainMenuScreen(
         }
     }
 }
-@OptIn(ExperimentalMaterial3Api::class) // Разрешаем использовать TopAppBar из Material3
-@Composable // Это composable-функция
-fun MainTopBar(modifier: Modifier = Modifier) { // Отдельный AppBar
-    TopAppBar( // Верхняя панель
-        modifier = modifier.fillMaxWidth(), // TopAppBar на всю ширину
-        colors = TopAppBarDefaults.topAppBarColors( // Настройка цветов панели
-            containerColor = MaterialTheme.colorScheme.background // Фон самой панели
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MainTopBar(modifier: Modifier = Modifier) {
+    TopAppBar(
+        modifier = modifier.fillMaxWidth(),
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = MaterialTheme.colorScheme.background
         ),
-        title = { // Контент заголовка
-            Card( // Карточка внутри AppBar
-                modifier = Modifier // Начинаем модификаторы карточки
-                    .fillMaxWidth() // Карточка на всю доступную ширину
-                    .padding(end = 16.dp), // Отступ справа, чтобы не липла к краю
-                shape = RoundedCornerShape(18.dp), // Скругление углов
-                colors = CardDefaults.cardColors( // Цвет карточки
-                    containerColor = MaterialTheme.colorScheme.primaryContainer // Красивый цвет из темы
+        title = {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(end = 16.dp),
+                shape = RoundedCornerShape(18.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
                 ),
-                elevation = CardDefaults.cardElevation(2.dp) // Небольшая тень
+                elevation = CardDefaults.cardElevation(2.dp)
             ) {
-                Text( // Текст внутри карточки
-                    text = "Nocombro", // Сам текст
-                    modifier = Modifier // Модификаторы текста
-                        .fillMaxWidth() // Текстовый блок на всю ширину карточки
-                        .padding(vertical = 10.dp), // Вертикальный внутренний отступ
-                    textAlign = TextAlign.Center, // Текст по центру
-                    style = MaterialTheme.typography.titleMedium, // Стиль текста
-                    fontWeight = FontWeight.Bold, // Жирный текст
-                    color = MaterialTheme.colorScheme.onPrimaryContainer // Цвет текста под фон карточки
+                Text(
+                    text = "Nocombro",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 10.dp),
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
             }
         }

@@ -26,7 +26,6 @@ const val EXPERIMENT_ENTRY_TABLE_NAME = "experiment_entry"
     indices = [
         Index(value = ["sync_id"], unique = true),
         Index(value = ["experiment_id"]),
-        Index(value = ["experiment_id", "entry_date"], unique = true),
     ]
 )
 data class ExperimentEntry(
@@ -35,6 +34,9 @@ data class ExperimentEntry(
 
     @ColumnInfo("entry_date")
     val entryDate: LocalDate,
+
+    @ColumnInfo("created_at")
+    val createdAt: LocalDateTime = defaultUpdatedAt(),
 
     val content: String = "",
 

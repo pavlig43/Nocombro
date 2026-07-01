@@ -3,7 +3,7 @@
 
     <application
         android:name=".NocombroMobileApplication"
-        android:allowBackup="true"
+        android:allowBackup="false"
         android:label="Nocombro"
         android:theme="@style/NocombroMobileTheme">
         <activity

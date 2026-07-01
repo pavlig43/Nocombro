@@ -29,4 +29,9 @@ class S3RemoteFileStorageGatewayTest : FunSpec({
     test("converts the prefix marker to an empty logical key") {
         gateway.toLogicalObjectKey("nocombro") shouldBe ""
     }
+
+    test("upload result stores a logical object key") {
+        gateway.normalizeObjectKey("nocombro/files/product/file.pdf") shouldBe
+            "files/product/file.pdf"
+    }
 })

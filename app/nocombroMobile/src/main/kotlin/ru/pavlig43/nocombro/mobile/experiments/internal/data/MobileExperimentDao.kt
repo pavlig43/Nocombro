@@ -6,7 +6,6 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
-import kotlinx.datetime.LocalDate
 
 /**
  * DAO для таблицы экспериментов.
@@ -91,28 +90,13 @@ interface MobileExperimentEntryDao {
     suspend fun getAll(): List<MobileExperimentEntryEntity>
 
     /**
-     * Возвращает запись эксперимента за дату, если она уже есть.
-     */
-    @Query(
-        """
-        SELECT * FROM $EXPERIMENT_ENTRY_TABLE_NAME
-        WHERE experiment_id = :experimentId AND entry_date = :entryDate
-        LIMIT 1
-        """
-    )
-    suspend fun getEntryByExperimentAndDate(
-        experimentId: Int,
-        entryDate: LocalDate,
-    ): MobileExperimentEntryEntity?
-
-    /**
      * Следит за активными записями выбранного эксперимента.
      */
     @Query(
         """
         SELECT * FROM $EXPERIMENT_ENTRY_TABLE_NAME
         WHERE experiment_id = :experimentId AND deleted_at IS NULL
-        ORDER BY entry_date DESC, id DESC
+        ORDER BY entry_date DESC, created_at DESC, id DESC
         """
     )
     fun observeEntries(experimentId: Int): Flow<List<MobileExperimentEntryEntity>>

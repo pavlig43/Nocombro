@@ -54,6 +54,21 @@ class RemoteFilesMaintenanceRepositoryTest : DesktopMainDispatcherFunSpec({
             storage.deletedKeys shouldBe emptyList()
         }
     }
+
+    test("prefixed mirror keys protect logical S3 objects") {
+        withEmptyTestDatabase { db ->
+            val storage = FakeStorage(setOf("files/product/spec.pdf"))
+            val mirror = FakeMirrorGateway(
+                rows = listOf(
+                    fileRow("spec", "nocombro/files/product/spec.pdf"),
+                )
+            )
+            val repository = RemoteFilesMaintenanceRepository(db, storage, mirror)
+
+            repository.getOrphanRemoteFiles().getOrThrow()
+                .map { it.objectKey } shouldBe emptyList()
+        }
+    }
 })
 
 private val testTime = LocalDateTime(2026, 6, 12, 12, 0)
@@ -85,6 +100,8 @@ private class FakeStorage(
     override suspend fun download(objectKey: String, localPath: String) = Result.success(Unit)
     override suspend fun listObjects() =
         Result.success(keys.map { RemoteStorageObject(it) })
+    override fun normalizeObjectKey(objectKey: String) =
+        objectKey.removePrefix("nocombro/")
     override suspend fun delete(objectKey: String): Result<Unit> {
         deletedKeys += objectKey
         return Result.success(Unit)

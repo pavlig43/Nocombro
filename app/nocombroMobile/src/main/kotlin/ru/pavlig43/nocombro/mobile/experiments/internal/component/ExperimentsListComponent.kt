@@ -1,4 +1,4 @@
-package ru.pavlig43.nocombro.mobile.experiments
+package ru.pavlig43.nocombro.mobile.experiments.internal.component
 
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.essenty.instancekeeper.getOrCreate
@@ -13,29 +13,12 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.koin.core.module.Module
-import org.koin.dsl.module
 import ru.pavlig43.core.componentCoroutineScope
 import ru.pavlig43.corekoin.ComponentKoinContext
+import ru.pavlig43.nocombro.mobile.experiments.api.component.ExperimentDependencies
+import ru.pavlig43.nocombro.mobile.experiments.internal.data.ExperimentsListRepository
+import ru.pavlig43.nocombro.mobile.internal.di.createMobileExperimentsComponentModule
 
-private fun createExperimentsMobileModule(
-    dependencies: ExperimentDependencies,
-): List<Module> = listOf(
-    module {
-        single {
-            ExperimentsListRepository(
-                db = dependencies.database,
-            )
-        }
-    }
-)
-
-/**
- * Decompose-компонент списка mobile-экспериментов.
- *
- * Создаёт Koin scope из зависимостей, сам держит выбранный режим и сразу отдаёт
- * [StateFlow] для UI.
- */
 @OptIn(ExperimentalCoroutinesApi::class)
 class ExperimentsListComponent(
     componentContext: ComponentContext,
@@ -43,19 +26,13 @@ class ExperimentsListComponent(
     private val onExperimentCreated: (Int) -> Unit,
 ) : ComponentContext by componentContext {
     private val koinContext = instanceKeeper.getOrCreate { ComponentKoinContext() }
-    private val scope = koinContext.getOrCreateKoinScope(createExperimentsMobileModule(dependencies))
+    private val scope = koinContext.getOrCreateKoinScope(createMobileExperimentsComponentModule(dependencies))
     private val repository: ExperimentsListRepository = scope.get()
     private val coroutineScope = componentCoroutineScope()
     private val showArchived = MutableStateFlow(false)
 
-    /**
-     * Текущий режим списка.
-     */
     val showArchivedState: StateFlow<Boolean> = showArchived.asStateFlow()
 
-    /**
-     * Эксперименты для текущего режима списка.
-     */
     val experiments: StateFlow<List<MobileExperiment>> = showArchived
         .flatMapLatest { archived ->
             if (archived) {
@@ -70,19 +47,13 @@ class ExperimentsListComponent(
             initialValue = emptyList(),
         )
 
-    /**
-     * Задаёт режим списка.
-     */
     fun setArchivedMode(showArchived: Boolean) {
         this.showArchived.update { showArchived }
     }
 
-    /**
-     * Создаёт эксперимент в локальной БД.
-     */
     fun createExperiment() {
         coroutineScope.launch(Dispatchers.IO) {
-            repository.createExperiment()
+            repository.createAndReturnExperiment()
                 .onSuccess { experiment ->
                     withContext(Dispatchers.Main) {
                         onExperimentCreated(experiment.id)
@@ -91,9 +62,6 @@ class ExperimentsListComponent(
         }
     }
 
-    /**
-     * Помечает эксперимент удалённым.
-     */
     fun deleteExperiment(id: Int) {
         coroutineScope.launch(Dispatchers.IO) {
             repository.deleteExperiment(id)

@@ -50,7 +50,9 @@ class RemoteFilesMaintenanceRepository(
     /** Возвращает remote object keys, прикрепленные в локальной Room-базе. */
     suspend fun getAttachedRemoteObjectKeys(): Result<Set<String>> {
         return runCatching {
-            fileDao.getAllRemoteObjectKeys().toSet()
+            fileDao.getAllRemoteObjectKeys()
+                .map(remoteFileStorageGateway::normalizeObjectKey)
+                .toSet()
         }
     }
 
@@ -90,7 +92,9 @@ class RemoteFilesMaintenanceRepository(
 
     /** Возвращает актуальный набор ключей, физически существующих в S3. */
     suspend fun getS3ObjectKeys(): Result<Set<String>> = runCatching {
-        loadS3Objects().mapTo(mutableSetOf()) { it.objectKey }
+        loadS3Objects().mapTo(mutableSetOf()) {
+            remoteFileStorageGateway.normalizeObjectKey(it.objectKey)
+        }
     }
 
     private suspend fun loadActiveMirrorKeys(): Set<String> {
@@ -110,6 +114,7 @@ class RemoteFilesMaintenanceRepository(
             .asSequence()
             .filter { it.deletedAt == null }
             .mapNotNull { it.remoteObjectKey?.takeIf(String::isNotBlank) }
+            .map(remoteFileStorageGateway::normalizeObjectKey)
             .toSet()
     }
 
@@ -118,5 +123,12 @@ class RemoteFilesMaintenanceRepository(
             "Remote file storage is not configured."
         }
         remoteFileStorageGateway.listObjects().getOrThrow()
+            .map { remoteObject ->
+                remoteObject.copy(
+                    objectKey = remoteFileStorageGateway.normalizeObjectKey(
+                        remoteObject.objectKey
+                    )
+                )
+            }
     }
 }

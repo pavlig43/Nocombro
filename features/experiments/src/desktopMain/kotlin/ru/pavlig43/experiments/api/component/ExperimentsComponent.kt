@@ -29,7 +29,6 @@ import ru.pavlig43.database.data.experiment.Experiment
 import ru.pavlig43.database.data.experiment.ExperimentEntry
 import ru.pavlig43.database.data.experiment.ExperimentReminder
 import ru.pavlig43.database.data.sync.defaultUpdatedAt
-import ru.pavlig43.datetime.dateFormat
 import ru.pavlig43.datetime.dateTimeFormat
 import ru.pavlig43.datetime.getCurrentLocalDate
 import ru.pavlig43.datetime.getCurrentLocalDateTime
@@ -61,6 +60,7 @@ class ExperimentsComponent(
 
     private val _experimentDraft = MutableStateFlow(ExperimentDraft())
     private val _entryDraft = MutableStateFlow("")
+    private val _entryDraftEntryId = MutableStateFlow<Int?>(null)
     private val _message = MutableStateFlow<String?>(null)
     private val _filesComponent = MutableStateFlow<ExperimentEntryFilesComponent?>(null)
     private val _reminderEditorState = MutableStateFlow<ExperimentReminderEditorState?>(null)
@@ -149,17 +149,20 @@ class ExperimentsComponent(
         }
         coroutineScope.launch {
             selectedEntry.collectLatest { entry ->
+                _entryDraftEntryId.value = entry?.id
                 _entryDraft.value = entry?.content.orEmpty()
-                val currentComponent = _filesComponent.value
                 if (entry == null) {
+                    currentComponentEntryId = null
                     _filesComponent.value = null
-                } else if (currentComponent == null || currentComponentEntryId != entry.id) {
+                } else if (currentComponentEntryId != entry.id) {
                     currentComponentEntryId = entry.id
-                    _filesComponent.value = ExperimentEntryFilesComponent(
-                        componentContext = childContext("experiment_entry_files_${entry.id}"),
-                        entryId = entry.id,
-                        dependencies = dependencies.filesDependencies,
-                    )
+                    _filesComponent.value = filesComponents.getOrPut(entry.id) {
+                        ExperimentEntryFilesComponent(
+                            componentContext = childContext("experiment_entry_files_${entry.id}"),
+                            entryId = entry.id,
+                            dependencies = dependencies.filesDependencies,
+                        )
+                    }
                 }
             }
         }
@@ -167,6 +170,7 @@ class ExperimentsComponent(
     }
 
     private var currentComponentEntryId: Int? = null
+    private val filesComponents = mutableMapOf<Int, ExperimentEntryFilesComponent>()
 
     fun dismissMessage() {
         _message.value = null
@@ -217,10 +221,26 @@ class ExperimentsComponent(
         }
     }
 
+    fun deleteExperiment(experimentId: Int) {
+        coroutineScope.launch(Dispatchers.IO) {
+            repository.deleteExperiment(experimentId)
+                .onSuccess {
+                    if (_selectedExperimentId.value == experimentId) {
+                        _selectedExperimentId.value = null
+                        _selectedEntryId.value = null
+                        _experimentDraft.value = ExperimentDraft()
+                        _entryDraftEntryId.value = null
+                        _entryDraft.value = ""
+                    }
+                }
+                .onFailure(::showError)
+        }
+    }
+
     fun openTodayEntry() {
         val experimentId = _selectedExperimentId.value ?: return
         val today = getCurrentLocalDate()
-        openEntryForDate(experimentId, today)
+        createEntryForDate(experimentId, today)
     }
 
     fun createTodayEntry() {
@@ -301,6 +321,21 @@ class ExperimentsComponent(
         }
     }
 
+    fun deleteEntry(entryId: Int) {
+        val entry = entries.value.firstOrNull { it.id == entryId } ?: return
+        coroutineScope.launch(Dispatchers.IO) {
+            repository.deleteEntry(entry)
+                .onSuccess {
+                    if (_selectedEntryId.value == entryId) {
+                        _selectedEntryId.value = null
+                        _entryDraftEntryId.value = null
+                        _entryDraft.value = ""
+                    }
+                }
+                .onFailure(::showError)
+        }
+    }
+
     @OptIn(FlowPreview::class)
     private fun observeDraftSaves() {
         coroutineScope.launch(Dispatchers.IO) {
@@ -329,12 +364,13 @@ class ExperimentsComponent(
             combine(
                 _selectedEntryId,
                 _entryDraft,
-            ) { entryId, content -> entryId to content }
+                _entryDraftEntryId,
+            ) { entryId, content, draftEntryId -> Triple(entryId, content, draftEntryId) }
                 .debounce(500)
                 .distinctUntilChanged()
-                .collectLatest { (entryId, content) ->
+                .collectLatest { (entryId, content, draftEntryId) ->
                     val current = selectedEntry.value ?: return@collectLatest
-                    if (entryId == null || current.id != entryId) return@collectLatest
+                    if (entryId == null || current.id != entryId || draftEntryId != entryId) return@collectLatest
                     if (current.content == content) return@collectLatest
                     repository.updateEntry(
                         current.copy(
@@ -346,13 +382,17 @@ class ExperimentsComponent(
         }
     }
 
-    private fun openEntryForDate(
+    private fun createEntryForDate(
         experimentId: Int,
         date: LocalDate,
     ) {
         coroutineScope.launch(Dispatchers.IO) {
-            repository.getOrCreateEntry(experimentId, date)
-                .onSuccess { entry -> _selectedEntryId.value = entry.id }
+            repository.createEntryForDate(experimentId, date)
+                .onSuccess { entry ->
+                    _entryDraftEntryId.value = entry.id
+                    _entryDraft.value = entry.content
+                    _selectedEntryId.value = entry.id
+                }
                 .onFailure(::showError)
         }
     }
@@ -386,13 +426,13 @@ class ExperimentsComponent(
 
     private fun ExperimentEntry.toListItem(): ExperimentEntryListItem = ExperimentEntryListItem(
         id = id,
-        dateText = entryDate.format(dateFormat),
+        dateText = createdAt.format(dateTimeFormat),
         preview = content.lineSequence().firstOrNull().orEmpty(),
     )
 
     private fun ExperimentEntry.toDetails(): ExperimentEntryDetails = ExperimentEntryDetails(
         id = id,
-        dateText = entryDate.format(dateFormat),
+        dateText = createdAt.format(dateTimeFormat),
         isToday = entryDate == getCurrentLocalDate(),
     )
 

@@ -1,9 +1,8 @@
-package ru.pavlig43.nocombro.mobile.experiments
+package ru.pavlig43.nocombro.mobile.experiments.internal.component
 
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.essenty.instancekeeper.getOrCreate
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -13,63 +12,36 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.format
-import org.koin.core.module.Module
-import org.koin.dsl.module
 import ru.pavlig43.core.componentCoroutineScope
 import ru.pavlig43.corekoin.ComponentKoinContext
-import ru.pavlig43.datetime.dateFormat
 import ru.pavlig43.datetime.dateTimeFormat
 import ru.pavlig43.datetime.getCurrentLocalDate
 import ru.pavlig43.datetime.getCurrentLocalDateTime
+import ru.pavlig43.nocombro.mobile.experiments.api.component.ExperimentDependencies
+import ru.pavlig43.nocombro.mobile.experiments.internal.data.ExperimentDetailsRepository
+import ru.pavlig43.nocombro.mobile.internal.di.createMobileExperimentsComponentModule
 
-private fun createExperimentDetailsModule(
-    dependencies: ExperimentDependencies,
-): List<Module> = listOf(
-    module {
-        single {
-            ExperimentDetailsRepository(
-                db = dependencies.database,
-            )
-        }
-    }
-)
-
-/**
- * Decompose-компонент деталей mobile-эксперимента.
- */
-@OptIn(ExperimentalCoroutinesApi::class)
 class ExperimentDetailsComponent(
     componentContext: ComponentContext,
     private val experimentId: Int,
     dependencies: ExperimentDependencies,
+    private val onEntryOpened: (entryId: Int) -> Unit = {},
 ) : ComponentContext by componentContext {
     private val koinContext = instanceKeeper.getOrCreate { ComponentKoinContext() }
-    private val scope = koinContext.getOrCreateKoinScope(createExperimentDetailsModule(dependencies))
+    private val scope = koinContext.getOrCreateKoinScope(createMobileExperimentsComponentModule(dependencies))
     private val repository: ExperimentDetailsRepository = scope.get()
     private val coroutineScope = componentCoroutineScope()
 
-    private val selectedEntryId = MutableStateFlow<Int?>(null)
     private val experimentDraft = MutableStateFlow(ExperimentDraft())
-    private val entryDraft = MutableStateFlow("")
+    val experimentDraftState: StateFlow<ExperimentDraft> = experimentDraft.asStateFlow()
     private val message = MutableStateFlow<String?>(null)
     private val reminderEditor = MutableStateFlow<ExperimentReminderEditorState?>(null)
 
-    /**
-     * Draft полей эксперимента.
-     */
-    val experimentDraftState: StateFlow<ExperimentDraft> = experimentDraft.asStateFlow()
-
-    /**
-     * Draft текста записи.
-     */
-    val entryDraftState: StateFlow<String> = entryDraft.asStateFlow()
 
     private val experiment = repository.observeExperiment(experimentId)
         .stateInComponent(null)
@@ -80,111 +52,69 @@ class ExperimentDetailsComponent(
     private val reminders = repository.observeReminders(experimentId)
         .stateInComponent(emptyList())
 
-    private val selectedEntry = selectedEntryId
-        .flatMapLatest { id -> id?.let(repository::observeEntry) ?: flowOf(null) }
-        .stateInComponent(null)
-
-    /**
-     * Состояние экрана деталей.
-     */
     val uiState: StateFlow<ExperimentDetailsUiState> = combine(
         combine(
             experiment,
             entries,
             reminders,
-            selectedEntry,
             experimentDraft,
-        ) { experiment, entries, reminders, selectedEntry, draft ->
+        ) { experiment, entries, reminders, draft ->
             ExperimentDetailsUiState(
                 experiment = experiment?.toDetails(),
                 entries = entries.map { it.toListItem() },
                 reminders = reminders.map { it.toListItem() },
-                selectedEntry = selectedEntry?.toDetails(),
                 experimentDraft = draft,
             )
         },
         combine(
-            entryDraft,
             message,
             reminderEditor,
-        ) { entryDraft, message, reminderEditor ->
-            Triple(entryDraft, message, reminderEditor)
+        ) { message, reminderEditor ->
+            DetailsExtraState(message, reminderEditor)
         },
     ) { state, extra ->
         state.copy(
-            entryDraft = extra.first,
-            message = extra.second,
-            reminderEditor = extra.third,
+            message = extra.message,
+            reminderEditor = extra.reminderEditor,
         )
     }.stateInComponent(ExperimentDetailsUiState())
 
     init {
         coroutineScope.launch {
             experiment.collectLatest { current ->
-                experimentDraft.value = ExperimentDraft(
-                    title = current?.title.orEmpty(),
-                    ideaDescription = current?.ideaDescription.orEmpty(),
-                )
-            }
-        }
-        coroutineScope.launch {
-            entries.collectLatest { list ->
-                val selectedId = selectedEntryId.value
-                if (list.none { it.id == selectedId }) {
-                    selectedEntryId.value = list.firstOrNull()?.id
+                experimentDraft.update {
+                    ExperimentDraft(
+                        title = current?.title.orEmpty(),
+                        ideaDescription = current?.ideaDescription.orEmpty(),
+                    )
                 }
-            }
-        }
-        coroutineScope.launch {
-            selectedEntry.collectLatest { entry ->
-                entryDraft.value = entry?.content.orEmpty()
             }
         }
         observeDraftSaves()
     }
 
-    /**
-     * Меняет draft названия.
-     */
     fun onTitleChange(value: String) {
         experimentDraft.update { it.copy(title = value) }
     }
 
-    /**
-     * Меняет draft идеи.
-     */
     fun onIdeaChange(value: String) {
         experimentDraft.update { it.copy(ideaDescription = value) }
     }
 
-    /**
-     * Выбирает запись журнала.
-     */
-    fun selectEntry(entryId: Int) {
-        selectedEntryId.value = entryId
+    fun openEntryScreen(entryId: Int) {
+        onEntryOpened(entryId)
     }
 
-    /**
-     * Меняет draft текста записи.
-     */
-    fun onEntryContentChange(value: String) {
-        entryDraft.value = value
-    }
-
-    /**
-     * Создаёт или открывает запись за сегодня.
-     */
     fun openTodayEntry() {
         coroutineScope.launch(Dispatchers.IO) {
-            repository.getOrCreateEntry(experimentId, getCurrentLocalDate())
-                .onSuccess { entry -> selectedEntryId.value = entry.id }
+            repository.createEntryForDate(experimentId, getCurrentLocalDate())
+                .onSuccess { entry ->
+                    onEntryOpened(entry.id)
+                }
                 .onFailure(::showError)
         }
     }
 
-    /**
-     * Архивирует или возвращает эксперимент.
-     */
     fun toggleArchive() {
         val shouldArchive = experiment.value?.isArchived != true
         coroutineScope.launch(Dispatchers.IO) {
@@ -193,58 +123,44 @@ class ExperimentDetailsComponent(
         }
     }
 
-    /**
-     * Открывает форму нового напоминания.
-     */
     fun openCreateReminder() {
-        reminderEditor.value = ExperimentReminderEditorState(
-            experimentId = experimentId,
-            reminderDateTime = getCurrentLocalDateTime(),
-        )
+        reminderEditor.update {
+            ExperimentReminderEditorState(
+                experimentId = experimentId,
+                reminderDateTime = getCurrentLocalDateTime(),
+            )
+        }
     }
 
-    /**
-     * Открывает форму правки напоминания.
-     */
     fun openEditReminder(reminderId: Int) {
         val reminder = reminders.value.firstOrNull { it.id == reminderId } ?: return
-        reminderEditor.value = ExperimentReminderEditorState(
-            reminderId = reminder.id,
-            experimentId = reminder.experimentId,
-            text = reminder.text,
-            reminderDateTime = reminder.reminderDateTime,
-        )
+        reminderEditor.update {
+            ExperimentReminderEditorState(
+                reminderId = reminder.id,
+                experimentId = reminder.experimentId,
+                text = reminder.text,
+                reminderDateTime = reminder.reminderDateTime,
+            )
+        }
     }
 
-    /**
-     * Закрывает форму напоминания.
-     */
     fun dismissReminderEditor() {
-        reminderEditor.value = null
+        reminderEditor.update { null }
     }
 
-    /**
-     * Меняет текст напоминания.
-     */
     fun onReminderTextChange(value: String) {
         reminderEditor.update { state -> state?.copy(text = value) }
     }
 
-    /**
-     * Меняет дату и время напоминания.
-     */
     fun onReminderDateTimeChange(value: LocalDateTime) {
         reminderEditor.update { state -> state?.copy(reminderDateTime = value) }
     }
 
-    /**
-     * Сохраняет напоминание.
-     */
     fun saveReminder() {
         val state = reminderEditor.value ?: return
         val text = state.text.trim()
         if (text.isBlank()) {
-            message.value = "Введите текст напоминания"
+            message.update { "Введите текст напоминания" }
             return
         }
         val dateTime = state.reminderDateTime
@@ -256,14 +172,11 @@ class ExperimentDetailsComponent(
                 repository.updateReminder(state.reminderId, text, dateTime)
             }
             result
-                .onSuccess { reminderEditor.value = null }
+                .onSuccess { reminderEditor.update { null } }
                 .onFailure(::showError)
         }
     }
 
-    /**
-     * Удаляет напоминание.
-     */
     fun deleteReminder(reminderId: Int) {
         coroutineScope.launch(Dispatchers.IO) {
             repository.deleteReminder(reminderId)
@@ -271,11 +184,8 @@ class ExperimentDetailsComponent(
         }
     }
 
-    /**
-     * Скрывает сообщение.
-     */
     fun dismissMessage() {
-        message.value = null
+        message.update { null }
     }
 
     @OptIn(FlowPreview::class)
@@ -296,26 +206,10 @@ class ExperimentDetailsComponent(
                     ).onFailure(::showError)
                 }
         }
-        coroutineScope.launch(Dispatchers.IO) {
-            combine(
-                selectedEntryId,
-                entryDraft,
-            ) { entryId, draft -> entryId to draft }
-                .debounce(500)
-                .distinctUntilChanged()
-                .collectLatest { (entryId, draft) ->
-                    val current = selectedEntry.value ?: return@collectLatest
-                    if (entryId == null || current.id != entryId || current.content == draft) {
-                        return@collectLatest
-                    }
-                    repository.updateEntryContent(entryId, draft)
-                        .onFailure(::showError)
-                }
-        }
     }
 
     private fun showError(throwable: Throwable) {
-        message.value = throwable.message ?: "Не удалось выполнить действие"
+        message.update { throwable.message ?: "Не удалось выполнить действие" }
     }
 
     private fun <T> kotlinx.coroutines.flow.Flow<T>.stateInComponent(initial: T): StateFlow<T> {
@@ -336,14 +230,8 @@ class ExperimentDetailsComponent(
 
     private fun MobileExperimentEntry.toListItem(): ExperimentEntryListItem = ExperimentEntryListItem(
         id = id,
-        dateText = entryDate.format(dateFormat),
+        dateText = createdAt.format(dateTimeFormat),
         preview = content.lineSequence().firstOrNull().orEmpty(),
-    )
-
-    private fun MobileExperimentEntry.toDetails(): ExperimentEntryDetails = ExperimentEntryDetails(
-        id = id,
-        dateText = entryDate.format(dateFormat),
-        isToday = entryDate == getCurrentLocalDate(),
     )
 
     private fun MobileExperimentReminder.toListItem(): ExperimentReminderListItem {
@@ -366,9 +254,7 @@ data class ExperimentDetailsUiState(
     val experiment: ExperimentDetails? = null,
     val entries: List<ExperimentEntryListItem> = emptyList(),
     val reminders: List<ExperimentReminderListItem> = emptyList(),
-    val selectedEntry: ExperimentEntryDetails? = null,
     val experimentDraft: ExperimentDraft = ExperimentDraft(),
-    val entryDraft: String = "",
     val reminderEditor: ExperimentReminderEditorState? = null,
     val message: String? = null,
 )
@@ -385,12 +271,6 @@ data class ExperimentEntryListItem(
     val id: Int,
     val dateText: String,
     val preview: String,
-)
-
-data class ExperimentEntryDetails(
-    val id: Int,
-    val dateText: String,
-    val isToday: Boolean,
 )
 
 data class ExperimentReminderListItem(
@@ -414,3 +294,8 @@ data class ExperimentReminderEditorState(
     val isEdit: Boolean
         get() = reminderId != null
 }
+
+private data class DetailsExtraState(
+    val message: String?,
+    val reminderEditor: ExperimentReminderEditorState?,
+)

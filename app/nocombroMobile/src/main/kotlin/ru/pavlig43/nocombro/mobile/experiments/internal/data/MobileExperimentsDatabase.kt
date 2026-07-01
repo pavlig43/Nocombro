@@ -18,7 +18,7 @@ import kotlinx.datetime.LocalDateTime
         MobileExperimentEntryEntity::class,
         MobileExperimentReminderEntity::class,
     ],
-    version = 1,
+    version = 2,
 )
 @TypeConverters(MobileExperimentsConverters::class)
 abstract class MobileExperimentsDatabase : RoomDatabase() {

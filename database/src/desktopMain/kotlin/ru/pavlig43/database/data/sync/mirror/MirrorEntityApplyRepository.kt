@@ -557,6 +557,7 @@ class MirrorEntityApplyRepository(
         val incoming = ExperimentEntry(
             experimentId = experiment.id,
             entryDate = payload.entryDate,
+            createdAt = payload.createdAt,
             content = payload.content,
             id = existing?.id ?: 0,
             syncId = payload.syncId,

@@ -76,6 +76,7 @@ internal suspend fun ExperimentEntry.toMirrorRow(db: NocombroDatabase): Experime
         syncId = syncId,
         experimentSyncId = experiment.syncId,
         entryDate = entryDate,
+        createdAt = createdAt,
         content = content,
         updatedAt = updatedAt,
         deletedAt = deletedAt,

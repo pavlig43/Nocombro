@@ -74,17 +74,91 @@ Room/SQLite, схемы и data layer infrastructure.
 
 1. Убедиться у пользователя, что синхронизация уже завершена, если он сам пишет, что ещё синхронизирует.
 2. Локальная БД: `%APPDATA%\Nocombro\nocombro.db`; читать через `sqlite3`, он видит актуальный WAL.
-3. YDB JDBC URL брать из `tools/run-device2.ps1`, если env `NOCOMBRO_YDB_JDBC_URL` не задан:
+3. YDB JDBC URL брать из `tools/run-device2.ps1`, если env `NOCOMBRO_YDB_JDBC_URL` не задан. Для CLI разделить его на endpoint и database:
 
 ```powershell
 jdbc:ydb:grpcs://ydb.serverless.yandexcloud.net:2135/?database=/ru-central1/b1g87p6oufggn8merjua/etn8eb6ujifrk8lp7b73
 ```
 
+```powershell
+$endpoint = "grpcs://ydb.serverless.yandexcloud.net:2135"
+$database = "/ru-central1/b1g87p6oufggn8merjua/etn8eb6ujifrk8lp7b73"
+```
+
 4. Service-account key по умолчанию: `%APPDATA%\Nocombro\ydb-sa-key.json`. Не печатать его содержимое и не вставлять в ответ.
-5. Если `ydb` CLI и Python-пакет `ydb` не установлены, идти через Java/JDBC: драйвер уже есть в Gradle cache как `tech.ydb.jdbc:ydb-jdbc-driver`. Не тащить весь Compose/Room classpath; собрать короткий classpath только из YDB/JDBC зависимостей.
-6. Для писем по экспериментам проверять `experiment_reminder` + `experiment`, а не общую таблицу `reminder`.
-7. Журнал отправок писем: `reminder_email_delivery`; получатели: `reminder_recipient`.
-8. Для причин дублей смотреть `sync_id`, `updated_at`, `deleted_at`, `reminder_date_time`; активная строка имеет `deleted_at IS NULL`.
+5. На Windows сперва проверить CLI:
+
+```powershell
+Get-Command ydb -ErrorAction SilentlyContinue
+Test-Path "$HOME\ydb\bin\ydb.exe"
+```
+
+Если `ydb` не найден, поставить официальным скриптом:
+
+```powershell
+Invoke-WebRequest -Uri "https://install.ydb.tech/cli-windows" -OutFile "$env:TEMP\install-ydb-cli-windows.ps1"
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
+& "$env:TEMP\install-ydb-cli-windows.ps1"
+```
+
+Скрипт кладёт бинарник в `$HOME\ydb\bin\ydb.exe`. Если он завис на вопросе `Add ydb installation dir to your PATH? [Y/n]`, не ждать: бинарник уже скачан, путь добавить вручную.
+
+```powershell
+$bin = Join-Path $HOME "ydb\bin"
+$userPath = (Get-Item -Path "HKCU:\Environment").GetValue("Path", "", "DoNotExpandEnvironmentNames")
+$parts = @()
+if ($userPath) { $parts = $userPath -split ";" | Where-Object { $_ } }
+if ($parts -notcontains $bin) {
+    [Environment]::SetEnvironmentVariable("Path", (($parts + $bin) -join ";"), [System.EnvironmentVariableTarget]::User)
+}
+$env:Path = "$env:Path;$bin"
+```
+
+В уже запущенном Codex или PowerShell короткое имя `ydb` может ещё не работать из-за старого `PATH`. В этом случае брать полный путь:
+
+```powershell
+$ydb = Join-Path $HOME "ydb\bin\ydb.exe"
+```
+
+6. Быстрая read-only проверка подключения:
+
+```powershell
+$ydb = Join-Path $HOME "ydb\bin\ydb.exe"
+$endpoint = "grpcs://ydb.serverless.yandexcloud.net:2135"
+$database = "/ru-central1/b1g87p6oufggn8merjua/etn8eb6ujifrk8lp7b73"
+$sa = Join-Path $env:APPDATA "Nocombro\ydb-sa-key.json"
+& $ydb --endpoint $endpoint --database $database --sa-key-file $sa scheme ls
+```
+
+7. Пример read-only SQL:
+
+```powershell
+& $ydb --endpoint $endpoint --database $database --sa-key-file $sa sql --format tsv --script 'SELECT COUNT(*) AS rows_total FROM `product`;'
+```
+
+В PowerShell обратную кавычку в имени таблицы лучше собирать отдельно, если имя таблицы хранится в переменной:
+
+```powershell
+$bt = [char]96
+$table = "product"
+$query = "SELECT COUNT(*) AS rows_total FROM $bt$table$bt;"
+& $ydb --endpoint $endpoint --database $database --sa-key-file $sa sql --format tsv --script $query
+```
+
+Если подряд запускать много `ydb sql`, YDB/IAM может вернуть:
+
+```text
+Status: UNAVAILABLE
+Error: Too many concurrent requests
+Error: Unable to resolve token, code: 200801
+```
+
+Обход: делать запросы медленнее (`Start-Sleep -Seconds 2..5` между вызовами) или собирать меньше отдельных CLI-вызовов. Для массовых проверок лучше один скрипт/запрос, а не десятки быстрых запусков CLI.
+
+8. Если `ydb` CLI не удалось поставить и Python-пакет `ydb` тоже не установлен, идти через Java/JDBC: драйвер уже есть в Gradle cache как `tech.ydb.jdbc:ydb-jdbc-driver`. Не тащить весь Compose/Room classpath; собрать короткий classpath только из YDB/JDBC зависимостей.
+9. Для писем по экспериментам проверять `experiment_reminder` + `experiment`, а не общую таблицу `reminder`.
+10. Журнал отправок писем: `reminder_email_delivery`; получатели: `reminder_recipient`.
+11. Для причин дублей смотреть `sync_id`, `updated_at`, `deleted_at`, `reminder_date_time`; активная строка имеет `deleted_at IS NULL`.
 
 ## Типовые маршруты изменений
 

@@ -234,3 +234,61 @@ val MIGRATION_6_7 = object : Migration(6, 7) {
         connection.execSQL("ALTER TABLE sync_state_new RENAME TO sync_state")
     }
 }
+
+val MIGRATION_7_8 = object : Migration(7, 8) {
+    override fun migrate(connection: SQLiteConnection) {
+        connection.execSQL(
+            """
+            CREATE TABLE experiment_entry_new (
+                experiment_id INTEGER NOT NULL,
+                entry_date TEXT NOT NULL,
+                created_at TEXT NOT NULL,
+                content TEXT NOT NULL,
+                id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                sync_id TEXT NOT NULL,
+                updated_at TEXT NOT NULL,
+                deleted_at TEXT,
+                FOREIGN KEY(experiment_id) REFERENCES experiment(id) ON DELETE CASCADE
+            )
+            """.trimIndent()
+        )
+        connection.execSQL(
+            """
+            INSERT INTO experiment_entry_new (
+                experiment_id,
+                entry_date,
+                created_at,
+                content,
+                id,
+                sync_id,
+                updated_at,
+                deleted_at
+            )
+            SELECT
+                experiment_id,
+                entry_date,
+                entry_date || 'T00:00:00',
+                content,
+                id,
+                sync_id,
+                updated_at,
+                deleted_at
+            FROM experiment_entry
+            """.trimIndent()
+        )
+        connection.execSQL("DROP TABLE experiment_entry")
+        connection.execSQL("ALTER TABLE experiment_entry_new RENAME TO experiment_entry")
+        connection.execSQL(
+            """
+            CREATE UNIQUE INDEX index_experiment_entry_sync_id
+            ON experiment_entry(sync_id)
+            """.trimIndent()
+        )
+        connection.execSQL(
+            """
+            CREATE INDEX index_experiment_entry_experiment_id
+            ON experiment_entry(experiment_id)
+            """.trimIndent()
+        )
+    }
+}

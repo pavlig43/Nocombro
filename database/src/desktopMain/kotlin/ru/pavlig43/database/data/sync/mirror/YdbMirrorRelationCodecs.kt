@@ -155,12 +155,13 @@ internal object ExperimentEntryYdbMirrorCodec : YdbMirrorRowCodec {
         sync_id Utf8,
         experiment_sync_id Utf8,
         entry_date Utf8,
+        created_at Utf8,
         content Utf8,
         updated_at Utf8,
         deleted_at Utf8
     """.trimIndent()
     override val columnNames = listOf(
-        "sync_id", "experiment_sync_id", "entry_date", "content", "updated_at", "deleted_at",
+        "sync_id", "experiment_sync_id", "entry_date", "created_at", "content", "updated_at", "deleted_at",
     )
 
     override fun bind(statement: PreparedStatement, row: MirrorSyncRow) {
@@ -168,15 +169,17 @@ internal object ExperimentEntryYdbMirrorCodec : YdbMirrorRowCodec {
         statement.setString(1, row.syncId)
         statement.setString(2, row.experimentSyncId)
         statement.setString(3, row.entryDate.toString())
-        statement.setString(4, row.content)
-        statement.setString(5, row.updatedAt.toString())
-        statement.setString(6, row.deletedAt?.toString())
+        statement.setString(4, row.createdAt.toString())
+        statement.setString(5, row.content)
+        statement.setString(6, row.updatedAt.toString())
+        statement.setString(7, row.deletedAt?.toString())
     }
 
     override fun read(resultSet: ResultSet) = ExperimentEntryMirrorRow(
         syncId = resultSet.getString("sync_id"),
         experimentSyncId = resultSet.getString("experiment_sync_id"),
         entryDate = LocalDate.parse(resultSet.getString("entry_date")),
+        createdAt = resultSet.dateTime("created_at"),
         content = resultSet.getString("content"),
         updatedAt = resultSet.dateTime("updated_at"),
         deletedAt = resultSet.nullableDateTime("deleted_at"),

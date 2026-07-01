@@ -7,9 +7,9 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
-import ru.pavlig43.nocombro.mobile.experiments.MobileExperiment
-import ru.pavlig43.nocombro.mobile.experiments.MobileExperimentEntry
-import ru.pavlig43.nocombro.mobile.experiments.MobileExperimentReminder
+import ru.pavlig43.nocombro.mobile.experiments.internal.component.MobileExperiment
+import ru.pavlig43.nocombro.mobile.experiments.internal.component.MobileExperimentEntry
+import ru.pavlig43.nocombro.mobile.experiments.internal.component.MobileExperimentReminder
 
 /**
  * Имя таблицы экспериментов.
@@ -71,7 +71,6 @@ data class MobileExperimentEntity(
     indices = [
         Index(value = ["sync_id"], unique = true),
         Index(value = ["experiment_id"]),
-        Index(value = ["experiment_id", "entry_date"], unique = true),
     ],
 )
 data class MobileExperimentEntryEntity(
@@ -80,6 +79,9 @@ data class MobileExperimentEntryEntity(
 
     @ColumnInfo("entry_date")
     val entryDate: LocalDate,
+
+    @ColumnInfo("created_at")
+    val createdAt: LocalDateTime,
 
     val content: String = "",
 
@@ -158,6 +160,7 @@ fun MobileExperimentEntryEntity.toModel(): MobileExperimentEntry = MobileExperim
     syncId = syncId,
     experimentId = experimentId,
     entryDate = entryDate,
+    createdAt = createdAt,
     content = content,
     updatedAt = updatedAt,
     deletedAt = deletedAt,

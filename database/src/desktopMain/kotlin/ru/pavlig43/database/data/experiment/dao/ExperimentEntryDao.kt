@@ -6,7 +6,6 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
-import kotlinx.datetime.LocalDate
 import ru.pavlig43.database.data.experiment.EXPERIMENT_ENTRY_TABLE_NAME
 import ru.pavlig43.database.data.experiment.ExperimentEntry
 
@@ -27,23 +26,14 @@ interface ExperimentEntryDao {
     @Query("SELECT * FROM $EXPERIMENT_ENTRY_TABLE_NAME")
     suspend fun getAll(): List<ExperimentEntry>
 
-    @Query(
-        """
-        SELECT * FROM $EXPERIMENT_ENTRY_TABLE_NAME
-        WHERE experiment_id = :experimentId AND entry_date = :entryDate
-        LIMIT 1
-        """
-    )
-    suspend fun getEntryByExperimentAndDate(
-        experimentId: Int,
-        entryDate: LocalDate,
-    ): ExperimentEntry?
+    @Query("SELECT * FROM $EXPERIMENT_ENTRY_TABLE_NAME WHERE experiment_id = :experimentId")
+    suspend fun getEntriesByExperiment(experimentId: Int): List<ExperimentEntry>
 
     @Query(
         """
         SELECT * FROM $EXPERIMENT_ENTRY_TABLE_NAME
         WHERE experiment_id = :experimentId AND deleted_at IS NULL
-        ORDER BY entry_date DESC, id DESC
+        ORDER BY entry_date DESC, created_at DESC, id DESC
         """
     )
     fun observeEntries(experimentId: Int): Flow<List<ExperimentEntry>>
