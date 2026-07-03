@@ -21,14 +21,14 @@ class RemoteFileBatchDownloadRepository(
 ) {
     private val fileDao = db.fileDao
 
-    /** Проверяет, настроен ли underlying remote storage gateway. */
+    /** Проверяет, настроен ли удалённый storage-шлюз. */
     fun isConfigured(): Boolean = remoteFileStorageGateway.isConfigured()
 
     /**
      * Подгружает все отсутствующие локальные копии файлов, известные текущей локальной БД.
      *
-     * Удаленные metadata, строки без object key и уже существующие локальные файлы
-     * пропускаются. Ошибка отдельного файла не прерывает batch: имя добавляется в
+     * Удалённые метаданные, строки без ключа объекта и уже существующие локальные файлы
+     * пропускаются. Ошибка отдельного файла не прерывает пачку: имя добавляется в
      * [RemoteFileBatchDownloadSummary.failedFiles].
      */
     suspend fun downloadMissingLocalCopies(): Result<RemoteFileBatchDownloadSummary> {

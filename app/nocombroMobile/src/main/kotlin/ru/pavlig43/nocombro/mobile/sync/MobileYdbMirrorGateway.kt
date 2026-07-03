@@ -10,14 +10,22 @@ import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.datetime.getCurrentLocalDateTime
 
 /**
- * Mobile JDBC gateway к typed mirror tables в YDB.
+ * JDBC-шлюз Android-клиента к типизированным mirror-таблицам в YDB.
+ *
+ * Шлюз не знает про локальную Room-БД и S3. Его задача узкая: открыть JDBC
+ * соединение, убедиться, что нужные mobile-таблицы есть, прочитать строки и
+ * записать выбранные строки обратно через `UPSERT`.
  */
 class MobileYdbMirrorGateway(
     private val config: MobileYdbConfig,
     private val serviceAccountJson: String?,
 ) {
     /**
-     * Проверяет доступ к YDB и создаёт mobile tables, если их ещё нет.
+     * Проверяет доступ к YDB и создаёт mobile-таблицы, если их ещё нет.
+     *
+     * `CREATE TABLE IF NOT EXISTS` безопасен для пустого mirror, но не меняет
+     * схему уже созданной таблицы. Если в схему добавлена колонка, удалённую
+     * схему нужно мигрировать отдельно до выпуска APK.
      */
     fun status(): MobileSyncStatus {
         return runCatching {
@@ -38,7 +46,10 @@ class MobileYdbMirrorGateway(
     }
 
     /**
-     * Загружает полный remote snapshot для таблиц, нужных Android-приложению.
+     * Загружает полный удалённый снимок таблиц, нужных Android-приложению.
+     *
+     * Android работает только с экспериментами, записями, напоминаниями и файлами
+     * записей. Остальные desktop-таблицы этот шлюз не читает.
      */
     fun loadSnapshot(): Result<MobileMirrorSnapshot> = runCatching {
         val rows = withConnection { connection ->
@@ -54,7 +65,10 @@ class MobileYdbMirrorGateway(
     }
 
     /**
-     * Отправляет выбранные local winners в remote mirror через batch UPSERT.
+     * Отправляет выбранные локальные версии в удалённое зеркало пачкой `UPSERT`.
+     *
+     * Решение о том, какая версия победила, принимает планировщик выше по слою.
+     * Здесь нет сравнения `updated_at`: шлюз только пишет переданные строки.
      */
     fun push(changes: List<MobileMirrorChange>): Result<Unit> = runCatching {
         withConnection { connection ->
@@ -110,20 +124,23 @@ class MobileYdbMirrorGateway(
 }
 
 /**
- * Typed codec между mobile mirror row и строкой YDB.
+ * Кодек между строкой mobile mirror и строкой YDB.
+ *
+ * Каждый кодек знает только одну таблицу: её DDL, список колонок, чтение из
+ * `ResultSet` и привязку параметров для `UPSERT`.
  */
 private interface MobileYdbCodec {
     val table: MobileMirrorTable
     val columns: List<String>
     val createColumnsSql: String
 
-    /** Заполняет JDBC parameters для UPSERT. */
+    /** Заполняет JDBC-параметры для `UPSERT`. */
     fun bind(statement: PreparedStatement, row: MobileMirrorRow)
 
-    /** Читает одну строку YDB ResultSet в typed mobile row. */
+    /** Читает одну строку YDB `ResultSet` в mobile-строку. */
     fun read(resultSet: ResultSet): MobileMirrorRow
 
-    /** Строит DDL для typed mirror table. */
+    /** Строит DDL для типизированной mirror-таблицы. */
     fun createTableSql(tablePath: String): String {
         return """
             CREATE TABLE IF NOT EXISTS `$tablePath` (
@@ -133,12 +150,12 @@ private interface MobileYdbCodec {
         """.trimIndent()
     }
 
-    /** Строит SELECT всех колонок codec-а. */
+    /** Строит `SELECT` всех колонок кодека. */
     fun selectAllSql(tablePath: String): String {
         return "SELECT ${columns.joinToString()} FROM `$tablePath`"
     }
 
-    /** Строит typed UPSERT с явными YDB CAST для JDBC parameters. */
+    /** Строит типизированный `UPSERT` с явными YDB `CAST` для JDBC-параметров. */
     fun upsertSql(tablePath: String): String {
         val values = columns.joinToString { "CAST(? AS ${columnType(it)})" }
         return """

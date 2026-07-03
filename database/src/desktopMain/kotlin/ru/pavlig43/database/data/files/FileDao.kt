@@ -6,7 +6,7 @@ import androidx.room.Upsert
 
 
 /**
- * Room DAO for local file metadata.
+ * Room DAO для локальных метаданных файлов.
  */
 @Dao
 interface FileDao {
@@ -29,13 +29,13 @@ interface FileDao {
     suspend fun getAllPaths(): List<String>
 
     /**
-     * Returns paths for file rows that are still active, excluding tombstones.
+     * Возвращает пути активных файлов без tombstone-строк.
      */
     @Query("SELECT path FROM file WHERE deleted_at IS NULL")
     suspend fun getActivePaths(): List<String>
 
     /**
-     * Returns remote object keys for rows that have S3 metadata.
+     * Возвращает ключи объектов у строк, где есть S3-метаданные.
      */
     @Query("SELECT remote_object_key FROM file WHERE remote_object_key IS NOT NULL")
     suspend fun getAllRemoteObjectKeys(): List<String>

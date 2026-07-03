@@ -20,18 +20,25 @@ import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 
 /**
- * Минимальный object storage gateway для файлов Android sync.
+ * Минимальный шлюз к объектному хранилищу для файлов Android-синхронизации.
+ *
+ * Входные ключи здесь логические: без S3-префикса. Реальная реализация сама
+ * добавляет префикс перед сетевым запросом.
  */
 interface MobileObjectStorageGateway {
-    /** Загружает локальный файл в remote object key. */
+    /** Загружает локальный файл по логическому ключу объекта. */
     suspend fun uploadFile(localPath: String, remoteKey: String): Result<Unit>
 
-    /** Скачивает remote object key в локальный путь. */
+    /** Скачивает объект по логическому ключу объекта в локальный путь. */
     suspend fun downloadFile(remoteKey: String, localPath: String): Result<Unit>
 }
 
 /**
- * S3-compatible gateway на AWS Kotlin SDK.
+ * S3-совместимый шлюз для Android.
+ *
+ * Для скачивания используется AWS Kotlin SDK. Для загрузки оставлен ручной PUT
+ * с AWS Signature V4: на Android этот путь стабильнее для Yandex Object Storage
+ * и не требует настраивать тело запроса в SDK.
  */
 class AwsKotlinMobileS3Gateway(
     private val config: MobileS3Config,
@@ -49,7 +56,7 @@ class AwsKotlinMobileS3Gateway(
             s3.getObject(
                 GetObjectRequest {
                     bucket = config.bucket
-                    key = remoteKey
+                    key = config.remoteKey(remoteKey)
                 }
             ) { response ->
                 response.body?.writeToFile(target)
@@ -72,7 +79,7 @@ class AwsKotlinMobileS3Gateway(
     }
 
     private fun putObject(file: File, remoteKey: String) {
-        val target = objectUrl(remoteKey)
+        val target = objectUrl(config.remoteKey(remoteKey))
         val payloadHash = file.sha256Hex()
         val now = ZonedDateTime.now(ZoneOffset.UTC)
         val amzDate = AMZ_DATE_FORMAT.format(now)

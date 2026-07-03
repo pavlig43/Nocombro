@@ -7,7 +7,11 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
 /**
- * Remote config Android sync, который Gradle кладёт в assets.
+ * Настройки удалённой синхронизации Android-клиента.
+ *
+ * Gradle собирает их из локального файла секретов и кладёт в assets APK.
+ * В рантайме код читает этот объект и на его основе открывает доступ к YDB
+ * и S3. Секреты не логируются и не попадают в тексты ошибок.
  */
 @Serializable
 data class MobileRemoteConfig(
@@ -16,7 +20,12 @@ data class MobileRemoteConfig(
 )
 
 /**
- * Настройки YDB mirror для Android-клиента.
+ * Настройки доступа к YDB mirror-таблицам.
+ *
+ * [jdbcUrl] указывает на базу YDB. [tableRoot] задаёт папку, где лежат
+ * mirror-таблицы. Для входа нужен либо готовый IAM [token], либо ключ
+ * сервисного аккаунта в [saJsonBase64], из которого Android сам получает
+ * IAM-токен.
  */
 @Serializable
 data class MobileYdbConfig(
@@ -28,7 +37,11 @@ data class MobileYdbConfig(
 )
 
 /**
- * Настройки S3-compatible хранилища для файлов экспериментов.
+ * Настройки S3-совместимого хранилища для файлов экспериментов.
+ *
+ * В Room и YDB хранится логический ключ файла без [keyPrefix]. Префикс нужен
+ * только при физическом обращении к бакету. Это не даёт телефону повторно
+ * добавлять префикс после получения данных с другого устройства.
  */
 @Serializable
 data class MobileS3Config(
@@ -40,17 +53,44 @@ data class MobileS3Config(
     val keyPrefix: String = "",
 ) {
     /**
-     * Добавляет configured prefix к object key без лишних `/`.
+     * Строит физический ключ объекта в bucket.
+     *
+     * Метод принимает и логический ключ, и ключ с префиксом. На выходе префикс
+     * будет ровно один раз.
      */
     fun remoteKey(localObjectKey: String): String {
-        val prefix = keyPrefix.trim().trim('/')
-        val key = localObjectKey.trim().trim('/')
-        return if (prefix.isEmpty()) key else "$prefix/$key"
+        val prefix = normalizedPrefix()
+        val key = normalizeObjectKey(localObjectKey)
+        return when {
+            prefix.isEmpty() -> key
+            key.isEmpty() -> prefix
+            else -> "$prefix/$key"
+        }
     }
+
+    /**
+     * Возвращает логический ключ без [keyPrefix].
+     *
+     * Этот вид хранится в Room и YDB. Если старые данные уже содержат префикс,
+     * он снимается при чтении.
+     */
+    fun normalizeObjectKey(objectKey: String): String {
+        val key = objectKey.trim().trim('/')
+        val prefix = normalizedPrefix()
+        return when {
+            prefix.isEmpty() -> key
+            key == prefix -> ""
+            key.startsWith("$prefix/") -> key.removePrefix("$prefix/")
+            else -> key
+        }
+    }
+
+    private fun normalizedPrefix(): String = keyPrefix.trim().trim('/')
 }
 
 /**
- * Загружает sync config из Android assets и декодирует секреты для runtime.
+ * Загружает настройки синхронизации из Android assets и декодирует секреты
+ * для времени работы приложения.
  */
 class MobileRemoteConfigRepository(
     private val context: Context,
@@ -68,7 +108,7 @@ class MobileRemoteConfigRepository(
     }
 
     /**
-     * Декодирует Base64 service account JSON для IAM token supplier.
+     * Декодирует Base64 service account JSON для поставщика IAM-токена.
      */
     fun decodeServiceAccountJson(config: MobileYdbConfig): String? {
         val encoded = config.saJsonBase64?.takeIf(String::isNotBlank) ?: return null

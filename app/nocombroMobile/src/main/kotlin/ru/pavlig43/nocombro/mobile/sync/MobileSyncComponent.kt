@@ -12,7 +12,7 @@ import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.core.componentCoroutineScope
 
 /**
- * Decompose component Android sync-панели и экрана preview.
+ * Decompose-компонент Android-панели синхронизации и экрана предпросмотра.
  */
 class MobileSyncComponent(
     componentContext: ComponentContext,
@@ -37,21 +37,21 @@ class MobileSyncComponent(
     }
 
     /**
-     * Проверяет remote status и считает расхождения.
+     * Проверяет удалённый статус и считает расхождения.
      */
     fun check() = runAction("Проверка") {
         repository.check()
     }
 
     /**
-     * Отправляет local winners в remote.
+     * Отправляет локальные победившие строки в YDB/S3.
      */
     fun push() = runAction("Отправка") {
         repository.push()
     }
 
     /**
-     * Получает remote winners и недостающие S3-файлы.
+     * Получает удалённые победившие строки и недостающие S3-файлы.
      */
     fun pull() = runAction("Получение") {
         repository.pull()
@@ -65,7 +65,7 @@ class MobileSyncComponent(
     }
 
     /**
-     * Обновляет preview локальных и remote sync-правок.
+     * Обновляет предпросмотр локальных и удалённых правок.
      */
     fun refreshPreview() {
         scope.launch {
@@ -138,7 +138,7 @@ data class MobileSyncUiState(
 )
 
 /**
- * UI state экрана preview sync-расхождений.
+ * UI state экрана предпросмотра sync-расхождений.
  */
 data class MobileSyncPreviewUiState(
     val loading: Boolean = false,
@@ -148,7 +148,7 @@ data class MobileSyncPreviewUiState(
 )
 
 /**
- * Сводит raw sync status к короткому тексту для меню.
+ * Сводит сырой sync-статус к короткому тексту для меню.
  */
 private fun MobileSyncStatus.toStatusText(): String {
     if (error != null) return "Ошибка"

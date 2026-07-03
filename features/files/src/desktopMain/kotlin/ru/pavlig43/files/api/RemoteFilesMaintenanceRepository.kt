@@ -8,15 +8,15 @@ import ru.pavlig43.database.data.sync.mirror.MirrorSyncTable
 import ru.pavlig43.files.api.model.RemoteOrphanFile
 
 /**
- * Выполняет диагностику и безопасную очистку объектов удаленного file storage.
+ * Выполняет диагностику и безопасную очистку объектов в удалённом хранилище.
  *
- * Источником истины для принадлежности объекта является активная typed mirror
- * таблица `file`, а не локальная Room-база текущего компьютера. Это защищает файлы,
- * прикрепленные на другой синхронизированной установке.
+ * Источник истины для принадлежности объекта — активная типизированная mirror-таблица
+ * `file`, а не локальная Room-база текущего компьютера. Так мы не удалим файл,
+ * который прикрепили на другой синхронизированной установке.
  *
- * Перед физическим удалением набор mirror keys и список S3 загружаются повторно.
- * Удаляется только ключ, который одновременно существует в S3 и отсутствует среди
- * активных remote file rows.
+ * Перед физическим удалением код заново читает ключи из mirror и список S3.
+ * Удаляется только объект, который есть в S3 и отсутствует в активных строках
+ * удалённой таблицы `file`.
  */
 class RemoteFilesMaintenanceRepository(
     db: NocombroDatabase,
@@ -26,7 +26,7 @@ class RemoteFilesMaintenanceRepository(
     private val fileDao = db.fileDao
 
     /**
-     * Возвращает текущие S3-объекты, не упомянутые активным remote mirror.
+     * Возвращает текущие S3-объекты, не упомянутые активным удалённым зеркалом.
      *
      * Метод только диагностирует и ничего не удаляет.
      */
@@ -47,7 +47,7 @@ class RemoteFilesMaintenanceRepository(
         }
     }
 
-    /** Возвращает remote object keys, прикрепленные в локальной Room-базе. */
+    /** Возвращает ключи удалённых объектов из локальной Room-базы. */
     suspend fun getAttachedRemoteObjectKeys(): Result<Set<String>> {
         return runCatching {
             fileDao.getAllRemoteObjectKeys()
@@ -56,17 +56,17 @@ class RemoteFilesMaintenanceRepository(
         }
     }
 
-    /** Повторно проверяет и удаляет один remote object, только если он orphan. */
+    /** Повторно проверяет и удаляет один удалённый объект, только если у него нет активной строки. */
     suspend fun deleteRemoteFile(
         objectKey: String,
     ): Result<Unit> {
-        return deleteRemoteFiles(setOf(objectKey)).map { Unit }
+        return deleteRemoteFiles(setOf(objectKey)).map { }
     }
 
     /**
-     * Повторно проверяет кандидатов и удаляет подтвержденные orphan-объекты.
+     * Повторно проверяет кандидатов и удаляет подтверждённые объекты без активной строки.
      *
-     * @return число фактически удаленных объектов; отсутствующие и ставшие
+     * @return число фактически удалённых объектов; отсутствующие и ставшие
      * активными ключи молча пропускаются.
      */
     suspend fun deleteRemoteFiles(
@@ -85,7 +85,7 @@ class RemoteFilesMaintenanceRepository(
         confirmedOrphans.size
     }
 
-    /** Возвращает object keys активных строк remote mirror `file`. */
+    /** Возвращает ключи объектов из активных строк удалённого зеркала `file`. */
     suspend fun getActiveMirrorObjectKeys(): Result<Set<String>> = runCatching {
         loadActiveMirrorKeys()
     }

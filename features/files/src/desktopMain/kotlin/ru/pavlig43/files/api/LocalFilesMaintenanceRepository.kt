@@ -6,8 +6,11 @@ import ru.pavlig43.files.api.model.LocalOrphanFile
 import java.io.File
 
 /**
- * Scans the managed local files directory and deletes files that are no longer
- * referenced by active file metadata.
+ * Сканирует каталог файлов приложения и ищет локальные файлы без активной строки.
+ *
+ * Источник истины здесь — активные строки таблицы `file`. Tombstone-строки не
+ * считаются привязкой: если метаданные удалены, локальная копия тоже может быть
+ * показана в очистке.
  */
 class LocalFilesMaintenanceRepository(
     db: NocombroDatabase,
@@ -15,7 +18,7 @@ class LocalFilesMaintenanceRepository(
     private val fileDao = db.fileDao
 
     /**
-     * Counts managed files, their total size, and local orphans.
+     * Считает файлы в каталоге приложения, их размер и число файлов без активной строки.
      */
     suspend fun getStorageOverview(): Result<LocalFilesStorageOverview> {
         return runCatching {
@@ -57,7 +60,7 @@ class LocalFilesMaintenanceRepository(
     }
 
     /**
-     * Returns local files that are not referenced by active file rows.
+     * Возвращает локальные файлы, на которые не ссылаются активные строки `file`.
      */
     suspend fun getOrphanLocalFiles(): Result<List<LocalOrphanFile>> {
         return runCatching {
@@ -90,7 +93,10 @@ class LocalFilesMaintenanceRepository(
     }
 
     /**
-     * Deletes one orphan file under the managed files root and removes empty parent folders.
+     * Удаляет один файл без активной строки внутри каталога приложения.
+     *
+     * После удаления метод поднимается вверх по дереву и чистит пустые папки,
+     * но останавливается на корневом каталоге файлов под управлением приложения.
      */
     suspend fun deleteLocalFile(path: String): Result<Unit> {
         return runCatching {
@@ -134,7 +140,7 @@ class LocalFilesMaintenanceRepository(
 }
 
 /**
- * Summary of the managed local files directory.
+ * Сводка по каталогу файлов приложения.
  */
 data class LocalFilesStorageOverview(
     val rootPath: String,

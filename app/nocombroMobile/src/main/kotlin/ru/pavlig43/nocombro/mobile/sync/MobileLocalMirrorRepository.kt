@@ -11,14 +11,20 @@ import ru.pavlig43.nocombro.mobile.internal.database.entity.MobileExperimentEntr
 import ru.pavlig43.nocombro.mobile.internal.database.entity.MobileExperimentReminderEntity
 
 /**
- * Строит mobile snapshot из локальной Room-БД и применяет remote winners обратно.
+ * Строит снимок локальной Room-БД и применяет удалённые версии обратно.
+ *
+ * Для файлов репозиторий работает только с метаданными. Бинарные данные живут
+ * в S3 и скачиваются отдельным шагом после применения строк `file`.
  */
 class MobileLocalMirrorRepository(
     private val db: NocombroMobileDatabase,
     private val filesDirPath: String,
 ) {
     /**
-     * Читает локальные experiments, entries, reminders и files как mirror rows.
+     * Читает локальные эксперименты, записи, напоминания и файлы как mirror rows.
+     *
+     * `remoteObjectKey` всегда отдаётся без S3-префикса. Префикс добавляет
+     * только S3-шлюз, когда реально идёт запрос к bucket.
      */
     suspend fun loadSnapshot(config: MobileS3Config): MobileMirrorSnapshot {
         val experiments = db.experimentDao.getAll()
@@ -46,9 +52,16 @@ class MobileLocalMirrorRepository(
     }
 
     /**
-     * Применяет remote changes одной транзакцией с учётом порядка зависимостей.
+     * Применяет удалённые изменения одной транзакцией.
+     *
+     * Родительские строки создаются раньше дочерних, а tombstone применяются
+     * после активных строк. Это нужно, чтобы локальные foreign key не ломались
+     * во время pull.
      */
-    suspend fun applyRemoteChanges(changes: List<MobileMirrorChange>) {
+    suspend fun applyRemoteChanges(
+        changes: List<MobileMirrorChange>,
+        config: MobileS3Config,
+    ) {
         db.withTransaction {
             val ordered = changes.sortedWith(
                 compareBy<MobileMirrorChange> { tombstoneOrder(it) }
@@ -60,17 +73,20 @@ class MobileLocalMirrorRepository(
                     is MobileExperimentMirrorRow -> applyExperiment(row)
                     is MobileExperimentEntryMirrorRow -> applyEntry(row)
                     is MobileExperimentReminderMirrorRow -> applyReminder(row)
-                    is MobileFileMirrorRow -> applyFile(row)
+                    is MobileFileMirrorRow -> applyFile(row, config)
                 }
             }
         }
     }
 
     /**
-     * Строит локальный путь для файла, который пришёл из S3.
+     * Строит путь локальной копии для файла, который пришёл из S3.
+     *
+     * В путь кладётся логический ключ без S3-префикса. Тогда файл, полученный с
+     * другого устройства, при следующей отправке не создаст `prefix/prefix/...`.
      */
-    fun localPathForRemoteKey(remoteObjectKey: String): String {
-        return File(File(filesDirPath, "nocombro"), remoteObjectKey).absolutePath
+    fun localPathForObjectKey(objectKey: String): String {
+        return File(File(filesDirPath, "nocombro"), objectKey).absolutePath
     }
 
     private suspend fun applyExperiment(row: MobileExperimentMirrorRow) {
@@ -121,18 +137,21 @@ class MobileLocalMirrorRepository(
         )
     }
 
-    private suspend fun applyFile(row: MobileFileMirrorRow) {
+    private suspend fun applyFile(
+        row: MobileFileMirrorRow,
+        config: MobileS3Config,
+    ) {
         if (row.ownerType != MobileFileOwnerType.EXPERIMENT_ENTRY) return
         val entry = db.experimentEntryDao.getEntryBySyncId(row.ownerSyncId) ?: return
         val current = db.experimentEntryFileDao.getFileBySyncId(row.syncId)
-        val objectKey = row.remoteObjectKey ?: row.path
+        val objectKey = config.normalizeObjectKey(row.remoteObjectKey ?: row.path)
         db.experimentEntryFileDao.upsert(
             MobileExperimentEntryFileEntity(
                 id = current?.id ?: 0,
                 entryId = entry.id,
                 syncId = row.syncId,
                 displayName = row.displayName,
-                localPath = current?.localPath ?: localPathForRemoteKey(objectKey),
+                localPath = current?.localPath ?: localPathForObjectKey(objectKey),
                 objectKey = objectKey,
                 updatedAt = row.updatedAt,
                 deletedAt = row.deletedAt,
@@ -178,7 +197,7 @@ private fun MobileExperimentEntryFileEntity.toMirrorRow(
     ownerSyncId = entrySyncId,
     displayName = displayName,
     path = localPath,
-    remoteObjectKey = config.remoteKey(objectKey),
+    remoteObjectKey = config.normalizeObjectKey(objectKey),
     remoteStorageProvider = "S3",
     updatedAt = updatedAt,
     deletedAt = deletedAt,

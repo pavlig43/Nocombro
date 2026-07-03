@@ -4,7 +4,7 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 
 /**
- * Подмножество mirror tables, с которым работает Android-клиент.
+ * Подмножество mirror-таблиц, с которым работает Android-клиент.
  */
 enum class MobileMirrorTable(
     val tableName: String,
@@ -17,7 +17,10 @@ enum class MobileMirrorTable(
 }
 
 /**
- * Тип владельца файла из desktop mirror metadata.
+ * Тип владельца файла из mirror-метаданных десктопа.
+ *
+ * Android сейчас применяет только файлы записей экспериментов, но читает
+ * перечень шире, чтобы не падать на строках `file` из десктопной синхронизации.
  */
 enum class MobileFileOwnerType {
     EXPERIMENT_ENTRY,
@@ -30,7 +33,7 @@ enum class MobileFileOwnerType {
 }
 
 /**
- * Общий contract строки mobile mirror snapshot.
+ * Общий контракт строки мобильного mirror-снимка.
  */
 sealed interface MobileMirrorRow {
     val syncId: String
@@ -39,7 +42,7 @@ sealed interface MobileMirrorRow {
 }
 
 /**
- * Mirror row эксперимента.
+ * Строка зеркала для эксперимента.
  */
 data class MobileExperimentMirrorRow(
     override val syncId: String,
@@ -51,7 +54,7 @@ data class MobileExperimentMirrorRow(
 ) : MobileMirrorRow
 
 /**
- * Mirror row записи эксперимента.
+ * Строка зеркала для записи эксперимента.
  */
 data class MobileExperimentEntryMirrorRow(
     override val syncId: String,
@@ -64,7 +67,7 @@ data class MobileExperimentEntryMirrorRow(
 ) : MobileMirrorRow
 
 /**
- * Mirror row напоминания эксперимента.
+ * Строка зеркала для напоминания эксперимента.
  */
 data class MobileExperimentReminderMirrorRow(
     override val syncId: String,
@@ -76,7 +79,9 @@ data class MobileExperimentReminderMirrorRow(
 ) : MobileMirrorRow
 
 /**
- * Mirror row metadata файла; сам binary хранится в S3.
+ * Строка зеркала для метаданных файла.
+ *
+ * `remoteObjectKey` хранится без S3-префикса. Сам бинарный файл лежит в S3.
  */
 data class MobileFileMirrorRow(
     override val syncId: String,
@@ -91,7 +96,7 @@ data class MobileFileMirrorRow(
 ) : MobileMirrorRow
 
 /**
- * Snapshot local или remote mirror на момент [loadedAt].
+ * Снимок локального или удалённого mirror на момент [loadedAt].
  */
 data class MobileMirrorSnapshot(
     val loadedAt: LocalDateTime,
@@ -99,7 +104,7 @@ data class MobileMirrorSnapshot(
 )
 
 /**
- * Одна строка, которую нужно push или pull.
+ * Одна строка, которую нужно отправить или получить.
  */
 data class MobileMirrorChange(
     val table: MobileMirrorTable,
@@ -107,7 +112,7 @@ data class MobileMirrorChange(
 )
 
 /**
- * Read-only план sync между local и remote snapshots.
+ * План синхронизации только для чтения между локальным и удалённым снимками.
  */
 data class MobileSyncPlan(
     val pushChanges: List<MobileMirrorChange>,
@@ -115,7 +120,7 @@ data class MobileSyncPlan(
 )
 
 /**
- * Runtime-статус remote sync для Android UI.
+ * Статус удалённой синхронизации для Android-интерфейса.
  */
 data class MobileSyncStatus(
     val configured: Boolean,
@@ -126,7 +131,8 @@ data class MobileSyncStatus(
 )
 
 /**
- * Итог одного sync-действия: check, push, pull или full sync.
+ * Итог одного действия синхронизации: проверка, отправка, получение
+ * или полный цикл.
  */
 data class MobileSyncRunResult(
     val status: MobileSyncStatus,
@@ -138,7 +144,7 @@ data class MobileSyncRunResult(
 )
 
 /**
- * Группы расхождений для экрана preview.
+ * Группы расхождений для экрана предпросмотра.
  */
 data class MobileSyncPreview(
     val localChanges: List<MobileExperimentChangeGroup>,
@@ -147,7 +153,7 @@ data class MobileSyncPreview(
 )
 
 /**
- * Все изменения одного эксперимента, сгруппированные для UI.
+ * Все изменения одного эксперимента, сгруппированные для интерфейса.
  */
 data class MobileExperimentChangeGroup(
     val experimentSyncId: String,
@@ -159,7 +165,7 @@ data class MobileExperimentChangeGroup(
 )
 
 /**
- * Отличие одного поля между before и after.
+ * Отличие одного поля между старым и новым значением.
  */
 data class MobileFieldDiff(
     val label: String,

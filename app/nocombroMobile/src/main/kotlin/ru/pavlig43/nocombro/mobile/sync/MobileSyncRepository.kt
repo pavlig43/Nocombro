@@ -4,7 +4,14 @@ import java.io.File
 import kotlinx.datetime.LocalDateTime
 
 /**
- * Оркестрирует Android sync: YDB snapshot, local apply, S3 upload/download.
+ * Оркестрирует Android-синхронизацию: YDB, локальную Room-БД и S3.
+ *
+ * Алгоритм всегда строится вокруг двух снимков: локального и удалённого.
+ * `MobileReconciliationPlanner` выбирает более новую строку по
+ * `updatedAt/deletedAt`, после чего репозиторий
+ * либо отправляет локальные строки в YDB, либо применяет удалённые строки в Room.
+ * Бинарные файлы идут отдельно: сначала метаданные в YDB, затем загрузка или
+ * скачивание в S3 по ключам из строк `file`.
  */
 class MobileSyncRepository(
     private val configRepository: MobileRemoteConfigRepository,
@@ -15,7 +22,7 @@ class MobileSyncRepository(
     private var lastPullAt: LocalDateTime? = null
 
     /**
-     * Строит preview расхождений без записи в YDB, Room или S3.
+     * Строит предпросмотр расхождений без записи в YDB, Room или S3.
      */
     suspend fun preview(): MobileSyncPreview {
         val context = loadContext().getOrElse { throwable ->
@@ -32,7 +39,7 @@ class MobileSyncRepository(
                 remoteChanges = emptyList(),
                 error = throwable.message ?: "YDB snapshot не загружен",
             )
-        }.mobileOnly()
+        }.mobileOnly().normalizeFileKeys(context.config.s3)
         val plan = planner.plan(local, remote)
         return MobileSyncPreview(
             localChanges = buildExperimentChangeGroups(
@@ -49,7 +56,7 @@ class MobileSyncRepository(
     }
 
     /**
-     * Проверяет YDB/S3 config и считает pending local/remote changes.
+     * Проверяет настройки YDB/S3 и считает, сколько строк ждёт отправки и получения.
      */
     suspend fun check(): MobileSyncRunResult {
         val context = loadContext().getOrElse { throwable ->
@@ -60,7 +67,7 @@ class MobileSyncRepository(
         val local = localRepository.loadSnapshot(context.config.s3)
         val remote = context.remote.loadSnapshot().getOrElse { throwable ->
             return failure(throwable.message ?: "YDB snapshot не загружен")
-        }.mobileOnly()
+        }.mobileOnly().normalizeFileKeys(context.config.s3)
         val plan = planner.plan(local, remote)
         return MobileSyncRunResult(
             status = status.copy(
@@ -71,7 +78,10 @@ class MobileSyncRepository(
     }
 
     /**
-     * Отправляет local winners и связанные файлы в remote.
+     * Отправляет локальные версии в YDB и связанные файлы в S3.
+     *
+     * Сначала грузим бинарные файлы, затем пишем метаданные в YDB. Так строка `file`
+     * не появится в mirror раньше, чем объект станет доступен в bucket.
      */
     suspend fun push(): MobileSyncRunResult {
         val context = loadContext().getOrElse { throwable ->
@@ -80,7 +90,7 @@ class MobileSyncRepository(
         val local = localRepository.loadSnapshot(context.config.s3)
         val remote = context.remote.loadSnapshot().getOrElse { throwable ->
             return failure(throwable.message ?: "YDB snapshot не загружен")
-        }.mobileOnly()
+        }.mobileOnly().normalizeFileKeys(context.config.s3)
         val plan = planner.plan(local, remote)
         uploadPushFiles(plan.pushChanges, context.storage).getOrElse { throwable ->
             return failure(throwable.message ?: "S3 upload failed")
@@ -93,7 +103,10 @@ class MobileSyncRepository(
     }
 
     /**
-     * Применяет remote winners локально и скачивает недостающие файлы.
+     * Применяет удалённые версии локально и скачивает недостающие файлы.
+     *
+     * `pull` сначала пишет метаданные в Room. После этого можно понять, каких файлов
+     * нет на телефоне, и скачать их из S3 по логическим ключам.
      */
     suspend fun pull(): MobileSyncRunResult {
         val context = loadContext().getOrElse { throwable ->
@@ -102,9 +115,9 @@ class MobileSyncRepository(
         val local = localRepository.loadSnapshot(context.config.s3)
         val remote = context.remote.loadSnapshot().getOrElse { throwable ->
             return failure(throwable.message ?: "YDB snapshot не загружен")
-        }.mobileOnly()
+        }.mobileOnly().normalizeFileKeys(context.config.s3)
         val plan = planner.plan(local, remote)
-        localRepository.applyRemoteChanges(plan.pullChanges)
+        localRepository.applyRemoteChanges(plan.pullChanges, context.config.s3)
         lastPullAt = remote.loadedAt
         downloadMissingFiles(context.storage).getOrElse { throwable ->
             return failure(throwable.message ?: "S3 download failed")
@@ -116,7 +129,11 @@ class MobileSyncRepository(
     }
 
     /**
-     * Выполняет push, затем pull; при ошибке push останавливает сценарий.
+     * Выполняет push, затем pull.
+     *
+     * Если push упал, pull не стартует: иначе пользователь увидит смешанный
+     * результат, где часть локальных файлов не ушла в S3, но новые удалённые
+     * строки уже применились.
      */
     suspend fun sync(): MobileSyncRunResult {
         val pushed = push()
@@ -180,7 +197,7 @@ class MobileSyncRepository(
 }
 
 /**
- * Runtime-контекст одной sync-операции.
+ * Рантайм-контекст одной sync-операции.
  */
 private data class MobileSyncContext(
     val config: MobileRemoteConfig,
@@ -189,7 +206,7 @@ private data class MobileSyncContext(
 )
 
 /**
- * Оставляет только rows, которые Android умеет показать и применить.
+ * Оставляет только строки, которые Android умеет показать и применить.
  */
 private fun MobileMirrorSnapshot.mobileOnly(): MobileMirrorSnapshot {
     val experimentIds = rowsByTable[MobileMirrorTable.EXPERIMENT].orEmpty()
@@ -214,4 +231,24 @@ private fun MobileMirrorSnapshot.mobileOnly(): MobileMirrorSnapshot {
             MobileMirrorTable.FILE to fileRows,
         ),
     )
+}
+
+/**
+ * Нормализует ключи файлов из YDB.
+ *
+ * Старые строки могли хранить ключ уже с S3-префиксом. Android хранит и сравнивает
+ * только логический ключ, чтобы следующая отправка не записала `prefix/prefix/...`.
+ */
+internal fun MobileMirrorSnapshot.normalizeFileKeys(config: MobileS3Config): MobileMirrorSnapshot {
+    val normalizedFileRows = rowsByTable[MobileMirrorTable.FILE].orEmpty()
+        .map { row ->
+            if (row is MobileFileMirrorRow) {
+                row.copy(
+                    remoteObjectKey = row.remoteObjectKey?.let(config::normalizeObjectKey),
+                )
+            } else {
+                row
+            }
+        }
+    return copy(rowsByTable = rowsByTable + (MobileMirrorTable.FILE to normalizedFileRows))
 }

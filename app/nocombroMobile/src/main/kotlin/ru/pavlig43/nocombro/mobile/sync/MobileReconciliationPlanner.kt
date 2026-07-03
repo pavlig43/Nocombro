@@ -1,7 +1,10 @@
 package ru.pavlig43.nocombro.mobile.sync
 
 /**
- * Выбирает winners между local и remote snapshot по `updatedAt/deletedAt`.
+ * Выбирает победившие строки между локальным и удалённым снимком.
+ *
+ * Для каждой строки сравнивается версия: `deletedAt`, если tombstone новее,
+ * иначе `updatedAt`. Метод только строит план и не меняет Room/YDB/S3.
  */
 class MobileReconciliationPlanner {
     /**

@@ -15,7 +15,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 
 /**
- * Реальная реализация [RemoteFileStorageGateway] через S3-compatible API.
+ * Реальная реализация [RemoteFileStorageGateway] через S3-совместимый API.
  *
  * В текущем проекте она используется как базовый способ складывать бинарные вложения
  * в `Yandex Object Storage`, но остаётся достаточно общей для других S3-провайдеров.

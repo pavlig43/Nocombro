@@ -27,8 +27,13 @@ import org.bouncycastle.util.io.pem.PemReader
 /**
  * Создаёт и кеширует IAM-токен Yandex Cloud для YDB JDBC `tokenProvider`.
  *
- * Android не отдаёт YDB SDK готовый signer, поэтому supplier сам подписывает JWT
- * service account ключом и меняет его на IAM-токен через IAM API.
+ * На desktop YDB SDK умеет читать ключ сервисного аккаунта сам. На Android этот
+ * путь недоступен, поэтому здесь сделан небольшой поставщик токена:
+ * - читает JSON-ключ сервисного аккаунта;
+ * - собирает JWT с `kid`, `iss`, `aud`, `iat` и `exp`;
+ * - подписывает JWT приватным RSA-ключом через PS256;
+ * - меняет JWT на IAM-токен в Yandex IAM API;
+ * - кеширует IAM-токен до истечения срока.
  */
 internal class MobileIamTokenSupplier(
     serviceAccountJson: String,
@@ -42,7 +47,10 @@ internal class MobileIamTokenSupplier(
     private var cachedToken: CachedIamToken? = null
 
     /**
-     * Возвращает свежий IAM-токен или запрашивает новый с защитой от параллельных refresh.
+     * Возвращает свежий IAM-токен или запрашивает новый.
+     *
+     * YDB JDBC может вызвать `tokenProvider` из разных потоков. `lock` не даёт
+     * сделать несколько одинаковых запросов в IAM API, когда токен истёк.
      */
     override fun get(): String {
         cachedToken?.takeIf(CachedIamToken::isFresh)?.let { return it.value }
@@ -54,7 +62,10 @@ internal class MobileIamTokenSupplier(
     }
 
     /**
-     * Меняет подписанный JWT service account на IAM-токен.
+     * Меняет подписанный JWT сервисного аккаунта на IAM-токен.
+     *
+     * IAM API возвращает сам токен и время истечения. Оба значения нужны: токен
+     * отдаётся JDBC-драйверу, а срок нужен для раннего обновления до ошибки YDB.
      */
     private fun requestIamToken(): CachedIamToken {
         val jwt = createJwt()
@@ -84,6 +95,9 @@ internal class MobileIamTokenSupplier(
 
     /**
      * Собирает JWT с PS256-подписью для Yandex IAM.
+     *
+     * `aud` должен совпадать с URL IAM API. `kid` берётся из ключа сервисного
+     * аккаунта, чтобы Yandex Cloud понял, каким публичным ключом проверять подпись.
      */
     private fun createJwt(): String {
         val now = Instant.now()
@@ -117,7 +131,10 @@ internal class MobileIamTokenSupplier(
     }
 
     /**
-     * Создаёт RSASSA-PSS signer с параметрами PS256.
+     * Создаёт RSASSA-PSS подпись с параметрами PS256.
+     *
+     * BouncyCastle ставится в `NocombroMobileApplication`. Без явного провайдера
+     * Android может не найти нужный алгоритм или взять несовместимую реализацию.
      */
     private fun newPssSignature(): Signature {
         return Signature.getInstance("RSASSA-PSS", BouncyCastleProvider.PROVIDER_NAME).apply {
@@ -148,7 +165,7 @@ internal class MobileIamTokenSupplier(
 }
 
 /**
- * Минимум полей service account key, нужных для подписи JWT.
+ * Минимум полей ключа сервисного аккаунта, нужных для подписи JWT.
  */
 @Serializable
 private data class MobileServiceAccountKey(
@@ -160,7 +177,7 @@ private data class MobileServiceAccountKey(
 )
 
 /**
- * Преобразует PEM-ключ service account в RSA private key.
+ * Преобразует PEM-ключ сервисного аккаунта в RSA private key.
  */
 private fun String.toRsaPrivateKey(): PrivateKey {
     val pem = PemReader(StringReader(this)).use { reader ->
@@ -176,6 +193,6 @@ private fun String.toRsaPrivateKey(): PrivateKey {
 private fun String.base64Url(): String = toByteArray(Charsets.UTF_8).base64Url()
 
 /**
- * Кодирует bytes в Base64 URL без padding для JWT signature.
+ * Кодирует байты в Base64 URL без padding для JWT signature.
  */
 private fun ByteArray.base64Url(): String = Base64.getUrlEncoder().withoutPadding().encodeToString(this)

@@ -7,7 +7,7 @@ import ru.pavlig43.datetime.dateFormat
 import ru.pavlig43.datetime.dateTimeFormat
 
 /**
- * Группирует raw sync changes по экспериментам для экрана preview.
+ * Группирует сырые sync-правки по экспериментам для экрана предпросмотра.
  */
 internal fun buildExperimentChangeGroups(
     changes: List<MobileMirrorChange>,
@@ -119,7 +119,7 @@ internal fun buildExperimentChangeGroups(
 }
 
 /**
- * Ключ строки внутри snapshot index.
+ * Ключ строки внутри индекса снимка.
  */
 private data class EntityKey(
     val table: MobileMirrorTable,
