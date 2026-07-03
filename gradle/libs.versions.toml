@@ -49,6 +49,8 @@ versionName = "1.0.0"
 wwindTable = "1.10.0"
 ydbJdbc = "2.3.26"
 awsSdk = "2.46.17"
+awsSdkKotlin = "1.6.104"
+conscrypt = "2.5.3"
 
 
 
@@ -168,6 +170,8 @@ apache-poi-ooxml = { module = "org.apache.poi:poi-ooxml", version.ref = "apacheP
 ydb-jdbc = { module = "tech.ydb.jdbc:ydb-jdbc-driver", version.ref = "ydbJdbc" }
 aws-s3 = { module = "software.amazon.awssdk:s3", version.ref = "awsSdk" }
 aws-url-connection-client = { module = "software.amazon.awssdk:url-connection-client", version.ref = "awsSdk" }
+aws-kotlin-s3 = { module = "aws.sdk.kotlin:s3", version.ref = "awsSdkKotlin" }
+conscrypt-android = { module = "org.conscrypt:conscrypt-android", version.ref = "conscrypt" }
 
 #build-logic
 android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "agp" }

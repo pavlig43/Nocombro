@@ -18,3 +18,6 @@ captures
 **/xcshareddata/WorkspaceSettings.xcsettings
 .claude/settings.local.json
 local.gradle.kts
+*mobile-sync-secrets*
+*ydb-sa-key*
+*s3*.properties

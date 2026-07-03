@@ -52,6 +52,9 @@ import ru.pavlig43.theme.add_circle
 import ru.pavlig43.theme.delete
 import ru.pavlig43.theme.edit
 
+/**
+ * Desktop experiments screen with experiment, entry, reminder, and file editors.
+ */
 @Composable
 fun ExperimentsScreen(
     component: ExperimentsComponent,
@@ -130,7 +133,7 @@ fun ExperimentsScreen(
         EntryEditorPane(
             title = uiState.selectedEntry?.dateText,
             content = entryDraft,
-            showEmptyState = uiState.selectedExperiment != null && uiState.selectedEntry == null,
+            showEmptyState = (uiState.selectedExperiment != null) && (uiState.selectedEntry == null),
             onContentChange = component::onEntryContentChange,
             files = filesComponent,
             modifier = Modifier.weight(1.1f).fillMaxHeight(),
@@ -178,7 +181,10 @@ private fun ExperimentListPane(
                 Text("Добавить")
             }
             Column(
-                modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 experiments.forEach { item ->
@@ -187,12 +193,12 @@ private fun ExperimentListPane(
                             .fillMaxWidth()
                             .clickable { onSelectExperiment(item.id) }
                             .background(
-                                if (item.id == selectedExperimentId) {
+                                color = if (item.id == selectedExperimentId) {
                                     MaterialTheme.colorScheme.secondaryContainer
                                 } else {
                                     MaterialTheme.colorScheme.surface
-                                }
-                            )
+                                },
+                            ),
                     ) {
                         Row(
                             modifier = Modifier.fillMaxWidth().padding(12.dp),
@@ -257,7 +263,10 @@ private fun ExperimentDetailsPane(
             }
         } else {
             Column(
-                modifier = Modifier.fillMaxSize().padding(12.dp),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(12.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 OutlinedTextField(
@@ -298,7 +307,9 @@ private fun ExperimentDetailsPane(
                 Text("Записи", style = MaterialTheme.typography.titleMedium)
                 if (entries.isEmpty()) {
                     Box(
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 160.dp),
                         contentAlignment = Alignment.Center,
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -310,7 +321,7 @@ private fun ExperimentDetailsPane(
                     }
                 } else {
                     Column(
-                        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
+                        modifier = Modifier.fillMaxWidth(),
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         entries.forEach { item ->
@@ -319,12 +330,12 @@ private fun ExperimentDetailsPane(
                                     .fillMaxWidth()
                                     .clickable { onSelectEntry(item.id) }
                                     .background(
-                                        if (item.id == selectedEntryId) {
+                                        color = if (item.id == selectedEntryId) {
                                             MaterialTheme.colorScheme.primaryContainer
                                         } else {
                                             MaterialTheme.colorScheme.surface
-                                        }
-                                    )
+                                        },
+                                    ),
                             ) {
                                 Row(
                                     modifier = Modifier.fillMaxWidth().padding(12.dp),
@@ -451,7 +462,7 @@ private fun ReminderEditorDialog(
     onDateTimeChange: (kotlinx.datetime.LocalDateTime) -> Unit,
     onSave: () -> Unit,
 ) {
-    var showDateTimePicker by rememberSaveable { mutableStateOf(false) }
+    var showDateTimePicker by rememberSaveable { mutableStateOf(value = false) }
 
     ProjectDialog(
         onDismissRequest = onDismiss,
@@ -514,7 +525,7 @@ private fun EntryEditorPane(
         modifier = modifier.border(1.dp, MaterialTheme.colorScheme.outline),
     ) {
         when {
-            title == null && showEmptyState -> {
+            (title == null) && showEmptyState -> {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center,
@@ -534,7 +545,10 @@ private fun EntryEditorPane(
 
             else -> {
                 Column(
-                    modifier = Modifier.fillMaxSize().padding(12.dp),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                        .padding(12.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     Text(
@@ -552,7 +566,9 @@ private fun EntryEditorPane(
                     files?.let {
                         FilesScreen(
                             component = it,
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .heightIn(max = 320.dp),
                         )
                     } ?: Text("Файлы станут доступны после выбора записи")
                 }

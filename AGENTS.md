@@ -7,6 +7,78 @@
 
 Если задача локальная, сначала читать этот файл, а потом открывать только нужные модули.
 
+## Android Studio semantic tools
+
+Если Android CLI установлен и `android studio check` показывает READY для текущего проекта, используй Android Studio как IDE-сервис.
+
+Перед Android-навигацией по коду сначала запускай:
+
+```powershell
+android studio check
+```
+
+Если `android studio check` показывает проект как `READY`, бери имя проекта из
+колонки `Projects` и передавай его в semantic-команды через `--project`.
+Не полагайся на cwd: CLI может принять путь рабочей папки за имя проекта.
+Для этого проекта пример:
+
+```powershell
+android studio find-declaration --short --project Nocombro SYMBOL
+```
+
+Для Kotlin/Android символов НЕ используй `rg`, `grep` или текстовый поиск первым способом.
+
+Для поиска объявления символа используй:
+
+```powershell
+android studio find-declaration --short SYMBOL
+```
+
+Для поиска использований символа используй:
+
+```powershell
+android studio find-usages --short SYMBOL
+```
+
+Если символ неоднозначный, используй контекстный файл:
+
+```powershell
+android studio find-declaration --short --context-file=PATH_TO_FILE.kt SYMBOL
+```
+
+Для проверки конкретного Kotlin/Java файла через инспекции Android Studio используй:
+
+```powershell
+android studio analyze-file PATH_TO_FILE.kt
+```
+
+Для открытия файла в Android Studio используй:
+
+```powershell
+android studio open-file PATH_TO_FILE.kt
+```
+
+Для Compose Preview используй:
+
+```powershell
+android studio render-compose-preview --output-image-file=preview.png --print-semantics PATH_TO_FILE.kt PreviewFunctionName
+```
+
+Для проверки версий зависимостей используй:
+
+```powershell
+android studio version-lookup agp kotlin gradle compose
+```
+
+`rg`/`grep` разрешены только если:
+
+* `android studio check` не READY;
+* Android Studio закрыта;
+* нужно найти обычный текст, строку, TODO, resource name или комментарий;
+* Android Studio semantic command не нашёл результат.
+
+Gradle-скрипты остаются основной проверкой сборки. Android Studio semantic tools нужны для навигации, инспекций, preview и анализа Android-кода.
+
 ## С чего почти всегда начинать
 
 Для большинства задач достаточно открыть:

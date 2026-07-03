@@ -5,6 +5,9 @@ import androidx.room.Query
 import androidx.room.Upsert
 
 
+/**
+ * Room DAO for local file metadata.
+ */
 @Dao
 interface FileDao {
     @Query("SELECT * FROM file")
@@ -25,6 +28,15 @@ interface FileDao {
     @Query("SELECT path FROM file")
     suspend fun getAllPaths(): List<String>
 
+    /**
+     * Returns paths for file rows that are still active, excluding tombstones.
+     */
+    @Query("SELECT path FROM file WHERE deleted_at IS NULL")
+    suspend fun getActivePaths(): List<String>
+
+    /**
+     * Returns remote object keys for rows that have S3 metadata.
+     */
     @Query("SELECT remote_object_key FROM file WHERE remote_object_key IS NOT NULL")
     suspend fun getAllRemoteObjectKeys(): List<String>
 

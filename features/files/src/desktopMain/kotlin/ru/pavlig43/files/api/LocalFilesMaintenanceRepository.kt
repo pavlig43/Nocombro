@@ -5,11 +5,18 @@ import ru.pavlig43.database.data.files.getManagedFilesRootDirectory
 import ru.pavlig43.files.api.model.LocalOrphanFile
 import java.io.File
 
+/**
+ * Scans the managed local files directory and deletes files that are no longer
+ * referenced by active file metadata.
+ */
 class LocalFilesMaintenanceRepository(
     db: NocombroDatabase,
 ) {
     private val fileDao = db.fileDao
 
+    /**
+     * Counts managed files, their total size, and local orphans.
+     */
     suspend fun getStorageOverview(): Result<LocalFilesStorageOverview> {
         return runCatching {
             val rootDirectory = getManagedFilesRootDirectory()
@@ -22,7 +29,7 @@ class LocalFilesMaintenanceRepository(
                 )
             }
 
-            val attachedPaths = fileDao.getAllPaths()
+            val attachedPaths = fileDao.getActivePaths()
                 .map(::normalizePathForComparison)
                 .toSet()
 
@@ -49,6 +56,9 @@ class LocalFilesMaintenanceRepository(
         }
     }
 
+    /**
+     * Returns local files that are not referenced by active file rows.
+     */
     suspend fun getOrphanLocalFiles(): Result<List<LocalOrphanFile>> {
         return runCatching {
             val rootDirectory = getManagedFilesRootDirectory()
@@ -56,7 +66,7 @@ class LocalFilesMaintenanceRepository(
                 return@runCatching emptyList()
             }
 
-            val attachedPaths = fileDao.getAllPaths()
+            val attachedPaths = fileDao.getActivePaths()
                 .map(::normalizePathForComparison)
                 .toSet()
 
@@ -79,6 +89,9 @@ class LocalFilesMaintenanceRepository(
         }
     }
 
+    /**
+     * Deletes one orphan file under the managed files root and removes empty parent folders.
+     */
     suspend fun deleteLocalFile(path: String): Result<Unit> {
         return runCatching {
             val rootDirectory = getManagedFilesRootDirectory().canonicalFile
@@ -120,6 +133,9 @@ class LocalFilesMaintenanceRepository(
     }
 }
 
+/**
+ * Summary of the managed local files directory.
+ */
 data class LocalFilesStorageOverview(
     val rootPath: String,
     val localFilesCount: Int,

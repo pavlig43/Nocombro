@@ -15,6 +15,9 @@ import ru.pavlig43.nocombro.mobile.internal.database.entity.MobileExperimentEntr
 import ru.pavlig43.nocombro.mobile.internal.database.entity.MobileExperimentEntryFileEntity
 import ru.pavlig43.nocombro.mobile.internal.database.entity.MobileExperimentReminderEntity
 
+/**
+ * DAO for mobile experiment metadata.
+ */
 @Dao
 interface MobileExperimentDao {
     @Insert(onConflict = OnConflictStrategy.ABORT)
@@ -25,6 +28,9 @@ interface MobileExperimentDao {
 
     @Query("SELECT * FROM $EXPERIMENT_TABLE_NAME WHERE id = :id")
     suspend fun getExperiment(id: Int): MobileExperimentEntity?
+
+    @Query("SELECT * FROM $EXPERIMENT_TABLE_NAME WHERE sync_id = :syncId")
+    suspend fun getExperimentBySyncId(syncId: String): MobileExperimentEntity?
 
     @Query("SELECT * FROM $EXPERIMENT_TABLE_NAME")
     suspend fun getAll(): List<MobileExperimentEntity>
@@ -47,6 +53,9 @@ interface MobileExperimentDao {
     fun observeExperiment(id: Int): Flow<MobileExperimentEntity?>
 }
 
+/**
+ * DAO for mobile experiment journal entries.
+ */
 @Dao
 interface MobileExperimentEntryDao {
     @Insert(onConflict = OnConflictStrategy.ABORT)
@@ -57,6 +66,9 @@ interface MobileExperimentEntryDao {
 
     @Query("SELECT * FROM $EXPERIMENT_ENTRY_TABLE_NAME WHERE id = :id")
     suspend fun getEntry(id: Int): MobileExperimentEntryEntity?
+
+    @Query("SELECT * FROM $EXPERIMENT_ENTRY_TABLE_NAME WHERE sync_id = :syncId")
+    suspend fun getEntryBySyncId(syncId: String): MobileExperimentEntryEntity?
 
     @Query("SELECT * FROM $EXPERIMENT_ENTRY_TABLE_NAME")
     suspend fun getAll(): List<MobileExperimentEntryEntity>
@@ -79,6 +91,9 @@ interface MobileExperimentEntryDao {
     fun observeEntry(id: Int): Flow<MobileExperimentEntryEntity?>
 }
 
+/**
+ * DAO for files attached to mobile experiment entries.
+ */
 @Dao
 interface MobileExperimentEntryFileDao {
     @Insert(onConflict = OnConflictStrategy.ABORT)
@@ -90,6 +105,12 @@ interface MobileExperimentEntryFileDao {
     @Query("SELECT * FROM $EXPERIMENT_ENTRY_FILE_TABLE_NAME WHERE id = :id")
     suspend fun getFile(id: Int): MobileExperimentEntryFileEntity?
 
+    @Query("SELECT * FROM $EXPERIMENT_ENTRY_FILE_TABLE_NAME")
+    suspend fun getAll(): List<MobileExperimentEntryFileEntity>
+
+    @Query("SELECT * FROM $EXPERIMENT_ENTRY_FILE_TABLE_NAME WHERE sync_id = :syncId")
+    suspend fun getFileBySyncId(syncId: String): MobileExperimentEntryFileEntity?
+
     @Query(
         """
         SELECT * FROM $EXPERIMENT_ENTRY_FILE_TABLE_NAME
@@ -100,6 +121,9 @@ interface MobileExperimentEntryFileDao {
     fun observeFiles(entryId: Int): Flow<List<MobileExperimentEntryFileEntity>>
 }
 
+/**
+ * DAO for mobile experiment reminders.
+ */
 @Dao
 interface MobileExperimentReminderDao {
     @Insert(onConflict = OnConflictStrategy.ABORT)
@@ -110,6 +134,9 @@ interface MobileExperimentReminderDao {
 
     @Query("SELECT * FROM $EXPERIMENT_REMINDER_TABLE_NAME WHERE id = :id")
     suspend fun getReminder(id: Int): MobileExperimentReminderEntity?
+
+    @Query("SELECT * FROM $EXPERIMENT_REMINDER_TABLE_NAME WHERE sync_id = :syncId")
+    suspend fun getReminderBySyncId(syncId: String): MobileExperimentReminderEntity?
 
     @Query("SELECT * FROM $EXPERIMENT_REMINDER_TABLE_NAME")
     suspend fun getAll(): List<MobileExperimentReminderEntity>

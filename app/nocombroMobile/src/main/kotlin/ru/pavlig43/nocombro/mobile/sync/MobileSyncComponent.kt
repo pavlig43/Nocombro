@@ -1,0 +1,157 @@
+package ru.pavlig43.nocombro.mobile.sync
+
+import com.arkivanov.decompose.ComponentContext
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlinx.datetime.LocalDateTime
+import ru.pavlig43.core.componentCoroutineScope
+
+/**
+ * Decompose component Android sync-панели и экрана preview.
+ */
+class MobileSyncComponent(
+    componentContext: ComponentContext,
+    private val repository: MobileSyncRepository,
+) : ComponentContext by componentContext {
+    private val scope = componentCoroutineScope()
+    private val _uiState = MutableStateFlow(MobileSyncUiState())
+    val uiState: StateFlow<MobileSyncUiState> = _uiState.asStateFlow()
+
+    private val _previewState = MutableStateFlow(MobileSyncPreviewUiState())
+    val previewState: StateFlow<MobileSyncPreviewUiState> = _previewState.asStateFlow()
+
+    init {
+        check()
+    }
+
+    /**
+     * Сворачивает или раскрывает sync-панель в главном меню.
+     */
+    fun toggleExpanded() {
+        _uiState.update { it.copy(expanded = !it.expanded) }
+    }
+
+    /**
+     * Проверяет remote status и считает расхождения.
+     */
+    fun check() = runAction("Проверка") {
+        repository.check()
+    }
+
+    /**
+     * Отправляет local winners в remote.
+     */
+    fun push() = runAction("Отправка") {
+        repository.push()
+    }
+
+    /**
+     * Получает remote winners и недостающие S3-файлы.
+     */
+    fun pull() = runAction("Получение") {
+        repository.pull()
+    }
+
+    /**
+     * Запускает полный sync: push, затем pull.
+     */
+    fun sync() = runAction("Синхронизация") {
+        repository.sync()
+    }
+
+    /**
+     * Обновляет preview локальных и remote sync-правок.
+     */
+    fun refreshPreview() {
+        scope.launch {
+            _previewState.update {
+                it.copy(
+                    loading = true,
+                    error = null,
+                )
+            }
+            val preview = withContext(Dispatchers.IO) {
+                repository.preview()
+            }
+            _previewState.update {
+                it.copy(
+                    loading = false,
+                    localChanges = preview.localChanges,
+                    remoteChanges = preview.remoteChanges,
+                    error = preview.error,
+                )
+            }
+        }
+    }
+
+    private fun runAction(
+        label: String,
+        block: suspend () -> MobileSyncRunResult,
+    ) {
+        scope.launch {
+            _uiState.update {
+                it.copy(
+                    running = true,
+                    runningLabel = label,
+                    error = null,
+                )
+            }
+            val result = withContext(Dispatchers.IO) {
+                block()
+            }
+            _uiState.update {
+                it.copy(
+                    configured = result.status.configured,
+                    localChanges = result.status.localChanges,
+                    remoteChanges = result.status.remoteChanges,
+                    statusText = result.status.toStatusText(),
+                    error = result.error ?: result.status.error,
+                    running = false,
+                    runningLabel = null,
+                    lastPushAt = result.lastPushAt ?: it.lastPushAt,
+                    lastPullAt = result.lastPullAt ?: it.lastPullAt,
+                )
+            }
+        }
+    }
+}
+
+/**
+ * UI state sync-панели в главном меню.
+ */
+data class MobileSyncUiState(
+    val expanded: Boolean = false,
+    val configured: Boolean = false,
+    val localChanges: Int = 0,
+    val remoteChanges: Int = 0,
+    val statusText: String = "Проверка...",
+    val error: String? = null,
+    val running: Boolean = false,
+    val runningLabel: String? = null,
+    val lastPushAt: LocalDateTime? = null,
+    val lastPullAt: LocalDateTime? = null,
+)
+
+/**
+ * UI state экрана preview sync-расхождений.
+ */
+data class MobileSyncPreviewUiState(
+    val loading: Boolean = false,
+    val localChanges: List<MobileExperimentChangeGroup> = emptyList(),
+    val remoteChanges: List<MobileExperimentChangeGroup> = emptyList(),
+    val error: String? = null,
+)
+
+/**
+ * Сводит raw sync status к короткому тексту для меню.
+ */
+private fun MobileSyncStatus.toStatusText(): String {
+    if (error != null) return "Ошибка"
+    if (!configured) return "Не настроено"
+    return if (localChanges == 0 && remoteChanges == 0) "Синхронизировано" else "Есть правки"
+}
