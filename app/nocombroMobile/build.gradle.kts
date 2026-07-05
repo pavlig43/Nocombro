@@ -84,6 +84,12 @@ android {
         applicationId = "ru.pavlig43.nocombro.mobile"
     }
 
+    buildTypes {
+        getByName("release") {
+            signingConfig = signingConfigs.getByName("debug")
+        }
+    }
+
     sourceSets {
         getByName("main").assets.directories.add(
             layout.buildDirectory.dir("generated/mobileSyncConfig/assets").get().asFile.path
