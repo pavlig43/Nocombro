@@ -7,6 +7,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.InternalComposeUiApi
 import androidx.compose.ui.backhandler.LocalCompatNavigationEventDispatcherOwner
+import androidx.compose.ui.graphics.painter.BitmapPainter
+import androidx.compose.ui.graphics.toComposeImageBitmap
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
@@ -27,6 +29,7 @@ import ru.pavlig43.rootnocombro.api.runMirrorStartupMaintenance
 import ru.pavlig43.rootnocombro.api.component.RootNocombroComponent
 import ru.pavlig43.rootnocombro.api.ui.App
 import ru.pavlig43.rootnocombro.internal.di.initKoin
+import javax.imageio.ImageIO
 
 @OptIn(InternalComposeUiApi::class)
 @Composable
@@ -50,6 +53,15 @@ private fun WindowBackHandler(onBack: () -> Unit) {
     DisposableEffect(dispatcher, handler) {
         dispatcher.addHandler(handler)
         onDispose { handler.remove() }
+    }
+}
+
+private fun loadWindowIcon(): BitmapPainter {
+    val stream = requireNotNull(Thread.currentThread().contextClassLoader.getResourceAsStream("icons/nocombro.png")) {
+        "Window icon resource was not found"
+    }
+    return stream.use {
+        BitmapPainter(ImageIO.read(it).toComposeImageBitmap())
     }
 }
 
@@ -81,11 +93,13 @@ fun main() {
     @OptIn(ExperimentalComposeUiApi::class)
     application {
         val windowState = rememberWindowState()
+        val windowIcon = remember { loadWindowIcon() }
 
         Window(
             onCloseRequest = ::exitApplication,
             title = "Nocombro",
             state = windowState,
+            icon = windowIcon,
             onKeyEvent = KeyEventHandler::handle
         ) {
             WindowBackHandler {

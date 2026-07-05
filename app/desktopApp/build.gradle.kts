@@ -35,7 +35,7 @@ extensions.getByType<ComposeExtension>().extensions.configure<DesktopExtension> 
         }
 
         nativeDistributions {
-            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
+            targetFormats(TargetFormat.Msi)
             includeAllModules = true
             this.packageName = "ru.pavlig43.nocombro"
             this.packageVersion = libs.versions.versionName.get()
@@ -43,6 +43,7 @@ extensions.getByType<ComposeExtension>().extensions.configure<DesktopExtension> 
                 shortcut = true
                 menu = true
                 menuGroup = "Nocombro"
+                iconFile.set(project.file("src/desktopMain/resources/icons/nocombro.ico"))
             }
         }
     }
