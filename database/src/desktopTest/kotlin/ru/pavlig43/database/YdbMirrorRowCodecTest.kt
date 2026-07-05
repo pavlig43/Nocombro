@@ -34,6 +34,16 @@ class YdbMirrorRowCodecTest : DesktopMainDispatcherFunSpec({
         config.tablePath(MirrorSyncTable.VENDOR) shouldBe "nocombro/mirror/vendor"
     }
 
+    test("jdbc config uses default url when setting is missing") {
+        val config = YdbMirrorJdbcConfig.fromSettings(
+            readSetting = { _, _ -> null },
+            defaultServiceAccountFile = { null },
+        )
+
+        config.jdbcUrl shouldBe YdbMirrorJdbcConfig.DEFAULT_JDBC_URL
+        config.serviceAccountFile shouldBe null
+    }
+
     test("vendor codec builds typed ydb sql") {
         VendorYdbMirrorCodec.createTableSql("vendor") shouldContain "display_name Utf8"
         VendorYdbMirrorCodec.upsertSql("vendor") shouldContain "CAST(? AS Utf8)"

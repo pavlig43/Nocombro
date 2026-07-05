@@ -18,7 +18,6 @@ import ru.pavlig43.database.data.sync.mirror.MirrorLocalSnapshotRepository
 import ru.pavlig43.database.data.sync.mirror.MirrorReconciliationPlanner
 import ru.pavlig43.database.data.sync.mirror.MirrorReconciliationService
 import ru.pavlig43.database.data.sync.mirror.MirrorSyncRemoteGateway
-import ru.pavlig43.database.data.sync.mirror.NoopMirrorSyncRemoteGateway
 import ru.pavlig43.database.data.sync.mirror.YdbJdbcMirrorSyncGateway
 import ru.pavlig43.database.data.sync.mirror.YdbMirrorJdbcConfig
 import ru.pavlig43.rootnocombro.api.RootDependencies
@@ -45,13 +44,9 @@ internal fun getDatabaseModule(rootDependencies: RootDependencies) = listOf(
         single { MirrorReconciliationPlanner() }
         single<MirrorSyncRemoteGateway> {
             val config = YdbMirrorJdbcConfig.fromEnvironment()
-            if (config != null) {
-                YdbJdbcMirrorSyncGateway(config)
-            } else {
-                NoopMirrorSyncRemoteGateway()
-            }
+            YdbJdbcMirrorSyncGateway(config)
         }
         single { MirrorReconciliationService(get(), get(), get(), get()) }
         single { SyncService(get(), get(), get()) }
-    }
+    },
 )

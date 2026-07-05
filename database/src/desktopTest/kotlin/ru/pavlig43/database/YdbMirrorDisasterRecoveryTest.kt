@@ -48,7 +48,7 @@ class YdbMirrorDisasterRecoveryTest : FunSpec({
             try {
                 val sourceSnapshot = MirrorLocalSnapshotRepository(source).loadSnapshot(tables)
                 val remoteSnapshot = YdbJdbcMirrorSyncGateway(
-                    requireNotNull(YdbMirrorJdbcConfig.fromEnvironment())
+                    YdbMirrorJdbcConfig.fromEnvironment()
                 ).loadRemoteSnapshot(tables).getOrThrow()
                 val remoteChanges = tables.flatMap { table ->
                     remoteSnapshot.rowsByTable[table].orEmpty().map { row ->

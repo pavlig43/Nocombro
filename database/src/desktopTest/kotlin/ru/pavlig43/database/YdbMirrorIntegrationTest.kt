@@ -36,9 +36,7 @@ class YdbMirrorIntegrationTest : FunSpec({
 
     test("real YDB mirror supports table availability push pull newest wins and tombstones")
         .config(enabled = smokeEnabled) {
-            val config = requireNotNull(YdbMirrorJdbcConfig.fromEnvironment()) {
-                "NOCOMBRO_YDB_JDBC_URL is required for the real YDB smoke test"
-            }
+            val config = YdbMirrorJdbcConfig.fromEnvironment()
             val gateway = YdbJdbcMirrorSyncGateway(config)
             val syncId = "codex-smoke-${UUID.randomUUID()}"
             val olderAt = LocalDateTime(2026, 6, 11, 10, 0)
@@ -99,7 +97,7 @@ class YdbMirrorIntegrationTest : FunSpec({
 
     test("real YDB mirror restores linked data and batch cost price on a second device")
         .config(enabled = smokeEnabled) {
-            val config = requireNotNull(YdbMirrorJdbcConfig.fromEnvironment())
+            val config = YdbMirrorJdbcConfig.fromEnvironment()
             val gateway = YdbJdbcMirrorSyncGateway(config)
             val source = createManagedTestDatabase()
             val target = createManagedTestDatabase()

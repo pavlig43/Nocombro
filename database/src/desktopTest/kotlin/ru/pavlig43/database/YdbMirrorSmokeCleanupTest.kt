@@ -15,7 +15,7 @@ class YdbMirrorSmokeCleanupTest : FunSpec({
     test("remove only Codex smoke rows from real YDB mirror")
         .config(enabled = cleanupEnabled) {
             val gateway = YdbJdbcMirrorSyncGateway(
-                requireNotNull(YdbMirrorJdbcConfig.fromEnvironment())
+                YdbMirrorJdbcConfig.fromEnvironment()
             )
             val tables = MirrorSyncTable.mirroredBusinessTables
             val before = gateway.loadRemoteSnapshot(tables).getOrThrow()

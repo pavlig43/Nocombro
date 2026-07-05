@@ -30,10 +30,20 @@ extensions.getByType<ComposeExtension>().extensions.configure<DesktopExtension> 
     application {
         this.mainClass = "ru.pavlig43.nocombro.MainKt"
 
+        buildTypes.release.proguard {
+            isEnabled.set(false)
+        }
+
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
+            includeAllModules = true
             this.packageName = "ru.pavlig43.nocombro"
             this.packageVersion = libs.versions.versionName.get()
+            windows {
+                shortcut = true
+                menu = true
+                menuGroup = "Nocombro"
+            }
         }
     }
 }

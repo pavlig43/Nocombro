@@ -35,15 +35,22 @@ data class YdbMirrorJdbcConfig(
         /**
          * Читает конфигурацию из environment variables или JVM properties.
          *
-         * Environment имеет приоритет. Если JDBC URL отсутствует, возвращается
-         * `null`, что означает намеренно не настроенный remote mirror. На Windows
-         * service account автоматически ищется в `%APPDATA%/Nocombro/ydb-sa-key.json`.
+         * Environment имеет приоритет. Если JDBC URL отсутствует, используется
+         * default database URL. На Windows service account автоматически ищется в
+         * `%APPDATA%/Nocombro/ydb-sa-key.json`.
          */
-        fun fromEnvironment(): YdbMirrorJdbcConfig? {
+        fun fromEnvironment(): YdbMirrorJdbcConfig {
+            return fromSettings(::readSetting, ::defaultWindowsServiceAccountFile)
+        }
+
+        internal fun fromSettings(
+            readSetting: (envName: String, propertyName: String) -> String?,
+            defaultServiceAccountFile: () -> String?,
+        ): YdbMirrorJdbcConfig {
             val jdbcUrl = readSetting("NOCOMBRO_YDB_JDBC_URL", "nocombro.ydb.jdbcUrl")
                 ?.trim()
                 ?.takeIf(String::isNotBlank)
-                ?: return null
+                ?: DEFAULT_JDBC_URL
             val tableRoot = (
                 readSetting("NOCOMBRO_YDB_MIRROR_ROOT", "nocombro.ydb.mirrorRoot")
                 )
@@ -55,7 +62,7 @@ data class YdbMirrorJdbcConfig(
                 serviceAccountFile = readSetting(
                     "NOCOMBRO_YDB_SA_FILE",
                     "nocombro.ydb.saFile",
-                )?.trim()?.takeIf(String::isNotBlank) ?: defaultWindowsServiceAccountFile(),
+                )?.trim()?.takeIf(String::isNotBlank) ?: defaultServiceAccountFile(),
                 tableRoot = tableRoot,
             )
         }
@@ -63,6 +70,10 @@ data class YdbMirrorJdbcConfig(
         private fun readSetting(envName: String, propertyName: String): String? {
             return System.getenv(envName) ?: System.getProperty(propertyName)
         }
+
+        internal const val DEFAULT_JDBC_URL =
+            "jdbc:ydb:grpcs://ydb.serverless.yandexcloud.net:2135/" +
+                "?database=/ru-central1/b1g87p6oufggn8merjua/etn8eb6ujifrk8lp7b73"
 
         private fun defaultWindowsServiceAccountFile(): String? {
             val appData = System.getenv("APPDATA")

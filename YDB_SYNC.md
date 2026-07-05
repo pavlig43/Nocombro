@@ -71,7 +71,7 @@ child -> parent, не меняя существующее UI-поведение.
 - `NOCOMBRO_YDB_TOKEN` или `nocombro.ydb.token`
 - `NOCOMBRO_YDB_MIRROR_ROOT` или `nocombro.ydb.mirrorRoot`
 
-Если `jdbcUrl` не задан, mirror sync отображается как ненастроенный.
+Если `jdbcUrl` не задан, используется default database URL.
 
 На Windows service-account key по умолчанию также ищется в:
 

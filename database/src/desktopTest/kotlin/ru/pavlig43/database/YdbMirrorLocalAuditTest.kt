@@ -20,7 +20,7 @@ class YdbMirrorLocalAuditTest : FunSpec({
 
     test("working local database exactly matches business rows in YDB mirror")
         .config(enabled = auditEnabled) {
-            val config = requireNotNull(YdbMirrorJdbcConfig.fromEnvironment())
+            val config = YdbMirrorJdbcConfig.fromEnvironment()
             val appData = requireNotNull(System.getenv("APPDATA"))
             val databaseFile = File(appData, "Nocombro/nocombro.db")
             check(databaseFile.exists()) { "Working database not found: $databaseFile" }

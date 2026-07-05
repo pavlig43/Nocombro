@@ -22,7 +22,7 @@ class YdbMirrorWorkingDatabaseRebuildTest : FunSpec({
 
     test("rebuild real YDB mirror from the working local database")
         .config(enabled = rebuildEnabled) {
-            val config = requireNotNull(YdbMirrorJdbcConfig.fromEnvironment())
+            val config = YdbMirrorJdbcConfig.fromEnvironment()
             val appData = requireNotNull(System.getenv("APPDATA"))
             val databaseFile = File(appData, "Nocombro/nocombro.db")
             check(databaseFile.exists()) { "Working database not found: $databaseFile" }
