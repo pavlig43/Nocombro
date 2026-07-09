@@ -3,16 +3,13 @@ package ru.pavlig43.database.data.sync.mirror
 import ru.pavlig43.database.data.sync.defaultUpdatedAt
 import java.sql.Connection
 import java.sql.DriverManager
-import java.sql.SQLException
 import java.util.Properties
-import java.util.concurrent.ConcurrentHashMap
 
 /**
  * JDBC-реализация typed mirror gateway для YDB.
  *
- * Gateway лениво проверяет и создает таблицы по DDL соответствующего
- * [YdbMirrorRowCodec], загружает полные snapshots и выполняет batch UPSERT.
- * Успешно проверенные таблицы кэшируются на время жизни объекта.
+ * Gateway работает с уже созданными typed tables, загружает полные snapshots и
+ * выполняет batch UPSERT. Схему YDB нужно создавать и менять отдельным SQL.
  *
  * Важно: текущий UPSERT не содержит server-side compare-and-set по версии.
  * Выбор winners выполняется до записи, поэтому два конкурентных клиента теоретически
@@ -21,25 +18,23 @@ import java.util.concurrent.ConcurrentHashMap
 class YdbJdbcMirrorSyncGateway(
     private val config: YdbMirrorJdbcConfig,
 ) : MirrorSyncRemoteGateway {
-    private val ensuredTables = ConcurrentHashMap.newKeySet<MirrorSyncTable>()
-    private val ensureTableLock = Any()
-
     /**
-     * Проверяет соединение и гарантирует наличие всех поддерживаемых typed tables.
+     * Проверяет соединение и доступность всех поддерживаемых typed tables.
      *
-     * Ожидаемые JDBC/schema-ошибки возвращаются в [MirrorRemoteStatus.error], чтобы
-     * UI мог показать диагностику без исключения.
+     * Ожидаемые JDBC-ошибки возвращаются в [MirrorRemoteStatus.error], чтобы UI
+     * мог показать диагностику без исключения.
      */
     override suspend fun getStatus(): MirrorRemoteStatus {
         return runCatching {
-            withConnection { connection ->
-                supportedYdbMirrorCodecs.values.forEach { codec ->
-                    ensureTable(connection, codec)
+            val availableTables = withConnection { connection ->
+                supportedYdbMirrorCodecs.values.mapTo(mutableSetOf()) { codec ->
+                    checkTableReadable(connection, codec)
+                    codec.table.tableName
                 }
             }
             MirrorRemoteStatus(
                 configured = true,
-                availableTables = supportedYdbMirrorCodecs.keys.mapTo(mutableSetOf()) { it.tableName },
+                availableTables = availableTables,
                 checkedAt = defaultUpdatedAt(),
             )
         }.getOrElse { throwable ->
@@ -60,7 +55,6 @@ class YdbJdbcMirrorSyncGateway(
             val codecs = requireSupportedCodecs(tables)
             val rows = withConnection { connection ->
                 codecs.associate { codec ->
-                    ensureTable(connection, codec)
                     codec.table to loadRows(connection, codec)
                 }
             }
@@ -85,7 +79,6 @@ class YdbJdbcMirrorSyncGateway(
             withConnection { connection ->
                 changes.groupBy(MirrorPushEntityChange::table).forEach { (table, tableChanges) ->
                     val codec = codecs.getValue(table)
-                    ensureTable(connection, codec)
                     upsertRows(connection, codec, tableChanges.map(MirrorPushEntityChange::row))
                 }
             }
@@ -130,7 +123,6 @@ class YdbJdbcMirrorSyncGateway(
                 syncIdsByTable.forEach { (table, syncIds) ->
                     if (syncIds.isEmpty()) return@forEach
                     val codec = supportedYdbMirrorCodecs.getValue(table)
-                    ensureTable(connection, codec)
                     connection.prepareStatement(
                         """
                         DELETE FROM `${config.tablePath(table)}`
@@ -160,57 +152,12 @@ class YdbJdbcMirrorSyncGateway(
         return tables.map(supportedYdbMirrorCodecs::getValue)
     }
 
-    private fun ensureTable(
+    private fun checkTableReadable(
         connection: Connection,
         codec: YdbMirrorRowCodec,
     ) {
-        if (codec.table in ensuredTables) return
-
-        synchronized(ensureTableLock) {
-            if (codec.table in ensuredTables) return
-
-            val tablePath = config.tablePath(codec.table)
-            if (!tableExists(connection, tablePath)) {
-                // YDB ограничивает параллельные schema operations, поэтому создание
-                // таблиц сериализовано и дополнено retry ниже.
-                createTableWithRetry(connection, codec.createTableSql(tablePath))
-            }
-            ensuredTables += codec.table
-        }
-    }
-
-    private fun tableExists(
-        connection: Connection,
-        tablePath: String,
-    ): Boolean {
-        return try {
-            connection.createStatement().use { statement ->
-                statement.executeQuery("SELECT sync_id FROM `$tablePath` LIMIT 0").use { }
-            }
-            true
-        } catch (_: SQLException) {
-            false
-        }
-    }
-
-    private fun createTableWithRetry(
-        connection: Connection,
-        createTableSql: String,
-    ) {
-        var retryDelayMillis = INITIAL_SCHEMA_RETRY_DELAY_MILLIS
-        repeat(MAX_SCHEMA_CREATE_ATTEMPTS) { attempt ->
-            try {
-                connection.createStatement().use { statement ->
-                    statement.execute(createTableSql)
-                }
-                return
-            } catch (throwable: SQLException) {
-                val canRetry = throwable.isSchemaOperationLimitError() &&
-                    attempt < MAX_SCHEMA_CREATE_ATTEMPTS - 1
-                if (!canRetry) throw throwable
-                Thread.sleep(retryDelayMillis)
-                retryDelayMillis = (retryDelayMillis * 2).coerceAtMost(MAX_SCHEMA_RETRY_DELAY_MILLIS)
-            }
+        connection.createStatement().use { statement ->
+            statement.executeQuery(codec.selectProbeSql(config.tablePath(codec.table))).use { }
         }
     }
 
@@ -259,20 +206,4 @@ class YdbJdbcMirrorSyncGateway(
         }
         return DriverManager.getConnection(config.jdbcUrl, properties).use(block)
     }
-
-    private companion object {
-        const val MAX_SCHEMA_CREATE_ATTEMPTS = 6
-        const val INITIAL_SCHEMA_RETRY_DELAY_MILLIS = 500L
-        const val MAX_SCHEMA_RETRY_DELAY_MILLIS = 4_000L
-    }
-}
-
-/** Определяет временную YDB-ошибку лимита schema operations, пригодную для retry. */
-internal fun SQLException.isSchemaOperationLimitError(): Boolean {
-    return generateSequence<Throwable>(this) { it.cause }
-        .mapNotNull(Throwable::message)
-        .any { message ->
-            message.contains("limit on the number of schema operations", ignoreCase = true) ||
-                message.contains("try again later", ignoreCase = true)
-        }
 }

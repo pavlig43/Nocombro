@@ -48,8 +48,9 @@ Legacy transport удалён:
 Инвентарь таблиц находится в
 `database/src/desktopMain/kotlin/ru/pavlig43/database/data/sync/mirror/MirrorSyncTable.kt`.
 
-DDL находится в `database/ydb/mirror_sync_v1.sql`. JDBC gateway также создаёт
-отсутствующие mirror tables при первой проверке статуса или синхронизации.
+DDL находится в `database/ydb/mirror_sync_v1.sql`. Приложение не создаёт
+mirror tables во время работы. Таблицы нужно создать или мигрировать заранее
+через SQL.
 
 Старые remote-таблицы приложение не удаляет. После выпуска новой версии,
 успешного push/pull и проверки восстановления их можно удалить вручную SQL из

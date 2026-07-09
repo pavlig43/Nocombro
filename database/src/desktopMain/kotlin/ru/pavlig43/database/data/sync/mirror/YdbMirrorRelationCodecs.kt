@@ -10,18 +10,6 @@ import java.sql.ResultSet
 
 internal object DeclarationYdbMirrorCodec : YdbMirrorRowCodec {
     override val table = MirrorSyncTable.DECLARATION
-    override val createColumnsSql = """
-        sync_id Utf8,
-        display_name Utf8,
-        created_at Utf8,
-        vendor_sync_id Utf8,
-        vendor_name Utf8,
-        born_date Utf8,
-        best_before Utf8,
-        observe_from_notification Bool,
-        updated_at Utf8,
-        deleted_at Utf8
-    """.trimIndent()
     override val columnNames = listOf(
         "sync_id", "display_name", "created_at", "vendor_sync_id", "vendor_name",
         "born_date", "best_before", "observe_from_notification", "updated_at", "deleted_at",
@@ -57,25 +45,6 @@ internal object DeclarationYdbMirrorCodec : YdbMirrorRowCodec {
 
 internal object ProductSpecificationYdbMirrorCodec : YdbMirrorRowCodec {
     override val table = MirrorSyncTable.PRODUCT_SPECIFICATION
-    override val createColumnsSql = """
-        sync_id Utf8,
-        product_sync_id Utf8,
-        dosage Utf8,
-        composition Utf8,
-        shelf_life_text Utf8,
-        storage_conditions Utf8,
-        appearance Utf8,
-        color Utf8,
-        smell Utf8,
-        taste Utf8,
-        physical_chemical_indicators Utf8,
-        microbiological_indicators Utf8,
-        toxic_elements Utf8,
-        allergens Utf8,
-        gmo_info Utf8,
-        updated_at Utf8,
-        deleted_at Utf8
-    """.trimIndent()
     override val columnNames = listOf(
         "sync_id", "product_sync_id", "dosage", "composition", "shelf_life_text",
         "storage_conditions", "appearance", "color", "smell", "taste",
@@ -117,14 +86,6 @@ internal object ProductSpecificationYdbMirrorCodec : YdbMirrorRowCodec {
 
 internal object SafetyStockYdbMirrorCodec : YdbMirrorRowCodec {
     override val table = MirrorSyncTable.SAFETY_STOCK
-    override val createColumnsSql = """
-        sync_id Utf8,
-        product_sync_id Utf8,
-        reorder_point Int64,
-        order_quantity Int64,
-        updated_at Utf8,
-        deleted_at Utf8
-    """.trimIndent()
     override val columnNames = listOf(
         "sync_id", "product_sync_id", "reorder_point", "order_quantity", "updated_at", "deleted_at",
     )
@@ -151,15 +112,6 @@ internal object SafetyStockYdbMirrorCodec : YdbMirrorRowCodec {
 
 internal object ExperimentEntryYdbMirrorCodec : YdbMirrorRowCodec {
     override val table = MirrorSyncTable.EXPERIMENT_ENTRY
-    override val createColumnsSql = """
-        sync_id Utf8,
-        experiment_sync_id Utf8,
-        entry_date Utf8,
-        created_at Utf8,
-        content Utf8,
-        updated_at Utf8,
-        deleted_at Utf8
-    """.trimIndent()
     override val columnNames = listOf(
         "sync_id", "experiment_sync_id", "entry_date", "created_at", "content", "updated_at", "deleted_at",
     )
@@ -188,14 +140,6 @@ internal object ExperimentEntryYdbMirrorCodec : YdbMirrorRowCodec {
 
 internal object ExperimentReminderYdbMirrorCodec : YdbMirrorRowCodec {
     override val table = MirrorSyncTable.EXPERIMENT_REMINDER
-    override val createColumnsSql = """
-        sync_id Utf8,
-        experiment_sync_id Utf8,
-        text Utf8,
-        reminder_date_time Utf8,
-        updated_at Utf8,
-        deleted_at Utf8
-    """.trimIndent()
     override val columnNames = listOf(
         "sync_id", "experiment_sync_id", "text", "reminder_date_time", "updated_at", "deleted_at",
     )
@@ -222,14 +166,6 @@ internal object ExperimentReminderYdbMirrorCodec : YdbMirrorRowCodec {
 
 internal object ProductDeclarationYdbMirrorCodec : YdbMirrorRowCodec {
     override val table = MirrorSyncTable.PRODUCT_DECLARATION
-    override val createColumnsSql = """
-        sync_id Utf8,
-        product_sync_id Utf8,
-        declaration_sync_id Utf8,
-        is_product_in_declaration Bool,
-        updated_at Utf8,
-        deleted_at Utf8
-    """.trimIndent()
     override val columnNames = listOf(
         "sync_id", "product_sync_id", "declaration_sync_id",
         "is_product_in_declaration", "updated_at", "deleted_at",
@@ -257,14 +193,6 @@ internal object ProductDeclarationYdbMirrorCodec : YdbMirrorRowCodec {
 
 internal object CompositionYdbMirrorCodec : YdbMirrorRowCodec {
     override val table = MirrorSyncTable.COMPOSITION
-    override val createColumnsSql = """
-        sync_id Utf8,
-        parent_sync_id Utf8,
-        product_sync_id Utf8,
-        count Int64,
-        updated_at Utf8,
-        deleted_at Utf8
-    """.trimIndent()
     override val columnNames = listOf(
         "sync_id", "parent_sync_id", "product_sync_id", "count", "updated_at", "deleted_at",
     )
@@ -291,14 +219,6 @@ internal object CompositionYdbMirrorCodec : YdbMirrorRowCodec {
 
 internal object BatchYdbMirrorCodec : YdbMirrorRowCodec {
     override val table = MirrorSyncTable.BATCH
-    override val createColumnsSql = """
-        sync_id Utf8,
-        product_sync_id Utf8,
-        date_born Utf8,
-        declaration_sync_id Utf8,
-        updated_at Utf8,
-        deleted_at Utf8
-    """.trimIndent()
     override val columnNames = listOf(
         "sync_id", "product_sync_id", "date_born", "declaration_sync_id", "updated_at", "deleted_at",
     )
@@ -325,15 +245,6 @@ internal object BatchYdbMirrorCodec : YdbMirrorRowCodec {
 
 internal object BatchMovementYdbMirrorCodec : YdbMirrorRowCodec {
     override val table = MirrorSyncTable.BATCH_MOVEMENT
-    override val createColumnsSql = """
-        sync_id Utf8,
-        batch_sync_id Utf8,
-        movement_type Utf8,
-        count Int64,
-        transaction_sync_id Utf8,
-        updated_at Utf8,
-        deleted_at Utf8
-    """.trimIndent()
     override val columnNames = listOf(
         "sync_id", "batch_sync_id", "movement_type", "count",
         "transaction_sync_id", "updated_at", "deleted_at",
@@ -363,14 +274,6 @@ internal object BatchMovementYdbMirrorCodec : YdbMirrorRowCodec {
 
 internal object ReminderYdbMirrorCodec : YdbMirrorRowCodec {
     override val table = MirrorSyncTable.REMINDER
-    override val createColumnsSql = """
-        sync_id Utf8,
-        transaction_sync_id Utf8,
-        text Utf8,
-        reminder_date_time Utf8,
-        updated_at Utf8,
-        deleted_at Utf8
-    """.trimIndent()
     override val columnNames = listOf(
         "sync_id", "transaction_sync_id", "text", "reminder_date_time", "updated_at", "deleted_at",
     )
@@ -397,16 +300,6 @@ internal object ReminderYdbMirrorCodec : YdbMirrorRowCodec {
 
 internal object ExpenseYdbMirrorCodec : YdbMirrorRowCodec {
     override val table = MirrorSyncTable.EXPENSE
-    override val createColumnsSql = """
-        sync_id Utf8,
-        transaction_sync_id Utf8,
-        expense_type Utf8,
-        amount Int64,
-        expense_date_time Utf8,
-        comment Utf8,
-        updated_at Utf8,
-        deleted_at Utf8
-    """.trimIndent()
     override val columnNames = listOf(
         "sync_id", "transaction_sync_id", "expense_type", "amount",
         "expense_date_time", "comment", "updated_at", "deleted_at",
@@ -438,16 +331,6 @@ internal object ExpenseYdbMirrorCodec : YdbMirrorRowCodec {
 
 internal object BuyYdbMirrorCodec : YdbMirrorRowCodec {
     override val table = MirrorSyncTable.BUY
-    override val createColumnsSql = """
-        sync_id Utf8,
-        transaction_sync_id Utf8,
-        movement_sync_id Utf8,
-        price Int64,
-        comment Utf8,
-        nds_percent Int32,
-        updated_at Utf8,
-        deleted_at Utf8
-    """.trimIndent()
     override val columnNames = listOf(
         "sync_id", "transaction_sync_id", "movement_sync_id", "price",
         "comment", "nds_percent", "updated_at", "deleted_at",
@@ -479,17 +362,6 @@ internal object BuyYdbMirrorCodec : YdbMirrorRowCodec {
 
 internal object SaleYdbMirrorCodec : YdbMirrorRowCodec {
     override val table = MirrorSyncTable.SALE
-    override val createColumnsSql = """
-        sync_id Utf8,
-        transaction_sync_id Utf8,
-        movement_sync_id Utf8,
-        price Int64,
-        comment Utf8,
-        client_sync_id Utf8,
-        nds_percent Int32,
-        updated_at Utf8,
-        deleted_at Utf8
-    """.trimIndent()
     override val columnNames = listOf(
         "sync_id", "transaction_sync_id", "movement_sync_id", "price",
         "comment", "client_sync_id", "nds_percent", "updated_at", "deleted_at",
@@ -523,17 +395,6 @@ internal object SaleYdbMirrorCodec : YdbMirrorRowCodec {
 
 internal object FileYdbMirrorCodec : YdbMirrorRowCodec {
     override val table = MirrorSyncTable.FILE
-    override val createColumnsSql = """
-        sync_id Utf8,
-        owner_type Utf8,
-        owner_sync_id Utf8,
-        display_name Utf8,
-        path Utf8,
-        remote_object_key Utf8,
-        remote_storage_provider Utf8,
-        updated_at Utf8,
-        deleted_at Utf8
-    """.trimIndent()
     override val columnNames = listOf(
         "sync_id", "owner_type", "owner_sync_id", "display_name", "path",
         "remote_object_key", "remote_storage_provider", "updated_at", "deleted_at",

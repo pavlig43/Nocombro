@@ -17,6 +17,15 @@
 android studio check
 ```
 
+На Windows захватывай `stderr`, если вывод пустой или выглядит как сбой:
+
+```powershell
+android studio check 2>&1 | Out-String
+```
+
+Java warning в `stderr` может дать non-zero exit code, но в том же выводе
+всё равно может быть `READY`.
+
 Если `android studio check` показывает проект как `READY`, бери имя проекта из
 колонки `Projects` и передавай его в semantic-команды через `--project`.
 Не полагайся на cwd: CLI может принять путь рабочей папки за имя проекта.

@@ -9,20 +9,10 @@ import ru.pavlig43.database.data.sync.mirror.ProductYdbMirrorCodec
 import ru.pavlig43.database.data.sync.mirror.TransactionYdbMirrorCodec
 import ru.pavlig43.database.data.sync.mirror.VendorYdbMirrorCodec
 import ru.pavlig43.database.data.sync.mirror.YdbMirrorJdbcConfig
-import ru.pavlig43.database.data.sync.mirror.isSchemaOperationLimitError
 import ru.pavlig43.database.data.sync.mirror.supportedYdbMirrorCodecs
 import ru.pavlig43.testkit.DesktopMainDispatcherFunSpec
-import java.sql.SQLException
 
 class YdbMirrorRowCodecTest : DesktopMainDispatcherFunSpec({
-    test("schema operation throttling is recognized as retryable") {
-        SQLException(
-            "Request exceeded a limit on the number of schema operations, try again later."
-        ).isSchemaOperationLimitError() shouldBe true
-
-        SQLException("Access denied").isSchemaOperationLimitError() shouldBe false
-    }
-
     test("mirror table path uses optional root") {
         val config = YdbMirrorJdbcConfig(
             jdbcUrl = "jdbc:ydb:test",
@@ -45,13 +35,12 @@ class YdbMirrorRowCodecTest : DesktopMainDispatcherFunSpec({
     }
 
     test("vendor codec builds typed ydb sql") {
-        VendorYdbMirrorCodec.createTableSql("vendor") shouldContain "display_name Utf8"
+        VendorYdbMirrorCodec.selectAllSql("vendor") shouldContain "display_name"
         VendorYdbMirrorCodec.upsertSql("vendor") shouldContain "CAST(? AS Utf8)"
     }
 
     test("batch cost codec uses int64 cost") {
-        BatchCostPriceYdbMirrorCodec.createTableSql("batch_cost_price") shouldContain
-            "cost_price_per_unit Int64"
+        BatchCostPriceYdbMirrorCodec.selectAllSql("batch_cost_price") shouldContain "cost_price_per_unit"
         BatchCostPriceYdbMirrorCodec.upsertSql("batch_cost_price") shouldContain
             "CAST(? AS Int64)"
     }

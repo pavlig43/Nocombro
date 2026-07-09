@@ -21,16 +21,15 @@ class MobileYdbMirrorGateway(
     private val serviceAccountJson: String?,
 ) {
     /**
-     * Проверяет доступ к YDB и создаёт mobile-таблицы, если их ещё нет.
+     * Проверяет доступ к уже созданным YDB-таблицам.
      *
-     * `CREATE TABLE IF NOT EXISTS` безопасен для пустого mirror, но не меняет
-     * схему уже созданной таблицы. Если в схему добавлена колонка, удалённую
-     * схему нужно мигрировать отдельно до выпуска APK.
+     * Во время работы схема не меняется: если таблицы нет или схема не та,
+     * пользователь увидит ошибку синхронизации.
      */
     fun status(): MobileSyncStatus {
         return runCatching {
             withConnection { connection ->
-                mobileCodecs.values.forEach { codec -> ensureTable(connection, codec) }
+                mobileCodecs.values.forEach { codec -> checkTableReadable(connection, codec) }
             }
             MobileSyncStatus(
                 configured = true,
@@ -40,7 +39,7 @@ class MobileYdbMirrorGateway(
             MobileSyncStatus(
                 configured = true,
                 checkedAt = getCurrentLocalDateTime(),
-                error = throwable.message ?: "YDB недоступна",
+                error = throwable.mobileSyncErrorMessage("YDB недоступна"),
             )
         }
     }
@@ -54,7 +53,6 @@ class MobileYdbMirrorGateway(
     fun loadSnapshot(): Result<MobileMirrorSnapshot> = runCatching {
         val rows = withConnection { connection ->
             mobileCodecs.values.associate { codec ->
-                ensureTable(connection, codec)
                 codec.table to loadRows(connection, codec)
             }
         }
@@ -74,7 +72,6 @@ class MobileYdbMirrorGateway(
         withConnection { connection ->
             changes.groupBy(MobileMirrorChange::table).forEach { (table, tableChanges) ->
                 val codec = mobileCodecs.getValue(table)
-                ensureTable(connection, codec)
                 connection.prepareStatement(codec.upsertSql(tablePath(table))).use { statement ->
                     tableChanges.forEach { change ->
                         codec.bind(statement, change.row)
@@ -86,9 +83,9 @@ class MobileYdbMirrorGateway(
         }
     }
 
-    private fun ensureTable(connection: Connection, codec: MobileYdbCodec) {
+    private fun checkTableReadable(connection: Connection, codec: MobileYdbCodec) {
         connection.createStatement().use { statement ->
-            statement.execute(codec.createTableSql(tablePath(codec.table)))
+            statement.executeQuery(codec.selectProbeSql(tablePath(codec.table))).use { }
         }
     }
 
@@ -132,7 +129,6 @@ class MobileYdbMirrorGateway(
 private interface MobileYdbCodec {
     val table: MobileMirrorTable
     val columns: List<String>
-    val createColumnsSql: String
 
     /** Заполняет JDBC-параметры для `UPSERT`. */
     fun bind(statement: PreparedStatement, row: MobileMirrorRow)
@@ -140,19 +136,14 @@ private interface MobileYdbCodec {
     /** Читает одну строку YDB `ResultSet` в mobile-строку. */
     fun read(resultSet: ResultSet): MobileMirrorRow
 
-    /** Строит DDL для типизированной mirror-таблицы. */
-    fun createTableSql(tablePath: String): String {
-        return """
-            CREATE TABLE IF NOT EXISTS `$tablePath` (
-                $createColumnsSql,
-                PRIMARY KEY (sync_id)
-            )
-        """.trimIndent()
-    }
-
     /** Строит `SELECT` всех колонок кодека. */
     fun selectAllSql(tablePath: String): String {
         return "SELECT ${columns.joinToString()} FROM `$tablePath`"
+    }
+
+    /** Строит `SELECT` без чтения строк для проверки таблицы и схемы. */
+    fun selectProbeSql(tablePath: String): String {
+        return "${selectAllSql(tablePath)} LIMIT 0"
     }
 
     /** Строит типизированный `UPSERT` с явными YDB `CAST` для JDBC-параметров. */
@@ -168,14 +159,6 @@ private interface MobileYdbCodec {
 private object ExperimentCodec : MobileYdbCodec {
     override val table = MobileMirrorTable.EXPERIMENT
     override val columns = listOf("sync_id", "title", "idea_description", "is_archived", "updated_at", "deleted_at")
-    override val createColumnsSql = """
-        sync_id Utf8,
-        title Utf8,
-        idea_description Utf8,
-        is_archived Bool,
-        updated_at Utf8,
-        deleted_at Utf8
-    """.trimIndent()
 
     override fun bind(statement: PreparedStatement, row: MobileMirrorRow) {
         require(row is MobileExperimentMirrorRow)
@@ -208,15 +191,6 @@ private object ExperimentEntryCodec : MobileYdbCodec {
         "updated_at",
         "deleted_at",
     )
-    override val createColumnsSql = """
-        sync_id Utf8,
-        experiment_sync_id Utf8,
-        entry_date Utf8,
-        created_at Utf8,
-        content Utf8,
-        updated_at Utf8,
-        deleted_at Utf8
-    """.trimIndent()
 
     override fun bind(statement: PreparedStatement, row: MobileMirrorRow) {
         require(row is MobileExperimentEntryMirrorRow)
@@ -250,14 +224,6 @@ private object ExperimentReminderCodec : MobileYdbCodec {
         "updated_at",
         "deleted_at",
     )
-    override val createColumnsSql = """
-        sync_id Utf8,
-        experiment_sync_id Utf8,
-        text Utf8,
-        reminder_date_time Utf8,
-        updated_at Utf8,
-        deleted_at Utf8
-    """.trimIndent()
 
     override fun bind(statement: PreparedStatement, row: MobileMirrorRow) {
         require(row is MobileExperimentReminderMirrorRow)
@@ -292,17 +258,6 @@ private object FileCodec : MobileYdbCodec {
         "updated_at",
         "deleted_at",
     )
-    override val createColumnsSql = """
-        sync_id Utf8,
-        owner_type Utf8,
-        owner_sync_id Utf8,
-        display_name Utf8,
-        path Utf8,
-        remote_object_key Utf8,
-        remote_storage_provider Utf8,
-        updated_at Utf8,
-        deleted_at Utf8
-    """.trimIndent()
 
     override fun bind(statement: PreparedStatement, row: MobileMirrorRow) {
         require(row is MobileFileMirrorRow)

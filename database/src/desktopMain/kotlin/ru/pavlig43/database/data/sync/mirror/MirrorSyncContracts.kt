@@ -18,7 +18,8 @@ interface MirrorSyncRemoteGateway {
     /**
      * Проверяет конфигурацию и доступность remote mirror.
      *
-     * Реализация может попутно создавать отсутствующие typed tables. Время в
+     * Реализация не должна создавать typed tables во время работы. Отсутствующая
+     * таблица или несовпадение схемы возвращается как ошибка доступности. Время в
      * [MirrorRemoteStatus.checkedAt] обозначает момент завершения проверки.
      */
     suspend fun getStatus(): MirrorRemoteStatus

@@ -18,25 +18,19 @@ import java.sql.ResultSet
  */
 internal interface YdbMirrorRowCodec {
     val table: MirrorSyncTable
-    val createColumnsSql: String
     val columnNames: List<String>
 
     fun bind(statement: PreparedStatement, row: MirrorSyncRow)
     fun read(resultSet: ResultSet): MirrorSyncRow
 
-    /** Генерирует idempotent DDL typed table с `sync_id` как primary key. */
-    fun createTableSql(tablePath: String): String {
-        return """
-            CREATE TABLE IF NOT EXISTS `$tablePath` (
-                $createColumnsSql,
-                PRIMARY KEY (sync_id)
-            )
-        """.trimIndent()
-    }
-
     /** Генерирует полный SELECT в том же порядке колонок, который ожидает codec. */
     fun selectAllSql(tablePath: String): String {
         return "SELECT ${columnNames.joinToString()} FROM `$tablePath`"
+    }
+
+    /** Генерирует SELECT без чтения строк для проверки таблицы и схемы. */
+    fun selectProbeSql(tablePath: String): String {
+        return "${selectAllSql(tablePath)} LIMIT 0"
     }
 
     /**
@@ -56,13 +50,6 @@ internal interface YdbMirrorRowCodec {
 
 internal object VendorYdbMirrorCodec : YdbMirrorRowCodec {
     override val table = MirrorSyncTable.VENDOR
-    override val createColumnsSql = """
-        sync_id Utf8,
-        display_name Utf8,
-        comment Utf8,
-        updated_at Utf8,
-        deleted_at Utf8
-    """.trimIndent()
     override val columnNames = listOf(
         "sync_id",
         "display_name",
@@ -93,13 +80,6 @@ internal object VendorYdbMirrorCodec : YdbMirrorRowCodec {
 
 internal object BatchCostPriceYdbMirrorCodec : YdbMirrorRowCodec {
     override val table = MirrorSyncTable.BATCH_COST_PRICE
-    override val createColumnsSql = """
-        sync_id Utf8,
-        batch_sync_id Utf8,
-        cost_price_per_unit Int64,
-        updated_at Utf8,
-        deleted_at Utf8
-    """.trimIndent()
     override val columnNames = listOf(
         "sync_id",
         "batch_sync_id",
@@ -130,15 +110,6 @@ internal object BatchCostPriceYdbMirrorCodec : YdbMirrorRowCodec {
 
 internal object DocumentYdbMirrorCodec : YdbMirrorRowCodec {
     override val table = MirrorSyncTable.DOCUMENT
-    override val createColumnsSql = """
-        sync_id Utf8,
-        display_name Utf8,
-        type Utf8,
-        created_at Utf8,
-        comment Utf8,
-        updated_at Utf8,
-        deleted_at Utf8
-    """.trimIndent()
     override val columnNames = listOf(
         "sync_id",
         "display_name",
@@ -175,19 +146,6 @@ internal object DocumentYdbMirrorCodec : YdbMirrorRowCodec {
 
 internal object ProductYdbMirrorCodec : YdbMirrorRowCodec {
     override val table = MirrorSyncTable.PRODUCT
-    override val createColumnsSql = """
-        sync_id Utf8,
-        type Utf8,
-        display_name Utf8,
-        second_name Utf8,
-        created_at Utf8,
-        comment Utf8,
-        price_for_sale Int64,
-        shelf_life_days Int32,
-        rec_nds Int32,
-        updated_at Utf8,
-        deleted_at Utf8
-    """.trimIndent()
     override val columnNames = listOf(
         "sync_id",
         "type",
@@ -236,15 +194,6 @@ internal object ProductYdbMirrorCodec : YdbMirrorRowCodec {
 
 internal object TransactionYdbMirrorCodec : YdbMirrorRowCodec {
     override val table = MirrorSyncTable.TRANSACTION
-    override val createColumnsSql = """
-        sync_id Utf8,
-        transaction_type Utf8,
-        created_at Utf8,
-        comment Utf8,
-        is_completed Bool,
-        updated_at Utf8,
-        deleted_at Utf8
-    """.trimIndent()
     override val columnNames = listOf(
         "sync_id",
         "transaction_type",
@@ -281,14 +230,6 @@ internal object TransactionYdbMirrorCodec : YdbMirrorRowCodec {
 
 internal object ExperimentYdbMirrorCodec : YdbMirrorRowCodec {
     override val table = MirrorSyncTable.EXPERIMENT
-    override val createColumnsSql = """
-        sync_id Utf8,
-        title Utf8,
-        idea_description Utf8,
-        is_archived Bool,
-        updated_at Utf8,
-        deleted_at Utf8
-    """.trimIndent()
     override val columnNames = listOf(
         "sync_id",
         "title",

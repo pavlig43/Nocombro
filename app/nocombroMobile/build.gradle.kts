@@ -82,11 +82,22 @@ android {
 
     defaultConfig {
         applicationId = "ru.pavlig43.nocombro.mobile"
+        versionCode = 2
+        versionName = "1.0.1-ydbfix"
     }
 
     buildTypes {
         getByName("release") {
             signingConfig = signingConfigs.getByName("debug")
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro",
+            )
+            ndk {
+                abiFilters += listOf("arm64-v8a", "armeabi-v7a")
+            }
         }
     }
 
@@ -96,6 +107,9 @@ android {
         )
     }
 
+    packaging {
+        resources.excludes += "META-INF/native/**"
+    }
 }
 
 val generateMobileSyncConfig = tasks.register<GenerateMobileSyncConfigTask>("generateMobileSyncConfig") {

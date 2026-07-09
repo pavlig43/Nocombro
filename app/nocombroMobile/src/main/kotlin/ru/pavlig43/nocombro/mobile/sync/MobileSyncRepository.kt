@@ -29,7 +29,7 @@ class MobileSyncRepository(
             return MobileSyncPreview(
                 localChanges = emptyList(),
                 remoteChanges = emptyList(),
-                error = throwable.message ?: "Sync config не найден",
+                error = throwable.mobileSyncErrorMessage("Sync config не найден"),
             )
         }
         val local = localRepository.loadSnapshot(context.config.s3)
@@ -37,7 +37,7 @@ class MobileSyncRepository(
             return MobileSyncPreview(
                 localChanges = emptyList(),
                 remoteChanges = emptyList(),
-                error = throwable.message ?: "YDB snapshot не загружен",
+                error = throwable.mobileSyncErrorMessage("YDB snapshot не загружен"),
             )
         }.mobileOnly().normalizeFileKeys(context.config.s3)
         val plan = planner.plan(local, remote)
@@ -60,13 +60,13 @@ class MobileSyncRepository(
      */
     suspend fun check(): MobileSyncRunResult {
         val context = loadContext().getOrElse { throwable ->
-            return failure(throwable.message ?: "Sync config не найден")
+            return failure(throwable.mobileSyncErrorMessage("Sync config не найден"))
         }
         val status = context.remote.status()
         if (status.error != null) return MobileSyncRunResult(status = status, error = status.error)
         val local = localRepository.loadSnapshot(context.config.s3)
         val remote = context.remote.loadSnapshot().getOrElse { throwable ->
-            return failure(throwable.message ?: "YDB snapshot не загружен")
+            return failure(throwable.mobileSyncErrorMessage("YDB snapshot не загружен"))
         }.mobileOnly().normalizeFileKeys(context.config.s3)
         val plan = planner.plan(local, remote)
         return MobileSyncRunResult(
@@ -85,18 +85,18 @@ class MobileSyncRepository(
      */
     suspend fun push(): MobileSyncRunResult {
         val context = loadContext().getOrElse { throwable ->
-            return failure(throwable.message ?: "Sync config не найден")
+            return failure(throwable.mobileSyncErrorMessage("Sync config не найден"))
         }
         val local = localRepository.loadSnapshot(context.config.s3)
         val remote = context.remote.loadSnapshot().getOrElse { throwable ->
-            return failure(throwable.message ?: "YDB snapshot не загружен")
+            return failure(throwable.mobileSyncErrorMessage("YDB snapshot не загружен"))
         }.mobileOnly().normalizeFileKeys(context.config.s3)
         val plan = planner.plan(local, remote)
         uploadPushFiles(plan.pushChanges, context.storage).getOrElse { throwable ->
-            return failure(throwable.message ?: "S3 upload failed")
+            return failure(throwable.mobileSyncErrorMessage("S3 upload failed"))
         }
         context.remote.push(plan.pushChanges).getOrElse { throwable ->
-            return failure(throwable.message ?: "YDB push failed")
+            return failure(throwable.mobileSyncErrorMessage("YDB push failed"))
         }
         lastPushAt = local.loadedAt
         return check().copy(pushed = plan.pushChanges.size, lastPushAt = lastPushAt)
@@ -110,11 +110,11 @@ class MobileSyncRepository(
      */
     suspend fun pull(): MobileSyncRunResult {
         val context = loadContext().getOrElse { throwable ->
-            return failure(throwable.message ?: "Sync config не найден")
+            return failure(throwable.mobileSyncErrorMessage("Sync config не найден"))
         }
         val local = localRepository.loadSnapshot(context.config.s3)
         val remote = context.remote.loadSnapshot().getOrElse { throwable ->
-            return failure(throwable.message ?: "YDB snapshot не загружен")
+            return failure(throwable.mobileSyncErrorMessage("YDB snapshot не загружен"))
         }.mobileOnly().normalizeFileKeys(context.config.s3)
         val plan = planner.plan(local, remote)
         localRepository.applyRemoteChanges(plan.pullChanges, context.config.s3)
