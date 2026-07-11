@@ -8,6 +8,7 @@ import ru.pavlig43.database.data.files.remote.RemoteFileBatchDownloadRepository
 import ru.pavlig43.database.data.files.remote.RemoteFileBatchDownloadSummary
 import ru.pavlig43.database.data.sync.mirror.MirrorReconciliationService
 import java.io.File
+import kotlin.time.TimeSource
 
 /**
  * Прикладной facade синхронизации для UI и root-компонентов.
@@ -68,22 +69,40 @@ class SyncService(
      * Итог включает результат восстановления файлов, выполненного после pull.
      */
     suspend fun syncOnce(): SyncRunResult {
-        val pushResult = pushOnce()
-        if (pushResult.error != null) {
-            return pushResult
+        val context = mirrorReconciliationService.prepareSync().getOrElse { throwable ->
+            return failureWithoutRefresh(throwable.message ?: "Mirror sync preparation failed")
+        }
+        val mirrorRun = mirrorReconciliationService.executePreparedSync(context).getOrElse { throwable ->
+            return failureWithoutRefresh(throwable.message ?: "Mirror sync failed")
         }
 
-        val pullResult = pullOnce()
-        if (pullResult.error != null) {
-            return pullResult
-        }
+        syncStateRepository.updateLastPushAt(mirrorRun.completedAt)
+        syncStateRepository.updateLastPullAt(mirrorRun.completedAt)
+        val status = SyncStatusSnapshot(
+            pendingLocalChangesCount = 0,
+            remoteChangesCount = 0,
+            hasRemoteChanges = false,
+            remoteSyncConfigured = true,
+            lastStatusCheckAt = mirrorRun.completedAt,
+            lastSyncAt = mirrorRun.completedAt,
+            lastPullAt = mirrorRun.completedAt,
+        ).also { _status.value = it }
 
+        val recoveryMark = TimeSource.Monotonic.markNow()
+        val filesDownloadSummary = downloadMissingFilesAfterMirrorPull().getOrElse { throwable ->
+            SyncFacadeStageLog.completed("S3 recovery", recoveryMark.elapsedNow().inWholeMilliseconds)
+            return SyncRunResult.failure(
+                message = throwable.message ?: "File recovery after mirror pull failed",
+                status = status,
+            )
+        }
+        SyncFacadeStageLog.completed("S3 recovery", recoveryMark.elapsedNow().inWholeMilliseconds)
         return SyncRunResult(
-            status = pullResult.status,
-            lastSyncAt = pushResult.lastSyncAt ?: pullResult.lastSyncAt,
-            lastPushAt = pushResult.lastPushAt,
-            lastPullAt = pullResult.lastPullAt,
-            filesDownloadSummary = pullResult.filesDownloadSummary,
+            status = status,
+            lastSyncAt = mirrorRun.completedAt,
+            lastPushAt = mirrorRun.completedAt,
+            lastPullAt = mirrorRun.completedAt,
+            filesDownloadSummary = filesDownloadSummary,
         )
     }
 
@@ -168,6 +187,30 @@ class SyncService(
             return Result.success(null)
         }
         return repository.downloadMissingLocalCopies()
+    }
+
+    private suspend fun failureWithoutRefresh(message: String): SyncRunResult {
+        val current = _status.value
+        val syncState = syncStateRepository.getSyncState()
+        return SyncRunResult.failure(
+            message = message,
+            status = current ?: SyncStatusSnapshot(
+                pendingLocalChangesCount = 0,
+                remoteChangesCount = 0,
+                hasRemoteChanges = false,
+                remoteSyncConfigured = false,
+                lastStatusCheckAt = defaultUpdatedAt(),
+                lastSyncAt = syncState?.lastPushAt,
+                lastPullAt = syncState?.lastPullAt,
+            ),
+        )
+    }
+}
+
+private object SyncFacadeStageLog {
+    private val logger = java.util.logging.Logger.getLogger("MirrorSync")
+    fun completed(stage: String, milliseconds: Long) {
+        logger.info("Mirror sync stage=$stage durationMs=$milliseconds")
     }
 }
 

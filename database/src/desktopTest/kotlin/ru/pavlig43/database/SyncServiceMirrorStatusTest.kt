@@ -50,9 +50,10 @@ class SyncServiceMirrorStatusTest : DesktopMainDispatcherFunSpec({
     test("syncOnce returns the file download summary produced after mirror pull") {
         withEmptyTestDatabase { db ->
             db.syncStateDao.upsertSyncState(SyncStateEntity())
+            val gateway = StatusMirrorGateway(LocalDateTime(2026, 6, 11, 15, 0))
             val service = createSyncService(
                 db = db,
-                gateway = StatusMirrorGateway(LocalDateTime(2026, 6, 11, 15, 0)),
+                gateway = gateway,
                 fileRepository = RemoteFileBatchDownloadRepository(
                     db = db,
                     remoteFileStorageGateway = ConfiguredFileStorageGateway(),
@@ -63,6 +64,9 @@ class SyncServiceMirrorStatusTest : DesktopMainDispatcherFunSpec({
 
             result.error shouldBe null
             result.filesDownloadSummary?.scannedCount shouldBe 0
+            gateway.configurationStatusCalls shouldBe 1
+            gateway.statusCalls shouldBe 0
+            gateway.snapshotCalls shouldBe 1
         }
     }
 
@@ -91,6 +95,24 @@ class SyncServiceMirrorStatusTest : DesktopMainDispatcherFunSpec({
             gateway.pullCalls shouldBe 0
             fileGateway.downloadCalls shouldBe 0
             db.syncStateDao.getSyncState() shouldBe initialState
+        }
+    }
+
+    test("fresh Room restores 150 remote rows from one remote snapshot") {
+        withEmptyTestDatabase { db ->
+            db.syncStateDao.upsertSyncState(SyncStateEntity())
+            val gateway = StatusMirrorGateway(
+                checkedAt = LocalDateTime(2026, 6, 11, 15, 0),
+                remoteRowCount = 150,
+            )
+
+            val result = createSyncService(db, gateway).syncOnce()
+
+            result.error shouldBe null
+            db.vendorDao.getAll().size shouldBe 150
+            gateway.configurationStatusCalls shouldBe 1
+            gateway.statusCalls shouldBe 0
+            gateway.snapshotCalls shouldBe 1
         }
     }
 })
@@ -134,32 +156,50 @@ private class ConfiguredFileStorageGateway : RemoteFileStorageGateway {
 
 private class StatusMirrorGateway(
     private val checkedAt: LocalDateTime,
+    remoteRowCount: Int = 1,
 ) : MirrorSyncRemoteGateway {
+    var configurationStatusCalls = 0
+    var statusCalls = 0
+    var snapshotCalls = 0
     var pushCalls = 0
     var pullCalls = 0
-    private val remoteRow = VendorMirrorRow(
-        syncId = "remote-vendor",
-        displayName = "Remote vendor",
-        comment = "",
-        updatedAt = checkedAt,
-    )
+    private val remoteRows = List(remoteRowCount) { index ->
+        VendorMirrorRow(
+            syncId = "remote-vendor-$index",
+            displayName = "Remote vendor $index",
+            comment = "",
+            updatedAt = checkedAt,
+        )
+    }
 
-    override suspend fun getStatus() = MirrorRemoteStatus(
+    override suspend fun getConfigurationStatus(): MirrorRemoteStatus {
+        configurationStatusCalls++
+        return remoteStatus()
+    }
+
+    override suspend fun getStatus(): MirrorRemoteStatus {
+        statusCalls++
+        return remoteStatus()
+    }
+
+    private fun remoteStatus() = MirrorRemoteStatus(
         configured = true,
         availableTables = MirrorSyncTable.mirroredBusinessTables
             .mapTo(mutableSetOf(), MirrorSyncTable::tableName),
         checkedAt = checkedAt,
     )
 
-    override suspend fun loadRemoteSnapshot(tables: List<MirrorSyncTable>) =
-        Result.success(
+    override suspend fun loadRemoteSnapshot(tables: List<MirrorSyncTable>): Result<MirrorRemoteSnapshot> {
+        snapshotCalls++
+        return Result.success(
             MirrorRemoteSnapshot(
                 loadedAt = checkedAt,
                 rowsByTable = tables.associateWith { table ->
-                    if (table == MirrorSyncTable.VENDOR) listOf(remoteRow) else emptyList()
+                    if (table == MirrorSyncTable.VENDOR) remoteRows else emptyList()
                 },
             )
         )
+    }
 
     override suspend fun pushMirrorState(changes: List<MirrorPushEntityChange>): Result<MirrorPushResult> {
         pushCalls++
@@ -173,7 +213,7 @@ private class StatusMirrorGateway(
                 pulledAt = checkedAt,
                 changes = request.tables.flatMap { table ->
                     if (table == MirrorSyncTable.VENDOR) {
-                        listOf(MirrorPushEntityChange(table, remoteRow))
+                        remoteRows.map { MirrorPushEntityChange(table, it) }
                     } else {
                         emptyList()
                     }

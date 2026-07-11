@@ -2,6 +2,7 @@ package ru.pavlig43.database.data.sync.mirror
 
 import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.database.data.sync.defaultUpdatedAt
+import kotlin.time.TimeSource
 
 /**
  * Координирует snapshot-based reconciliation между Room и remote mirror.
@@ -23,11 +24,45 @@ class MirrorReconciliationService(
     /** Возвращает низкоуровневый статус remote gateway без загрузки snapshot. */
     suspend fun getStatus(): MirrorRemoteStatus = remoteGateway.getStatus()
 
+    suspend fun prepareSync(): Result<MirrorPreparedSyncContext> = runCatching {
+        val configuration = remoteGateway.getConfigurationStatus()
+        require(configuration.configured) { configuration.error ?: "Mirror sync is not configured" }
+        require(configuration.error == null) { configuration.error ?: "Mirror remote is unavailable" }
+
+        val local = localSnapshotRepository.loadSnapshot(MirrorSyncTable.mirroredBusinessTables)
+        val remoteMark = TimeSource.Monotonic.markNow()
+        val remote = remoteGateway.loadRemoteSnapshot().getOrElse { throw stageFailure("remote snapshot", it) }
+        SyncStageLog.completed("remote snapshot", remoteMark.elapsedNow().inWholeMilliseconds)
+        val plannerMark = TimeSource.Monotonic.markNow()
+        val plan = planner.plan(local, remote)
+        SyncStageLog.completed("planner", plannerMark.elapsedNow().inWholeMilliseconds)
+        MirrorPreparedSyncContext(configuration, local, remote, plan)
+    }
+
+    suspend fun executePreparedSync(context: MirrorPreparedSyncContext): Result<MirrorReconciliationRun> = runCatching {
+        val pushMark = TimeSource.Monotonic.markNow()
+        if (context.plan.pushChanges.isNotEmpty()) {
+            remoteGateway.pushMirrorState(context.plan.pushChanges)
+                .getOrElse { throw stageFailure("push", it) }
+        }
+        SyncStageLog.completed("push", pushMark.elapsedNow().inWholeMilliseconds)
+
+        val applyMark = TimeSource.Monotonic.markNow()
+        localApplyRepository.apply(context.plan.pullChanges)
+        SyncStageLog.completed("Room apply", applyMark.elapsedNow().inWholeMilliseconds)
+        MirrorReconciliationRun(
+            configured = true,
+            completedAt = context.remoteSnapshot.loadedAt,
+            pushedChanges = context.plan.pushChanges.size,
+            pulledChanges = context.plan.pullChanges.size,
+        )
+    }
+
     /**
      * Загружает локальный и удаленный snapshot и строит план без изменения данных.
      */
     suspend fun buildPreview(): Result<MirrorReconciliationPreview> = runCatching {
-        val status = remoteGateway.getStatus()
+        val status = remoteGateway.getConfigurationStatus()
         require(status.configured) { status.error ?: "Mirror sync is not configured" }
         require(status.error == null) { status.error ?: "Mirror remote is unavailable" }
 
@@ -77,7 +112,7 @@ class MirrorReconciliationService(
      * сравнения, но не применяет их локально.
      */
     suspend fun pushLocalWinners(): Result<MirrorReconciliationRun> = runCatching {
-        val status = remoteGateway.getStatus()
+        val status = remoteGateway.getConfigurationStatus()
         if (!status.configured) return@runCatching MirrorReconciliationRun.skipped(status.checkedAt)
         require(status.error == null) { status.error ?: "Mirror remote is unavailable" }
 
@@ -102,7 +137,7 @@ class MirrorReconciliationService(
      * предварительным сохранением remote tombstone в deletion journal.
      */
     suspend fun pullRemoteWinners(): Result<MirrorReconciliationRun> = runCatching {
-        val status = remoteGateway.getStatus()
+        val status = remoteGateway.getConfigurationStatus()
         if (!status.configured) return@runCatching MirrorReconciliationRun.skipped(status.checkedAt)
         require(status.error == null) { status.error ?: "Mirror remote is unavailable" }
 
@@ -126,7 +161,7 @@ class MirrorReconciliationService(
      * временем [MirrorRemoteRebuildResult.rebuiltAt].
      */
     suspend fun rebuildRemoteFromLocal(): Result<MirrorRemoteRebuildResult> = runCatching {
-        val status = remoteGateway.getStatus()
+        val status = remoteGateway.getConfigurationStatus()
         require(status.configured) { status.error ?: "Mirror sync is not configured" }
         require(status.error == null) { status.error ?: "Mirror remote is unavailable" }
 
@@ -149,6 +184,23 @@ class MirrorReconciliationService(
             pushedRows = localChanges.size,
             tombstonedRows = tombstones.size,
         )
+    }
+}
+
+data class MirrorPreparedSyncContext(
+    val configuration: MirrorRemoteStatus,
+    val localSnapshot: MirrorLocalSnapshot,
+    val remoteSnapshot: MirrorRemoteSnapshot,
+    val plan: MirrorReconciliationPlan,
+)
+
+private fun stageFailure(stage: String, throwable: Throwable): IllegalStateException =
+    IllegalStateException("Mirror $stage failed: ${throwable.message ?: throwable::class.simpleName}", throwable)
+
+private object SyncStageLog {
+    private val logger = java.util.logging.Logger.getLogger("MirrorSync")
+    fun completed(stage: String, milliseconds: Long) {
+        logger.info("Mirror sync stage=$stage durationMs=$milliseconds")
     }
 }
 

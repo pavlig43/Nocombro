@@ -9,6 +9,8 @@ import ru.pavlig43.database.data.sync.defaultUpdatedAt
  * молчаливого no-op, чтобы вызывающий код не считал синхронизацию успешной.
  */
 class NoopMirrorSyncRemoteGateway : MirrorSyncRemoteGateway {
+    override suspend fun getConfigurationStatus() = getStatus()
+
     override suspend fun getStatus() = MirrorRemoteStatus(
         configured = false,
         availableTables = emptySet(),
