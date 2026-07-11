@@ -26,7 +26,7 @@ class KmpLibrary : Plugin<Project> {
                 extensions.findByType(
                     KotlinMultiplatformAndroidLibraryTarget::class.java
                 )?.apply {
-                    namespace = "ru.pavlig43${project.path.replace(":", ".")}"
+                    namespace = androidNamespace()
                     androidResources.enable = true
 
                     compileSdk = libs.versions.android.compileSdk.get().toInt()
@@ -52,5 +52,28 @@ class KmpLibrary : Plugin<Project> {
             }
 
         }
+    }
+}
+
+private fun Project.androidNamespace(): String {
+    val suffix = path
+        .split(":")
+        .filter { it.isNotBlank() }
+        .joinToString(".") { it.asJavaIdentifier() }
+
+    return if (suffix.isBlank()) {
+        "ru.pavlig43"
+    } else {
+        "ru.pavlig43.$suffix"
+    }
+}
+
+private fun String.asJavaIdentifier(): String {
+    val normalized = replace(Regex("[^A-Za-z0-9_]"), "_")
+
+    return if (normalized.firstOrNull()?.let(Character::isJavaIdentifierStart) == true) {
+        normalized
+    } else {
+        "_$normalized"
     }
 }
