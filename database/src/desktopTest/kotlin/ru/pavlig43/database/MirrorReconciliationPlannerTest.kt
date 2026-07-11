@@ -4,6 +4,8 @@ import io.kotest.matchers.collections.shouldContainExactly
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.database.data.sync.mirror.BatchCostPriceMirrorRow
+import ru.pavlig43.database.data.sync.mirror.ExperimentMirrorRow
+import ru.pavlig43.database.data.sync.mirror.ExperimentReminderMirrorRow
 import ru.pavlig43.database.data.sync.mirror.MirrorLocalSnapshot
 import ru.pavlig43.database.data.sync.mirror.MirrorReconciliationPlanner
 import ru.pavlig43.database.data.sync.mirror.MirrorRemoteSnapshot
@@ -82,6 +84,45 @@ class MirrorReconciliationPlannerTest : DesktopMainDispatcherFunSpec({
         )
 
         plan.pushChanges.map { it.row.syncId } shouldContainExactly listOf("local-delete")
+        plan.pullChanges shouldContainExactly emptyList()
+    }
+
+    test("remote active child is not pulled when its parent is deleted remotely") {
+        val activeAt = LocalDateTime(2026, 7, 6, 9, 6)
+        val deletedAt = LocalDateTime(2026, 7, 9, 22, 8)
+
+        val plan = MirrorReconciliationPlanner().plan(
+            localSnapshot = MirrorLocalSnapshot(
+                loadedAt = LocalDateTime(2026, 7, 11, 15, 0),
+                rowsByTable = emptyMap(),
+            ),
+            remoteSnapshot = MirrorRemoteSnapshot(
+                loadedAt = LocalDateTime(2026, 7, 11, 15, 0),
+                rowsByTable = mapOf(
+                    MirrorSyncTable.EXPERIMENT to listOf(
+                        ExperimentMirrorRow(
+                            syncId = "deleted-experiment",
+                            title = "Deleted experiment",
+                            ideaDescription = "",
+                            isArchived = false,
+                            updatedAt = deletedAt,
+                            deletedAt = deletedAt,
+                        )
+                    ),
+                    MirrorSyncTable.EXPERIMENT_REMINDER to listOf(
+                        ExperimentReminderMirrorRow(
+                            syncId = "orphan-reminder",
+                            experimentSyncId = "deleted-experiment",
+                            text = "orphan",
+                            reminderDateTime = activeAt,
+                            updatedAt = activeAt,
+                        )
+                    ),
+                ),
+            ),
+        )
+
+        plan.pushChanges shouldContainExactly emptyList()
         plan.pullChanges shouldContainExactly emptyList()
     }
 

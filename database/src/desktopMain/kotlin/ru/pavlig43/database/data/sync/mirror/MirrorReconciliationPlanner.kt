@@ -60,10 +60,65 @@ class MirrorReconciliationPlanner {
 
         return MirrorReconciliationPlan(
             pushChanges = pushChanges,
-            pullChanges = pullChanges,
+            pullChanges = pullChanges.filterBlockedActiveRows(localSnapshot, remoteSnapshot),
         )
     }
 }
 
 /** Возвращает логическую версию строки с учетом более позднего tombstone. */
 internal fun MirrorSyncRow.versionAt() = deletedAt?.takeIf { it > updatedAt } ?: updatedAt
+
+private fun List<MirrorPushEntityChange>.filterBlockedActiveRows(
+    localSnapshot: MirrorLocalSnapshot,
+    remoteSnapshot: MirrorRemoteSnapshot,
+): List<MirrorPushEntityChange> {
+    val winners = buildWinnerRows(localSnapshot, remoteSnapshot)
+    val blockedKeys = winners
+        .filterValues { row -> row.deletedAt != null }
+        .keys
+        .toMutableSet()
+    val activeChanges = filter { change -> change.row.deletedAt == null }
+    val knownTables = localSnapshot.rowsByTable.keys + remoteSnapshot.rowsByTable.keys
+
+    do {
+        var changed = false
+        activeChanges.forEach { change ->
+            val key = change.entityKey()
+            if (key in blockedKeys) return@forEach
+            val isBlocked = change.row.dependencyKeys().any { dependency ->
+                dependency.table in knownTables && (dependency in blockedKeys || dependency !in winners)
+            }
+            if (isBlocked) {
+                blockedKeys += key
+                changed = true
+            }
+        }
+    } while (changed)
+
+    return filterNot { change ->
+        change.row.deletedAt == null && change.entityKey() in blockedKeys
+    }
+}
+
+private fun buildWinnerRows(
+    localSnapshot: MirrorLocalSnapshot,
+    remoteSnapshot: MirrorRemoteSnapshot,
+): Map<MirrorEntityKey, MirrorSyncRow> {
+    val localRows = localSnapshot.rowsByTable.toEntityMap()
+    val remoteRows = remoteSnapshot.rowsByTable.toEntityMap()
+    return (localRows.keys + remoteRows.keys).associateWith { key ->
+        val local = localRows[key]
+        val remote = remoteRows[key]
+        when {
+            local == null -> requireNotNull(remote)
+            remote == null -> local
+            remote.versionAt() > local.versionAt() -> remote
+            else -> local
+        }
+    }
+}
+
+private fun Map<MirrorSyncTable, List<MirrorSyncRow>>.toEntityMap(): Map<MirrorEntityKey, MirrorSyncRow> =
+    entries.flatMap { (table, rows) ->
+        rows.map { row -> MirrorEntityKey(table, row.syncId) to row }
+    }.toMap()
