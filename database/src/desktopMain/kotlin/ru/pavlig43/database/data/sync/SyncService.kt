@@ -7,7 +7,9 @@ import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.database.data.files.remote.RemoteFileBatchDownloadRepository
 import ru.pavlig43.database.data.files.remote.RemoteFileBatchDownloadSummary
 import ru.pavlig43.database.data.sync.mirror.MirrorReconciliationService
+import ru.pavlig43.database.data.sync.mirror.MirrorRemoteStatus
 import java.io.File
+import kotlin.time.TimeSource
 
 /**
  * Прикладной facade синхронизации для UI и root-компонентов.
@@ -68,22 +70,49 @@ class SyncService(
      * Итог включает результат восстановления файлов, выполненного после pull.
      */
     suspend fun syncOnce(): SyncRunResult {
-        val pushResult = pushOnce()
-        if (pushResult.error != null) {
-            return pushResult
+        val context = mirrorReconciliationService.prepareSync().getOrElse { throwable ->
+            val configuration = runCatching {
+                mirrorReconciliationService.getConfigurationStatus()
+            }.getOrNull()
+            return failureWithoutRefresh(
+                message = throwable.message ?: "Mirror sync preparation failed",
+                configuration = configuration,
+            )
+        }
+        val mirrorRun = mirrorReconciliationService.executePreparedSync(context).getOrElse { throwable ->
+            return failureWithoutRefresh(
+                message = throwable.message ?: "Mirror sync failed",
+                configuration = context.configuration,
+            )
         }
 
-        val pullResult = pullOnce()
-        if (pullResult.error != null) {
-            return pullResult
-        }
+        syncStateRepository.updateLastPushAt(mirrorRun.completedAt)
+        syncStateRepository.updateLastPullAt(mirrorRun.completedAt)
+        val status = SyncStatusSnapshot(
+            pendingLocalChangesCount = mirrorRun.remainingPushChanges,
+            remoteChangesCount = mirrorRun.remainingPullChanges,
+            hasRemoteChanges = mirrorRun.remainingPullChanges > 0,
+            remoteSyncConfigured = context.configuration.configured,
+            lastStatusCheckAt = mirrorRun.completedAt,
+            lastSyncAt = mirrorRun.completedAt,
+            lastPullAt = mirrorRun.completedAt,
+        ).also { _status.value = it }
 
+        val recoveryMark = TimeSource.Monotonic.markNow()
+        val filesDownloadSummary = downloadMissingFilesAfterMirrorPull().getOrElse { throwable ->
+            SyncFacadeStageLog.completed("S3 recovery", recoveryMark.elapsedNow().inWholeMilliseconds)
+            return SyncRunResult.failure(
+                message = throwable.message ?: "File recovery after mirror pull failed",
+                status = status,
+            )
+        }
+        SyncFacadeStageLog.completed("S3 recovery", recoveryMark.elapsedNow().inWholeMilliseconds)
         return SyncRunResult(
-            status = pullResult.status,
-            lastSyncAt = pushResult.lastSyncAt ?: pullResult.lastSyncAt,
-            lastPushAt = pushResult.lastPushAt,
-            lastPullAt = pullResult.lastPullAt,
-            filesDownloadSummary = pullResult.filesDownloadSummary,
+            status = status,
+            lastSyncAt = mirrorRun.completedAt,
+            lastPushAt = mirrorRun.completedAt,
+            lastPullAt = mirrorRun.completedAt,
+            filesDownloadSummary = filesDownloadSummary,
         )
     }
 
@@ -168,6 +197,39 @@ class SyncService(
             return Result.success(null)
         }
         return repository.downloadMissingLocalCopies()
+    }
+
+    private suspend fun failureWithoutRefresh(
+        message: String,
+        configuration: MirrorRemoteStatus?,
+    ): SyncRunResult {
+        val current = _status.value
+        val syncState = syncStateRepository.getSyncState()
+        val status = (current ?: SyncStatusSnapshot(
+            pendingLocalChangesCount = 0,
+            remoteChangesCount = 0,
+            hasRemoteChanges = false,
+            remoteSyncConfigured = configuration?.configured ?: false,
+            lastStatusCheckAt = configuration?.checkedAt ?: defaultUpdatedAt(),
+            lastSyncAt = syncState?.lastPushAt,
+            lastPullAt = syncState?.lastPullAt,
+        )).copy(
+            remoteSyncConfigured = configuration?.configured ?: current?.remoteSyncConfigured ?: false,
+            lastStatusCheckAt = configuration?.checkedAt ?: current?.lastStatusCheckAt ?: defaultUpdatedAt(),
+            remoteError = message,
+        )
+        _status.value = status
+        return SyncRunResult.failure(
+            message = message,
+            status = status,
+        )
+    }
+}
+
+private object SyncFacadeStageLog {
+    private val logger = java.util.logging.Logger.getLogger("MirrorSync")
+    fun completed(stage: String, milliseconds: Long) {
+        logger.info("Mirror sync stage=$stage durationMs=$milliseconds")
     }
 }
 

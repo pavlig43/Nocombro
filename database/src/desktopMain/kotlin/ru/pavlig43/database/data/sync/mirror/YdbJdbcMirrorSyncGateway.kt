@@ -4,6 +4,7 @@ import ru.pavlig43.database.data.sync.defaultUpdatedAt
 import java.sql.Connection
 import java.sql.DriverManager
 import java.util.Properties
+import kotlin.time.TimeSource
 
 /**
  * JDBC-реализация typed mirror gateway для YDB.
@@ -18,6 +19,12 @@ import java.util.Properties
 class YdbJdbcMirrorSyncGateway(
     private val config: YdbMirrorJdbcConfig,
 ) : MirrorSyncRemoteGateway {
+    override suspend fun getConfigurationStatus() = MirrorRemoteStatus(
+        configured = true,
+        availableTables = emptySet(),
+        checkedAt = defaultUpdatedAt(),
+    )
+
     /**
      * Проверяет соединение и доступность всех поддерживаемых typed tables.
      *
@@ -204,6 +211,13 @@ class YdbJdbcMirrorSyncGateway(
                     ?.let { setProperty("token", it) }
             }
         }
-        return DriverManager.getConnection(config.jdbcUrl, properties).use(block)
+        val connectionMark = TimeSource.Monotonic.markNow()
+        val connection = DriverManager.getConnection(config.jdbcUrl, properties)
+        LOGGER.info("Mirror sync stage=connection durationMs=${connectionMark.elapsedNow().inWholeMilliseconds}")
+        return connection.use(block)
+    }
+
+    private companion object {
+        val LOGGER: java.util.logging.Logger = java.util.logging.Logger.getLogger("MirrorSync")
     }
 }

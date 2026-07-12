@@ -24,6 +24,7 @@ import ru.pavlig43.database.data.sync.mirror.MirrorRemoteStatus
 import ru.pavlig43.database.data.sync.mirror.MirrorSyncRemoteGateway
 import ru.pavlig43.database.data.sync.mirror.MirrorSyncTable
 import ru.pavlig43.database.data.sync.mirror.VendorMirrorRow
+import ru.pavlig43.database.data.vendor.Vendor
 import ru.pavlig43.testkit.DesktopMainDispatcherFunSpec
 import ru.pavlig43.testkit.database.withEmptyTestDatabase
 import java.nio.file.Files
@@ -50,9 +51,10 @@ class SyncServiceMirrorStatusTest : DesktopMainDispatcherFunSpec({
     test("syncOnce returns the file download summary produced after mirror pull") {
         withEmptyTestDatabase { db ->
             db.syncStateDao.upsertSyncState(SyncStateEntity())
+            val gateway = StatusMirrorGateway(LocalDateTime(2026, 6, 11, 15, 0))
             val service = createSyncService(
                 db = db,
-                gateway = StatusMirrorGateway(LocalDateTime(2026, 6, 11, 15, 0)),
+                gateway = gateway,
                 fileRepository = RemoteFileBatchDownloadRepository(
                     db = db,
                     remoteFileStorageGateway = ConfiguredFileStorageGateway(),
@@ -63,6 +65,11 @@ class SyncServiceMirrorStatusTest : DesktopMainDispatcherFunSpec({
 
             result.error shouldBe null
             result.filesDownloadSummary?.scannedCount shouldBe 0
+            gateway.configurationStatusCalls shouldBe 1
+            gateway.statusCalls shouldBe 0
+            gateway.snapshotCalls shouldBe 1
+            result.status.pendingLocalChangesCount shouldBe 0
+            result.status.remoteChangesCount shouldBe 0
         }
     }
 
@@ -91,6 +98,87 @@ class SyncServiceMirrorStatusTest : DesktopMainDispatcherFunSpec({
             gateway.pullCalls shouldBe 0
             fileGateway.downloadCalls shouldBe 0
             db.syncStateDao.getSyncState() shouldBe initialState
+        }
+    }
+
+    test("fresh Room restores 150 remote rows from one remote snapshot") {
+        withEmptyTestDatabase { db ->
+            db.syncStateDao.upsertSyncState(SyncStateEntity())
+            val gateway = StatusMirrorGateway(
+                checkedAt = LocalDateTime(2026, 6, 11, 15, 0),
+                remoteRowCount = 150,
+            )
+
+            val result = createSyncService(db, gateway).syncOnce()
+
+            result.error shouldBe null
+            db.vendorDao.getAll().size shouldBe 150
+            gateway.configurationStatusCalls shouldBe 1
+            gateway.statusCalls shouldBe 0
+            gateway.snapshotCalls shouldBe 1
+            result.status.pendingLocalChangesCount shouldBe 0
+            result.status.remoteChangesCount shouldBe 0
+        }
+    }
+
+    test("local row created while remote snapshot loads remains pending for push") {
+        withEmptyTestDatabase { db ->
+            db.syncStateDao.upsertSyncState(SyncStateEntity())
+            val checkedAt = LocalDateTime(2026, 6, 11, 15, 0)
+            val gateway = StatusMirrorGateway(
+                checkedAt = checkedAt,
+                remoteRowCount = 0,
+                onSnapshotLoad = {
+                    db.vendorDao.create(
+                        Vendor(
+                            displayName = "Concurrent vendor",
+                            updatedAt = LocalDateTime(2026, 6, 11, 15, 1),
+                        )
+                    )
+                },
+            )
+
+            val result = createSyncService(db, gateway).syncOnce()
+
+            result.error shouldBe null
+            result.status.pendingLocalChangesCount shouldBe 1
+            result.status.remoteChangesCount shouldBe 0
+            gateway.snapshotCalls shouldBe 1
+            gateway.pushCalls shouldBe 0
+        }
+    }
+
+    test("remote snapshot failure preserves configured YDB status and error") {
+        withEmptyTestDatabase { db ->
+            db.syncStateDao.upsertSyncState(SyncStateEntity())
+            val gateway = StatusMirrorGateway(
+                checkedAt = LocalDateTime(2026, 6, 11, 15, 0),
+                snapshotError = "snapshot unavailable",
+            )
+
+            val result = createSyncService(db, gateway).syncOnce()
+
+            result.error shouldBe "Mirror remote snapshot failed: snapshot unavailable"
+            result.status.remoteSyncConfigured shouldBe true
+            result.status.remoteError shouldBe result.error
+            gateway.snapshotCalls shouldBe 1
+        }
+    }
+
+    test("missing YDB configuration remains unconfigured after sync failure") {
+        withEmptyTestDatabase { db ->
+            db.syncStateDao.upsertSyncState(SyncStateEntity())
+            val gateway = StatusMirrorGateway(
+                checkedAt = LocalDateTime(2026, 6, 11, 15, 0),
+                configured = false,
+            )
+
+            val result = createSyncService(db, gateway).syncOnce()
+
+            result.error shouldBe "Mirror sync is not configured"
+            result.status.remoteSyncConfigured shouldBe false
+            result.status.remoteError shouldBe result.error
+            gateway.snapshotCalls shouldBe 0
         }
     }
 })
@@ -134,32 +222,58 @@ private class ConfiguredFileStorageGateway : RemoteFileStorageGateway {
 
 private class StatusMirrorGateway(
     private val checkedAt: LocalDateTime,
+    remoteRowCount: Int = 1,
+    private val configured: Boolean = true,
+    private val snapshotError: String? = null,
+    private val onSnapshotLoad: suspend () -> Unit = {},
 ) : MirrorSyncRemoteGateway {
+    var configurationStatusCalls = 0
+    var statusCalls = 0
+    var snapshotCalls = 0
     var pushCalls = 0
     var pullCalls = 0
-    private val remoteRow = VendorMirrorRow(
-        syncId = "remote-vendor",
-        displayName = "Remote vendor",
-        comment = "",
-        updatedAt = checkedAt,
-    )
+    private val remoteRows = List(remoteRowCount) { index ->
+        VendorMirrorRow(
+            syncId = "remote-vendor-$index",
+            displayName = "Remote vendor $index",
+            comment = "",
+            updatedAt = checkedAt,
+        )
+    }
 
-    override suspend fun getStatus() = MirrorRemoteStatus(
-        configured = true,
-        availableTables = MirrorSyncTable.mirroredBusinessTables
-            .mapTo(mutableSetOf(), MirrorSyncTable::tableName),
+    override suspend fun getConfigurationStatus(): MirrorRemoteStatus {
+        configurationStatusCalls++
+        return remoteStatus()
+    }
+
+    override suspend fun getStatus(): MirrorRemoteStatus {
+        statusCalls++
+        return remoteStatus()
+    }
+
+    private fun remoteStatus() = MirrorRemoteStatus(
+        configured = configured,
+        availableTables = if (configured) {
+            MirrorSyncTable.mirroredBusinessTables.mapTo(mutableSetOf(), MirrorSyncTable::tableName)
+        } else {
+            emptySet()
+        },
         checkedAt = checkedAt,
     )
 
-    override suspend fun loadRemoteSnapshot(tables: List<MirrorSyncTable>) =
-        Result.success(
+    override suspend fun loadRemoteSnapshot(tables: List<MirrorSyncTable>): Result<MirrorRemoteSnapshot> {
+        snapshotCalls++
+        snapshotError?.let { return Result.failure(IllegalStateException(it)) }
+        onSnapshotLoad()
+        return Result.success(
             MirrorRemoteSnapshot(
                 loadedAt = checkedAt,
                 rowsByTable = tables.associateWith { table ->
-                    if (table == MirrorSyncTable.VENDOR) listOf(remoteRow) else emptyList()
+                    if (table == MirrorSyncTable.VENDOR) remoteRows else emptyList()
                 },
             )
         )
+    }
 
     override suspend fun pushMirrorState(changes: List<MirrorPushEntityChange>): Result<MirrorPushResult> {
         pushCalls++
@@ -173,7 +287,7 @@ private class StatusMirrorGateway(
                 pulledAt = checkedAt,
                 changes = request.tables.flatMap { table ->
                     if (table == MirrorSyncTable.VENDOR) {
-                        listOf(MirrorPushEntityChange(table, remoteRow))
+                        remoteRows.map { MirrorPushEntityChange(table, it) }
                     } else {
                         emptyList()
                     }

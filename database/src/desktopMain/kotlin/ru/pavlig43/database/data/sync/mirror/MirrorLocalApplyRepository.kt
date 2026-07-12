@@ -27,9 +27,12 @@ class MirrorLocalApplyRepository(
             val explicitTombstones = changes.filter { it.row.deletedAt != null }
             var persistedTombstones = persistNewestTombstones(explicitTombstones)
 
-            for (change in changes.filter { it.row.deletedAt == null }.sortedBy { it.table.applyOrder }) {
-                applyActiveChange(change)
-            }
+            changes.filter { it.row.deletedAt == null }
+                .groupBy(MirrorPushEntityChange::table)
+                .toSortedMap(compareBy(MirrorSyncTable::applyOrder))
+                .forEach { (table, tableChanges) ->
+                    applyActiveChanges(table, tableChanges)
+                }
 
             val explicitKeys = explicitTombstones
                 .mapTo(mutableSetOf()) { it.entityKey() }
@@ -73,11 +76,14 @@ class MirrorLocalApplyRepository(
         )
     }
 
-    private suspend fun applyActiveChange(change: MirrorPushEntityChange) {
-        if (change.table == MirrorSyncTable.BATCH_COST_PRICE) {
-            applyBatchCostPrice(change.row as BatchCostPriceMirrorRow)
+    private suspend fun applyActiveChanges(
+        table: MirrorSyncTable,
+        changes: List<MirrorPushEntityChange>,
+    ) {
+        if (table == MirrorSyncTable.BATCH_COST_PRICE) {
+            changes.forEach { applyBatchCostPrice(it.row as BatchCostPriceMirrorRow) }
         } else {
-            entityApplyRepository.applyChanges(listOf(change))
+            entityApplyRepository.applyChanges(changes)
         }
     }
 

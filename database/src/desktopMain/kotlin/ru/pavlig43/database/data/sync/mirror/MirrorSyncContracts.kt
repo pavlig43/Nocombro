@@ -15,6 +15,9 @@ import kotlinx.datetime.LocalDateTime
  * ошибки доступности и сообщает их через [MirrorRemoteStatus.error].
  */
 interface MirrorSyncRemoteGateway {
+    /** Cheap local configuration check. It must not connect or probe mirror tables. */
+    suspend fun getConfigurationStatus(): MirrorRemoteStatus = getStatus()
+
     /**
      * Проверяет конфигурацию и доступность remote mirror.
      *

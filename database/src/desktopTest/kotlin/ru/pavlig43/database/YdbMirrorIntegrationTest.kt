@@ -5,6 +5,7 @@ import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.nulls.shouldBeNull
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.database.data.product.ProductType
@@ -163,19 +164,26 @@ class YdbMirrorIntegrationTest : FunSpec({
                     change.copy(row = change.row.markDeleted(deletedAt))
                 }
                 gateway.pushMirrorState(tombstones).getOrThrow()
-                targetApply.apply(tombstones)
+                val applyResult = targetApply.apply(tombstones)
+                applyResult.deletedRows shouldBe rows.size
 
-                val deletedTarget = MirrorLocalSnapshotRepository(target.database)
+                val physicalTarget = MirrorLocalSnapshotRepository(target.database)
                     .loadDatabaseSnapshot(LINKED_TABLES)
                     .onlySyncIds(syncIds)
-                val deletedRows = deletedTarget.rowsByTable.values.flatten()
-                deletedRows.size shouldBe rows.size
-                deletedRows.forEach { row ->
+                physicalTarget.rowsByTable.values.flatten().size shouldBe 0
+
+                val deletedTarget = MirrorLocalSnapshotRepository(target.database)
+                    .loadSnapshot(LINKED_TABLES)
+                    .onlySyncIds(syncIds)
+                val journalTombstones = deletedTarget.rowsByTable.values.flatten()
+                journalTombstones.size shouldBe rows.size
+                journalTombstones.mapTo(mutableSetOf(), MirrorSyncRow::syncId) shouldBe syncIds
+                journalTombstones.forEach { row ->
                     row.deletedAt shouldBe deletedAt
                 }
                 target.database.batchCostDao
                     .getBySyncId("$prefix-batch")
-                    ?.deletedAt shouldBe deletedAt
+                    .shouldBeNull()
             } finally {
                 runCatching {
                     gateway.pushMirrorState(
