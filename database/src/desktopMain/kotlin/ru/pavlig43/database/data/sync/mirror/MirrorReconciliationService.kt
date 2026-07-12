@@ -24,6 +24,9 @@ class MirrorReconciliationService(
     /** Возвращает низкоуровневый статус remote gateway без загрузки snapshot. */
     suspend fun getStatus(): MirrorRemoteStatus = remoteGateway.getStatus()
 
+    /** Returns the cheap local configuration status without probing remote tables. */
+    suspend fun getConfigurationStatus(): MirrorRemoteStatus = remoteGateway.getConfigurationStatus()
+
     suspend fun prepareSync(): Result<MirrorPreparedSyncContext> = runCatching {
         val configuration = remoteGateway.getConfigurationStatus()
         require(configuration.configured) { configuration.error ?: "Mirror sync is not configured" }
@@ -50,11 +53,16 @@ class MirrorReconciliationService(
         val applyMark = TimeSource.Monotonic.markNow()
         localApplyRepository.apply(context.plan.pullChanges)
         SyncStageLog.completed("Room apply", applyMark.elapsedNow().inWholeMilliseconds)
+        val refreshedLocal = localSnapshotRepository.loadSnapshot(MirrorSyncTable.mirroredBusinessTables)
+        val expectedRemote = context.remoteSnapshot.withAppliedChanges(context.plan.pushChanges)
+        val remainingPlan = planner.plan(refreshedLocal, expectedRemote)
         MirrorReconciliationRun(
             configured = true,
             completedAt = context.remoteSnapshot.loadedAt,
             pushedChanges = context.plan.pushChanges.size,
             pulledChanges = context.plan.pullChanges.size,
+            remainingPushChanges = remainingPlan.pushChanges.size,
+            remainingPullChanges = remainingPlan.pullChanges.size,
         )
     }
 
@@ -210,6 +218,8 @@ data class MirrorReconciliationRun(
     val completedAt: LocalDateTime,
     val pushedChanges: Int,
     val pulledChanges: Int,
+    val remainingPushChanges: Int = 0,
+    val remainingPullChanges: Int = 0,
 ) {
     companion object {
         /** Создает успешный no-op результат для установки без remote-конфигурации. */
@@ -220,6 +230,22 @@ data class MirrorReconciliationRun(
             pulledChanges = 0,
         )
     }
+}
+
+private fun MirrorRemoteSnapshot.withAppliedChanges(
+    changes: List<MirrorPushEntityChange>,
+): MirrorRemoteSnapshot {
+    if (changes.isEmpty()) return this
+
+    val changesByTable = changes.groupBy(MirrorPushEntityChange::table)
+    return copy(
+        rowsByTable = rowsByTable + changesByTable.mapValues { (table, tableChanges) ->
+            val rowsBySyncId = rowsByTable[table].orEmpty()
+                .associateByTo(linkedMapOf(), MirrorSyncRow::syncId)
+            tableChanges.forEach { change -> rowsBySyncId[change.row.syncId] = change.row }
+            rowsBySyncId.values.toList()
+        },
+    )
 }
 
 /** Статистика полной пересборки remote mirror из локального snapshot. */

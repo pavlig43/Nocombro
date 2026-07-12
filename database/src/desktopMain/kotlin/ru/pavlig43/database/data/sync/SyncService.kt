@@ -7,6 +7,7 @@ import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.database.data.files.remote.RemoteFileBatchDownloadRepository
 import ru.pavlig43.database.data.files.remote.RemoteFileBatchDownloadSummary
 import ru.pavlig43.database.data.sync.mirror.MirrorReconciliationService
+import ru.pavlig43.database.data.sync.mirror.MirrorRemoteStatus
 import java.io.File
 import kotlin.time.TimeSource
 
@@ -70,19 +71,28 @@ class SyncService(
      */
     suspend fun syncOnce(): SyncRunResult {
         val context = mirrorReconciliationService.prepareSync().getOrElse { throwable ->
-            return failureWithoutRefresh(throwable.message ?: "Mirror sync preparation failed")
+            val configuration = runCatching {
+                mirrorReconciliationService.getConfigurationStatus()
+            }.getOrNull()
+            return failureWithoutRefresh(
+                message = throwable.message ?: "Mirror sync preparation failed",
+                configuration = configuration,
+            )
         }
         val mirrorRun = mirrorReconciliationService.executePreparedSync(context).getOrElse { throwable ->
-            return failureWithoutRefresh(throwable.message ?: "Mirror sync failed")
+            return failureWithoutRefresh(
+                message = throwable.message ?: "Mirror sync failed",
+                configuration = context.configuration,
+            )
         }
 
         syncStateRepository.updateLastPushAt(mirrorRun.completedAt)
         syncStateRepository.updateLastPullAt(mirrorRun.completedAt)
         val status = SyncStatusSnapshot(
-            pendingLocalChangesCount = 0,
-            remoteChangesCount = 0,
-            hasRemoteChanges = false,
-            remoteSyncConfigured = true,
+            pendingLocalChangesCount = mirrorRun.remainingPushChanges,
+            remoteChangesCount = mirrorRun.remainingPullChanges,
+            hasRemoteChanges = mirrorRun.remainingPullChanges > 0,
+            remoteSyncConfigured = context.configuration.configured,
             lastStatusCheckAt = mirrorRun.completedAt,
             lastSyncAt = mirrorRun.completedAt,
             lastPullAt = mirrorRun.completedAt,
@@ -189,20 +199,29 @@ class SyncService(
         return repository.downloadMissingLocalCopies()
     }
 
-    private suspend fun failureWithoutRefresh(message: String): SyncRunResult {
+    private suspend fun failureWithoutRefresh(
+        message: String,
+        configuration: MirrorRemoteStatus?,
+    ): SyncRunResult {
         val current = _status.value
         val syncState = syncStateRepository.getSyncState()
+        val status = (current ?: SyncStatusSnapshot(
+            pendingLocalChangesCount = 0,
+            remoteChangesCount = 0,
+            hasRemoteChanges = false,
+            remoteSyncConfigured = configuration?.configured ?: false,
+            lastStatusCheckAt = configuration?.checkedAt ?: defaultUpdatedAt(),
+            lastSyncAt = syncState?.lastPushAt,
+            lastPullAt = syncState?.lastPullAt,
+        )).copy(
+            remoteSyncConfigured = configuration?.configured ?: current?.remoteSyncConfigured ?: false,
+            lastStatusCheckAt = configuration?.checkedAt ?: current?.lastStatusCheckAt ?: defaultUpdatedAt(),
+            remoteError = message,
+        )
+        _status.value = status
         return SyncRunResult.failure(
             message = message,
-            status = current ?: SyncStatusSnapshot(
-                pendingLocalChangesCount = 0,
-                remoteChangesCount = 0,
-                hasRemoteChanges = false,
-                remoteSyncConfigured = false,
-                lastStatusCheckAt = defaultUpdatedAt(),
-                lastSyncAt = syncState?.lastPushAt,
-                lastPullAt = syncState?.lastPullAt,
-            ),
+            status = status,
         )
     }
 }
