@@ -72,8 +72,8 @@ class YdbJdbcMirrorSyncGateway(
      * Условно записывает каждую typed строку и читает фактического победителя.
      *
      * Равная или более новая версия YDB не перезаписывается. Результат делит
-     * входной список на принятые и отклонённые строки; ошибка содержит только
-     * таблицу и `sync_id`. Пустой список допустим.
+     * входной список на принятые и отклонённые строки; ошибка содержит таблицу,
+     * `sync_id` и исходный текст YDB. Пустой список допустим.
      */
     override suspend fun pushMirrorState(
         changes: List<MirrorPushEntityChange>,
@@ -91,7 +91,7 @@ class YdbJdbcMirrorSyncGateway(
                     }.getOrElse { throwable ->
                         throw IllegalStateException(
                             "Mirror push failed: table=${change.table.tableName}, " +
-                                "sync_id=${change.row.syncId}",
+                                "sync_id=${change.row.syncId}: ${throwable.message ?: throwable}",
                             throwable,
                         )
                     }

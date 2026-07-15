@@ -3,13 +3,25 @@ plugins {
     alias(libs.plugins.kotlinx.serialization)
 }
 
+import com.android.build.api.variant.impl.VariantOutputImpl
 import groovy.json.JsonOutput
+import java.time.LocalDate
 import java.util.Properties
 import org.gradle.api.DefaultTask
 import org.gradle.api.provider.Property
+import org.gradle.api.provider.ValueSource
+import org.gradle.api.provider.ValueSourceParameters
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
+
+val mobileVersionName = "1.0.1"
+
+abstract class CurrentBuildDateValueSource : ValueSource<String, ValueSourceParameters.None> {
+    override fun obtain(): String = LocalDate.now().toString()
+}
+
+val releaseBuildDate = providers.of(CurrentBuildDateValueSource::class) {}
 
 /**
  * Генерирует Android asset с YDB/S3-настройками из локального secrets-файла.
@@ -77,13 +89,23 @@ abstract class GenerateMobileSyncConfigTask : DefaultTask() {
     }
 }
 
+val generateMobileSyncConfig = tasks.register<GenerateMobileSyncConfigTask>("generateMobileSyncConfig") {
+    outputDir.set(layout.buildDirectory.dir("generated/mobileSyncConfig/assets"))
+    secretsFilePath.set(
+        providers.gradleProperty("nocombro.mobileSyncSecretsFile")
+            .orElse(providers.environmentVariable("NOCOMBRO_MOBILE_SYNC_SECRETS_FILE"))
+            .orElse("${System.getenv("APPDATA") ?: ""}/Nocombro/mobile-sync-secrets.properties")
+    )
+    outputs.upToDateWhen { false }
+}
+
 android {
     namespace = "ru.pavlig43.nocombro.mobile"
 
     defaultConfig {
         applicationId = "ru.pavlig43.nocombro.mobile"
         versionCode = 2
-        versionName = "1.0.1-ydbfix"
+        versionName = mobileVersionName
     }
 
     buildTypes {
@@ -101,32 +123,32 @@ android {
         }
     }
 
-    sourceSets {
-        getByName("main").assets.directories.add(
-            layout.buildDirectory.dir("generated/mobileSyncConfig/assets").get().asFile.path
-        )
-    }
-
     packaging {
         resources.excludes += "META-INF/native/**"
     }
 }
 
-val generateMobileSyncConfig = tasks.register<GenerateMobileSyncConfigTask>("generateMobileSyncConfig") {
-    outputDir.set(layout.buildDirectory.dir("generated/mobileSyncConfig/assets"))
-    secretsFilePath.set(
-        providers.gradleProperty("nocombro.mobileSyncSecretsFile")
-            .orElse(providers.environmentVariable("NOCOMBRO_MOBILE_SYNC_SECRETS_FILE"))
-            .orElse("${System.getenv("APPDATA") ?: ""}/Nocombro/mobile-sync-secrets.properties")
-    )
-    outputs.upToDateWhen { false }
+androidComponents {
+    onVariants { variant ->
+        variant.sources.assets?.addGeneratedSourceDirectory(
+            generateMobileSyncConfig,
+            GenerateMobileSyncConfigTask::outputDir,
+        )
+    }
+
+    onVariants(selector().withBuildType("release")) { variant ->
+        variant.outputs.forEach { output ->
+            (output as VariantOutputImpl).outputFileName.set(
+                releaseBuildDate.map { date -> "nocombro_$date.apk" }
+            )
+        }
+    }
 }
 
-tasks.matching {
-    (it.name.startsWith("merge") || it.name.startsWith("package")) &&
-        it.name.endsWith("Assets")
-}.configureEach {
-    dependsOn(generateMobileSyncConfig)
+tasks.register("assembleReleaseWithSecrets") {
+    group = "build"
+    description = "Builds the release APK with mobile sync secrets and debug signing."
+    dependsOn("assembleRelease")
 }
 
 dependencies {

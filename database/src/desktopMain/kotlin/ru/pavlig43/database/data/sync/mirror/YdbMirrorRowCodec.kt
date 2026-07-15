@@ -61,6 +61,7 @@ internal interface YdbMirrorRowCodec {
         return """
             UPSERT INTO `$tablePath` (${columnNames.joinToString()})
             SELECT $values
+            FROM AS_TABLE(AsList(AsStruct(1 AS _source)))
             WHERE NOT EXISTS (
                 SELECT sync_id FROM `$tablePath`
                 WHERE sync_id = CAST(? AS Utf8)
