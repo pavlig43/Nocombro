@@ -15,7 +15,9 @@ import kotlinx.datetime.LocalDateTime
  * ошибки доступности и сообщает их через [MirrorRemoteStatus.error].
  */
 interface MirrorSyncRemoteGateway {
-    /** Cheap local configuration check. It must not connect or probe mirror tables. */
+    /**
+     * Возвращает дешёвый локальный статус настроек без подключения и проверки таблиц.
+     */
     suspend fun getConfigurationStatus(): MirrorRemoteStatus = getStatus()
 
     /**
@@ -38,10 +40,11 @@ interface MirrorSyncRemoteGateway {
     ): Result<MirrorRemoteSnapshot>
 
     /**
-     * Записывает локальные победившие версии в remote mirror через idempotent upsert.
+     * Условно записывает локальные победившие версии в remote mirror.
      *
-     * Список может содержать как активные строки, так и tombstone. Метод не выполняет
-     * reconciliation повторно и предполагает, что [changes] уже рассчитаны planner-ом.
+     * Список может содержать активные строки и tombstone. Более новая или равная
+     * версия remote не перезаписывается и возвращается в
+     * [MirrorPushResult.rejectedChanges]. Метод не пересчитывает план сам.
      */
     suspend fun pushMirrorState(
         changes: List<MirrorPushEntityChange>,
@@ -93,11 +96,41 @@ data class MirrorPushEntityChange(
     val row: MirrorSyncRow,
 )
 
-/** Подтверждение успешной записи набора строк в remote mirror. */
+/**
+ * Итог условной записи набора строк в remote mirror.
+ *
+ * @param pushedAt время завершения запроса.
+ * @param affectedTables таблицы, где была принята хотя бы одна строка.
+ * @param acceptedChanges строки, совпавшие с входными после условной записи.
+ * @param rejectedChanges строки, для которых в remote остался другой победитель.
+ */
 data class MirrorPushResult(
     val pushedAt: LocalDateTime,
     val affectedTables: Set<MirrorSyncTable>,
+    val acceptedChanges: List<MirrorPushEntityChange> = emptyList(),
+    val rejectedChanges: List<MirrorPushRejection> = emptyList(),
 )
+
+/**
+ * Строка, которую remote не принял из-за более новой или равной версии.
+ *
+ * @param change отправленная локальная строка.
+ * @param remoteRow фактическая строка, оставшаяся в YDB.
+ * @param reason вид расхождения версий или содержимого.
+ */
+data class MirrorPushRejection(
+    val change: MirrorPushEntityChange,
+    val remoteRow: MirrorSyncRow,
+    val reason: MirrorPushRejectionReason,
+)
+
+/** Причина отказа условной записи в mirror. */
+enum class MirrorPushRejectionReason {
+    /** В YDB уже есть строка с более новой логической версией. */
+    STALE_VERSION,
+    /** Версии равны, но переносимое содержимое строк различается. */
+    EQUAL_VERSION_CONFLICT,
+}
 
 /** Ограничивает pull перечисленными typed mirror tables. */
 data class MirrorPullRequest(

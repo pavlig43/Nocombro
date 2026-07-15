@@ -117,6 +117,47 @@ data class MobileMirrorChange(
 data class MobileSyncPlan(
     val pushChanges: List<MobileMirrorChange>,
     val pullChanges: List<MobileMirrorChange>,
+    val conflicts: List<MobileVersionConflict> = emptyList(),
+)
+
+/**
+ * Конфликт двух строк с одинаковой версией и разным sync-содержимым.
+ *
+ * Мобильный клиент не выбирает победителя: конфликт показывается пользователю
+ * с подсказкой открыть Doctor в настольном приложении.
+ *
+ * @param table таблица спорной строки.
+ * @param localRow текущий вариант из Room.
+ * @param remoteRow текущий вариант из YDB.
+ */
+data class MobileVersionConflict(
+    val table: MobileMirrorTable,
+    val localRow: MobileMirrorRow,
+    val remoteRow: MobileMirrorRow,
+)
+
+/**
+ * Итог условной отправки набора строк в YDB.
+ *
+ * @param acceptedChanges строки, после запроса совпавшие с переданной версией.
+ * @param rejectedChanges строки, для которых в YDB сохранилась другая версия.
+ */
+data class MobilePushResult(
+    val acceptedChanges: List<MobileMirrorChange>,
+    val rejectedChanges: List<MobilePushRejection>,
+)
+
+/**
+ * Отклонённая условная запись и фактическая строка, оставшаяся в YDB.
+ *
+ * @param change локальная строка, которую пытались записать.
+ * @param remoteRow строка, прочитанная после условного `UPSERT`.
+ * @param equalVersionConflict `true`, если версии равны, но содержимое различается.
+ */
+data class MobilePushRejection(
+    val change: MobileMirrorChange,
+    val remoteRow: MobileMirrorRow,
+    val equalVersionConflict: Boolean,
 )
 
 /**
@@ -128,6 +169,7 @@ data class MobileSyncStatus(
     val localChanges: Int = 0,
     val remoteChanges: Int = 0,
     val error: String? = null,
+    val conflicts: List<MobileVersionConflict> = emptyList(),
 )
 
 /**
@@ -200,3 +242,15 @@ data class MobileEntryChange(
  * Возвращает версию строки: tombstone побеждает, если он новее `updatedAt`.
  */
 fun MobileMirrorRow.versionAt(): LocalDateTime = deletedAt?.takeIf { it > updatedAt } ?: updatedAt
+
+/**
+ * Сравнивает только переносимое между устройствами содержимое строк.
+ *
+ * Абсолютный [MobileFileMirrorRow.path] намеренно игнорируется: он описывает
+ * локальную файловую систему конкретного устройства. Все прочие поля, включая
+ * логический S3-ключ и версии, должны совпадать.
+ */
+internal fun MobileMirrorRow.hasSameSyncContent(other: MobileMirrorRow): Boolean = when {
+    this is MobileFileMirrorRow && other is MobileFileMirrorRow -> copy(path = other.path) == other
+    else -> this == other
+}

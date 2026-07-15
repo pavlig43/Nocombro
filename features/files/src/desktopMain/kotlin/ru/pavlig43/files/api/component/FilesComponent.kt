@@ -179,10 +179,25 @@ abstract class FilesComponent(
 
     }
 
+    /**
+     * Повторяет сохранение файла только из состояния ошибки.
+     *
+     * Проверка и перевод в `Loading` защищены [retryLock], поэтому быстрые двойные
+     * клики запускают не больше одной загрузки. Дисковая и сетевая работа идёт на
+     * IO dispatcher.
+     *
+     * @param composeKey стабильный ключ строки файла в текущем UI-снимке.
+     */
     internal fun retryLoadFile(composeKey: Int) {
-        val file = _filesUi.value.first { it.composeKey == composeKey }
-            .copy(uploadState = UploadState.Loading)
-        coroutineScope.launch {
+        val file = synchronized(retryLock) {
+            val current = _filesUi.value.firstOrNull { it.composeKey == composeKey }
+                ?: return
+            if (current.uploadState !is UploadState.Error) return
+            val loading = current.copy(uploadState = UploadState.Loading)
+            _filesUi.value = _filesUi.value.map { if (it.composeKey == composeKey) loading else it }
+            loading
+        }
+        coroutineScope.launch(Dispatchers.IO) {
             saveFileInNocombro(file)
         }
 
@@ -270,6 +285,7 @@ abstract class FilesComponent(
     }
 
     private val _filesUi = MutableStateFlow<List<FileUi>>(emptyList())
+    private val retryLock = Any()
     val filesUi = _filesUi.asStateFlow()
     internal val initDataComponent: LoadInitDataComponent<List<FileUi>> =
         LoadInitDataComponent<List<FileUi>>(

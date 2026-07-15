@@ -1,7 +1,7 @@
 package ru.pavlig43.files.internal.data
 
 import io.kotest.matchers.collections.shouldContainExactly
-import io.kotest.matchers.nulls.shouldBeNull
+import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import java.io.File
 import ru.pavlig43.core.model.ChangeSet
@@ -10,13 +10,13 @@ import ru.pavlig43.database.data.files.OwnerType
 import ru.pavlig43.database.data.files.remote.RemoteFileRef
 import ru.pavlig43.database.data.files.remote.RemoteFileStorageGateway
 import ru.pavlig43.database.data.files.remote.RemoteStorageObject
-import ru.pavlig43.database.data.sync.mirror.MirrorSyncTable
 import ru.pavlig43.testkit.DesktopMainDispatcherFunSpec
 import ru.pavlig43.testkit.database.createSeededManagedTestDatabase
 
+/** Проверяет tombstone-удаление метаданных без раннего удаления бинарного объекта из S3. */
 class FilesRepositoryTest : DesktopMainDispatcherFunSpec({
 
-    test("user deletion removes metadata and S3 object but preserves local binary") {
+    test("user deletion stores a tombstone and leaves S3 cleanup to Doctor") {
         val managed = createSeededManagedTestDatabase()
         val localFile = File.createTempFile("nocombro-user-delete", ".bin")
         try {
@@ -37,12 +37,14 @@ class FilesRepositoryTest : DesktopMainDispatcherFunSpec({
                 .update(ChangeSet(old = listOf(stored), new = emptyList()))
                 .getOrThrow()
 
-            managed.database.fileDao.getFileBySyncId(source.syncId).shouldBeNull()
-            storage.deletedKeys.shouldContainExactly(source.remoteObjectKey)
+            managed.database.fileDao.getFileBySyncId(source.syncId)
+                .shouldNotBeNull()
+                .deletedAt
+                .shouldNotBeNull()
+            storage.deletedKeys.shouldContainExactly(emptyList())
             localFile.exists() shouldBe true
             managed.database.mirrorDeletionJournalDao.getAll()
-                .single { it.syncId == source.syncId }
-                .entityTable shouldBe MirrorSyncTable.FILE.tableName
+                .filter { it.syncId == source.syncId } shouldBe emptyList()
         } finally {
             localFile.delete()
             managed.close()

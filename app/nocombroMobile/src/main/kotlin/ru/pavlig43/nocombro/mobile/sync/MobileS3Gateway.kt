@@ -3,11 +3,14 @@ package ru.pavlig43.nocombro.mobile.sync
 import aws.sdk.kotlin.runtime.auth.credentials.StaticCredentialsProvider
 import aws.sdk.kotlin.services.s3.S3Client
 import aws.sdk.kotlin.services.s3.model.GetObjectRequest
-import aws.sdk.kotlin.services.s3.model.PutObjectRequest
 import aws.smithy.kotlin.runtime.auth.awscredentials.Credentials
 import aws.smithy.kotlin.runtime.content.writeToFile
 import aws.smithy.kotlin.runtime.net.url.Url
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption.ATOMIC_MOVE
+import java.nio.file.StandardCopyOption.REPLACE_EXISTING
+import java.util.UUID
 import java.net.HttpURLConnection
 import java.net.URL
 import java.net.URLEncoder
@@ -43,24 +46,41 @@ interface MobileObjectStorageGateway {
 class AwsKotlinMobileS3Gateway(
     private val config: MobileS3Config,
 ) : MobileObjectStorageGateway {
+    /**
+     * Загружает файл после проверки локального пути и однократного добавления S3-префикса.
+     */
     override suspend fun uploadFile(localPath: String, remoteKey: String): Result<Unit> = runCatching {
+        val physicalRemoteKey = config.remoteKey(remoteKey)
         val file = File(localPath)
         require(file.isFile) { "Локальный файл не найден" }
-        putObject(file, remoteKey)
+        putObject(file, physicalRemoteKey)
     }
 
+    /**
+     * Скачивает объект во временный соседний файл и атомарно заменяет цель.
+     *
+     * Логический ключ проверяется до создания каталога назначения. При любом сбое
+     * временный `.part-*` удаляется, а ранее скачанный целевой файл не портится.
+     */
     override suspend fun downloadFile(remoteKey: String, localPath: String): Result<Unit> = runCatching {
+        val physicalRemoteKey = config.remoteKey(remoteKey)
         val target = File(localPath)
         target.parentFile?.mkdirs()
-        client().use { s3 ->
-            s3.getObject(
-                GetObjectRequest {
-                    bucket = config.bucket
-                    key = config.remoteKey(remoteKey)
+        val part = File(target.parentFile, "${target.name}.part-${UUID.randomUUID()}")
+        try {
+            client().use { s3 ->
+                s3.getObject(
+                    GetObjectRequest {
+                        bucket = config.bucket
+                        key = physicalRemoteKey
+                    }
+                ) { response ->
+                    requireNotNull(response.body) { "S3 response body is empty" }.writeToFile(part)
                 }
-            ) { response ->
-                response.body?.writeToFile(target)
             }
+            Files.move(part.toPath(), target.toPath(), ATOMIC_MOVE, REPLACE_EXISTING)
+        } finally {
+            Files.deleteIfExists(part.toPath())
         }
     }
 
@@ -79,7 +99,7 @@ class AwsKotlinMobileS3Gateway(
     }
 
     private fun putObject(file: File, remoteKey: String) {
-        val target = objectUrl(config.remoteKey(remoteKey))
+        val target = objectUrl(remoteKey)
         val payloadHash = file.sha256Hex()
         val now = ZonedDateTime.now(ZoneOffset.UTC)
         val amzDate = AMZ_DATE_FORMAT.format(now)

@@ -120,7 +120,8 @@ private class TransactionUpdateRepository(
         }
     }
 
-    override fun prepareForUpdate(item: Transact): Transact = item.copy(updatedAt = defaultUpdatedAt())
+    /** Создаёт версию транзакции, строго более новую текущей даже при откате часов. */
+    override fun prepareForUpdate(item: Transact): Transact = item.copy(updatedAt = defaultUpdatedAt(item.updatedAt))
 
     override suspend fun validate(item: Transact): Result<Unit> = dao.isCanSave(item)
 
@@ -170,15 +171,23 @@ private class BuyCollectionRepository(
         movementDao.deleteByIds(movementIds)
     }
 
+    /**
+     * Сохраняет покупку вместе с партией и входящим движением.
+     *
+     * Для каждой существующей строки версия рассчитывается от значения в Room,
+     * а не от системных часов, поэтому весь граф остаётся монотонным.
+     */
     private suspend fun upsertAllEntity(buys: List<BuyBDOut>) {
         buys.forEach { buy ->
+            val previousBatchVersion = buy.batchId.takeIf { it != 0 }
+                ?.let { batchDao.getBatch(it).updatedAt }
             val batch = BatchBD(
                 id = buy.batchId,
                 productId = buy.productId,
                 dateBorn = buy.dateBorn,
                 declarationId = buy.declarationId,
                 syncId = buy.batchSyncId,
-                updatedAt = defaultUpdatedAt(),
+                updatedAt = defaultUpdatedAt(previousBatchVersion),
             )
             val batchId = if (batch.id == 0) {
                 batchDao.createBatch(batch).toInt()
@@ -186,6 +195,8 @@ private class BuyCollectionRepository(
                 batchDao.updateBatch(batch)
                 batch.id
             }
+            val previousMovementVersion = buy.movementId.takeIf { it != 0 }
+                ?.let { movementDao.getMovement(it).updatedAt }
             val movement = BatchMovement(
                 batchId = batchId,
                 movementType = MovementType.INCOMING,
@@ -193,7 +204,7 @@ private class BuyCollectionRepository(
                 transactionId = buy.transactionId,
                 id = buy.movementId,
                 syncId = buy.movementSyncId,
-                updatedAt = defaultUpdatedAt(),
+                updatedAt = defaultUpdatedAt(previousMovementVersion),
             )
             val movementId = if (movement.id == 0) {
                 movementDao.createMovement(movement).toInt()
@@ -201,6 +212,8 @@ private class BuyCollectionRepository(
                 movementDao.upsertMovement(movement)
                 movement.id
             }
+            val previousBuyVersion = buy.id.takeIf { it != 0 }
+                ?.let { buyDao.getBuy(it)?.updatedAt }
             val buyBdIn = BuyBDIn(
                 transactionId = buy.transactionId,
                 movementId = movementId,
@@ -209,7 +222,7 @@ private class BuyCollectionRepository(
                 ndsPercent = buy.ndsPercent,
                 id = buy.id,
                 syncId = buy.syncId,
-                updatedAt = defaultUpdatedAt(),
+                updatedAt = defaultUpdatedAt(previousBuyVersion),
             )
             buyDao.upsertBuyBd(buyBdIn)
         }
@@ -263,8 +276,9 @@ private class RemindersCollectionRepository(
         }
     }
 
+    /** Повышает версию напоминания относительно текущей строки. */
     override fun prepareForUpsert(item: ReminderBD): ReminderBD {
-        return item.copy(updatedAt = defaultUpdatedAt())
+        return item.copy(updatedAt = defaultUpdatedAt(item.updatedAt))
     }
 
     override suspend fun deleteByIds(ids: List<Int>) {
@@ -293,8 +307,9 @@ private class ExpensesCollectionRepository(
         }
     }
 
+    /** Повышает версию расхода относительно текущей строки. */
     override fun prepareForUpsert(item: ExpenseBD): ExpenseBD {
-        return item.copy(updatedAt = defaultUpdatedAt())
+        return item.copy(updatedAt = defaultUpdatedAt(item.updatedAt))
     }
 
     override suspend fun deleteByIds(ids: List<Int>) {
@@ -380,8 +395,13 @@ private class IngredientsCollectionRepository(
         movementDao.deleteByIds(ids)
     }
 
+    /**
+     * Сохраняет исходящие движения ингредиентов с версией новее каждой строки Room.
+     */
     override suspend fun upsertItems(items: List<IngredientBD>) {
         val movements = items.map { ingredient ->
+            val previousVersion = ingredient.movementId.takeIf { it != 0 }
+                ?.let { movementDao.getMovement(it).updatedAt }
             BatchMovement(
                 batchId = ingredient.batchId,
                 movementType = MovementType.OUTGOING,
@@ -389,7 +409,7 @@ private class IngredientsCollectionRepository(
                 transactionId = ingredient.transactionId,
                 id = ingredient.movementId,
                 syncId = ingredient.syncId,
-                updatedAt = defaultUpdatedAt(),
+                updatedAt = defaultUpdatedAt(previousVersion),
             )
         }
         movementDao.upsertMovements(movements)
@@ -435,8 +455,13 @@ private class SaleCollectionRepository(
         movementDao.deleteByIds(movementIds)
     }
 
+    /**
+     * Сохраняет продажу и связанное исходящее движение с независимыми новыми версиями.
+     */
     private suspend fun upsertAllEntity(sales: List<SaleBDOut>) {
         sales.forEach { sale ->
+            val previousMovementVersion = sale.movementId.takeIf { it != 0 }
+                ?.let { movementDao.getMovement(it).updatedAt }
             val movement = BatchMovement(
                 batchId = sale.batchId,
                 movementType = MovementType.OUTGOING,
@@ -444,7 +469,7 @@ private class SaleCollectionRepository(
                 transactionId = sale.transactionId,
                 id = sale.movementId,
                 syncId = sale.movementSyncId,
-                updatedAt = defaultUpdatedAt(),
+                updatedAt = defaultUpdatedAt(previousMovementVersion),
             )
             val movementId = if (movement.id == 0) {
                 movementDao.createMovement(movement).toInt()
@@ -452,6 +477,8 @@ private class SaleCollectionRepository(
                 movementDao.upsertMovement(movement)
                 movement.id
             }
+            val previousSaleVersion = sale.id.takeIf { it != 0 }
+                ?.let { saleDao.getSale(it)?.updatedAt }
             val saleBdIn = SaleBDIn(
                 transactionId = sale.transactionId,
                 movementId = movementId,
@@ -461,7 +488,7 @@ private class SaleCollectionRepository(
                 ndsPercent = sale.ndsPercent,
                 id = sale.id,
                 syncId = sale.syncId,
-                updatedAt = defaultUpdatedAt(),
+                updatedAt = defaultUpdatedAt(previousSaleVersion),
             )
             saleDao.upsertSaleBd(saleBdIn)
         }
@@ -522,6 +549,11 @@ internal class BatchCostRepository(
         }
     }
 
+    /**
+     * Пересчитывает себестоимость партий покупки и повышает версии старых строк.
+     *
+     * @return идентификаторы партий, чья себестоимость была записана.
+     */
     private suspend fun upsertBatchCostFromBuy(transactionId: Int): List<Int> {
         val buys = buyDao.getBuysWithDetails(transactionId)
         val expenses = expenseDao.getByTransactionId(transactionId)
@@ -536,7 +568,7 @@ internal class BatchCostRepository(
             val existing = existingCosts[buyBDOut.batchId]
             existing?.copy(
                 costPricePerUnit = (buyBDOut.price + expenseOnOneKg).roundToLong(),
-                updatedAt = defaultUpdatedAt(),
+                updatedAt = defaultUpdatedAt(existing.updatedAt),
                 deletedAt = null,
             ) ?: BatchCostPriceEntity(
                 batchId = buyBDOut.batchId,
@@ -553,6 +585,7 @@ internal class BatchCostRepository(
      *
      * Себестоимость PF = суммарная стоимость всех ингредиентов / выход PF (в кг).
      * Стоимость каждого ингредиента берётся из batch_cost_price (должна быть уже рассчитана).
+     * Существующая строка себестоимости получает версию строго новее своей прошлой версии.
      *
      * @return список из одного batch ID — PF-партии, для которой обновлена себестоимость.
      *         Пустой список если у OPZS нет INCOMING движения (нет выхода).
@@ -584,7 +617,7 @@ internal class BatchCostRepository(
         val existing = batchCostDao.getBatchesCostPriceByIds(listOf(pfBatchId)).firstOrNull()
         val updatedCost = existing?.copy(
             costPricePerUnit = costPricePerKg.roundToLong(),
-            updatedAt = defaultUpdatedAt(),
+            updatedAt = defaultUpdatedAt(existing.updatedAt),
             deletedAt = null,
         ) ?: BatchCostPriceEntity(
             batchId = pfBatchId,

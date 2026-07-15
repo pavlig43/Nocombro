@@ -13,31 +13,29 @@ class SyncStateRepository(
         scope: String = DEFAULT_SYNC_SCOPE,
     ): SyncStateEntity? = syncStateDao.getSyncState(scope)
 
+    /**
+     * Записывает время успешного push, не требуя заранее созданной строки scope.
+     *
+     * @param pushedAt отметка завершённой отправки.
+     * @param scope независимая область состояния синхронизации.
+     */
     suspend fun updateLastPushAt(
         pushedAt: LocalDateTime,
         scope: String = DEFAULT_SYNC_SCOPE,
     ) {
-        val currentState = syncStateDao.getSyncState(scope)
-            ?: error("Sync state for scope `$scope` is not initialized")
-
-        syncStateDao.upsertSyncState(
-            currentState.copy(
-                lastPushAt = pushedAt,
-            )
-        )
+        syncStateDao.upsertLastPushAt(scope, pushedAt)
     }
 
+    /**
+     * Записывает время успешного pull, не меняя сохранённую отметку push.
+     *
+     * @param pulledAt отметка завершённого получения.
+     * @param scope независимая область состояния синхронизации.
+     */
     suspend fun updateLastPullAt(
         pulledAt: LocalDateTime,
         scope: String = DEFAULT_SYNC_SCOPE,
     ) {
-        val currentState = syncStateDao.getSyncState(scope)
-            ?: error("Sync state for scope `$scope` is not initialized")
-
-        syncStateDao.upsertSyncState(
-            currentState.copy(
-                lastPullAt = pulledAt,
-            )
-        )
+        syncStateDao.upsertLastPullAt(scope, pulledAt)
     }
 }

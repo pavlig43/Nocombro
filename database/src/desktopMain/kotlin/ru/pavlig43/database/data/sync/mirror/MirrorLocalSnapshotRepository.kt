@@ -3,7 +3,7 @@ package ru.pavlig43.database.data.sync.mirror
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import ru.pavlig43.database.NocombroDatabase
-import ru.pavlig43.database.data.sync.defaultUpdatedAt
+import ru.pavlig43.datetime.getCurrentLocalDateTime
 
 /**
  * Строит единый локальный mirror snapshot из Room-таблиц и deletion journal.
@@ -49,14 +49,16 @@ class MirrorLocalSnapshotRepository(
      * Загружает только физически существующие Room-строки, не читая журнал.
      *
      * Метод используется при поиске hard delete: примесь старых tombstone исказила
-     * бы сравнение состояния до и после операции.
+     * бы сравнение состояния до и после операции. [MirrorLocalSnapshot.loadedAt]
+     * хранит время чтения для диагностики, а не версию бизнес-строки, поэтому здесь
+     * используется обычное локальное время.
      */
     internal suspend fun loadDatabaseSnapshot(
         tables: List<MirrorSyncTable>,
     ): MirrorLocalSnapshot {
         val requestedTables = tables.toSet()
         return MirrorLocalSnapshot(
-            loadedAt = defaultUpdatedAt(),
+            loadedAt = getCurrentLocalDateTime(),
             rowsByTable = buildMap {
                 if (MirrorSyncTable.VENDOR in requestedTables) {
                     put(MirrorSyncTable.VENDOR, db.vendorDao.getAll().map { it.toMirrorRow() })

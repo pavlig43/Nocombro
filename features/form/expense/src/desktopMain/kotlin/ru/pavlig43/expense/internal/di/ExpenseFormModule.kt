@@ -45,7 +45,8 @@ private class ExpenseRepository(
         }
     }
 
-    override fun prepareForUpdate(item: ExpenseBD): ExpenseBD = item.copy(updatedAt = defaultUpdatedAt())
+    /** Создаёт версию расхода, строго более новую текущей даже при откате часов. */
+    override fun prepareForUpdate(item: ExpenseBD): ExpenseBD = item.copy(updatedAt = defaultUpdatedAt(item.updatedAt))
 
     override suspend fun updateInDb(item: ExpenseBD) {
         dao.updateExpense(item)

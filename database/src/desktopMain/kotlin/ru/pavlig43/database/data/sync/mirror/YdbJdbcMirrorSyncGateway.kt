@@ -1,6 +1,6 @@
 package ru.pavlig43.database.data.sync.mirror
 
-import ru.pavlig43.database.data.sync.defaultUpdatedAt
+import ru.pavlig43.datetime.getCurrentLocalDateTime
 import java.sql.Connection
 import java.sql.DriverManager
 import java.util.Properties
@@ -10,11 +10,7 @@ import kotlin.time.TimeSource
  * JDBC-реализация typed mirror gateway для YDB.
  *
  * Gateway работает с уже созданными typed tables, загружает полные snapshots и
- * выполняет batch UPSERT. Схему YDB нужно создавать и менять отдельным SQL.
- *
- * Важно: текущий UPSERT не содержит server-side compare-and-set по версии.
- * Выбор winners выполняется до записи, поэтому два конкурентных клиента теоретически
- * могут записать устаревший snapshot. Этот риск должен устраняться на уровне YDB.
+ * выполняет условную запись по версии. Схему YDB нужно создавать и менять отдельным SQL.
  */
 class YdbJdbcMirrorSyncGateway(
     private val config: YdbMirrorJdbcConfig,
@@ -22,7 +18,7 @@ class YdbJdbcMirrorSyncGateway(
     override suspend fun getConfigurationStatus() = MirrorRemoteStatus(
         configured = true,
         availableTables = emptySet(),
-        checkedAt = defaultUpdatedAt(),
+        checkedAt = getCurrentLocalDateTime(),
     )
 
     /**
@@ -42,13 +38,13 @@ class YdbJdbcMirrorSyncGateway(
             MirrorRemoteStatus(
                 configured = true,
                 availableTables = availableTables,
-                checkedAt = defaultUpdatedAt(),
+                checkedAt = getCurrentLocalDateTime(),
             )
         }.getOrElse { throwable ->
             MirrorRemoteStatus(
                 configured = true,
                 availableTables = emptySet(),
-                checkedAt = defaultUpdatedAt(),
+                checkedAt = getCurrentLocalDateTime(),
                 error = throwable.message ?: "Mirror YDB connection failed",
             )
         }
@@ -66,16 +62,18 @@ class YdbJdbcMirrorSyncGateway(
                 }
             }
             MirrorRemoteSnapshot(
-                loadedAt = defaultUpdatedAt(),
+                loadedAt = getCurrentLocalDateTime(),
                 rowsByTable = rows,
             )
         }
     }
 
     /**
-     * Группирует changes по таблицам и выполняет typed batch UPSERT.
+     * Условно записывает каждую typed строку и читает фактического победителя.
      *
-     * Пустой список допустим и возвращает результат без затронутых таблиц.
+     * Равная или более новая версия YDB не перезаписывается. Результат делит
+     * входной список на принятые и отклонённые строки; ошибка содержит только
+     * таблицу и `sync_id`. Пустой список допустим.
      */
     override suspend fun pushMirrorState(
         changes: List<MirrorPushEntityChange>,
@@ -83,15 +81,40 @@ class YdbJdbcMirrorSyncGateway(
         return runCatching {
             val tables = changes.map(MirrorPushEntityChange::table).distinct()
             val codecs = requireSupportedCodecs(tables).associateBy(YdbMirrorRowCodec::table)
+            val accepted = mutableListOf<MirrorPushEntityChange>()
+            val rejected = mutableListOf<MirrorPushRejection>()
             withConnection { connection ->
-                changes.groupBy(MirrorPushEntityChange::table).forEach { (table, tableChanges) ->
-                    val codec = codecs.getValue(table)
-                    upsertRows(connection, codec, tableChanges.map(MirrorPushEntityChange::row))
+                changes.forEach { change ->
+                    val codec = codecs.getValue(change.table)
+                    val remoteRow = runCatching {
+                        conditionalUpsertRow(connection, codec, change.row)
+                    }.getOrElse { throwable ->
+                        throw IllegalStateException(
+                            "Mirror push failed: table=${change.table.tableName}, " +
+                                "sync_id=${change.row.syncId}",
+                            throwable,
+                        )
+                    }
+                    if (remoteRow.hasSameSyncContent(change.row)) {
+                        accepted += change
+                    } else {
+                        rejected += MirrorPushRejection(
+                            change = change,
+                            remoteRow = remoteRow,
+                            reason = if (remoteRow.versionAt() == change.row.versionAt()) {
+                                MirrorPushRejectionReason.EQUAL_VERSION_CONFLICT
+                            } else {
+                                MirrorPushRejectionReason.STALE_VERSION
+                            },
+                        )
+                    }
                 }
             }
             MirrorPushResult(
-                pushedAt = defaultUpdatedAt(),
-                affectedTables = tables.toSet(),
+                pushedAt = getCurrentLocalDateTime(),
+                affectedTables = accepted.mapTo(mutableSetOf(), MirrorPushEntityChange::table),
+                acceptedChanges = accepted,
+                rejectedChanges = rejected,
             )
         }
     }
@@ -129,7 +152,6 @@ class YdbJdbcMirrorSyncGateway(
             withConnection { connection ->
                 syncIdsByTable.forEach { (table, syncIds) ->
                     if (syncIds.isEmpty()) return@forEach
-                    val codec = supportedYdbMirrorCodecs.getValue(table)
                     connection.prepareStatement(
                         """
                         DELETE FROM `${config.tablePath(table)}`
@@ -183,21 +205,6 @@ class YdbJdbcMirrorSyncGateway(
         }
     }
 
-    private fun upsertRows(
-        connection: Connection,
-        codec: YdbMirrorRowCodec,
-        rows: List<MirrorSyncRow>,
-    ) {
-        if (rows.isEmpty()) return
-        connection.prepareStatement(codec.upsertSql(config.tablePath(codec.table))).use { statement ->
-            rows.forEach { row ->
-                codec.bind(statement, row)
-                statement.addBatch()
-            }
-            statement.executeBatch()
-        }
-    }
-
     private fun <T> withConnection(
         block: (Connection) -> T,
     ): T {
@@ -213,8 +220,44 @@ class YdbJdbcMirrorSyncGateway(
         }
         val connectionMark = TimeSource.Monotonic.markNow()
         val connection = DriverManager.getConnection(config.jdbcUrl, properties)
-        LOGGER.info("Mirror sync stage=connection durationMs=${connectionMark.elapsedNow().inWholeMilliseconds}")
+        LOGGER.fine("Mirror sync stage=connection durationMs=${connectionMark.elapsedNow().inWholeMilliseconds}")
         return connection.use(block)
+    }
+
+    /**
+     * Условно записывает строку и читает победителя из того же serializable DML.
+     *
+     * @return входная строка после принятия либо более новая строка YDB.
+     * @throws IllegalStateException если запрос не вернул итоговую строку.
+     */
+    private fun conditionalUpsertRow(
+        connection: Connection,
+        codec: YdbMirrorRowCodec,
+        row: MirrorSyncRow,
+    ): MirrorSyncRow {
+        connection.prepareStatement(codec.conditionalUpsertSql(config.tablePath(codec.table))).use { statement ->
+            codec.bind(statement, row)
+            var parameterIndex = codec.columnNames.size + 1
+            statement.setString(parameterIndex++, row.syncId)
+            statement.setString(parameterIndex++, row.versionAt().toString())
+            statement.setString(parameterIndex, row.syncId)
+
+            var hasResultSet = statement.execute()
+            while (!hasResultSet && statement.updateCount != -1) {
+                hasResultSet = statement.moreResults
+            }
+            check(hasResultSet) {
+                "Conditional mirror upsert returned no row: " +
+                    "table=${codec.table.tableName}, sync_id=${row.syncId}"
+            }
+            statement.resultSet.use { resultSet ->
+                check(resultSet.next()) {
+                    "Conditional mirror upsert lost row: " +
+                        "table=${codec.table.tableName}, sync_id=${row.syncId}"
+                }
+                return codec.read(resultSet)
+            }
+        }
     }
 
     private companion object {

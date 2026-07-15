@@ -1,3 +1,5 @@
+import io.gitlab.arturbosch.detekt.Detekt
+
 plugins {
     // this is necessary to avoid the plugins to be loaded multiple times
     // in each subproject's classloader
@@ -63,18 +65,34 @@ plugins {
 
     }
 
+/** Общая задача всех проверок Detekt без изменения исходников. */
+val detektAll = tasks.register("detektAll") {
+    group = "verification"
+    description = "Runs every Detekt check registered in the project."
+}
+
+/** Общая явная задача автоисправления Detekt во всех Kotlin-модулях. */
+val detektAutoFix = tasks.register("detektAutoFix") {
+    group = "formatting"
+    description = "Runs Detekt auto-correction in every Kotlin module."
+}
+
 subprojects {
     if (!path.contains("sampletable")) {
         apply(plugin = "pavlig43.detekt")
-        tasks.register("detektAll") {
-            group = "custom"
-            val detektTasks = listOf(
-                "detektAndroidDebug",
-                "detektDesktopMain",
-                "detektMetadataCommonMain",
-                "detektMetadataMain"
-            ).mapNotNull { tasks.findByName(it) }
-            dependsOn(detektTasks)
+        detektAll.configure {
+            dependsOn(
+                tasks.withType<Detekt>().matching {
+                    it.name != "detektAutoFix"
+                }
+            )
+        }
+        detektAutoFix.configure {
+            dependsOn(
+                tasks.withType<Detekt>().matching {
+                    it.name == "detektAutoFix"
+                }
+            )
         }
     }
 }
@@ -82,6 +100,7 @@ subprojects {
 val smokeCoreDesktopTasks = listOf(
     ":database:desktopTest",
     ":features:analytic:profitability:desktopTest",
+    ":features:files:desktopTest",
     ":rootnocombro:desktopTest",
 )
 
@@ -96,7 +115,7 @@ val smokeFormsDesktopTasks = listOf(
 
 tasks.register("smokeCoreDesktop") {
     group = "verification"
-    description = "Runs desktop smoke tests for database, analytics, and root navigation."
+    description = "Runs desktop smoke tests for database, analytics, files, and root navigation."
     dependsOn(smokeCoreDesktopTasks)
 }
 

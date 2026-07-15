@@ -2,6 +2,11 @@ package ru.pavlig43.nocombro.mobile.sync
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
+import java.nio.file.Files
+import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 
@@ -34,6 +39,46 @@ class MobileS3ConfigTest {
         assertEquals("files/experiment_entry/file-sync/report.pdf", logicalKeyAfterPull)
         assertEquals("files/experiment_entry/file-sync/report.pdf", ydbKeyForNextPush)
         assertEquals(remoteKeyFromYdb, config.remoteKey(ydbKeyForNextPush))
+    }
+
+    /** Проверяет перевод обратных косых черт в переносимый S3-ключ. */
+    @Test
+    fun ordinaryBackslashesAreNormalized() {
+        assertEquals(
+            "files/experiment_entry/report.pdf",
+            config.normalizeObjectKey("files\\experiment_entry\\report.pdf"),
+        )
+    }
+
+    /** Проверяет отказ для пустых, абсолютных и обходящих каталог ключей. */
+    @Test
+    fun unsafeLogicalKeysAreRejected() {
+        listOf(
+            "",
+            "../secret",
+            "..\\secret",
+            "/absolute",
+            "C:/absolute",
+            "C:relative.txt",
+            "mobile",
+            "files/./secret",
+        )
+            .forEach { key ->
+                assertFailsWith<IllegalArgumentException> { config.normalizeObjectKey(key) }
+            }
+    }
+
+    /** Проверяет, что неверный ключ отклоняется до создания локального каталога. */
+    @Test
+    fun invalidDownloadKeyCreatesNoLocalDirectory() = runTest {
+        val root = Files.createTempDirectory("invalid-mobile-s3-key")
+        val target = root.resolve("not-created/report.pdf")
+        val gateway = AwsKotlinMobileS3Gateway(config)
+
+        val result = gateway.downloadFile("mobile", target.toString())
+
+        assertTrue(result.isFailure)
+        assertFalse(Files.exists(target.parent))
     }
 
     @Test

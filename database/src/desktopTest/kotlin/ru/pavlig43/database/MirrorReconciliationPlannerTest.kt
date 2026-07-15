@@ -1,19 +1,28 @@
 package ru.pavlig43.database
 
 import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.matchers.shouldBe
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.database.data.sync.mirror.BatchCostPriceMirrorRow
 import ru.pavlig43.database.data.sync.mirror.ExperimentMirrorRow
 import ru.pavlig43.database.data.sync.mirror.ExperimentReminderMirrorRow
+import ru.pavlig43.database.data.sync.mirror.FileMirrorRow
 import ru.pavlig43.database.data.sync.mirror.MirrorLocalSnapshot
 import ru.pavlig43.database.data.sync.mirror.MirrorReconciliationPlanner
 import ru.pavlig43.database.data.sync.mirror.MirrorRemoteSnapshot
 import ru.pavlig43.database.data.sync.mirror.MirrorSyncRow
 import ru.pavlig43.database.data.sync.mirror.MirrorSyncTable
 import ru.pavlig43.database.data.sync.mirror.orderedForLocalApply
+import ru.pavlig43.database.data.files.OwnerType
 import ru.pavlig43.testkit.DesktopMainDispatcherFunSpec
 
+/**
+ * Проверяет выбор победителей, конфликт равных версий и порядок применения строк.
+ *
+ * Отдельный сценарий для файлов закрепляет, что абсолютный путь устройства не
+ * относится к переносимому содержимому mirror-строки.
+ */
 class MirrorReconciliationPlannerTest : DesktopMainDispatcherFunSpec({
 
     test("planner chooses newest side and ignores equal versions") {
@@ -44,6 +53,52 @@ class MirrorReconciliationPlannerTest : DesktopMainDispatcherFunSpec({
             "only-remote",
             "remote-newer",
         )
+    }
+
+    test("equal version with different payload is an explicit conflict") {
+        val version = LocalDateTime(2026, 6, 9, 11, 0)
+        val local = plannerRow("conflict", version)
+        val remote = local.copy(costPricePerUnit = local.costPricePerUnit + 1)
+
+        val plan = MirrorReconciliationPlanner().plan(
+            plannerLocalSnapshot(local),
+            plannerRemoteSnapshot(remote),
+        )
+
+        plan.pushChanges shouldContainExactly emptyList()
+        plan.pullChanges shouldContainExactly emptyList()
+        plan.conflicts.single().localRow shouldBe local
+        plan.conflicts.single().remoteRow shouldBe remote
+    }
+
+    test("device-local file path does not create an equal-version conflict") {
+        val version = LocalDateTime(2026, 6, 9, 11, 0)
+        val local = FileMirrorRow(
+            syncId = "file-sync-id",
+            ownerType = OwnerType.EXPERIMENT_ENTRY,
+            ownerSyncId = "entry-sync-id",
+            displayName = "report.pdf",
+            path = "C:/Users/local/AppData/Roaming/Nocombro/files/report.pdf",
+            remoteObjectKey = "files/experiment_entry/file-sync-id/report.pdf",
+            remoteStorageProvider = "s3",
+            updatedAt = version,
+        )
+        val remote = local.copy(path = "/home/remote/.local/share/nocombro/files/report.pdf")
+
+        val plan = MirrorReconciliationPlanner().plan(
+            MirrorLocalSnapshot(
+                loadedAt = version,
+                rowsByTable = mapOf(MirrorSyncTable.FILE to listOf(local)),
+            ),
+            MirrorRemoteSnapshot(
+                loadedAt = version,
+                rowsByTable = mapOf(MirrorSyncTable.FILE to listOf(remote)),
+            ),
+        )
+
+        plan.pushChanges shouldContainExactly emptyList()
+        plan.pullChanges shouldContainExactly emptyList()
+        plan.conflicts shouldContainExactly emptyList()
     }
 
     test("newer deletion wins but remote tombstone without local row needs no apply") {

@@ -2,12 +2,9 @@ package ru.pavlig43.database
 
 import androidx.room.Room
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import org.koin.core.module.Module
 import org.koin.dsl.module
-import ru.pavlig43.database.data.sync.SyncStateEntity
 import java.io.File
 
 fun platformDataBaseModule(): Module = module {
@@ -33,12 +30,6 @@ fun getNocombroDatabase(): NocombroDatabase {
         .setDriver(BundledSQLiteDriver())
         .setQueryCoroutineContext(Dispatchers.IO)
         .build()
-    CoroutineScope(Dispatchers.IO).launch {
-        val existingState = database.syncStateDao.getSyncState()
-        database.syncStateDao.upsertSyncState(
-            syncState = createInitialSyncState(existingState)
-        )
-    }
     return database
 }
 
@@ -56,15 +47,3 @@ private fun getAppDataDirectory(): File {
         ?: File(System.getProperty("user.home"))
     return File(baseDir, "Nocombro").apply { mkdirs() }
 }
-
-/**
- * Собирает начальное состояние синхронизации для локальной базы.
- *
- * При повторном запуске сохраняем уже известные отметки pull/push.
- */
-private fun createInitialSyncState(
-    existingState: SyncStateEntity?,
-) = SyncStateEntity(
-    lastPullAt = existingState?.lastPullAt,
-    lastPushAt = existingState?.lastPushAt,
-)

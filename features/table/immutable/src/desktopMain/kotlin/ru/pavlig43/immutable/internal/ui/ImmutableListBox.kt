@@ -36,6 +36,7 @@ import ru.pavlig43.coreui.ValidationErrorsCard
 import ru.pavlig43.immutable.internal.component.ImmutableTableComponent
 import ru.pavlig43.immutable.internal.component.ImmutableTableUiEvent
 import ru.pavlig43.immutable.internal.component.ItemListState
+import ru.pavlig43.immutable.internal.component.manager.DeleteState
 import ru.pavlig43.tablecore.manger.SelectionUiEvent
 import ru.pavlig43.tablecore.model.IMultiLineTableUi
 import ru.pavlig43.tablecore.model.TableData
@@ -53,6 +54,9 @@ import ua.wwind.table.config.TableDefaults
 import ua.wwind.table.state.TableState
 import ua.wwind.table.strings.StringProvider
 
+/**
+ * Связывает состояние неизменяемой таблицы с экраном, удалением и ошибками.
+ */
 @OptIn(ExperimentalTableApi::class)
 @Composable
 internal fun <I : IMultiLineTableUi, C> ImmutableTableBox(
@@ -60,6 +64,7 @@ internal fun <I : IMultiLineTableUi, C> ImmutableTableBox(
     modifier: Modifier = Modifier
 ) {
     val itemListState by component.itemListState.collectAsState()
+    val deleteState by component.deleteState.collectAsState()
 
     val tableData: TableData<I> by component.tableData.collectAsState()
 
@@ -87,6 +92,7 @@ internal fun <I : IMultiLineTableUi, C> ImmutableTableBox(
                         onEvent = component::onEvent,
                         onRowClick = { component.onItemClick(it) },
                         tableData = tableData,
+                        deleteState = deleteState,
                         exportConfiguration = component.exportConfiguration,
                         modifier = modifier
                     )
@@ -99,6 +105,12 @@ internal fun <I : IMultiLineTableUi, C> ImmutableTableBox(
     }
 }
 
+/**
+ * Рисует таблицу и панель выбора с состоянием асинхронного удаления.
+ *
+ * Ошибка удаления показывается над панелью, а выбранные строки остаются отмечены
+ * для безопасного повтора.
+ */
 @Suppress("LongParameterList", "LongMethod","MagicNumber")
 @OptIn(ExperimentalTableApi::class)
 @Composable
@@ -112,6 +124,7 @@ private fun <I : IMultiLineTableUi, C, E : TableData<I>> BoxScope.ImmutableTable
     onEvent: (ImmutableTableUiEvent) -> Unit,
     onRowClick: (I) -> Unit,
     tableData: E,
+    deleteState: DeleteState,
     exportConfiguration: TableExportConfiguration<I, C>?,
     modifier: Modifier
 ) {
@@ -176,6 +189,7 @@ private fun <I : IMultiLineTableUi, C, E : TableData<I>> BoxScope.ImmutableTable
     }
     SelectionActionBar(
         selectedCount = tableData.selectedIds.size,
+        deleteState = deleteState,
         onDeleteClick = {
             onEvent(ImmutableTableUiEvent.DeleteSelected)
         },
@@ -187,6 +201,14 @@ private fun <I : IMultiLineTableUi, C, E : TableData<I>> BoxScope.ImmutableTable
             .align(Alignment.BottomCenter)
             .padding(16.dp),
     )
+    if (deleteState is DeleteState.Error) {
+        ValidationErrorsCard(
+            errorMessages = listOf("Не удалось удалить строки: ${deleteState.message}"),
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 96.dp, start = 16.dp, end = 16.dp),
+        )
+    }
 
 
 }

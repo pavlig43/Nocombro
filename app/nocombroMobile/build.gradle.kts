@@ -122,7 +122,10 @@ val generateMobileSyncConfig = tasks.register<GenerateMobileSyncConfigTask>("gen
     outputs.upToDateWhen { false }
 }
 
-tasks.named("preBuild") {
+tasks.matching {
+    (it.name.startsWith("merge") || it.name.startsWith("package")) &&
+        it.name.endsWith("Assets")
+}.configureEach {
     dependsOn(generateMobileSyncConfig)
 }
 

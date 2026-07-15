@@ -28,6 +28,7 @@ import ru.pavlig43.doctor.internal.ui.common.DoctorSectionCard
 import ru.pavlig43.doctor.internal.ui.common.toReadableFileSize
 import ru.pavlig43.files.api.model.LocalOrphanFile
 import ru.pavlig43.files.api.model.RemoteOrphanFile
+import ru.pavlig43.files.api.PendingUpload
 
 @Composable
 internal fun DoctorFileCleanupTool(
@@ -151,12 +152,19 @@ private fun DoctorOrphanFileRow(
     }
 }
 
+/**
+ * Показывает результат сверки S3 и блокирует удаление при небезопасном состоянии.
+ *
+ * [pendingUploads] выводятся явно: объект в процессе загрузки нельзя считать
+ * orphan-файлом даже при отсутствии активной строки в текущем remote snapshot.
+ */
 @Composable
 internal fun DoctorRemoteFileCleanupTool(
     state: DoctorRemoteOrphanFilesLoadState,
     actionError: String?,
     isActionsEnabled: Boolean,
     statusMessage: String,
+    pendingUploads: List<PendingUpload>,
     onDismissActionError: () -> Unit,
     onLogCompare: () -> Unit,
     onRefresh: () -> Unit,
@@ -201,6 +209,25 @@ internal fun DoctorRemoteFileCleanupTool(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Spacer(Modifier.height(8.dp))
+
+        if (pendingUploads.isNotEmpty()) {
+            Text(
+                text = "Незавершённые загрузки: ${pendingUploads.size}",
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.error,
+            )
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                pendingUploads.forEach { pending ->
+                    Text(
+                        text = "${pending.objectKey} — попыток: ${pending.attemptCount}",
+                        style = MaterialTheme.typography.bodySmall,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+            }
+            Spacer(Modifier.height(8.dp))
+        }
 
         when (state) {
             DoctorRemoteOrphanFilesLoadState.Idle -> Text(

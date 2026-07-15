@@ -32,6 +32,12 @@ import ru.pavlig43.theme.check
 import ru.pavlig43.update.component.UpdateComponent
 import ru.pavlig43.update.component.UpdateState
 
+/**
+ * Показывает кнопку двухфазного сохранения и ошибки каждого этапа.
+ *
+ * После ошибки постобработки кнопка повторяет только пересчёт и остаётся доступной
+ * независимо от текущих ошибок полей, поскольку данные уже записаны.
+ */
 @Suppress("LongMethod")
 @Composable
 internal fun UpdateButton(
@@ -57,6 +63,13 @@ internal fun UpdateButton(
                 color = MaterialTheme.colorScheme.error
             )
         }
+        if (updateState is UpdateState.PostProcessError) {
+            Text(
+                text = "Данные сохранены, пересчёт не выполнен: " +
+                    (updateState as UpdateState.PostProcessError).message,
+                color = MaterialTheme.colorScheme.error,
+            )
+        }
         if (saveDialogState) {
             SaveDialog(
                 onConfirmSave = component::onUpdate,
@@ -69,14 +82,22 @@ internal fun UpdateButton(
             )
         }
         Button(
-            onClick = { saveDialogState = true },
-            enabled = isValidValue.isEmpty(),
+            onClick = {
+                if (updateState is UpdateState.PostProcessError) {
+                    component.retryPostProcess()
+                } else {
+                    saveDialogState = true
+                }
+            },
+            enabled = updateState !is UpdateState.Loading &&
+                (isValidValue.isEmpty() || updateState is UpdateState.PostProcessError),
         ) {
 
             when (updateState) {
                 is UpdateState.Error -> Text("Повторить")
                 is UpdateState.Init -> Text("Обновить")
                 is UpdateState.Loading -> LoadingUi(Modifier.size(24.dp))
+                is UpdateState.PostProcessError -> Text("Повторить пересчёт")
                 is UpdateState.Success -> {
                     var animationPlayed by remember { mutableStateOf(false) }
 

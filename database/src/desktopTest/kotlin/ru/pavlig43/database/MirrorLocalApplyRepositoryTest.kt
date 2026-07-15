@@ -77,7 +77,7 @@ class MirrorLocalApplyRepositoryTest : DesktopMainDispatcherFunSpec({
                 syncId = "remote-only-vendor",
                 displayName = "Remote only",
                 comment = "",
-                updatedAt = LocalDateTime(2026, 6, 1, 10, 0),
+                updatedAt = LocalDateTime(2100, 6, 1, 10, 0),
             )
             val gateway = CapturingMirrorGateway(
                 remoteSnapshot = MirrorRemoteSnapshot(
@@ -103,7 +103,7 @@ class MirrorLocalApplyRepositoryTest : DesktopMainDispatcherFunSpec({
 
             result.pushedRows shouldBe gateway.pushedChanges.size - 1
             result.tombstonedRows shouldBe 1
-            tombstone.deletedAt.shouldNotBeNull()
+            (tombstone.deletedAt.shouldNotBeNull() > remoteOnly.updatedAt) shouldBe true
         } finally {
             local.close()
         }

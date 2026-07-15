@@ -2,6 +2,7 @@ package ru.pavlig43.nocombro.mobile.sync
 
 import java.io.File
 import kotlinx.datetime.LocalDateTime
+import ru.pavlig43.datetime.getCurrentLocalDateTime
 
 /**
  * Оркестрирует Android-синхронизацию: YDB, локальную Room-БД и S3.
@@ -33,13 +34,15 @@ class MobileSyncRepository(
             )
         }
         val local = localRepository.loadSnapshot(context.config.s3)
-        val remote = context.remote.loadSnapshot().getOrElse { throwable ->
+        val remote = context.remote.loadSnapshot().mapCatching { snapshot ->
+            snapshot.mobileOnly().normalizeFileKeys(context.config.s3)
+        }.getOrElse { throwable ->
             return MobileSyncPreview(
                 localChanges = emptyList(),
                 remoteChanges = emptyList(),
                 error = throwable.mobileSyncErrorMessage("YDB snapshot не загружен"),
             )
-        }.mobileOnly().normalizeFileKeys(context.config.s3)
+        }
         val plan = planner.plan(local, remote)
         return MobileSyncPreview(
             localChanges = buildExperimentChangeGroups(
@@ -52,6 +55,7 @@ class MobileSyncRepository(
                 before = local,
                 after = remote,
             ),
+            error = MOBILE_SYNC_CONFLICT_HINT.takeIf { plan.conflicts.isNotEmpty() },
         )
     }
 
@@ -65,14 +69,17 @@ class MobileSyncRepository(
         val status = context.remote.status()
         if (status.error != null) return MobileSyncRunResult(status = status, error = status.error)
         val local = localRepository.loadSnapshot(context.config.s3)
-        val remote = context.remote.loadSnapshot().getOrElse { throwable ->
+        val remote = context.remote.loadSnapshot().mapCatching { snapshot ->
+            snapshot.mobileOnly().normalizeFileKeys(context.config.s3)
+        }.getOrElse { throwable ->
             return failure(throwable.mobileSyncErrorMessage("YDB snapshot не загружен"))
-        }.mobileOnly().normalizeFileKeys(context.config.s3)
+        }
         val plan = planner.plan(local, remote)
         return MobileSyncRunResult(
             status = status.copy(
                 localChanges = plan.pushChanges.size,
                 remoteChanges = plan.pullChanges.size,
+                conflicts = plan.conflicts,
             ),
         )
     }
@@ -80,26 +87,72 @@ class MobileSyncRepository(
     /**
      * Отправляет локальные версии в YDB и связанные файлы в S3.
      *
-     * Сначала грузим бинарные файлы, затем пишем метаданные в YDB. Так строка `file`
-     * не появится в mirror раньше, чем объект станет доступен в bucket.
+     * Сначала грузит бинарные файлы, затем условно пишет метаданные в YDB. Если
+     * удалённая версия успела измениться после снимка, репозиторий один раз заново
+     * читает оба снимка и строит новый план. Вторая отклонённая запись завершает
+     * операцию ошибкой: бесконечный retry мог бы скрыть постоянную конкуренцию.
+     *
+     * @return число принятых YDB строк и план, который остался после записи.
      */
     suspend fun push(): MobileSyncRunResult {
         val context = loadContext().getOrElse { throwable ->
             return failure(throwable.mobileSyncErrorMessage("Sync config не найден"))
         }
         val local = localRepository.loadSnapshot(context.config.s3)
-        val remote = context.remote.loadSnapshot().getOrElse { throwable ->
+        val remote = context.remote.loadSnapshot().mapCatching { snapshot ->
+            snapshot.mobileOnly().normalizeFileKeys(context.config.s3)
+        }.getOrElse { throwable ->
             return failure(throwable.mobileSyncErrorMessage("YDB snapshot не загружен"))
-        }.mobileOnly().normalizeFileKeys(context.config.s3)
+        }
         val plan = planner.plan(local, remote)
         uploadPushFiles(plan.pushChanges, context.storage).getOrElse { throwable ->
             return failure(throwable.mobileSyncErrorMessage("S3 upload failed"))
         }
-        context.remote.push(plan.pushChanges).getOrElse { throwable ->
+        val pushResult = context.remote.push(plan.pushChanges).getOrElse { throwable ->
             return failure(throwable.mobileSyncErrorMessage("YDB push failed"))
         }
+        val acceptedChanges = pushResult.acceptedChanges.toMutableList()
+        val postPushPlan = if (pushResult.rejectedChanges.isNotEmpty()) {
+            val refreshedRemote = context.remote.loadSnapshot().mapCatching { snapshot ->
+                snapshot.mobileOnly().normalizeFileKeys(context.config.s3)
+            }.getOrElse { throwable ->
+                return failure(throwable.mobileSyncErrorMessage("YDB snapshot after rejected push failed"))
+            }
+            val refreshedLocal = localRepository.loadSnapshot(context.config.s3)
+            val refreshedPlan = planner.plan(refreshedLocal, refreshedRemote)
+            if (refreshedPlan.pushChanges.isEmpty()) {
+                refreshedPlan
+            } else {
+                uploadPushFiles(refreshedPlan.pushChanges, context.storage).getOrElse { throwable ->
+                    return failure(throwable.mobileSyncErrorMessage("S3 upload retry failed"))
+                }
+                val retryResult = context.remote.push(refreshedPlan.pushChanges).getOrElse { throwable ->
+                    return failure(throwable.mobileSyncErrorMessage("YDB push retry failed"))
+                }
+                if (retryResult.rejectedChanges.isNotEmpty()) {
+                    return failure(retryResult.rejectedChanges.secondRejectionMessage())
+                }
+                acceptedChanges += retryResult.acceptedChanges
+                planner.plan(
+                    refreshedLocal,
+                    refreshedRemote.withAppliedChanges(retryResult.acceptedChanges),
+                )
+            }
+        } else {
+            planner.plan(local, remote.withAppliedChanges(pushResult.acceptedChanges))
+        }
         lastPushAt = local.loadedAt
-        return check().copy(pushed = plan.pushChanges.size, lastPushAt = lastPushAt)
+        return MobileSyncRunResult(
+            status = MobileSyncStatus(
+                configured = true,
+                checkedAt = getCurrentLocalDateTime(),
+                localChanges = postPushPlan.pushChanges.size,
+                remoteChanges = postPushPlan.pullChanges.size,
+                conflicts = postPushPlan.conflicts,
+            ),
+            pushed = acceptedChanges.size,
+            lastPushAt = lastPushAt,
+        )
     }
 
     /**
@@ -113,9 +166,11 @@ class MobileSyncRepository(
             return failure(throwable.mobileSyncErrorMessage("Sync config не найден"))
         }
         val local = localRepository.loadSnapshot(context.config.s3)
-        val remote = context.remote.loadSnapshot().getOrElse { throwable ->
+        val remote = context.remote.loadSnapshot().mapCatching { snapshot ->
+            snapshot.mobileOnly().normalizeFileKeys(context.config.s3)
+        }.getOrElse { throwable ->
             return failure(throwable.mobileSyncErrorMessage("YDB snapshot не загружен"))
-        }.mobileOnly().normalizeFileKeys(context.config.s3)
+        }
         val plan = planner.plan(local, remote)
         localRepository.applyRemoteChanges(plan.pullChanges, context.config.s3)
         lastPullAt = remote.loadedAt
@@ -165,7 +220,12 @@ class MobileSyncRepository(
             .filter { it.deletedAt == null }
             .forEach { file ->
                 val remoteKey = file.remoteObjectKey ?: return@forEach
-                storage.uploadFile(file.path, remoteKey).getOrThrow()
+                storage.uploadFile(file.path, remoteKey).getOrElse { throwable ->
+                    throw MobileSyncOperationException(
+                        message = "table=${MobileMirrorTable.FILE.tableName}, sync_id=${file.syncId}",
+                        cause = throwable,
+                    )
+                }
             }
     }
 
@@ -180,7 +240,12 @@ class MobileSyncRepository(
             .filter { (it.deletedAt == null) && (it.remoteObjectKey != null) }
             .filterNot { File(it.path).isFile }
         files.forEach { file ->
-            storage.downloadFile(file.remoteObjectKey.orEmpty(), file.path).getOrThrow()
+            storage.downloadFile(file.remoteObjectKey.orEmpty(), file.path).getOrElse { throwable ->
+                throw MobileSyncOperationException(
+                    message = "table=${MobileMirrorTable.FILE.tableName}, sync_id=${file.syncId}",
+                    cause = throwable,
+                )
+            }
         }
     }
 
@@ -188,7 +253,7 @@ class MobileSyncRepository(
         return MobileSyncRunResult(
             status = MobileSyncStatus(
                 configured = false,
-                checkedAt = ru.pavlig43.datetime.getCurrentLocalDateTime(),
+                checkedAt = getCurrentLocalDateTime(),
                 error = message,
             ),
             error = message,
@@ -244,11 +309,55 @@ internal fun MobileMirrorSnapshot.normalizeFileKeys(config: MobileS3Config): Mob
         .map { row ->
             if (row is MobileFileMirrorRow) {
                 row.copy(
-                    remoteObjectKey = row.remoteObjectKey?.let(config::normalizeObjectKey),
+                    remoteObjectKey = row.remoteObjectKey?.let { objectKey ->
+                        runCatching { config.normalizeObjectKey(objectKey) }
+                            .getOrElse { throwable ->
+                                throw MobileSyncOperationException(
+                                    message = "table=${MobileMirrorTable.FILE.tableName}, " +
+                                        "sync_id=${row.syncId}",
+                                    cause = throwable,
+                                )
+                            }
+                    },
                 )
             } else {
                 row
             }
         }
     return copy(rowsByTable = rowsByTable + (MobileMirrorTable.FILE to normalizedFileRows))
+}
+
+/** Текст для конфликтов, которые мобильный клиент не умеет разрешать. */
+internal const val MOBILE_SYNC_CONFLICT_HINT =
+    "Найдены конфликты данных. Откройте Doctor в настольном приложении."
+
+/**
+ * Возвращает копию удалённого снимка с уже принятыми строками.
+ *
+ * Функция нужна для расчёта статуса сразу после push без ещё одного сетевого
+ * чтения. Строки заменяются по паре «таблица, `syncId`».
+ */
+private fun MobileMirrorSnapshot.withAppliedChanges(
+    changes: List<MobileMirrorChange>,
+): MobileMirrorSnapshot {
+    if (changes.isEmpty()) return this
+    val changesByTable = changes.groupBy(MobileMirrorChange::table)
+    return copy(
+        rowsByTable = rowsByTable + changesByTable.mapValues { (table, tableChanges) ->
+            val rowsBySyncId = rowsByTable[table].orEmpty()
+                .associateByTo(linkedMapOf(), MobileMirrorRow::syncId)
+            tableChanges.forEach { change -> rowsBySyncId[change.row.syncId] = change.row }
+            rowsBySyncId.values.toList()
+        },
+    )
+}
+
+/**
+ * Строит безопасную ошибку повторного отказа без содержимого пользовательских полей.
+ */
+private fun List<MobilePushRejection>.secondRejectionMessage(): String {
+    val rows = joinToString { rejection ->
+        "table=${rejection.change.table.tableName}, sync_id=${rejection.change.row.syncId}"
+    }
+    return "YDB push отклонён после одной повторной проверки: $rows"
 }

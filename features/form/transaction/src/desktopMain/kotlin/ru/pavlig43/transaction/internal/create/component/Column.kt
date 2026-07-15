@@ -12,6 +12,16 @@ import ru.pavlig43.transaction.internal.model.TransactionEssentialsUi
 import ua.wwind.table.ColumnSpec
 import ua.wwind.table.editableTableColumns
 
+/**
+ * Типы транзакций, для которых реализованы форма создания и рабочие вкладки.
+ *
+ * Списание и инвентаризация могут существовать в старых данных, но не предлагаются
+ * при создании, пока их бизнес-редактор не реализован.
+ */
+internal val creatableTransactionTypes = TransactionType.entries.filterNot {
+    it == TransactionType.WRITE_OFF || it == TransactionType.INVENTORY
+}
+
 internal fun createTransactionColumns0(
     onOpenCreatedAtDialog: () -> Unit,
     onChangeItem: ((TransactionEssentialsUi) -> TransactionEssentialsUi) -> Unit,
@@ -23,7 +33,7 @@ internal fun createTransactionColumns0(
                 headerText = "Тип транзакции",
                 column = TransactionField.TRANSACTION_TYPE,
                 valueOf = { it.transactionType },
-                options = TransactionType.entries,
+                options = creatableTransactionTypes,
                 isSortable = false,
                 onTypeSelected = { item, type -> onChangeItem { it.copy(transactionType = type) } },
             )

@@ -50,7 +50,8 @@ private class DocumentUpdateRepository(
         }
     }
 
-    override fun prepareForUpdate(item: Document): Document = item.copy(updatedAt = defaultUpdatedAt())
+    /** Создаёт версию документа, строго более новую текущей даже при откате часов. */
+    override fun prepareForUpdate(item: Document): Document = item.copy(updatedAt = defaultUpdatedAt(item.updatedAt))
 
     override suspend fun validate(item: Document): Result<Unit> = dao.isCanSave(item)
 

@@ -4,6 +4,7 @@ import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.database.data.files.OwnerType
+import ru.pavlig43.database.data.files.FileBD
 import ru.pavlig43.database.data.files.remote.RemoteFileRef
 import ru.pavlig43.database.data.files.remote.RemoteFileStorageGateway
 import ru.pavlig43.database.data.files.remote.RemoteStorageObject
@@ -18,7 +19,11 @@ import ru.pavlig43.database.data.sync.mirror.MirrorSyncRemoteGateway
 import ru.pavlig43.database.data.sync.mirror.MirrorSyncTable
 import ru.pavlig43.testkit.DesktopMainDispatcherFunSpec
 import ru.pavlig43.testkit.database.withEmptyTestDatabase
+import java.nio.file.Files
 
+/**
+ * Проверяет, что S3-очистка защищает ключи mirror, Room и pending-реестра.
+ */
 class RemoteFilesMaintenanceRepositoryTest : DesktopMainDispatcherFunSpec({
 
     test("active mirror file keys are protected while tombstones and blank keys are not") {
@@ -31,7 +36,7 @@ class RemoteFilesMaintenanceRepositoryTest : DesktopMainDispatcherFunSpec({
                     fileRow("blank", ""),
                 )
             )
-            val repository = RemoteFilesMaintenanceRepository(db, storage, mirror)
+            val repository = RemoteFilesMaintenanceRepository(db, storage, mirror, testRegistry())
 
             repository.getOrphanRemoteFiles().getOrThrow()
                 .map { it.objectKey }
@@ -43,7 +48,7 @@ class RemoteFilesMaintenanceRepositoryTest : DesktopMainDispatcherFunSpec({
         withEmptyTestDatabase { db ->
             val storage = FakeStorage(setOf("candidate"))
             val mirror = FakeMirrorGateway(emptyList())
-            val repository = RemoteFilesMaintenanceRepository(db, storage, mirror)
+            val repository = RemoteFilesMaintenanceRepository(db, storage, mirror, testRegistry())
 
             repository.getOrphanRemoteFiles().getOrThrow()
                 .map { it.objectKey } shouldContainExactly listOf("candidate")
@@ -63,13 +68,47 @@ class RemoteFilesMaintenanceRepositoryTest : DesktopMainDispatcherFunSpec({
                     fileRow("spec", "nocombro/files/product/spec.pdf"),
                 )
             )
-            val repository = RemoteFilesMaintenanceRepository(db, storage, mirror)
+            val repository = RemoteFilesMaintenanceRepository(db, storage, mirror, testRegistry())
 
             repository.getOrphanRemoteFiles().getOrThrow()
                 .map { it.objectKey } shouldBe emptyList()
         }
     }
+
+    test("local and pending keys protect uploads before mirror catches up") {
+        withEmptyTestDatabase { db ->
+            db.fileDao.upsertFiles(
+                listOf(
+                    FileBD(
+                        ownerId = 1,
+                        ownerFileType = OwnerType.PRODUCT,
+                        displayName = "local",
+                        path = "local",
+                        remoteObjectKey = "local",
+                    )
+                )
+            )
+            val storage = FakeStorage(setOf("local", "pending", "orphan"))
+            val registry = testRegistry().also { it.markPending("pending", "pending-local") }
+            val repository = RemoteFilesMaintenanceRepository(
+                db,
+                storage,
+                FakeMirrorGateway(emptyList()),
+                registry,
+            )
+
+            repository.getOrphanRemoteFiles().getOrThrow()
+                .map { it.objectKey } shouldContainExactly listOf("orphan")
+            repository.getPendingUploads().getOrThrow()
+                .map { it.objectKey } shouldContainExactly listOf("pending")
+        }
+    }
 })
+
+/** Создаёт изолированный реестр, чтобы тесты не читали профиль пользователя. */
+private fun testRegistry(): PendingUploadRegistry = PendingUploadRegistry(
+    Files.createTempDirectory("nocombro-pending-test").resolve("pending.tsv")
+)
 
 private val testTime = LocalDateTime(2026, 6, 12, 12, 0)
 

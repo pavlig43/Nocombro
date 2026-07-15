@@ -6,8 +6,9 @@ import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.files.FileBD
 import ru.pavlig43.database.data.files.OwnerType
 import ru.pavlig43.database.data.files.remote.RemoteFileStorageGateway
-import ru.pavlig43.database.data.sync.mirror.MirrorDeletionJournalRepository
 import ru.pavlig43.database.inTransaction
+import ru.pavlig43.files.api.PendingUploadRegistry
+import ru.pavlig43.database.data.sync.defaultUpdatedAt
 
 /**
  * Репозиторий вкладки файлов.
@@ -22,6 +23,7 @@ import ru.pavlig43.database.inTransaction
 internal class FilesRepository(
     db: NocombroDatabase,
     private val remoteFileStorageGateway: RemoteFileStorageGateway,
+    private val pendingUploadRegistry: PendingUploadRegistry = PendingUploadRegistry(),
 )  {
     private val dao = db.fileDao
     private val database = db
@@ -52,6 +54,8 @@ internal class FilesRepository(
      *
      * Если удалённое хранилище не настроено, метод считается успешным и ничего не делает.
      * Это позволяет приложению работать в локальном режиме без отдельной ветки кода в UI.
+     * Перед сетью ключ сохраняется в [PendingUploadRegistry]. Даже успешная загрузка
+     * остаётся pending до записи метаданных в Room через [replaceOwnedFile] или [update].
      */
     suspend fun uploadRemoteCopy(
         objectKey: String,
@@ -60,10 +64,14 @@ internal class FilesRepository(
         if (!remoteFileStorageGateway.isConfigured()) {
             return Result.success(Unit)
         }
+        pendingUploadRegistry.markPending(objectKey, localPath)
         return remoteFileStorageGateway.upload(
             objectKey = objectKey,
             localPath = localPath,
-        ).map { Unit }
+        ).fold(
+            onSuccess = { Result.success(Unit) },
+            onFailure = { Result.failure(it) },
+        )
     }
 
     /**
@@ -103,6 +111,13 @@ internal class FilesRepository(
             .takeIf { remoteFileStorageGateway.isConfigured() }
     }
 
+    /**
+     * Создаёт или заменяет метаданные файла с новой монотонной sync-версией.
+     *
+     * Старый S3-объект здесь не удаляется: физическую чистку делает Doctor после
+     * сверки remote mirror. После успешной Room-транзакции ключ исключается из
+     * реестра незавершённых загрузок.
+     */
     suspend fun replaceOwnedFile(
         ownerId: Int,
         ownerType: OwnerType,
@@ -114,16 +129,6 @@ internal class FilesRepository(
         return runCatching {
             database.inTransaction {
                 val existing = dao.getFileByOwnerAndDisplayName(ownerId, ownerType, displayName)
-                val existingRemoteObjectKey = existing?.remoteObjectKey
-                if (
-                    existing != null &&
-                    existingRemoteObjectKey != null &&
-                    existingRemoteObjectKey != remoteObjectKey &&
-                    remoteFileStorageGateway.isConfigured()
-                ) {
-                    remoteFileStorageGateway.delete(existingRemoteObjectKey).getOrThrow()
-                }
-
                 val file = FileBD(
                     ownerId = ownerId,
                     ownerFileType = ownerType,
@@ -133,24 +138,26 @@ internal class FilesRepository(
                     remoteStorageProvider = remoteStorageProvider,
                     id = existing?.id ?: 0,
                     syncId = existing?.syncId ?: ru.pavlig43.database.data.sync.defaultSyncId(),
-                    updatedAt = ru.pavlig43.database.data.sync.defaultUpdatedAt(),
+                    updatedAt = defaultUpdatedAt(existing?.updatedAt),
                     deletedAt = null,
                 )
 
                 dao.upsertFiles(listOf(file))
                 file
             }
-        }
+        }.onSuccess { file -> file.remoteObjectKey?.let(pendingUploadRegistry::complete) }
     }
 
     /**
      * Сохраняет diff списка вложений.
      *
-     * При удалении файла сначала пытается удалить remote-объект из bucket,
-     * затем чистит строку из локальной БД. Вставка и обновление остаются на стороне Room.
+     * Удалённые из списка файлы не стираются из S3 и Room физически. Они получают
+     * tombstone с версией строго новее прежней, после чего удаление уйдёт в mirror.
+     * Физическую чистку S3 позже выполняет Doctor по свежему remote snapshot.
      *
      * Сравнение ведётся по `syncId`, потому что локальный `id` не годится как стабильный
      * идентификатор для будущей multi-device синхронизации файлов.
+     * После успешной транзакции ключи нового списка удаляются из pending-реестра.
      */
     suspend fun update(changeSet: ChangeSet<List<FileBD>>): Result<Unit> {
         return runCatching {
@@ -161,15 +168,13 @@ internal class FilesRepository(
 
                 val removedFiles = old.filter { it.syncId !in newBySyncId }
                 if (removedFiles.isNotEmpty()) {
-                    removedFiles.forEach { file ->
-                        val remoteObjectKey = file.remoteObjectKey
-                        if (remoteObjectKey != null && remoteFileStorageGateway.isConfigured()) {
-                            remoteFileStorageGateway.delete(remoteObjectKey).getOrThrow()
-                        }
+                    val tombstones = removedFiles.map { file ->
+                        val deletedAt = defaultUpdatedAt(
+                            file.deletedAt?.takeIf { it > file.updatedAt } ?: file.updatedAt
+                        )
+                        file.copy(updatedAt = deletedAt, deletedAt = deletedAt)
                     }
-                    MirrorDeletionJournalRepository(database).captureHardDeletesInCurrentTransaction {
-                        dao.deleteFiles(removedFiles.map(FileBD::id))
-                    }
+                    dao.upsertFiles(tombstones)
                 }
 
                 val filesForUpsert = if (old.isEmpty()) {
@@ -185,6 +190,9 @@ internal class FilesRepository(
                     dao.upsertFiles(filesForUpsert)
                 }
             }
+        }.onSuccess {
+            changeSet.new.mapNotNull(FileBD::remoteObjectKey)
+                .forEach(pendingUploadRegistry::complete)
         }
 
     }

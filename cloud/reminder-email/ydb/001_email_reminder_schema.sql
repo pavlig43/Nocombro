@@ -16,5 +16,7 @@ CREATE TABLE IF NOT EXISTS `reminder_email_delivery` (
     target_email Utf8,
     status Utf8,
     error_text Utf8,
+    attempt_count Uint64,
+    status_changed_at Utf8,
     PRIMARY KEY (delivery_id)
 );

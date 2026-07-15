@@ -26,7 +26,14 @@ import ru.pavlig43.doctor.internal.ui.common.DoctorToolCard
 import ru.pavlig43.doctor.internal.ui.tool.filecleanup.DoctorFileCleanupTool
 import ru.pavlig43.doctor.internal.ui.tool.filecleanup.DoctorRemoteFileCleanupTool
 import ru.pavlig43.doctor.internal.ui.tool.storageoverview.DoctorStorageOverviewTool
+import ru.pavlig43.doctor.internal.ui.tool.syncconflicts.DoctorSyncConflictsTool
 
+/**
+ * Рисует выбранный инструмент Doctor и связывает его с потоками компонента.
+ *
+ * Экран отдельно показывает pending-загрузки, блокировку S3-очистки и действия
+ * выбора стороны для конфликтов синхронизации.
+ */
 @Composable
 fun DoctorScreen(
     component: DoctorComponent,
@@ -39,6 +46,9 @@ fun DoctorScreen(
     val remoteOrphanFilesActionError by component.remoteOrphanFilesActionError.collectAsState()
     val isRemoteCleanupEnabled by component.isRemoteCleanupEnabled.collectAsState()
     val remoteCleanupStatusMessage by component.remoteCleanupStatusMessage.collectAsState()
+    val pendingUploads by component.pendingUploads.collectAsState()
+    val syncConflicts by component.syncConflicts.collectAsState()
+    val syncConflictActionError by component.syncConflictActionError.collectAsState()
 
     Row(
         modifier = Modifier
@@ -100,11 +110,20 @@ fun DoctorScreen(
                         actionError = remoteOrphanFilesActionError,
                         isActionsEnabled = isRemoteCleanupEnabled,
                         statusMessage = remoteCleanupStatusMessage,
+                        pendingUploads = pendingUploads,
                         onDismissActionError = component::dismissRemoteOrphanFilesActionError,
                         onLogCompare = component::logRemoteFileComparison,
                         onRefresh = component::refreshRemoteOrphanFiles,
                         onDelete = component::deleteRemoteOrphanFile,
                         onDeleteAll = component::deleteAllRemoteOrphanFiles,
+                    )
+
+                    DoctorTool.SyncConflicts -> DoctorSyncConflictsTool(
+                        conflicts = syncConflicts,
+                        actionError = syncConflictActionError,
+                        onDismissError = component::dismissSyncConflictActionError,
+                        onUseLocal = { component.resolveSyncConflict(it, useLocal = true) },
+                        onUseRemote = { component.resolveSyncConflict(it, useLocal = false) },
                     )
 
                 }

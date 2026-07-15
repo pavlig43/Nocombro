@@ -25,6 +25,18 @@ sealed interface MirrorSyncRow {
     val deletedAt: LocalDateTime?
 }
 
+/**
+ * Сравнивает только переносимое между устройствами содержимое строки.
+ *
+ * [FileMirrorRow.path] хранит локальный абсолютный путь и закономерно отличается
+ * на разных устройствах. Каноническую ссылку на бинарный объект задаёт
+ * [FileMirrorRow.remoteObjectKey], поэтому локальный путь не создаёт sync-конфликт.
+ */
+internal fun MirrorSyncRow.hasSameSyncContent(other: MirrorSyncRow): Boolean = when {
+    this is FileMirrorRow && other is FileMirrorRow -> copy(path = other.path) == other
+    else -> this == other
+}
+
 @Serializable
 data class VendorMirrorRow(
     override val syncId: String,

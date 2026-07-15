@@ -2,6 +2,7 @@ package ru.pavlig43.nocombro.mobile.sync
 
 import androidx.room.withTransaction
 import java.io.File
+import java.nio.file.Path
 import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.datetime.getCurrentLocalDateTime
 import ru.pavlig43.nocombro.mobile.internal.database.NocombroMobileDatabase
@@ -65,7 +66,7 @@ class MobileLocalMirrorRepository(
         db.withTransaction {
             val ordered = changes.sortedWith(
                 compareBy<MobileMirrorChange> { tombstoneOrder(it) }
-                    .thenBy { it.table.order }
+                    .thenBy { if (it.row.deletedAt == null) it.table.order else -it.table.order }
                     .thenBy { it.row.syncId },
             )
             ordered.forEach { change ->
@@ -86,11 +87,27 @@ class MobileLocalMirrorRepository(
      * другого устройства, при следующей отправке не создаст `prefix/prefix/...`.
      */
     fun localPathForObjectKey(objectKey: String): String {
-        return File(File(filesDirPath, "nocombro"), objectKey).absolutePath
+        val root = Path.of(filesDirPath, "nocombro").toAbsolutePath().normalize()
+        val resolved = normalizeMobileLogicalFileKey(objectKey)
+            .split('/')
+            .fold(root) { path, segment -> path.resolve(segment) }
+            .normalize()
+        require(resolved.startsWith(root)) { "File key escapes the managed root" }
+        return resolved.toString()
     }
 
+    /**
+     * Применяет удалённую строку эксперимента, если её версия новее локальной.
+     *
+     * Для старого parent-only tombstone сперва создаёт tombstone всего локального
+     * дерева. Это не даёт дочерним строкам воскреснуть на следующем push.
+     */
     private suspend fun applyExperiment(row: MobileExperimentMirrorRow) {
         val current = db.experimentDao.getExperimentBySyncId(row.syncId)
+        if (current != null && row.versionAt() <= current.entityVersionAt()) return
+        if (current != null && row.deletedAt != null) {
+            cascadeLegacyExperimentDelete(current.id, row.versionAt())
+        }
         db.experimentDao.upsert(
             MobileExperimentEntity(
                 id = current?.id ?: 0,
@@ -104,9 +121,13 @@ class MobileLocalMirrorRepository(
         )
     }
 
+    /**
+     * Применяет запись журнала только при наличии родителя и более новой версии.
+     */
     private suspend fun applyEntry(row: MobileExperimentEntryMirrorRow) {
         val experiment = db.experimentDao.getExperimentBySyncId(row.experimentSyncId) ?: return
         val current = db.experimentEntryDao.getEntryBySyncId(row.syncId)
+        if (current != null && row.versionAt() <= current.entityVersionAt()) return
         db.experimentEntryDao.upsert(
             MobileExperimentEntryEntity(
                 id = current?.id ?: 0,
@@ -121,9 +142,13 @@ class MobileLocalMirrorRepository(
         )
     }
 
+    /**
+     * Применяет напоминание только при наличии родителя и более новой версии.
+     */
     private suspend fun applyReminder(row: MobileExperimentReminderMirrorRow) {
         val experiment = db.experimentDao.getExperimentBySyncId(row.experimentSyncId) ?: return
         val current = db.experimentReminderDao.getReminderBySyncId(row.syncId)
+        if (current != null && row.versionAt() <= current.entityVersionAt()) return
         db.experimentReminderDao.upsert(
             MobileExperimentReminderEntity(
                 id = current?.id ?: 0,
@@ -137,6 +162,12 @@ class MobileLocalMirrorRepository(
         )
     }
 
+    /**
+     * Применяет метаданные файла записи эксперимента.
+     *
+     * Путь с другого устройства не переносится в локальную файловую систему:
+     * для новой строки он заново строится из проверенного логического ключа.
+     */
     private suspend fun applyFile(
         row: MobileFileMirrorRow,
         config: MobileS3Config,
@@ -144,6 +175,7 @@ class MobileLocalMirrorRepository(
         if (row.ownerType != MobileFileOwnerType.EXPERIMENT_ENTRY) return
         val entry = db.experimentEntryDao.getEntryBySyncId(row.ownerSyncId) ?: return
         val current = db.experimentEntryFileDao.getFileBySyncId(row.syncId)
+        if (current != null && row.versionAt() <= current.entityVersionAt()) return
         val objectKey = config.normalizeObjectKey(row.remoteObjectKey ?: row.path)
         db.experimentEntryFileDao.upsert(
             MobileExperimentEntryFileEntity(
@@ -157,6 +189,42 @@ class MobileLocalMirrorRepository(
                 deletedAt = row.deletedAt,
             )
         )
+    }
+
+    /**
+     * Превращает старый parent-only tombstone в удаление всего локального дерева.
+     *
+     * Версия каскада выбирается строго новее tombstone родителя и всех дочерних
+     * строк. Файлы, напоминания и записи помечаются в порядке «потомок — родитель».
+     *
+     * @param experimentId локальный идентификатор удаляемого эксперимента.
+     * @param parentDeleteVersion версия удалённого tombstone родителя.
+     */
+    private suspend fun cascadeLegacyExperimentDelete(
+        experimentId: Int,
+        parentDeleteVersion: LocalDateTime,
+    ) {
+        val entries = db.experimentEntryDao.getEntriesByExperiment(experimentId)
+        val reminders = db.experimentReminderDao.getRemindersByExperiment(experimentId)
+        val files = entries.map { it.id }.takeIf(List<Int>::isNotEmpty)
+            ?.let { db.experimentEntryFileDao.getFilesByEntries(it) }
+            .orEmpty()
+        val floor = buildList {
+            add(parentDeleteVersion)
+            entries.forEach { add(it.entityVersionAt()) }
+            reminders.forEach { add(it.entityVersionAt()) }
+            files.forEach { add(it.entityVersionAt()) }
+        }.maxOrNull()
+        val deletedAt = mobileUpdatedAt(floor)
+        files.forEach {
+            db.experimentEntryFileDao.upsert(it.copy(updatedAt = deletedAt, deletedAt = deletedAt))
+        }
+        reminders.forEach {
+            db.experimentReminderDao.upsert(it.copy(updatedAt = deletedAt, deletedAt = deletedAt))
+        }
+        entries.forEach {
+            db.experimentEntryDao.upsert(it.copy(updatedAt = deletedAt, deletedAt = deletedAt))
+        }
     }
 }
 
@@ -206,3 +274,19 @@ private fun MobileExperimentEntryFileEntity.toMirrorRow(
 private fun tombstoneOrder(change: MobileMirrorChange): Int {
     return if (change.row.deletedAt == null) 0 else 1
 }
+
+/** Возвращает фактическую sync-версию локального эксперимента. */
+private fun MobileExperimentEntity.entityVersionAt(): LocalDateTime =
+    deletedAt?.takeIf { it > updatedAt } ?: updatedAt
+
+/** Возвращает фактическую sync-версию локальной записи журнала. */
+private fun MobileExperimentEntryEntity.entityVersionAt(): LocalDateTime =
+    deletedAt?.takeIf { it > updatedAt } ?: updatedAt
+
+/** Возвращает фактическую sync-версию локального напоминания. */
+private fun MobileExperimentReminderEntity.entityVersionAt(): LocalDateTime =
+    deletedAt?.takeIf { it > updatedAt } ?: updatedAt
+
+/** Возвращает фактическую sync-версию локальных метаданных файла. */
+private fun MobileExperimentEntryFileEntity.entityVersionAt(): LocalDateTime =
+    deletedAt?.takeIf { it > updatedAt } ?: updatedAt

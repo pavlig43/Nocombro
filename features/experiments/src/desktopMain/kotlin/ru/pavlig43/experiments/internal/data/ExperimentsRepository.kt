@@ -10,6 +10,13 @@ import ru.pavlig43.database.data.files.OwnerType
 import ru.pavlig43.database.data.sync.defaultUpdatedAt
 import ru.pavlig43.database.inTransaction
 
+/**
+ * Хранит дерево эксперимента и его tombstone в настольной Room-БД.
+ *
+ * Версии дочерних строк меняются независимо от родителя. Полное удаление выдаёт
+ * всему дереву одну версию, строго более новую любой строки, и сохраняет файлы,
+ * напоминания, записи и эксперимент как tombstone в одной транзакции.
+ */
 internal class ExperimentsRepository(
     db: NocombroDatabase,
 ) {
@@ -59,12 +66,17 @@ internal class ExperimentsRepository(
         }
     }
 
+    /**
+     * Помечает tombstone эксперимент и всех его потомков.
+     *
+     * @param experimentId локальный идентификатор корневой строки.
+     * @return успех либо ошибка чтения или записи любой части дерева.
+     */
     suspend fun deleteExperiment(
         experimentId: Int,
     ): Result<Unit> {
         return runCatching {
             database.inTransaction {
-                val deletedAt = defaultUpdatedAt()
                 val experiment = requireNotNull(experimentDao.getExperiment(experimentId)) {
                     "Experiment $experimentId not found"
                 }
@@ -73,6 +85,14 @@ internal class ExperimentsRepository(
                 val files = entries.flatMap { entry ->
                     fileDao.getFiles(entry.id, OwnerType.EXPERIMENT_ENTRY)
                 }
+                val previousVersion = buildList {
+                    add(experiment.updatedAt)
+                    experiment.deletedAt?.let(::add)
+                    entries.forEach { add(it.deletedAt?.takeIf { deleted -> deleted > it.updatedAt } ?: it.updatedAt) }
+                    reminders.forEach { add(it.deletedAt?.takeIf { deleted -> deleted > it.updatedAt } ?: it.updatedAt) }
+                    files.forEach { add(it.deletedAt?.takeIf { deleted -> deleted > it.updatedAt } ?: it.updatedAt) }
+                }.maxOrNull()
+                val deletedAt = defaultUpdatedAt(previousVersion)
 
                 if (files.isNotEmpty()) {
                     fileDao.upsertFiles(
@@ -98,6 +118,9 @@ internal class ExperimentsRepository(
         }
     }
 
+    /**
+     * Меняет признак архива с версией строго новее текущей строки.
+     */
     suspend fun setExperimentArchived(
         experimentId: Int,
         isArchived: Boolean,
@@ -109,7 +132,7 @@ internal class ExperimentsRepository(
                 }
                 val updated = experiment.copy(
                     isArchived = isArchived,
-                    updatedAt = defaultUpdatedAt(),
+                    updatedAt = defaultUpdatedAt(experiment.updatedAt),
                 )
                 experimentDao.upsert(updated)
                 updated
@@ -117,6 +140,11 @@ internal class ExperimentsRepository(
         }
     }
 
+    /**
+     * Создаёт запись журнала, не меняя sync-версию эксперимента.
+     *
+     * Последняя активность списка считается SQL-запросом по дочерним версиям.
+     */
     suspend fun createEntryForDate(
         experimentId: Int,
         entryDate: LocalDate,
@@ -129,7 +157,6 @@ internal class ExperimentsRepository(
                 )
                 val id = experimentEntryDao.create(entry).toInt()
                 val saved = entry.copy(id = id)
-                touchExperiment(experimentId)
                 saved
             }
         }
@@ -141,17 +168,21 @@ internal class ExperimentsRepository(
         return runCatching {
             database.inTransaction {
                 experimentEntryDao.upsert(entry)
-                touchExperiment(entry.experimentId)
             }
         }
     }
 
+    /**
+     * Помечает запись и её файлы tombstone с версией новее самой записи.
+     *
+     * Версия эксперимента не меняется; все правки остаются независимыми mirror-строками.
+     */
     suspend fun deleteEntry(
         entry: ExperimentEntry,
     ): Result<Unit> {
         return runCatching {
             database.inTransaction {
-                val deletedAt = defaultUpdatedAt()
+                val deletedAt = defaultUpdatedAt(entry.deletedAt?.takeIf { it > entry.updatedAt } ?: entry.updatedAt)
                 val files = fileDao.getFiles(entry.id, OwnerType.EXPERIMENT_ENTRY)
                 if (files.isNotEmpty()) {
                     fileDao.upsertFiles(
@@ -163,7 +194,6 @@ internal class ExperimentsRepository(
                 experimentEntryDao.upsert(
                     entry.copy(updatedAt = deletedAt, deletedAt = deletedAt)
                 )
-                touchExperiment(entry.experimentId)
             }
         }
     }
@@ -182,7 +212,6 @@ internal class ExperimentsRepository(
                 )
                 val id = experimentReminderDao.create(reminder).toInt()
                 val saved = reminder.copy(id = id)
-                touchExperiment(experimentId)
                 saved
             }
         }
@@ -194,32 +223,25 @@ internal class ExperimentsRepository(
         return runCatching {
             database.inTransaction {
                 experimentReminderDao.upsert(reminder)
-                touchExperiment(reminder.experimentId)
             }
         }
     }
 
+    /** Помечает напоминание tombstone с монотонно растущей версией. */
     suspend fun deleteReminder(
         reminder: ExperimentReminder,
     ): Result<Unit> {
         return runCatching {
             database.inTransaction {
-                val updatedAt = defaultUpdatedAt()
+                val updatedAt = defaultUpdatedAt(
+                    reminder.deletedAt?.takeIf { it > reminder.updatedAt } ?: reminder.updatedAt
+                )
                 val deleted = reminder.copy(
                     updatedAt = updatedAt,
                     deletedAt = updatedAt,
                 )
                 experimentReminderDao.upsert(deleted)
-                touchExperiment(reminder.experimentId)
             }
         }
-    }
-
-    private suspend fun touchExperiment(experimentId: Int) {
-        val experiment = requireNotNull(experimentDao.getExperiment(experimentId)) {
-            "Experiment $experimentId not found"
-        }
-        val updated = experiment.copy(updatedAt = defaultUpdatedAt())
-        experimentDao.upsert(updated)
     }
 }

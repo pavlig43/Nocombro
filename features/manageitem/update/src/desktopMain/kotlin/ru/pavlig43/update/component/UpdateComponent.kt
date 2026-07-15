@@ -22,8 +22,16 @@ data class ErrorMessage(
 
 
 /**
- * Компонент, который привязан к кнопке обновления и обновляет все вкладки в форме объекта
- * @param [errorMessages] показывает список невалидных заполненных полей(например пустое имя, отсутствие файлов)
+ * Управляет сохранением всех вкладок формы и отдельным шагом постобработки.
+ *
+ * Повторный клик во время [UpdateState.Loading] игнорируется. Ошибка сохранения
+ * переводит компонент в [UpdateState.Error]. Если данные уже сохранены, но пересчёт
+ * или иная постобработка упала, используется [UpdateState.PostProcessError]: её
+ * повтор не вызывает [onUpdateAllTabs] второй раз.
+ *
+ * @param onUpdateAllTabs атомарное сохранение данных вкладок.
+ * @param errorMessages поток ошибок полей, блокирующих обычное сохранение.
+ * @param postProcessAfterUpdate действие после успешной записи, которое можно повторить отдельно.
  */
 class UpdateComponent(
     componentContext: ComponentContext,
@@ -40,20 +48,41 @@ class UpdateComponent(
             emptyList()
         )
 
+    /** Запускает сохранение и затем постобработку, не допуская параллельного повтора. */
     fun onUpdate() {
-        _updateState.update { UpdateState.Loading }
+        if (_updateState.value == UpdateState.Loading) return
+        _updateState.value = UpdateState.Loading
         coroutineScope.launch {
-            val updateState = onUpdateAllTabs().fold(
-                onSuccess = { UpdateState.Success },
-                onFailure = { UpdateState.Error(it.message ?: "Неизвестная ошибка") }
+            val updateResult = runCatching {
+                onUpdateAllTabs()
+            }.getOrElse { error -> Result.failure(error) }
+            _updateState.value = updateResult.fold(
+                onSuccess = { runPostProcess() },
+                onFailure = { UpdateState.Error(it.message ?: "Не удалось сохранить данные") },
             )
-            if (updateState is UpdateState.Success) {
-                postProcessAfterUpdate()
-            }
-            _updateState.update { updateState }
         }
-
     }
+
+    /**
+     * Повторяет только постобработку после уже успешного сохранения данных.
+     *
+     * В других состояниях вызов ничего не делает.
+     */
+    fun retryPostProcess() {
+        if (_updateState.value !is UpdateState.PostProcessError) return
+        _updateState.value = UpdateState.Loading
+        coroutineScope.launch {
+            _updateState.value = runPostProcess()
+        }
+    }
+
+    /** Преобразует успех или исключение постобработки в явное состояние UI. */
+    private suspend fun runPostProcess(): UpdateState = runCatching {
+        postProcessAfterUpdate()
+    }.fold(
+        onSuccess = { UpdateState.Success },
+        onFailure = { UpdateState.PostProcessError(it.message ?: "Не удалось выполнить пересчёт") },
+    )
 
     private val _updateState: MutableStateFlow<UpdateState> = MutableStateFlow(UpdateState.Init)
     val updateState: StateFlow<UpdateState> = _updateState.asStateFlow()

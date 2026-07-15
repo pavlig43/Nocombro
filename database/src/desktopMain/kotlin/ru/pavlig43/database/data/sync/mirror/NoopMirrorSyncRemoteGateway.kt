@@ -1,6 +1,6 @@
 package ru.pavlig43.database.data.sync.mirror
 
-import ru.pavlig43.database.data.sync.defaultUpdatedAt
+import ru.pavlig43.datetime.getCurrentLocalDateTime
 
 /**
  * Явная реализация gateway для установки без YDB-конфигурации.
@@ -14,7 +14,7 @@ class NoopMirrorSyncRemoteGateway : MirrorSyncRemoteGateway {
     override suspend fun getStatus() = MirrorRemoteStatus(
         configured = false,
         availableTables = emptySet(),
-        checkedAt = defaultUpdatedAt(),
+        checkedAt = getCurrentLocalDateTime(),
         error = "Mirror sync is not configured",
     )
 

@@ -61,31 +61,58 @@ data class MobileS3Config(
     fun remoteKey(localObjectKey: String): String {
         val prefix = normalizedPrefix()
         val key = normalizeObjectKey(localObjectKey)
-        return when {
-            prefix.isEmpty() -> key
-            key.isEmpty() -> prefix
-            else -> "$prefix/$key"
-        }
+        return if (prefix.isEmpty()) key else "$prefix/$key"
     }
 
     /**
      * Возвращает логический ключ без [keyPrefix].
      *
      * Этот вид хранится в Room и YDB. Если старые данные уже содержат префикс,
-     * он снимается при чтении.
+     * он снимается при чтении. Абсолютные пути, drive prefix и сегменты обхода
+     * каталога отклоняются до обращения к S3 или диску.
+     *
+     * @throws IllegalArgumentException если ключ пуст или небезопасен.
      */
     fun normalizeObjectKey(objectKey: String): String {
-        val key = objectKey.trim().trim('/')
+        val key = normalizeMobileLogicalFileKey(objectKey)
         val prefix = normalizedPrefix()
-        return when {
+        val logicalKey = when {
             prefix.isEmpty() -> key
             key == prefix -> ""
-            key.startsWith("$prefix/") -> key.removePrefix("$prefix/")
+            key.startsWith("$prefix/") -> normalizeMobileLogicalFileKey(key.removePrefix("$prefix/"))
             else -> key
         }
+        require(logicalKey.isNotBlank()) { "File key is empty after removing the storage prefix" }
+        return logicalKey
     }
 
     private fun normalizedPrefix(): String = keyPrefix.trim().trim('/')
+        .takeIf(String::isNotBlank)
+        ?.let(::normalizeMobileLogicalFileKey)
+        .orEmpty()
+}
+
+/**
+ * Проверяет и нормализует переносимый ключ файла.
+ *
+ * Обратные косые черты заменяются прямыми. Пустой ключ, абсолютный путь,
+ * Windows drive prefix, а также сегменты `.` и `..` отклоняются до обращения к
+ * локальной файловой системе или S3. Префикс хранилища эта функция не снимает.
+ *
+ * @param objectKey ключ из Room, YDB или границы S3-шлюза.
+ * @return безопасный относительный ключ с разделителем `/`.
+ * @throws IllegalArgumentException если ключ может выйти за управляемый корень.
+ */
+internal fun normalizeMobileLogicalFileKey(objectKey: String): String {
+    val key = objectKey.trim().replace('\\', '/')
+    require(key.isNotBlank()) { "File key is empty" }
+    require(!key.startsWith('/')) { "Absolute file key is forbidden" }
+    require(!Regex("^[A-Za-z]:.*").matches(key)) { "Drive-prefixed file key is forbidden" }
+    val segments = key.split('/')
+    require(segments.all { it.isNotBlank() && it != "." && it != ".." }) {
+        "File key contains an unsafe path segment"
+    }
+    return segments.joinToString("/")
 }
 
 /**

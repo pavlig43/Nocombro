@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.datetime.getCurrentLocalDateTime
+import ru.pavlig43.nocombro.mobile.sync.mobileUpdatedAt
 import ru.pavlig43.nocombro.mobile.experiments.internal.component.MobileExperiment
 import ru.pavlig43.nocombro.mobile.experiments.internal.component.MobileExperimentEntry
 import ru.pavlig43.nocombro.mobile.experiments.internal.component.MobileExperimentEntryFile
@@ -28,6 +29,18 @@ import ru.pavlig43.nocombro.mobile.internal.database.entity.MobileExperimentEntr
 import ru.pavlig43.nocombro.mobile.internal.database.entity.MobileExperimentReminderEntity
 import ru.pavlig43.nocombro.mobile.internal.database.entity.toModel
 
+/**
+ * Управляет содержимым одного эксперимента в мобильной Room-БД.
+ *
+ * Репозиторий хранит эксперимент, записи журнала, напоминания и метаданные файлов.
+ * Каждая правка получает монотонно растущую UTC-версию через [mobileUpdatedAt],
+ * чтобы сверка с YDB не зависела от перевода часов на устройстве. Изменение дочерней
+ * строки не меняет версию эксперимента: порядок списка считается отдельным SQL-запросом.
+ *
+ * @param db база мобильного приложения.
+ * @param filesDirPath корень приватного каталога приложения для копий вложений.
+ * @param fileProviderAuthority authority Android FileProvider для открытия вложений.
+ */
 class ExperimentDetailsRepository(
     private val db: NocombroMobileDatabase,
     private val filesDirPath: String,
@@ -64,6 +77,14 @@ class ExperimentDetailsRepository(
             .map { files -> files.map(MobileExperimentEntryFileEntity::toModel) }
     }
 
+    /**
+     * Сохраняет заголовок и описание идеи, повышая версию эксперимента.
+     *
+     * @param experimentId локальный идентификатор эксперимента.
+     * @param title новый заголовок.
+     * @param ideaDescription новое описание идеи.
+     * @return успех или ошибка поиска и записи строки.
+     */
     suspend fun updateExperimentDraft(
         experimentId: Int,
         title: String,
@@ -75,12 +96,19 @@ class ExperimentDetailsRepository(
                 experiment.copy(
                     title = title,
                     ideaDescription = ideaDescription,
-                    updatedAt = getCurrentLocalDateTime(),
+                    updatedAt = mobileUpdatedAt(experiment.updatedAt),
                 )
             )
         }
     }
 
+    /**
+     * Меняет признак архива и создаёт новую версию строки для синхронизации.
+     *
+     * @param experimentId локальный идентификатор эксперимента.
+     * @param isArchived новое состояние архива.
+     * @return успех или ошибка поиска и записи строки.
+     */
     suspend fun setExperimentArchived(
         experimentId: Int,
         isArchived: Boolean,
@@ -90,31 +118,47 @@ class ExperimentDetailsRepository(
             experimentDao.upsert(
                 experiment.copy(
                     isArchived = isArchived,
-                    updatedAt = getCurrentLocalDateTime(),
+                    updatedAt = mobileUpdatedAt(experiment.updatedAt),
                 )
             )
         }
     }
 
+    /**
+     * Создаёт запись журнала на указанную дату.
+     *
+     * Пользовательская дата и [MobileExperimentEntryEntity.createdAt] сохраняют
+     * локальную семантику, а `updatedAt` записывается как UTC-версия синхронизации.
+     *
+     * @param experimentId локальный идентификатор родительского эксперимента.
+     * @param entryDate дата записи журнала.
+     * @return созданная модель с выданным Room идентификатором либо ошибка записи.
+     */
     suspend fun createEntryForDate(
         experimentId: Int,
         entryDate: LocalDate,
     ): Result<MobileExperimentEntry> = runCatching {
         db.withTransaction {
-            val now = getCurrentLocalDateTime()
+            val updatedAt = mobileUpdatedAt()
             val entry = MobileExperimentEntryEntity(
                 experimentId = experimentId,
                 entryDate = entryDate,
-                createdAt = now,
+                createdAt = getCurrentLocalDateTime(),
                 syncId = UUID.randomUUID().toString(),
-                updatedAt = now,
+                updatedAt = updatedAt,
             )
             val id = entryDao.create(entry).toInt()
-            touchExperiment(experimentId, now)
             entry.copy(id = id).toModel()
         }
     }
 
+    /**
+     * Обновляет текст записи и повышает только версию этой записи.
+     *
+     * @param entryId локальный идентификатор записи.
+     * @param content новый текст записи.
+     * @return успех или ошибка поиска и записи строки.
+     */
     suspend fun updateEntryContent(
         entryId: Int,
         content: String,
@@ -123,22 +167,32 @@ class ExperimentDetailsRepository(
             val entry = requireNotNull(entryDao.getEntry(entryId)) {
                 "Entry $entryId not found"
             }
-            val now = getCurrentLocalDateTime()
+            val now = mobileUpdatedAt(entry.updatedAt)
             entryDao.upsert(
                 entry.copy(
                     content = content,
                     updatedAt = now,
                 )
             )
-            touchExperiment(entry.experimentId, now)
         }
     }
 
+    /**
+     * Копирует вложение в каталог приложения и создаёт его sync-метаданные.
+     *
+     * Логический ключ строится из нового `syncId` и безопасного имени. Строка файла
+     * создаётся лишь после успешного копирования, а версия родительской записи не
+     * меняется.
+     *
+     * @param entryId локальный идентификатор записи-владельца.
+     * @param sourceFile выбранный пользователем исходный файл.
+     * @return метаданные созданного вложения либо ошибка копирования или записи.
+     */
     suspend fun addEntryFile(
         entryId: Int,
         sourceFile: PlatformFile,
     ): Result<MobileExperimentEntryFile> = runCatching {
-        val now = getCurrentLocalDateTime()
+        val now = mobileUpdatedAt()
         val fileSyncId = UUID.randomUUID().toString()
         val safeName = sourceFile.name.toSafeFileName()
         val objectKey = "files/experiment_entry/$fileSyncId/$safeName"
@@ -148,7 +202,7 @@ class ExperimentDetailsRepository(
         PlatformFile(localFile.absolutePath).write(sourceFile)
 
         db.withTransaction {
-            val entry = requireEntry(entryId)
+            requireEntry(entryId)
             val file = MobileExperimentEntryFileEntity(
                 entryId = entryId,
                 displayName = sourceFile.name,
@@ -160,7 +214,6 @@ class ExperimentDetailsRepository(
                 updatedAt = now,
             )
             val id = entryFileDao.create(file).toInt()
-            touchExperiment(entry.experimentId, now)
             file.copy(id = id).toModel()
         }
     }
@@ -183,32 +236,48 @@ class ExperimentDetailsRepository(
         )
     }
 
+    /**
+     * Помечает вложение tombstone и удаляет его локальную копию.
+     *
+     * Метаданные остаются в Room до отправки удаления в YDB. Отметка удаления
+     * всегда новее прежней версии строки.
+     *
+     * @param fileId локальный идентификатор вложения.
+     * @return успех либо ошибка поиска и обновления метаданных.
+     */
     suspend fun deleteEntryFile(fileId: Int): Result<Unit> = runCatching {
         val localPath = db.withTransaction {
             val file = requireNotNull(entryFileDao.getFile(fileId)) {
                 "File $fileId not found"
             }
-            val entry = requireEntry(file.entryId)
-            val now = getCurrentLocalDateTime()
+            requireEntry(file.entryId)
+            val now = mobileUpdatedAt(file.updatedAt)
             entryFileDao.upsert(
                 file.copy(
                     updatedAt = now,
                     deletedAt = now,
                 )
             )
-            touchExperiment(entry.experimentId, now)
             file.localPath
         }
         File(localPath).delete()
     }
 
+    /**
+     * Создаёт напоминание эксперимента с новой UTC-версией синхронизации.
+     *
+     * @param experimentId локальный идентификатор эксперимента.
+     * @param text текст напоминания.
+     * @param reminderDateTime пользовательские дата и время с локальной семантикой.
+     * @return созданное напоминание либо ошибка записи.
+     */
     suspend fun createReminder(
         experimentId: Int,
         text: String,
         reminderDateTime: LocalDateTime,
     ): Result<MobileExperimentReminder> = runCatching {
         db.withTransaction {
-            val now = getCurrentLocalDateTime()
+            val now = mobileUpdatedAt()
             val reminder = MobileExperimentReminderEntity(
                 experimentId = experimentId,
                 text = text,
@@ -217,11 +286,18 @@ class ExperimentDetailsRepository(
                 updatedAt = now,
             )
             val id = reminderDao.create(reminder).toInt()
-            touchExperiment(experimentId, now)
             reminder.copy(id = id).toModel()
         }
     }
 
+    /**
+     * Обновляет напоминание и повышает его версию независимо от эксперимента.
+     *
+     * @param reminderId локальный идентификатор напоминания.
+     * @param text новый текст.
+     * @param reminderDateTime новые дата и время показа.
+     * @return успех или ошибка поиска и записи строки.
+     */
     suspend fun updateReminder(
         reminderId: Int,
         text: String,
@@ -231,7 +307,7 @@ class ExperimentDetailsRepository(
             val reminder = requireNotNull(reminderDao.getReminder(reminderId)) {
                 "Reminder $reminderId not found"
             }
-            val now = getCurrentLocalDateTime()
+            val now = mobileUpdatedAt(reminder.updatedAt)
             reminderDao.upsert(
                 reminder.copy(
                     text = text,
@@ -239,23 +315,27 @@ class ExperimentDetailsRepository(
                     updatedAt = now,
                 )
             )
-            touchExperiment(reminder.experimentId, now)
         }
     }
 
+    /**
+     * Помечает напоминание tombstone с версией новее текущей.
+     *
+     * @param reminderId локальный идентификатор напоминания.
+     * @return успех или ошибка поиска и записи строки.
+     */
     suspend fun deleteReminder(reminderId: Int): Result<Unit> = runCatching {
         db.withTransaction {
             val reminder = requireNotNull(reminderDao.getReminder(reminderId)) {
                 "Reminder $reminderId not found"
             }
-            val now = getCurrentLocalDateTime()
+            val now = mobileUpdatedAt(reminder.updatedAt)
             reminderDao.upsert(
                 reminder.copy(
                     updatedAt = now,
                     deletedAt = now,
                 )
             )
-            touchExperiment(reminder.experimentId, now)
         }
     }
 
@@ -271,13 +351,6 @@ class ExperimentDetailsRepository(
         }
     }
 
-    private suspend fun touchExperiment(
-        experimentId: Int,
-        updatedAt: LocalDateTime,
-    ) {
-        val experiment = requireExperiment(experimentId)
-        experimentDao.upsert(experiment.copy(updatedAt = updatedAt))
-    }
 }
 
 private fun String.toSafeFileName(): String {

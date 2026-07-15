@@ -14,28 +14,31 @@ import ru.pavlig43.files.api.model.RemoteOrphanFile
  * `file`, а не локальная Room-база текущего компьютера. Так мы не удалим файл,
  * который прикрепили на другой синхронизированной установке.
  *
- * Перед физическим удалением код заново читает ключи из mirror и список S3.
- * Удаляется только объект, который есть в S3 и отсутствует в активных строках
- * удалённой таблицы `file`.
+ * Перед физическим удалением код заново читает ключи из mirror, Room, реестра
+ * незавершённых загрузок и S3. Удаляется лишь объект, который не защищён ни одним
+ * из этих источников. Это закрывает окно между загрузкой бинарного файла и записью
+ * его метаданных в Room/YDB.
  */
 class RemoteFilesMaintenanceRepository(
     db: NocombroDatabase,
     private val remoteFileStorageGateway: RemoteFileStorageGateway,
     private val mirrorSyncRemoteGateway: MirrorSyncRemoteGateway,
+    private val pendingUploadRegistry: PendingUploadRegistry = PendingUploadRegistry(),
 ) {
     private val fileDao = db.fileDao
 
     /**
-     * Возвращает текущие S3-объекты, не упомянутые активным удалённым зеркалом.
+     * Возвращает текущие S3-объекты, не защищённые mirror, Room или pending-реестром.
      *
-     * Метод только диагностирует и ничего не удаляет.
+     * Метод только диагностирует и ничего не удаляет. Ошибка любого источника
+     * отменяет результат, чтобы неизвестное состояние не выглядело пустым списком.
      */
     suspend fun getOrphanRemoteFiles(): Result<List<RemoteOrphanFile>> {
         return runCatching {
-            val activeMirrorKeys = loadActiveMirrorKeys()
+            val protectedKeys = loadProtectedKeys()
             loadS3Objects()
                 .asSequence()
-                .filter { it.objectKey !in activeMirrorKeys }
+                .filter { it.objectKey !in protectedKeys }
                 .sortedBy { it.objectKey }
                 .map { remoteObject ->
                     RemoteOrphanFile(
@@ -56,7 +59,7 @@ class RemoteFilesMaintenanceRepository(
         }
     }
 
-    /** Повторно проверяет и удаляет один удалённый объект, только если у него нет активной строки. */
+    /** Повторно проверяет и удаляет объект лишь при отсутствии всех защитных ключей. */
     suspend fun deleteRemoteFile(
         objectKey: String,
     ): Result<Unit> {
@@ -64,7 +67,7 @@ class RemoteFilesMaintenanceRepository(
     }
 
     /**
-     * Повторно проверяет кандидатов и удаляет подтверждённые объекты без активной строки.
+     * Повторно проверяет кандидатов по S3, mirror, Room и pending-реестру.
      *
      * @return число фактически удалённых объектов; отсутствующие и ставшие
      * активными ключи молча пропускаются.
@@ -74,10 +77,10 @@ class RemoteFilesMaintenanceRepository(
     ): Result<Int> = runCatching {
         if (objectKeys.isEmpty()) return@runCatching 0
 
-        val activeMirrorKeys = loadActiveMirrorKeys()
+        val protectedKeys = loadProtectedKeys()
         val existingS3Keys = loadS3Objects().mapTo(mutableSetOf()) { it.objectKey }
         val confirmedOrphans = objectKeys
-            .filterTo(mutableSetOf()) { it in existingS3Keys && it !in activeMirrorKeys }
+            .filterTo(mutableSetOf()) { it in existingS3Keys && it !in protectedKeys }
 
         confirmedOrphans.forEach { objectKey ->
             remoteFileStorageGateway.delete(objectKey).getOrThrow()
@@ -95,6 +98,31 @@ class RemoteFilesMaintenanceRepository(
         loadS3Objects().mapTo(mutableSetOf()) {
             remoteFileStorageGateway.normalizeObjectKey(it.objectKey)
         }
+    }
+
+    /**
+     * Возвращает незавершённые загрузки для диагностики Doctor.
+     *
+     * Ошибка чтения повреждённого реестра возвращается наружу и должна блокировать
+     * очистку S3, а не трактоваться как пустой список.
+     */
+    fun getPendingUploads(): Result<List<PendingUpload>> = runCatching {
+        pendingUploadRegistry.list()
+    }
+
+    /**
+     * Собирает ключи, которые нельзя считать orphan-объектами.
+     *
+     * В набор входят активный remote mirror, текущая Room-БД и незавершённые
+     * загрузки. Все ключи приводятся к одному логическому виду без S3-префикса.
+     */
+    private suspend fun loadProtectedKeys(): Set<String> {
+        val remote = loadActiveMirrorKeys()
+        val local = fileDao.getAllRemoteObjectKeys()
+            .map(remoteFileStorageGateway::normalizeObjectKey)
+        val pending = pendingUploadRegistry.list()
+            .map { remoteFileStorageGateway.normalizeObjectKey(it.objectKey) }
+        return remote + local + pending
     }
 
     private suspend fun loadActiveMirrorKeys(): Set<String> {

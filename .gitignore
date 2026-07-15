@@ -18,8 +18,8 @@ captures
 !*.xcodeproj/project.xcworkspace/
 !*.xcworkspace/contents.xcworkspacedata
 **/xcshareddata/WorkspaceSettings.xcsettings
-.claude/settings.local.json
 local.gradle.kts
 *mobile-sync-secrets*
 *ydb-sa-key*
 *s3*.properties
+**/__pycache__/

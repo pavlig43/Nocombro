@@ -4,7 +4,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -23,6 +26,12 @@ import ru.pavlig43.transaction.internal.update.tabs.component.sale.SaleScreen
 import ru.pavlig43.transaction.internal.update.tabs.essential.UpdateTransactionSingleLineScreen
 import ru.pavlig43.update.ui.FormTabsUi
 
+/**
+ * Показывает создание или вкладки существующей транзакции.
+ *
+ * Старые списания и инвентаризации открываются без падения: UI оставляет общие
+ * вкладки и явно сообщает, что рабочий редактор типа ещё не реализован.
+ */
 @Composable
 fun TransactionFormScreen(
     component: TransactionFormComponent,
@@ -42,11 +51,21 @@ fun TransactionFormScreen(
         ) { child ->
             when (val instance = child.instance) {
                 is TransactionFormComponent.Child.Create -> CreateTransactionSingleLineScreen(instance.component)
-                is TransactionFormComponent.Child.Update -> FormTabsUi(
-                    component = instance.component,
-                    tabChildFactory = { tabChild ->
-                        TransactionSlotScreen(tabChild)
-                    })
+                is TransactionFormComponent.Child.Update -> {
+                    val unsupportedType by instance.component.unsupportedTransactionType.collectAsState()
+                    unsupportedType?.let { type ->
+                        Text(
+                            text = "Тип транзакции «${type.displayName}» пока не поддержан",
+                            color = MaterialTheme.colorScheme.error,
+                        )
+                    }
+                    FormTabsUi(
+                        component = instance.component,
+                        tabChildFactory = { tabChild ->
+                            TransactionSlotScreen(tabChild)
+                        },
+                    )
+                }
             }
         }
 

@@ -3,6 +3,7 @@ package ru.pavlig43.transaction.internal.update
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.koin.core.qualifier.qualifier
@@ -48,6 +49,9 @@ internal class TransactionFormTabsComponent(
     private val essentialsFields =
         MutableStateFlow<TransactionEssentialsUi>(componentFactory.initItem)
     private val pfFlow = MutableStateFlow(PfUi())
+    private val _unsupportedTransactionType = MutableStateFlow<TransactionType?>(null)
+    /** Тип старой транзакции, для которой открыты лишь безопасные общие вкладки. */
+    val unsupportedTransactionType = _unsupportedTransactionType.asStateFlow()
     private var tabNavigationComponentRef: TabNavigationComponent<TransactionTab, TransactionTabChild>? = null
     private var pendingInitialTransaction: TransactionEssentialsUi? = null
 
@@ -168,6 +172,12 @@ internal class TransactionFormTabsComponent(
             }
         }
 
+    /**
+     * Добавляет рабочие вкладки по типу загруженной транзакции.
+     *
+     * Неподдержанные списание и инвентаризация не приводят к падению: компонент
+     * оставляет общие вкладки, выбирает первую и публикует тип для предупреждения UI.
+     */
     private fun applyInitialTabs(
         transaction: TransactionEssentialsUi,
         tabNavigationComponent: TabNavigationComponent<TransactionTab, TransactionTabChild>,
@@ -176,25 +186,31 @@ internal class TransactionFormTabsComponent(
             onUiThread {
                 when (transaction.transactionType) {
                     TransactionType.BUY -> {
+                        _unsupportedTransactionType.value = null
                         tabNavigationComponent.addTab(1, TransactionTab.Buy)
                         tabNavigationComponent.addTab(2, TransactionTab.Expenses)
                         tabNavigationComponent.onSelectTab(1)
                     }
 
                     TransactionType.SALE -> {
+                        _unsupportedTransactionType.value = null
                         tabNavigationComponent.addTab(1, TransactionTab.Sale)
                         tabNavigationComponent.addTab(2, TransactionTab.Expenses)
                         tabNavigationComponent.onSelectTab(1)
                     }
 
                     TransactionType.OPZS -> {
+                        _unsupportedTransactionType.value = null
                         tabNavigationComponent.addTab(1, TransactionTab.Pf)
                         tabNavigationComponent.addTab(2, TransactionTab.Ingredients)
                         tabNavigationComponent.onSelectTab(1)
                     }
 
-                    TransactionType.WRITE_OFF -> TODO()
-                    TransactionType.INVENTORY -> TODO()
+                    TransactionType.WRITE_OFF,
+                    TransactionType.INVENTORY -> {
+                        _unsupportedTransactionType.value = transaction.transactionType
+                        tabNavigationComponent.onSelectTab(0)
+                    }
                     null -> throw IllegalArgumentException("Transaction type is null")
                 }
             }

@@ -51,7 +51,8 @@ private class VendorUpdateRepository(
         }
     }
 
-    override fun prepareForUpdate(item: Vendor): Vendor = item.copy(updatedAt = defaultUpdatedAt())
+    /** Создаёт версию поставщика, строго более новую текущей даже при откате часов. */
+    override fun prepareForUpdate(item: Vendor): Vendor = item.copy(updatedAt = defaultUpdatedAt(item.updatedAt))
 
     override suspend fun validate(item: Vendor): Result<Unit> = dao.isCanSave(item)
 

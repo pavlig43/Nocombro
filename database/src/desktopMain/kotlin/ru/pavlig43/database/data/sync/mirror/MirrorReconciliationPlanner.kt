@@ -4,12 +4,26 @@ package ru.pavlig43.database.data.sync.mirror
  * Результат двустороннего сравнения локального и удаленного snapshot.
  *
  * Списки взаимоисключающие для одной пары `table + sync_id`: строка либо должна
- * победить удаленно через [pushChanges], либо локально через [pullChanges], либо
- * уже согласована и отсутствует в обоих списках.
+ * победить удалённо через [pushChanges], либо локально через [pullChanges], либо
+ * требовать ручного выбора через [conflicts], либо уже быть согласованной.
  */
 data class MirrorReconciliationPlan(
     val pushChanges: List<MirrorPushEntityChange>,
     val pullChanges: List<MirrorPushEntityChange>,
+    val conflicts: List<MirrorVersionConflict> = emptyList(),
+)
+
+/**
+ * Две строки одной сущности с равной версией и разным sync-содержимым.
+ *
+ * @param table typed mirror-таблица спорной сущности.
+ * @param localRow вариант из Room и deletion journal.
+ * @param remoteRow вариант, прочитанный из YDB.
+ */
+data class MirrorVersionConflict(
+    val table: MirrorSyncTable,
+    val localRow: MirrorSyncRow,
+    val remoteRow: MirrorSyncRow,
 )
 
 /**
@@ -17,7 +31,7 @@ data class MirrorReconciliationPlan(
  *
  * Identity строки задается парой [MirrorSyncTable] и [MirrorSyncRow.syncId].
  * Версией считается более позднее из `updatedAt` и `deletedAt`. При равных версиях
- * действие не создается: planner не пытается разрешать конфликт по payload.
+ * одинаковые строки считаются согласованными, а разные попадают в конфликт.
  *
  * Remote tombstone без локальной строки игнорируется. Локально удалять уже
  * отсутствующую сущность не требуется, а tombstone продолжает храниться remote.
@@ -37,6 +51,7 @@ class MirrorReconciliationPlanner {
     ): MirrorReconciliationPlan {
         val pushChanges = mutableListOf<MirrorPushEntityChange>()
         val pullChanges = mutableListOf<MirrorPushEntityChange>()
+        val conflicts = mutableListOf<MirrorVersionConflict>()
 
         MirrorSyncTable.mirroredBusinessTables.forEach { table ->
             val localBySyncId = localSnapshot.rowsByTable[table].orEmpty().associateBy(MirrorSyncRow::syncId)
@@ -54,6 +69,8 @@ class MirrorReconciliationPlanner {
                         pushChanges += MirrorPushEntityChange(table, local)
                     local != null && remote != null && remote.versionAt() > local.versionAt() ->
                         pullChanges += MirrorPushEntityChange(table, remote)
+                    local != null && remote != null && !local.hasSameSyncContent(remote) ->
+                        conflicts += MirrorVersionConflict(table, local, remote)
                 }
             }
         }
@@ -61,6 +78,7 @@ class MirrorReconciliationPlanner {
         return MirrorReconciliationPlan(
             pushChanges = pushChanges,
             pullChanges = pullChanges.filterBlockedActiveRows(localSnapshot, remoteSnapshot),
+            conflicts = conflicts,
         )
     }
 }

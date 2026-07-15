@@ -13,6 +13,10 @@ import software.amazon.awssdk.core.sync.ResponseTransformer
 import java.net.URI
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.StandardCopyOption.ATOMIC_MOVE
+import java.nio.file.StandardCopyOption.REPLACE_EXISTING
+import java.util.UUID
+import ru.pavlig43.database.data.files.normalizeLogicalFileKey
 
 /**
  * Реальная реализация [RemoteFileStorageGateway] через S3-совместимый API.
@@ -31,14 +35,20 @@ class S3RemoteFileStorageGateway(
 
     override fun isConfigured(): Boolean = true
 
+    /**
+     * Загружает локальный файл по проверенному логическому ключу.
+     *
+     * Префикс бакета добавляется ровно один раз, а наружу возвращается ключ без
+     * префикса, пригодный для хранения в Room и YDB.
+     */
     override suspend fun upload(
         objectKey: String,
         localPath: String,
     ): Result<RemoteFileRef> {
         return runCatching {
+            val finalObjectKey = buildObjectKey(objectKey)
             val path = Path.of(localPath)
             val contentType = Files.probeContentType(path) ?: "application/octet-stream"
-            val finalObjectKey = buildObjectKey(objectKey)
             withClient { client ->
                 client.putObject(
                     PutObjectRequest.builder()
@@ -56,21 +66,34 @@ class S3RemoteFileStorageGateway(
         }
     }
 
+    /**
+     * Скачивает объект во временный файл и атомарно заменяет локальную цель.
+     *
+     * Ключ проверяется до создания каталога. При сетевом или файловом сбое `.part-*`
+     * удаляется, а уже существующая целевая копия остаётся целой.
+     */
     override suspend fun download(
         objectKey: String,
         localPath: String,
     ): Result<Unit> {
         return runCatching {
+            val remoteObjectKey = buildObjectKey(objectKey)
             val path = Path.of(localPath)
             path.parent?.let(Files::createDirectories)
-            withClient { client ->
-                client.getObject(
-                    GetObjectRequest.builder()
-                        .bucket(config.bucket)
-                        .key(buildObjectKey(objectKey))
-                        .build(),
-                    ResponseTransformer.toFile(path)
-                )
+            val partPath = path.resolveSibling("${path.fileName}.part-${UUID.randomUUID()}")
+            try {
+                withClient { client ->
+                    client.getObject(
+                        GetObjectRequest.builder()
+                            .bucket(config.bucket)
+                            .key(remoteObjectKey)
+                            .build(),
+                        ResponseTransformer.toFile(partPath)
+                    )
+                }
+                Files.move(partPath, path, ATOMIC_MOVE, REPLACE_EXISTING)
+            } finally {
+                Files.deleteIfExists(partPath)
             }
         }
     }
@@ -108,26 +131,37 @@ class S3RemoteFileStorageGateway(
         }
     }
 
+    /** Удаляет объект после проверки ключа и однократного добавления префикса. */
     override suspend fun delete(
         objectKey: String,
     ): Result<Unit> {
         return runCatching {
+            val remoteObjectKey = buildObjectKey(objectKey)
             withClient { client ->
                 client.deleteObject(
                     DeleteObjectRequest.builder()
                         .bucket(config.bucket)
-                        .key(buildObjectKey(objectKey))
+                        .key(remoteObjectKey)
                         .build()
                 )
             }
         }
     }
 
+    /**
+     * Преобразует логический ключ в физический ключ бакета.
+     *
+     * Метод принимает как чистый ключ, так и старую запись с уже добавленным
+     * префиксом; в результате префикс присутствует ровно один раз.
+     */
     private fun buildObjectKey(
         objectKey: String,
     ): String {
-        val cleanObjectKey = objectKey.trimStart('/')
-        val cleanPrefix = config.keyPrefix.trim('/')
+        val cleanObjectKey = normalizeObjectKey(objectKey)
+        require(cleanObjectKey.isNotBlank()) { "File key is empty" }
+        val cleanPrefix = config.keyPrefix.trim('/').takeIf(String::isNotBlank)
+            ?.let(::normalizeLogicalFileKey)
+            .orEmpty()
 
         return if (cleanPrefix.isBlank()) {
             cleanObjectKey
@@ -138,18 +172,25 @@ class S3RemoteFileStorageGateway(
         }
     }
 
+    /**
+     * Снимает настроенный префикс с физического S3-ключа.
+     *
+     * @return проверенный логический ключ или пустую строку для самого префикса.
+     */
     internal fun toLogicalObjectKey(
         objectKey: String,
     ): String {
-        val cleanObjectKey = objectKey.trimStart('/')
-        val cleanPrefix = config.keyPrefix.trim('/')
+        val cleanObjectKey = normalizeLogicalFileKey(objectKey)
+        val cleanPrefix = config.keyPrefix.trim('/').takeIf(String::isNotBlank)
+            ?.let(::normalizeLogicalFileKey)
+            .orEmpty()
 
         return when {
             cleanPrefix.isBlank() -> cleanObjectKey
             cleanObjectKey == cleanPrefix -> ""
             cleanObjectKey.startsWith("$cleanPrefix/") ->
-                cleanObjectKey.removePrefix("$cleanPrefix/")
-            else -> cleanObjectKey
+                normalizeLogicalFileKey(cleanObjectKey.removePrefix("$cleanPrefix/"))
+            else -> normalizeLogicalFileKey(cleanObjectKey)
         }
     }
 

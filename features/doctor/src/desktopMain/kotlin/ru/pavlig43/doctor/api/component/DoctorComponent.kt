@@ -11,6 +11,8 @@ import kotlinx.coroutines.launch
 import ru.pavlig43.core.MainTabComponent
 import ru.pavlig43.core.componentCoroutineScope
 import ru.pavlig43.database.data.sync.SyncStatusSnapshot
+import ru.pavlig43.database.data.sync.mirror.MirrorConflictWinner
+import ru.pavlig43.database.data.sync.mirror.MirrorVersionConflict
 import ru.pavlig43.doctor.api.DoctorDependencies
 import ru.pavlig43.doctor.internal.component.DoctorOrphanFilesLoadState
 import ru.pavlig43.doctor.internal.component.DoctorRemoteOrphanFilesLoadState
@@ -19,7 +21,16 @@ import ru.pavlig43.doctor.internal.component.DoctorTool
 import java.awt.Desktop
 import java.io.File
 import java.util.logging.Logger
+import ru.pavlig43.files.api.PendingUpload
 
+/**
+ * Координирует диагностические инструменты Doctor и их защитные проверки.
+ *
+ * Компонент объединяет локальную диагностику файлов, сравнение S3 с активным
+ * remote mirror и ручное разрешение конфликтов sync. Удаление объектов S3
+ * разрешается лишь при доступном mirror, отсутствии локальных правок и пустом
+ * реестре незавершённых загрузок.
+ */
 class DoctorComponent(
     componentContext: ComponentContext,
     dependencies: DoctorDependencies,
@@ -65,6 +76,18 @@ class DoctorComponent(
     )
     val remoteCleanupStatusMessage = _remoteCleanupStatusMessage.asStateFlow()
 
+    private val _pendingUploads = MutableStateFlow<List<PendingUpload>>(emptyList())
+    /** Незавершённые S3-загрузки, каждая из которых блокирует удалённую чистку. */
+    val pendingUploads = _pendingUploads.asStateFlow()
+
+    private val _syncConflicts = MutableStateFlow<List<MirrorVersionConflict>>(emptyList())
+    /** Актуальные конфликты равных версий из последнего статуса синхронизации. */
+    val syncConflicts = _syncConflicts.asStateFlow()
+
+    private val _syncConflictActionError = MutableStateFlow<String?>(null)
+    /** Ошибка последней попытки выбрать локальную или удалённую строку. */
+    val syncConflictActionError = _syncConflictActionError.asStateFlow()
+
     init {
         refreshStorageOverview()
         refreshOrphanFiles()
@@ -72,7 +95,8 @@ class DoctorComponent(
             syncService.status
                 .filterNotNull()
                 .collect { syncStatus ->
-                    applyRemoteCleanupAvailability(syncStatus)
+                    _syncConflicts.value = syncStatus.conflicts
+                    applyRemoteCleanupAvailability(syncStatus, _pendingUploads.value)
                 }
         }
         coroutineScope.launch(Dispatchers.IO) {
@@ -80,13 +104,44 @@ class DoctorComponent(
         }
     }
 
+    /**
+     * Выбирает инструмент и обновляет его удалённые данные при открытии.
+     *
+     * S3-очистка заново проверяет защитные условия, а экран конфликтов запрашивает
+     * свежий sync-статус.
+     */
     fun selectTool(tool: DoctorTool) {
         _selectedTool.value = tool
         if (tool == DoctorTool.RemoteFileCleanup) {
             coroutineScope.launch(Dispatchers.IO) {
                 refreshRemoteCleanupAvailability()
             }
+        } else if (tool == DoctorTool.SyncConflicts) {
+            coroutineScope.launch(Dispatchers.IO) { syncService.getStatus() }
         }
+    }
+
+    /**
+     * Запускает безопасное разрешение конфликта на IO dispatcher.
+     *
+     * @param conflict пара строк, показанная пользователю.
+     * @param useLocal `true` для локального содержимого, `false` для удалённого.
+     */
+    fun resolveSyncConflict(conflict: MirrorVersionConflict, useLocal: Boolean) {
+        coroutineScope.launch(Dispatchers.IO) {
+            _syncConflictActionError.value = null
+            syncService.resolveConflict(
+                conflict = conflict,
+                winner = if (useLocal) MirrorConflictWinner.LOCAL else MirrorConflictWinner.REMOTE,
+            ).onFailure { throwable ->
+                _syncConflictActionError.value = throwable.message ?: "Не удалось разрешить конфликт sync."
+            }
+        }
+    }
+
+    /** Скрывает ошибку действия, не меняя список конфликтов. */
+    fun dismissSyncConflictActionError() {
+        _syncConflictActionError.value = null
     }
 
     fun refreshOrphanFiles() {
@@ -254,16 +309,32 @@ class DoctorComponent(
         }
     }
 
+    /**
+     * Перечитывает реестр загрузок и статус mirror перед любой S3-операцией.
+     *
+     * Ошибка чтения реестра блокирует очистку: неизвестное состояние нельзя
+     * трактовать как отсутствие незавершённых файлов.
+     */
     private suspend fun refreshRemoteCleanupAvailability(): Boolean {
+        val pending = remoteFilesMaintenanceRepository.getPendingUploads().getOrElse { throwable ->
+            val message = throwable.message ?: "Не удалось прочитать реестр pending uploads."
+            _remoteCleanupStatusMessage.value = message
+            _isRemoteCleanupEnabled.value = false
+            _remoteOrphanFilesState.value = DoctorRemoteOrphanFilesLoadState.Error(message)
+            return false
+        }
+        _pendingUploads.value = pending
         val syncStatus = syncService.getStatus()
-        applyRemoteCleanupAvailability(syncStatus)
-        return remoteCleanupUnavailableMessage(syncStatus) == null
+        applyRemoteCleanupAvailability(syncStatus, pending)
+        return remoteCleanupUnavailableMessage(syncStatus, pending) == null
     }
 
+    /** Публикует единое состояние доступности кнопок удалённой очистки. */
     private fun applyRemoteCleanupAvailability(
         syncStatus: SyncStatusSnapshot,
+        pendingUploads: List<PendingUpload>,
     ) {
-        val unavailableMessage = remoteCleanupUnavailableMessage(syncStatus)
+        val unavailableMessage = remoteCleanupUnavailableMessage(syncStatus, pendingUploads)
 
         _isRemoteCleanupEnabled.value = unavailableMessage == null
         _remoteCleanupStatusMessage.value = unavailableMessage
@@ -276,11 +347,27 @@ class DoctorComponent(
         }
     }
 
+    /**
+     * Возвращает первую причину, по которой S3-очистка должна быть заблокирована.
+     *
+     * Ошибка sync, локальные победители и незавершённые загрузки проверяются до
+     * отметки последнего pull, чтобы UI показывал наиболее опасную причину.
+     */
     private fun remoteCleanupUnavailableMessage(
         syncStatus: SyncStatusSnapshot,
+        pendingUploads: List<PendingUpload>,
     ): String? {
+        if (syncStatus.remoteError != null) {
+            return "Sync завершился с ошибкой: ${syncStatus.remoteError}"
+        }
         if (!syncStatus.remoteSyncConfigured) {
             return "Remote sync не настроен."
+        }
+        if (syncStatus.pendingLocalChangesCount > 0) {
+            return "Есть локальные изменения для отправки. Сначала выполните sync/push."
+        }
+        if (pendingUploads.isNotEmpty()) {
+            return "Есть незавершённые загрузки файлов. Чистка S3 заблокирована."
         }
         if (syncStatus.lastPullAt == null) {
             return "Проверка S3 недоступна, пока приложение не синхронизировано."

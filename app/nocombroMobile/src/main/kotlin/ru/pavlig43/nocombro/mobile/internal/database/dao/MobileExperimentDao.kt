@@ -35,11 +35,36 @@ interface MobileExperimentDao {
     @Query("SELECT * FROM $EXPERIMENT_TABLE_NAME")
     suspend fun getAll(): List<MobileExperimentEntity>
 
+    /**
+     * Наблюдает эксперименты нужного типа архива в порядке последней активности.
+     *
+     * В расчёт входят версии самого эксперимента, записей, напоминаний и файлов.
+     * Tombstone не фильтруются во вложенных запросах: их версия тоже должна поднять
+     * недавно изменённый эксперимент вверх до завершения синхронизации.
+     *
+     * @param isArchived требуемое состояние архива.
+     */
     @Query(
         """
-        SELECT * FROM $EXPERIMENT_TABLE_NAME
-        WHERE deleted_at IS NULL AND is_archived = :isArchived
-        ORDER BY updated_at DESC, id DESC
+        SELECT e.* FROM $EXPERIMENT_TABLE_NAME e
+        WHERE e.deleted_at IS NULL AND e.is_archived = :isArchived
+        ORDER BY MAX(
+            e.updated_at,
+            COALESCE((
+                SELECT MAX(ee.updated_at) FROM $EXPERIMENT_ENTRY_TABLE_NAME ee
+                WHERE ee.experiment_id = e.id
+            ), e.updated_at),
+            COALESCE((
+                SELECT MAX(er.updated_at) FROM $EXPERIMENT_REMINDER_TABLE_NAME er
+                WHERE er.experiment_id = e.id
+            ), e.updated_at),
+            COALESCE((
+                SELECT MAX(ef.updated_at)
+                FROM $EXPERIMENT_ENTRY_FILE_TABLE_NAME ef
+                INNER JOIN $EXPERIMENT_ENTRY_TABLE_NAME ee2 ON ee2.id = ef.entry_id
+                WHERE ee2.experiment_id = e.id
+            ), e.updated_at)
+        ) DESC, e.id DESC
         """
     )
     fun observeExperiments(isArchived: Boolean): Flow<List<MobileExperimentEntity>>
@@ -72,6 +97,14 @@ interface MobileExperimentEntryDao {
 
     @Query("SELECT * FROM $EXPERIMENT_ENTRY_TABLE_NAME")
     suspend fun getAll(): List<MobileExperimentEntryEntity>
+
+    /**
+     * Возвращает все записи эксперимента, включая tombstone.
+     *
+     * Полный набор нужен для каскадной пометки удаления и расчёта старшей версии.
+     */
+    @Query("SELECT * FROM $EXPERIMENT_ENTRY_TABLE_NAME WHERE experiment_id = :experimentId")
+    suspend fun getEntriesByExperiment(experimentId: Int): List<MobileExperimentEntryEntity>
 
     @Query(
         """
@@ -108,6 +141,14 @@ interface MobileExperimentEntryFileDao {
     @Query("SELECT * FROM $EXPERIMENT_ENTRY_FILE_TABLE_NAME")
     suspend fun getAll(): List<MobileExperimentEntryFileEntity>
 
+    /**
+     * Возвращает все файлы переданных записей, включая tombstone.
+     *
+     * @param entryIds непустой список локальных идентификаторов записей.
+     */
+    @Query("SELECT * FROM $EXPERIMENT_ENTRY_FILE_TABLE_NAME WHERE entry_id IN (:entryIds)")
+    suspend fun getFilesByEntries(entryIds: List<Int>): List<MobileExperimentEntryFileEntity>
+
     @Query("SELECT * FROM $EXPERIMENT_ENTRY_FILE_TABLE_NAME WHERE sync_id = :syncId")
     suspend fun getFileBySyncId(syncId: String): MobileExperimentEntryFileEntity?
 
@@ -140,6 +181,14 @@ interface MobileExperimentReminderDao {
 
     @Query("SELECT * FROM $EXPERIMENT_REMINDER_TABLE_NAME")
     suspend fun getAll(): List<MobileExperimentReminderEntity>
+
+    /**
+     * Возвращает все напоминания эксперимента, включая tombstone.
+     *
+     * Полный набор нужен для каскадной пометки удаления и расчёта старшей версии.
+     */
+    @Query("SELECT * FROM $EXPERIMENT_REMINDER_TABLE_NAME WHERE experiment_id = :experimentId")
+    suspend fun getRemindersByExperiment(experimentId: Int): List<MobileExperimentReminderEntity>
 
     @Query(
         """

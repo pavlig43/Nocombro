@@ -25,20 +25,25 @@ import org.jetbrains.compose.resources.painterResource
 import ru.pavlig43.theme.Res
 import ru.pavlig43.theme.close
 import ru.pavlig43.theme.delete
+import ru.pavlig43.coreui.LoadingUi
+import ru.pavlig43.immutable.internal.component.manager.DeleteState
 
 /**
- * Floating action bar shown at the bottom when items are selected.
- * Displays the count of selected items and provides delete/clear actions.
- * Features a Liquid Glass effect powered by the Liquid library with GPU-accelerated shaders.
+ * Показывает нижнюю панель действий для выбранных строк.
  *
- * @param selectedCount Number of selected items to display
- * @param onDeleteClick Callback when delete button is clicked
- * @param onClearSelection Callback when clear selection button is clicked
- * @param modifier Modifier for the composable
+ * Во время [DeleteState.Loading] кнопка удаления отключена и показывает ход
+ * операции. Очистка выделения остаётся отдельным действием пользователя.
+ *
+ * @param selectedCount число выбранных строк.
+ * @param deleteState текущее состояние удаления.
+ * @param onDeleteClick запрос удаления выбранных строк.
+ * @param onClearSelection очистка выделения без удаления.
+ * @param modifier расположение панели на экране.
  */
 @Composable
 internal fun SelectionActionBar(
     selectedCount: Int,
+    deleteState: DeleteState,
     onDeleteClick: () -> Unit,
     onClearSelection: () -> Unit,
 //    liquidState: LiquidState,
@@ -82,6 +87,7 @@ internal fun SelectionActionBar(
                 Spacer(modifier = Modifier.width(8.dp))
                 Button(
                     onClick = onDeleteClick,
+                    enabled = deleteState !is DeleteState.Loading,
                     colors =
                         ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.error.copy(alpha = 0.9f),
@@ -89,12 +95,17 @@ internal fun SelectionActionBar(
                         ),
                     shape = RoundedCornerShape(16.dp),
                 ) {
-                    Icon(
-                        painter = painterResource(Res.drawable.delete),
-                        contentDescription = null,
-                        modifier = Modifier.padding(end = 8.dp),
-                    )
-                    Text("Delete")
+                    if (deleteState is DeleteState.Loading) {
+                        LoadingUi(Modifier.padding(end = 8.dp))
+                        Text("Удаление")
+                    } else {
+                        Icon(
+                            painter = painterResource(Res.drawable.delete),
+                            contentDescription = null,
+                            modifier = Modifier.padding(end = 8.dp),
+                        )
+                        Text("Удалить")
+                    }
                 }
             }
         }

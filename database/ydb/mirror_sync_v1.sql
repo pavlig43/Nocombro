@@ -1,6 +1,7 @@
 -- Mirror sync v1 schema.
--- Все даты и timestamps пока храним как ISO-8601 Utf8, чтобы не потерять
--- текущее timezone-neutral поведение локальных LocalDate / LocalDateTime.
+-- Все даты и timestamps храним как ISO-8601 Utf8 без часового пояса.
+-- updated_at/deleted_at код трактует как UTC-версии синхронизации;
+-- пользовательские даты и время сохраняют локальную семантику.
 
 CREATE TABLE IF NOT EXISTS `vendor` (
     sync_id Utf8,

@@ -12,6 +12,7 @@ import ru.pavlig43.database.data.sync.mirror.YdbMirrorJdbcConfig
 import ru.pavlig43.database.data.sync.mirror.supportedYdbMirrorCodecs
 import ru.pavlig43.testkit.DesktopMainDispatcherFunSpec
 
+/** Проверяет SQL и типы колонок codec, включая атомарный условный `UPSERT`. */
 class YdbMirrorRowCodecTest : DesktopMainDispatcherFunSpec({
     test("mirror table path uses optional root") {
         val config = YdbMirrorJdbcConfig(
@@ -37,6 +38,14 @@ class YdbMirrorRowCodecTest : DesktopMainDispatcherFunSpec({
     test("vendor codec builds typed ydb sql") {
         VendorYdbMirrorCodec.selectAllSql("vendor") shouldContain "display_name"
         VendorYdbMirrorCodec.upsertSql("vendor") shouldContain "CAST(? AS Utf8)"
+    }
+
+    test("conditional upsert compares version and returns the final row in one request") {
+        val sql = VendorYdbMirrorCodec.conditionalUpsertSql("vendor")
+
+        sql shouldContain "WHERE NOT EXISTS"
+        sql shouldContain ">= CAST(? AS Utf8)"
+        sql shouldContain "SELECT sync_id, display_name, comment, updated_at, deleted_at"
     }
 
     test("batch cost codec uses int64 cost") {

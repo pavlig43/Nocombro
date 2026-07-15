@@ -63,22 +63,82 @@ class MobileYdbMirrorGateway(
     }
 
     /**
-     * Отправляет выбранные локальные версии в удалённое зеркало пачкой `UPSERT`.
+     * Условно отправляет выбранные локальные версии в удалённое зеркало.
      *
-     * Решение о том, какая версия победила, принимает планировщик выше по слою.
-     * Здесь нет сравнения `updated_at`: шлюз только пишет переданные строки.
+     * Каждая строка записывается лишь когда в YDB нет версии не старше входящей.
+     * Тот же serializable DML-запрос возвращает итоговую строку, поэтому вызывающий
+     * код точно знает, была запись принята или проиграла конкурентному клиенту.
+     * Ошибка одной строки получает безопасный контекст таблицы и `sync_id`.
+     *
+     * @param changes строки, выбранные локальным планировщиком для push.
+     * @return принятые и отклонённые строки с фактическими значениями из YDB.
      */
-    fun push(changes: List<MobileMirrorChange>): Result<Unit> = runCatching {
+    fun push(changes: List<MobileMirrorChange>): Result<MobilePushResult> = runCatching {
+        val accepted = mutableListOf<MobileMirrorChange>()
+        val rejected = mutableListOf<MobilePushRejection>()
         withConnection { connection ->
-            changes.groupBy(MobileMirrorChange::table).forEach { (table, tableChanges) ->
-                val codec = mobileCodecs.getValue(table)
-                connection.prepareStatement(codec.upsertSql(tablePath(table))).use { statement ->
-                    tableChanges.forEach { change ->
-                        codec.bind(statement, change.row)
-                        statement.addBatch()
-                    }
-                    statement.executeBatch()
+            changes.forEach { change ->
+                val codec = mobileCodecs.getValue(change.table)
+                val remoteRow = runCatching {
+                    conditionalUpsertRow(
+                        connection = connection,
+                        codec = codec,
+                        tablePath = tablePath(change.table),
+                        row = change.row,
+                    )
+                }.getOrElse { throwable ->
+                    throw MobileSyncOperationException(
+                        message = "table=${change.table.tableName}, sync_id=${change.row.syncId}",
+                        cause = throwable,
+                    )
                 }
+                if (remoteRow.hasSameSyncContent(change.row)) {
+                    accepted += change
+                } else {
+                    rejected += MobilePushRejection(
+                        change = change,
+                        remoteRow = remoteRow,
+                        equalVersionConflict = remoteRow.versionAt() == change.row.versionAt(),
+                    )
+                }
+            }
+        }
+        MobilePushResult(accepted, rejected)
+    }
+
+    /**
+     * Выполняет условный `UPSERT` и читает строку-победителя из того же запроса.
+     *
+     * @return входная строка после успешной записи либо более новая строка YDB.
+     * @throws IllegalStateException если YDB не вернула итоговый набор или строку.
+     */
+    private fun conditionalUpsertRow(
+        connection: Connection,
+        codec: MobileYdbCodec,
+        tablePath: String,
+        row: MobileMirrorRow,
+    ): MobileMirrorRow {
+        connection.prepareStatement(codec.conditionalUpsertSql(tablePath)).use { statement ->
+            codec.bind(statement, row)
+            var parameterIndex = codec.columns.size + 1
+            statement.setString(parameterIndex++, row.syncId)
+            statement.setString(parameterIndex++, row.versionAt().toString())
+            statement.setString(parameterIndex, row.syncId)
+
+            var hasResultSet = statement.execute()
+            while (!hasResultSet && statement.updateCount != -1) {
+                hasResultSet = statement.moreResults
+            }
+            check(hasResultSet) {
+                "Conditional mirror upsert returned no row: " +
+                    "table=${codec.table.tableName}, sync_id=${row.syncId}"
+            }
+            statement.resultSet.use { resultSet ->
+                check(resultSet.next()) {
+                    "Conditional mirror upsert lost row: " +
+                        "table=${codec.table.tableName}, sync_id=${row.syncId}"
+                }
+                return codec.read(resultSet)
             }
         }
     }
@@ -152,6 +212,34 @@ private interface MobileYdbCodec {
         return """
             UPSERT INTO `$tablePath` (${columns.joinToString()})
             VALUES ($values)
+        """.trimIndent()
+    }
+
+    /**
+     * Строит serializable DML для условной записи и чтения итога.
+     *
+     * `UPSERT` блокируется при равной или более новой фактической версии YDB.
+     * Следующий `SELECT` возвращает строку-победителя независимо от исхода записи,
+     * что позволяет отличить принятую строку от конфликта без окна гонки.
+     *
+     * @param tablePath полный путь mirror-таблицы в YDB.
+     */
+    fun conditionalUpsertSql(tablePath: String): String {
+        val values = columns.joinToString { "CAST(? AS ${columnType(it)})" }
+        return """
+            UPSERT INTO `$tablePath` (${columns.joinToString()})
+            SELECT $values
+            WHERE NOT EXISTS (
+                SELECT sync_id FROM `$tablePath`
+                WHERE sync_id = CAST(? AS Utf8)
+                  AND IF(
+                      deleted_at IS NOT NULL AND deleted_at > updated_at,
+                      deleted_at,
+                      updated_at
+                  ) >= CAST(? AS Utf8)
+            );
+            SELECT ${columns.joinToString()} FROM `$tablePath`
+            WHERE sync_id = CAST(? AS Utf8);
         """.trimIndent()
     }
 }

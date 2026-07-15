@@ -46,6 +46,34 @@ internal interface YdbMirrorRowCodec {
             VALUES ($values)
         """.trimIndent()
     }
+
+    /**
+     * Строит serializable DML для условной записи и чтения строки-победителя.
+     *
+     * `UPSERT` выполняется лишь при отсутствии равной или более новой логической
+     * версии. Следующий `SELECT` возвращает фактическую строку независимо от исхода,
+     * что закрывает окно гонки между записью и проверкой результата.
+     *
+     * @param tablePath полный путь typed mirror-таблицы.
+     */
+    fun conditionalUpsertSql(tablePath: String): String {
+        val values = columnNames.joinToString { "CAST(? AS ${columnType(it)})" }
+        return """
+            UPSERT INTO `$tablePath` (${columnNames.joinToString()})
+            SELECT $values
+            WHERE NOT EXISTS (
+                SELECT sync_id FROM `$tablePath`
+                WHERE sync_id = CAST(? AS Utf8)
+                  AND IF(
+                      deleted_at IS NOT NULL AND deleted_at > updated_at,
+                      deleted_at,
+                      updated_at
+                  ) >= CAST(? AS Utf8)
+            );
+            SELECT ${columnNames.joinToString()} FROM `$tablePath`
+            WHERE sync_id = CAST(? AS Utf8);
+        """.trimIndent()
+    }
 }
 
 internal object VendorYdbMirrorCodec : YdbMirrorRowCodec {

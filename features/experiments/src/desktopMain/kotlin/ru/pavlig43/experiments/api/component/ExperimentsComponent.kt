@@ -281,6 +281,12 @@ class ExperimentsComponent(
         }
     }
 
+    /**
+     * Создаёт напоминание или сохраняет его правку с новой sync-версией.
+     *
+     * Для существующей строки [defaultUpdatedAt] получает текущую версию, поэтому
+     * сохранение остаётся более новым даже при откате системных часов.
+     */
     fun saveReminder() {
         val editorState = _reminderEditorState.value ?: return
         if (editorState.text.isBlank()) {
@@ -302,7 +308,7 @@ class ExperimentsComponent(
                     current.copy(
                         text = editorState.text.trim(),
                         reminderDateTime = editorState.reminderDateTime,
-                        updatedAt = defaultUpdatedAt(),
+                        updatedAt = defaultUpdatedAt(current.updatedAt),
                     )
                 )
             }
@@ -336,6 +342,12 @@ class ExperimentsComponent(
         }
     }
 
+    /**
+     * Запускает отложенное автосохранение черновиков эксперимента и записи.
+     *
+     * Каждая фактическая правка повышает только версию изменённой строки. Дочерняя
+     * запись не меняет `updatedAt` эксперимента: порядок списка рассчитывает DAO.
+     */
     @OptIn(FlowPreview::class)
     private fun observeDraftSaves() {
         coroutineScope.launch(Dispatchers.IO) {
@@ -355,7 +367,7 @@ class ExperimentsComponent(
                         current.copy(
                             title = draft.title,
                             ideaDescription = draft.ideaDescription,
-                            updatedAt = defaultUpdatedAt(),
+                            updatedAt = defaultUpdatedAt(current.updatedAt),
                         )
                     ).onFailure(::showError)
                 }
@@ -375,7 +387,7 @@ class ExperimentsComponent(
                     repository.updateEntry(
                         current.copy(
                             content = content,
-                            updatedAt = defaultUpdatedAt(),
+                            updatedAt = defaultUpdatedAt(current.updatedAt),
                         )
                     ).onFailure(::showError)
                 }

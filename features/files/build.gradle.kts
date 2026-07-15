@@ -11,6 +11,7 @@ kotlin{
         implementation(libs.filekit.dialogs)
         implementation(libs.filekit.dialogs.compose)
         implementation(projects.database)
+        implementation(projects.datetime)
         implementation(projects.features.manageitem.loadinitdata)
         implementation(projects.features.manageitem.update)
 

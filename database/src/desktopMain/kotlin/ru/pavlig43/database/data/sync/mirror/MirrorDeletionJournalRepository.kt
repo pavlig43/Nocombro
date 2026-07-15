@@ -37,7 +37,9 @@ class MirrorDeletionJournalRepository(
      * Перехватывает удаления внутри уже открытой Room-транзакции.
      *
      * Этот вариант нужен transactional wrapper-ам, чтобы не разрывать атомарность
-     * валидации, удаления, upsert и создания tombstone.
+     * валидации, удаления, upsert и создания tombstone. Общая версия tombstone
+     * выбирается строго новее всех исчезнувших строк, поэтому откат системных часов
+     * не превращает удаление в более старую версию.
      */
     suspend fun <T> captureHardDeletesInCurrentTransaction(block: suspend () -> T): T {
         val before = snapshotRepository.loadDatabaseSnapshot(MirrorSyncTable.mirroredBusinessTables)
@@ -45,8 +47,9 @@ class MirrorDeletionJournalRepository(
         // File metadata удаляется вместе с владельцем и попадет в тот же diff.
         deleteFilesOwnedByDeletedEntities(before)
         val after = snapshotRepository.loadDatabaseSnapshot(MirrorSyncTable.mirroredBusinessTables)
-        val deletedAt = defaultUpdatedAt()
-        val tombstones = findDeletedRows(before, after)
+        val deletedRows = findDeletedRows(before, after)
+        val deletedAt = defaultUpdatedAt(deletedRows.maxOfOrNull { it.row.versionAt() })
+        val tombstones = deletedRows
             .map { change ->
                 val row = change.row.markDeleted(deletedAt)
                 MirrorDeletionJournalEntity(

@@ -32,6 +32,10 @@ abstract class SaleDao {
     @Query("SELECT * FROM $SALE_TABLE_NAME WHERE sync_id = :syncId")
     abstract suspend fun getSaleBySyncId(syncId: String): SaleBDIn?
 
+    /** Возвращает продажу по локальному Room идентификатору для снимка перед удалением. */
+    @Query("SELECT * FROM $SALE_TABLE_NAME WHERE id = :id")
+    abstract suspend fun getSale(id: Int): SaleBDIn?
+
     @Query("SELECT * FROM $SALE_TABLE_NAME")
     abstract suspend fun getAll(): List<SaleBDIn>
 

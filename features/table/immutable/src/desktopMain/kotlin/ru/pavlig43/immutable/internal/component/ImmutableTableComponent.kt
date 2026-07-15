@@ -61,6 +61,8 @@ internal abstract class ImmutableTableComponent<BD, UI : IMultiLineTableUi, Colu
         clearSelection = selectionManager::clearSelected,
         deleteFn = repository::deleteByIds
     )
+    /** Состояние удаления, которое отключает повторный клик и показывает ошибку в UI. */
+    val deleteState = deleteManager.deleteState
 
 
     val itemListState = repository.observeOnItems(tableBuilder.parentId).map { result ->

@@ -149,9 +149,13 @@ data class MobileSyncPreviewUiState(
 
 /**
  * Сводит сырой sync-статус к короткому тексту для меню.
+ *
+ * Ошибка имеет высший приоритет, затем отсутствие настроек и конфликт равных
+ * версий. Счётчики используются лишь когда синхронизация доступна и конфликтов нет.
  */
-private fun MobileSyncStatus.toStatusText(): String {
+internal fun MobileSyncStatus.toStatusText(): String {
     if (error != null) return "Ошибка"
     if (!configured) return "Не настроено"
+    if (conflicts.isNotEmpty()) return MOBILE_SYNC_CONFLICT_HINT
     return if (localChanges == 0 && remoteChanges == 0) "Синхронизировано" else "Есть правки"
 }

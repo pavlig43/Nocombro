@@ -7,7 +7,11 @@ import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.database.data.files.remote.RemoteFileBatchDownloadRepository
 import ru.pavlig43.database.data.files.remote.RemoteFileBatchDownloadSummary
 import ru.pavlig43.database.data.sync.mirror.MirrorReconciliationService
+import ru.pavlig43.database.data.sync.mirror.MirrorConflictResolutionResult
+import ru.pavlig43.database.data.sync.mirror.MirrorConflictWinner
 import ru.pavlig43.database.data.sync.mirror.MirrorRemoteStatus
+import ru.pavlig43.database.data.sync.mirror.MirrorVersionConflict
+import ru.pavlig43.datetime.getCurrentLocalDateTime
 import java.io.File
 import kotlin.time.TimeSource
 
@@ -35,7 +39,8 @@ class SyncService(
      * Пересчитывает расхождения Room/YDB и публикует актуальный UI status.
      *
      * `pendingLocalChangesCount` означает число local winners для следующего push,
-     * а `remoteChangesCount` - число remote winners для следующего pull.
+     * а `remoteChangesCount` — число remote winners для следующего pull. Равные
+     * версии с разным содержимым публикуются отдельно в [SyncStatusSnapshot.conflicts].
      */
     suspend fun getStatus(): SyncStatusSnapshot {
         val syncState = syncStateRepository.getSyncState()
@@ -50,6 +55,7 @@ class SyncService(
             lastSyncAt = syncState?.lastPushAt,
             lastPullAt = syncState?.lastPullAt,
             remoteError = mirrorStatus.status.error,
+            conflicts = mirrorStatus.conflicts,
         ).also { snapshot ->
             _status.value = snapshot
         }
@@ -96,6 +102,7 @@ class SyncService(
             lastStatusCheckAt = mirrorRun.completedAt,
             lastSyncAt = mirrorRun.completedAt,
             lastPullAt = mirrorRun.completedAt,
+            conflicts = mirrorRun.conflicts,
         ).also { _status.value = it }
 
         val recoveryMark = TimeSource.Monotonic.markNow()
@@ -210,12 +217,12 @@ class SyncService(
             remoteChangesCount = 0,
             hasRemoteChanges = false,
             remoteSyncConfigured = configuration?.configured ?: false,
-            lastStatusCheckAt = configuration?.checkedAt ?: defaultUpdatedAt(),
+            lastStatusCheckAt = configuration?.checkedAt ?: getCurrentLocalDateTime(),
             lastSyncAt = syncState?.lastPushAt,
             lastPullAt = syncState?.lastPullAt,
         )).copy(
             remoteSyncConfigured = configuration?.configured ?: current?.remoteSyncConfigured ?: false,
-            lastStatusCheckAt = configuration?.checkedAt ?: current?.lastStatusCheckAt ?: defaultUpdatedAt(),
+            lastStatusCheckAt = configuration?.checkedAt ?: current?.lastStatusCheckAt ?: getCurrentLocalDateTime(),
             remoteError = message,
         )
         _status.value = status
@@ -224,16 +231,69 @@ class SyncService(
             status = status,
         )
     }
+
+    /**
+     * Разрешает выбранный в Doctor конфликт и публикует свежий статус.
+     *
+     * Низкоуровневый сервис перечитывает обе стороны перед записью. Устаревший
+     * выбор и повторный отказ YDB возвращаются как ошибка, а список конфликтов
+     * обновляется фактическими строками, чтобы UI не показывал старые данные.
+     *
+     * @param conflict снимок конфликта, который видел пользователь.
+     * @param winner сторона, чьё содержимое нужно сохранить.
+     * @return новый статус либо ошибка устаревшего или отклонённого выбора.
+     */
+    suspend fun resolveConflict(
+        conflict: MirrorVersionConflict,
+        winner: MirrorConflictWinner,
+    ): Result<SyncStatusSnapshot> {
+        val resolution = mirrorReconciliationService.resolveConflict(conflict, winner)
+            .getOrElse { throwable ->
+                runCatching { getStatus() }
+                return Result.failure(throwable)
+            }
+        return when (resolution) {
+            MirrorConflictResolutionResult.Resolved -> runCatching { getStatus() }
+            MirrorConflictResolutionResult.Stale -> {
+                runCatching { getStatus() }
+                Result.failure(
+                    IllegalStateException(
+                        "Строка изменилась. Обновите список конфликтов и повторите выбор."
+                    )
+                )
+            }
+            is MirrorConflictResolutionResult.Rejected -> {
+                val refreshedStatus = getStatus()
+                val rejectedConflict = resolution.conflict
+                val conflicts = refreshedStatus.conflicts
+                    .filterNot { current ->
+                        current.table == rejectedConflict.table &&
+                            current.localRow.syncId == rejectedConflict.localRow.syncId
+                    } + rejectedConflict
+                _status.value = refreshedStatus.copy(conflicts = conflicts)
+                Result.failure(
+                    IllegalStateException(
+                        "YDB отклонила выбранную версию. Конфликт перечитан; выберите строку ещё раз."
+                    )
+                )
+            }
+        }
+    }
 }
 
 private object SyncFacadeStageLog {
     private val logger = java.util.logging.Logger.getLogger("MirrorSync")
     fun completed(stage: String, milliseconds: Long) {
-        logger.info("Mirror sync stage=$stage durationMs=$milliseconds")
+        logger.fine("Mirror sync stage=$stage durationMs=$milliseconds")
     }
 }
 
-/** Иммутабельный snapshot состояния синхронизации для UI. */
+/**
+ * Неизменяемый снимок состояния синхронизации для UI и Doctor.
+ *
+ * [conflicts] содержит только пары с равной версией и разным переносимым
+ * содержимым; такие строки не входят в счётчики push и pull.
+ */
 data class SyncStatusSnapshot(
     val pendingLocalChangesCount: Int,
     val remoteChangesCount: Int,
@@ -243,6 +303,7 @@ data class SyncStatusSnapshot(
     val lastSyncAt: LocalDateTime?,
     val lastPullAt: LocalDateTime?,
     val remoteError: String? = null,
+    val conflicts: List<MirrorVersionConflict> = emptyList(),
 )
 
 /**
@@ -271,7 +332,7 @@ data class SyncRunResult(
                 remoteChangesCount = 0,
                 hasRemoteChanges = false,
                 remoteSyncConfigured = false,
-                lastStatusCheckAt = defaultUpdatedAt(),
+                lastStatusCheckAt = getCurrentLocalDateTime(),
                 lastSyncAt = null,
                 lastPullAt = null,
                 remoteError = null,

@@ -94,7 +94,8 @@ private class ProductUpdateRepository(
         }
     }
 
-    override fun prepareForUpdate(item: Product): Product = item.copy(updatedAt = defaultUpdatedAt())
+    /** Создаёт версию продукта, строго более новую текущей даже при откате часов. */
+    override fun prepareForUpdate(item: Product): Product = item.copy(updatedAt = defaultUpdatedAt(item.updatedAt))
 
     override suspend fun validate(item: Product): Result<Unit> = dao.isCanSave(item)
 
@@ -119,8 +120,9 @@ private class CompositionCollectionRepository(
         }
     }
 
+    /** Повышает версию связи состава относительно сохранённой строки. */
     override fun prepareForUpsert(item: CompositionIn): CompositionIn {
-        return item.copy(updatedAt = defaultUpdatedAt())
+        return item.copy(updatedAt = defaultUpdatedAt(item.updatedAt))
     }
 
     override suspend fun deleteByIds(ids: List<Int>) {
@@ -154,11 +156,14 @@ internal class ProductSpecificationUpdateRepository(
         }
     }
 
+    /** Сохраняет изменённую спецификацию с монотонно растущей sync-версией. */
     override suspend fun update(changeSet: ChangeSet<ProductSpecification>): Result<Unit> {
         if (changeSet.old == changeSet.new) return Result.success(Unit)
         return runCatching {
             db.inTransaction {
-                val specification = changeSet.new.copy(updatedAt = defaultUpdatedAt())
+                val specification = changeSet.new.copy(
+                    updatedAt = defaultUpdatedAt(changeSet.new.updatedAt)
+                )
                 dao.upsert(specification)
             }
         }
@@ -182,6 +187,9 @@ internal class SafetyStockUpdateRepository(
         }
     }
 
+    /**
+     * Сохраняет страховой запас с новой версией либо журналирует его hard delete.
+     */
     override suspend fun update(changeSet: ChangeSet<SafetyStock>): Result<Unit> {
         if (changeSet.old == changeSet.new) return Result.success(Unit)
         return runCatching {
@@ -193,7 +201,7 @@ internal class SafetyStockUpdateRepository(
                                 dao.delete(this)
                             }
                         } else {
-                            dao.upsert(copy(updatedAt = defaultUpdatedAt()))
+                            dao.upsert(copy(updatedAt = defaultUpdatedAt(updatedAt)))
                         }
                     }
                 }
@@ -226,8 +234,9 @@ internal class ProductDeclarationRepository(
         return fileDao.getFiles(declarationId, OwnerType.DECLARATION)
     }
 
+    /** Повышает версию связи продукта и декларации относительно текущей строки. */
     override fun prepareForUpsert(item: ProductDeclarationIn): ProductDeclarationIn {
-        return item.copy(updatedAt = defaultUpdatedAt())
+        return item.copy(updatedAt = defaultUpdatedAt(item.updatedAt))
     }
 
     override suspend fun deleteByIds(ids: List<Int>) {

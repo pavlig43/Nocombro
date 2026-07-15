@@ -30,6 +30,10 @@ abstract class BuyDao {
     @Query("SELECT * FROM $BUY_TABLE_NAME WHERE sync_id = :syncId")
     abstract suspend fun getBuyBySyncId(syncId: String): BuyBDIn?
 
+    /** Возвращает покупку по локальному Room идентификатору для снимка перед удалением. */
+    @Query("SELECT * FROM $BUY_TABLE_NAME WHERE id = :id")
+    abstract suspend fun getBuy(id: Int): BuyBDIn?
+
     @Query("SELECT * FROM $BUY_TABLE_NAME")
     abstract suspend fun getAll(): List<BuyBDIn>
 

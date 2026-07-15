@@ -53,7 +53,8 @@ private class DeclarationUpdateRepository(
         }
     }
 
-    override fun prepareForUpdate(item: Declaration): Declaration = item.copy(updatedAt = defaultUpdatedAt())
+    /** Создаёт версию декларации, строго более новую текущей даже при откате часов. */
+    override fun prepareForUpdate(item: Declaration): Declaration = item.copy(updatedAt = defaultUpdatedAt(item.updatedAt))
 
     override suspend fun validate(item: Declaration): Result<Unit> = dao.isCanSave(item)
 

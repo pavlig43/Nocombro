@@ -10,9 +10,17 @@ import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.core.model.SingleItem
 import ru.pavlig43.database.data.sync.defaultSyncId
 import ru.pavlig43.database.data.sync.defaultUpdatedAt
+import ru.pavlig43.datetime.getCurrentLocalDateTime
 
 const val EXPERIMENT_ENTRY_TABLE_NAME = "experiment_entry"
 
+/**
+ * Одна датированная запись лабораторного журнала эксперимента.
+ *
+ * [entryDate] и [createdAt] — пользовательские локальные дата и время. Поля
+ * [updatedAt] и [deletedAt] имеют другую семантику: это монотонные UTC-версии,
+ * по которым настольный и мобильный клиенты выбирают победителя синхронизации.
+ */
 @Entity(
     tableName = EXPERIMENT_ENTRY_TABLE_NAME,
     foreignKeys = [
@@ -36,7 +44,7 @@ data class ExperimentEntry(
     val entryDate: LocalDate,
 
     @ColumnInfo("created_at")
-    val createdAt: LocalDateTime = defaultUpdatedAt(),
+    val createdAt: LocalDateTime = getCurrentLocalDateTime(),
 
     val content: String = "",
 
