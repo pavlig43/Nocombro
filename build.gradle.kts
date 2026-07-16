@@ -78,24 +78,18 @@ abstract class DetektAllTask : DefaultTask() {
 
     @TaskAction
     fun printFindings() {
-        val findingsByReport = textReports.files
+        val findings = textReports.files
             .filter { it.isFile }
-            .mapNotNull { report ->
-                report.readLines()
-                    .filter(String::isNotBlank)
-                    .takeIf(List<String>::isNotEmpty)
-                    ?.let { findings -> report to findings }
-            }
+            .flatMap { it.readLines() }
+            .filter(String::isNotBlank)
+            .distinct()
+            .sorted()
 
-        if (findingsByReport.isEmpty()) {
+        if (findings.isEmpty()) {
             logger.lifecycle("Detekt: no findings.")
         } else {
-            val findingsCount = findingsByReport.sumOf { (_, findings) -> findings.size }
-            logger.warn("Detekt findings: $findingsCount")
-            findingsByReport.forEach { (report, findings) ->
-                logger.warn("\n${report.invariantSeparatorsPath}")
-                findings.forEach { finding -> logger.warn(finding) }
-            }
+            logger.warn("Detekt findings: ${findings.size}")
+            findings.forEach(logger::warn)
         }
     }
 }
@@ -115,7 +109,9 @@ val detektAutoFix = tasks.register("detektAutoFix") {
 subprojects {
     if (!path.contains("sampletable")) {
         apply(plugin = "pavlig43.detekt")
-        tasks.withType<Detekt>().matching { it.name != "detektAutoFix" }.configureEach {
+        tasks.withType<Detekt>().matching {
+            it.name != "detekt" && it.name != "detektAutoFix"
+        }.configureEach {
             val detektTask = this
             detektAll.configure {
                 dependsOn(detektTask)

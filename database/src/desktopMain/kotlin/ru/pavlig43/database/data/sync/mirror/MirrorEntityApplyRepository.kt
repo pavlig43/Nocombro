@@ -74,6 +74,7 @@ private val MirrorEntityApplyChange.changeType: MirrorApplyChangeType
  * [MirrorLocalApplyRepository] отвечает за общий порядок таблиц и journal, тогда
  * как этот класс инкапсулирует table-specific mapping.
  */
+@Suppress("TooManyFunctions")
 class MirrorEntityApplyRepository(
     private val db: NocombroDatabase,
 ) {
@@ -100,6 +101,7 @@ class MirrorEntityApplyRepository(
         }
     }
 
+    @Suppress("CyclomaticComplexMethod")
     private suspend fun applySingleChange(change: MirrorPushEntityChange) {
         when (change.table.tableName) {
             VENDOR_TABLE_NAME -> applyVendor(change)

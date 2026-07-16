@@ -19,6 +19,7 @@ class MobileReconciliationPlanner {
      * @param remote нормализованный снимок тех же строк из YDB.
      * @return неизменяемый план push, pull и конфликтов равных версий.
      */
+    @Suppress("CyclomaticComplexMethod")
     fun plan(
         local: MobileMirrorSnapshot,
         remote: MobileMirrorSnapshot,

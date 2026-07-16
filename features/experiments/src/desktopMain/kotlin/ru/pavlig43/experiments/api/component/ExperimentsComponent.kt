@@ -39,6 +39,7 @@ import ru.pavlig43.experiments.internal.di.createExperimentsModule
 import ru.pavlig43.files.api.component.FilesComponent
 
 @OptIn(ExperimentalCoroutinesApi::class)
+@Suppress("TooManyFunctions")
 class ExperimentsComponent(
     componentContext: ComponentContext,
     private val dependencies: ExperimentsDependencies,

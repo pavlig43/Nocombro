@@ -53,6 +53,7 @@ class MirrorLocalSnapshotRepository(
      * хранит время чтения для диагностики, а не версию бизнес-строки, поэтому здесь
      * используется обычное локальное время.
      */
+    @Suppress("CyclomaticComplexMethod")
     internal suspend fun loadDatabaseSnapshot(
         tables: List<MirrorSyncTable>,
     ): MirrorLocalSnapshot {

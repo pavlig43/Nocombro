@@ -31,6 +31,7 @@ import ru.pavlig43.files.api.PendingUpload
  * разрешается лишь при доступном mirror, отсутствии локальных правок и пустом
  * реестре незавершённых загрузок.
  */
+@Suppress("TooManyFunctions")
 class DoctorComponent(
     componentContext: ComponentContext,
     dependencies: DoctorDependencies,

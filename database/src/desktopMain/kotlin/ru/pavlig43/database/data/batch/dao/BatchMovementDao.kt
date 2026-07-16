@@ -25,6 +25,7 @@ import ru.pavlig43.database.data.transact.Transact
  * а также для получения движений с загруженными связанными сущностями.
  */
 @Dao
+@Suppress("TooManyFunctions")
 abstract class BatchMovementDao {
 
 

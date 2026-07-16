@@ -1,3 +1,5 @@
+@file:Suppress("TooManyFunctions")
+
 package ru.pavlig43.nocombro.mobile.api.ui
 
 import androidx.compose.foundation.clickable

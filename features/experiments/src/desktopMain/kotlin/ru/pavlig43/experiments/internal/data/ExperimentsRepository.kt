@@ -17,6 +17,7 @@ import ru.pavlig43.database.inTransaction
  * всему дереву одну версию, строго более новую любой строки, и сохраняет файлы,
  * напоминания, записи и эксперимент как tombstone в одной транзакции.
  */
+@Suppress("TooManyFunctions")
 internal class ExperimentsRepository(
     db: NocombroDatabase,
 ) {

@@ -41,6 +41,7 @@ import ru.pavlig43.nocombro.mobile.internal.database.entity.toModel
  * @param filesDirPath корень приватного каталога приложения для копий вложений.
  * @param fileProviderAuthority authority Android FileProvider для открытия вложений.
  */
+@Suppress("TooManyFunctions")
 class ExperimentDetailsRepository(
     private val db: NocombroMobileDatabase,
     private val filesDirPath: String,

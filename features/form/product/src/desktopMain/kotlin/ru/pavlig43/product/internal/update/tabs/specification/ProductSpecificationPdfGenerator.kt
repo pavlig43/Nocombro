@@ -134,6 +134,7 @@ internal class ProductSpecificationPdfGenerator {
  * Низкоуровневый writer поверх PDFBox, который занимается пагинацией и
  * переносом строк.
  */
+@Suppress("TooManyFunctions")
 private class ProductSpecificationPdfWriter(
     private val document: PDDocument,
     private val regularFont: PDFont,

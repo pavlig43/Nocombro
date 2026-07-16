@@ -24,6 +24,7 @@ import ru.pavlig43.database.data.transact.sale.SALE_TABLE_NAME
 import ru.pavlig43.database.data.vendor.VENDOR_TABLE_NAME
 
 @Dao
+@Suppress("TooManyFunctions")
 interface MirrorHardDeleteDao {
     @Query("DELETE FROM $VENDOR_TABLE_NAME WHERE sync_id = :syncId")
     suspend fun deleteVendor(syncId: String): Int

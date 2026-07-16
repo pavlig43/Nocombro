@@ -46,6 +46,7 @@ import java.io.File
  * - стабильный `syncId` файла создаётся сразу при добавлении вложения, чтобы не зависеть
  *   от локального `id` из Room.
  */
+@Suppress("TooManyFunctions")
 abstract class FilesComponent(
     componentContext: ComponentContext,
     private val ownerId: Int,

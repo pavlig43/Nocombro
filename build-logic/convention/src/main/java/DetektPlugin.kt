@@ -68,6 +68,7 @@ class DetektPlugin : Plugin<Project> {
                         ignoreFailures = true
                     }
                     withType<Detekt> {
+                        val reportName = name
 
                         exclude {
                             val path = it.file.invariantSeparatorsPath
@@ -80,6 +81,9 @@ class DetektPlugin : Plugin<Project> {
                         reports {
                             html.required.set(true)
                             md.required.set(true)
+                            txt.outputLocation.set(
+                                target.layout.buildDirectory.file("reports/detekt/$reportName.txt")
+                            )
 
                         }
                     }

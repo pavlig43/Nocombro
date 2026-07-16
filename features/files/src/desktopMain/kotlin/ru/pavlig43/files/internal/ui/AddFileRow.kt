@@ -116,6 +116,7 @@ private fun OnOpenIconButton(
 }
 
 @Composable
+@Suppress("CyclomaticComplexMethod")
 private fun FilePresenceStatus(
     fileUi: FileUi,
     hasLocalFile: Boolean,

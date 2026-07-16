@@ -45,6 +45,7 @@ class MirrorReconciliationPlanner {
      * @param remoteSnapshot typed snapshot из remote gateway.
      * @return план, не изменяющий ни локальное, ни удаленное состояние.
      */
+    @Suppress("CyclomaticComplexMethod")
     fun plan(
         localSnapshot: MirrorLocalSnapshot,
         remoteSnapshot: MirrorRemoteSnapshot,

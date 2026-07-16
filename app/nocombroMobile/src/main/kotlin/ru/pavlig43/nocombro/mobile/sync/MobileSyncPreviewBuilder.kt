@@ -1,3 +1,5 @@
+@file:Suppress("TooManyFunctions")
+
 package ru.pavlig43.nocombro.mobile.sync
 
 import kotlinx.datetime.LocalDate
@@ -9,6 +11,7 @@ import ru.pavlig43.datetime.dateTimeFormat
 /**
  * Группирует сырые sync-правки по экспериментам для экрана предпросмотра.
  */
+@Suppress("CyclomaticComplexMethod")
 internal fun buildExperimentChangeGroups(
     changes: List<MobileMirrorChange>,
     before: MobileMirrorSnapshot,

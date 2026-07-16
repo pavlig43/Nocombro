@@ -15,6 +15,7 @@ import kotlin.time.TimeSource
  * Операции push и pull намеренно однонаправленные. Push записывает только локальных
  * победителей и не применяет обнаруженные remote changes; pull делает обратное.
  */
+@Suppress("TooManyFunctions")
 class MirrorReconciliationService(
     private val localSnapshotRepository: MirrorLocalSnapshotRepository,
     private val remoteGateway: MirrorSyncRemoteGateway,
@@ -505,6 +506,7 @@ private fun MirrorPushResult.acceptedOrLegacy(
 /**
  * Создает typed tombstone, сохраняя исходный payload и меняя только sync metadata.
  */
+@Suppress("CyclomaticComplexMethod")
 internal fun MirrorSyncRow.markDeleted(at: LocalDateTime): MirrorSyncRow = when (this) {
     is VendorMirrorRow -> copy(updatedAt = at, deletedAt = at)
     is DocumentMirrorRow -> copy(updatedAt = at, deletedAt = at)
@@ -534,6 +536,7 @@ internal fun MirrorSyncRow.markDeleted(at: LocalDateTime): MirrorSyncRow = when 
  * Активная строка получает новый `updatedAt`. Tombstone сохраняет признак удаления
  * и получает одинаковые новые `updatedAt` и `deletedAt` через [markDeleted].
  */
+@Suppress("CyclomaticComplexMethod")
 internal fun MirrorSyncRow.withSyncVersion(at: LocalDateTime): MirrorSyncRow {
     if (deletedAt != null) return markDeleted(at)
     return when (this) {

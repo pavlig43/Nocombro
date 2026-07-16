@@ -12,6 +12,7 @@ import kotlin.time.TimeSource
  * Gateway работает с уже созданными typed tables, загружает полные snapshots и
  * выполняет условную запись по версии. Схему YDB нужно создавать и менять отдельным SQL.
  */
+@Suppress("TooManyFunctions")
 class YdbJdbcMirrorSyncGateway(
     private val config: YdbMirrorJdbcConfig,
 ) : MirrorSyncRemoteGateway {

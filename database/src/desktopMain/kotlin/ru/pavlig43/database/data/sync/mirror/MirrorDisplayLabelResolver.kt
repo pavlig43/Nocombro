@@ -27,6 +27,7 @@ class MirrorDisplayLabelResolver(
      * Если [row] отсутствует, возвращается стабильный fallback
      * `tableName:syncId`, пригодный для логов.
      */
+    @Suppress("CyclomaticComplexMethod")
     fun resolve(
         table: MirrorSyncTable,
         row: MirrorSyncRow?,

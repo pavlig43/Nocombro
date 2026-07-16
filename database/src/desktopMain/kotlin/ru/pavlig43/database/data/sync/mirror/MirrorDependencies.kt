@@ -9,6 +9,7 @@ internal data class MirrorEntityKey(
 
 internal fun MirrorPushEntityChange.entityKey() = MirrorEntityKey(table, row.syncId)
 
+@Suppress("CyclomaticComplexMethod")
 internal fun MirrorSyncRow.dependencyKeys(): List<MirrorEntityKey> = when (this) {
     is DeclarationMirrorRow -> listOf(MirrorEntityKey(MirrorSyncTable.VENDOR, vendorSyncId))
     is ProductSpecificationMirrorRow -> listOf(MirrorEntityKey(MirrorSyncTable.PRODUCT, productSyncId))

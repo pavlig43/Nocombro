@@ -13,6 +13,7 @@ import ru.pavlig43.database.data.expense.ExpenseBD
 import ru.pavlig43.database.data.expense.MainExpenseBD
 
 @Dao
+@Suppress("TooManyFunctions")
 interface ExpenseDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

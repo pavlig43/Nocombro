@@ -49,6 +49,7 @@ import ua.wwind.table.ColumnSpec
  * [ru.pavlig43.product.internal.update.ProductFormTabsComponent], чтобы здесь
  * всегда использовалось последнее введенное пользователем значение.
  */
+@Suppress("TooManyFunctions")
 internal class ProductDeclarationComponent(
     componentContext: ComponentContext,
     productId: Int,

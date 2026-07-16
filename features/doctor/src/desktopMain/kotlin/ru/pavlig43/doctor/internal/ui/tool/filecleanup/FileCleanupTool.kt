@@ -159,6 +159,7 @@ private fun DoctorOrphanFileRow(
  * orphan-файлом даже при отсутствии активной строки в текущем remote snapshot.
  */
 @Composable
+@Suppress("CyclomaticComplexMethod")
 internal fun DoctorRemoteFileCleanupTool(
     state: DoctorRemoteOrphanFilesLoadState,
     actionError: String?,

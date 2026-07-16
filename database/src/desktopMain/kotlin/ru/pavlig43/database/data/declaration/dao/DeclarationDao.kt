@@ -14,6 +14,7 @@ import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.datetime.DateThreshold
 
 @Dao
+@Suppress("TooManyFunctions")
 interface DeclarationDao {
 
     @Insert(onConflict = OnConflictStrategy.ABORT)

@@ -60,6 +60,7 @@ fun <T : Any, C> TableExportConfiguration<T, C>.formatValue(
  *
  * Это покрывает большую часть простых колонок без отдельного кода в feature-модуле.
  */
+@Suppress("CyclomaticComplexMethod")
 fun defaultExportValue(rawValue: Any?): ExportCellValue =
     when (rawValue) {
         null -> ExportCellValue.Empty

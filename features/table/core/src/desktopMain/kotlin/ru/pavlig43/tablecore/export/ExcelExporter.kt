@@ -1,3 +1,5 @@
+@file:Suppress("TooManyFunctions")
+
 package ru.pavlig43.tablecore.export
 
 import io.github.vinceglb.filekit.FileKit

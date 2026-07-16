@@ -33,6 +33,7 @@ import ru.pavlig43.nocombro.mobile.experiments.internal.di.createMobileExperimen
  * Компонент не хранит бизнес-данные сам. Источник правды — Room через [ExperimentDetailsRepository],
  * а локальные state нужны только для редактируемого текста, диалогов и сообщений.
  */
+@Suppress("TooManyFunctions")
 class ExperimentDetailsComponent(
     componentContext: ComponentContext,
     private val experimentId: Int,
