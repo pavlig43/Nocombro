@@ -1,4 +1,10 @@
 import io.gitlab.arturbosch.detekt.Detekt
+import org.gradle.api.DefaultTask
+import org.gradle.api.file.ConfigurableFileCollection
+import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.PathSensitive
+import org.gradle.api.tasks.PathSensitivity
+import org.gradle.api.tasks.TaskAction
 
 plugins {
     // this is necessary to avoid the plugins to be loaded multiple times
@@ -65,8 +71,37 @@ plugins {
 
     }
 
+abstract class DetektAllTask : DefaultTask() {
+    @get:InputFiles
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    abstract val textReports: ConfigurableFileCollection
+
+    @TaskAction
+    fun printFindings() {
+        val findingsByReport = textReports.files
+            .filter { it.isFile }
+            .mapNotNull { report ->
+                report.readLines()
+                    .filter(String::isNotBlank)
+                    .takeIf(List<String>::isNotEmpty)
+                    ?.let { findings -> report to findings }
+            }
+
+        if (findingsByReport.isEmpty()) {
+            logger.lifecycle("Detekt: no findings.")
+        } else {
+            val findingsCount = findingsByReport.sumOf { (_, findings) -> findings.size }
+            logger.warn("Detekt findings: $findingsCount")
+            findingsByReport.forEach { (report, findings) ->
+                logger.warn("\n${report.invariantSeparatorsPath}")
+                findings.forEach { finding -> logger.warn(finding) }
+            }
+        }
+    }
+}
+
 /** Общая задача всех проверок Detekt без изменения исходников. */
-val detektAll = tasks.register("detektAll") {
+val detektAll = tasks.register<DetektAllTask>("detektAll") {
     group = "verification"
     description = "Runs every Detekt check registered in the project."
 }
@@ -80,12 +115,12 @@ val detektAutoFix = tasks.register("detektAutoFix") {
 subprojects {
     if (!path.contains("sampletable")) {
         apply(plugin = "pavlig43.detekt")
-        detektAll.configure {
-            dependsOn(
-                tasks.withType<Detekt>().matching {
-                    it.name != "detektAutoFix"
-                }
-            )
+        tasks.withType<Detekt>().matching { it.name != "detektAutoFix" }.configureEach {
+            val detektTask = this
+            detektAll.configure {
+                dependsOn(detektTask)
+                textReports.from(detektTask.txtReportFile)
+            }
         }
         detektAutoFix.configure {
             dependsOn(
