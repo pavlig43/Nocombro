@@ -87,6 +87,7 @@ internal object VendorYdbMirrorCodec : YdbMirrorRowCodec {
         "deleted_at",
     )
 
+    @Suppress("MagicNumber")
     override fun bind(statement: PreparedStatement, row: MirrorSyncRow) {
         require(row is VendorMirrorRow)
         statement.setString(1, row.syncId)
@@ -117,6 +118,7 @@ internal object BatchCostPriceYdbMirrorCodec : YdbMirrorRowCodec {
         "deleted_at",
     )
 
+    @Suppress("MagicNumber")
     override fun bind(statement: PreparedStatement, row: MirrorSyncRow) {
         require(row is BatchCostPriceMirrorRow)
         statement.setString(1, row.syncId)
@@ -149,6 +151,7 @@ internal object DocumentYdbMirrorCodec : YdbMirrorRowCodec {
         "deleted_at",
     )
 
+    @Suppress("MagicNumber")
     override fun bind(statement: PreparedStatement, row: MirrorSyncRow) {
         require(row is DocumentMirrorRow)
         statement.setString(1, row.syncId)
@@ -189,6 +192,7 @@ internal object ProductYdbMirrorCodec : YdbMirrorRowCodec {
         "deleted_at",
     )
 
+    @Suppress("MagicNumber")
     override fun bind(statement: PreparedStatement, row: MirrorSyncRow) {
         require(row is ProductMirrorRow)
         statement.setString(1, row.syncId)
@@ -233,6 +237,7 @@ internal object TransactionYdbMirrorCodec : YdbMirrorRowCodec {
         "deleted_at",
     )
 
+    @Suppress("MagicNumber")
     override fun bind(statement: PreparedStatement, row: MirrorSyncRow) {
         require(row is TransactionMirrorRow)
         statement.setString(1, row.syncId)
@@ -268,6 +273,7 @@ internal object ExperimentYdbMirrorCodec : YdbMirrorRowCodec {
         "deleted_at",
     )
 
+    @Suppress("MagicNumber")
     override fun bind(statement: PreparedStatement, row: MirrorSyncRow) {
         require(row is ExperimentMirrorRow)
         statement.setString(1, row.syncId)

@@ -30,6 +30,7 @@ data class S3RemoteFileStorageConfig(
          * Возвращает `null`, если обязательный минимум не задан. Это сигнал для DI,
          * что нужно использовать `NoopRemoteFileStorageGateway`.
          */
+        @Suppress("ReturnCount", "UnreachableCode")
         fun fromEnvironment(): S3RemoteFileStorageConfig? {
             val fileProperties = loadWindowsAppDataProperties()
 
@@ -82,6 +83,7 @@ data class S3RemoteFileStorageConfig(
         /**
          * Читает properties-файл из `%APPDATA%\Nocombro`, если он есть.
          */
+        @Suppress("ReturnCount", "UnreachableCode")
         private fun loadWindowsAppDataProperties(): Properties? {
             val appData = System.getenv("APPDATA")
                 ?.trim()

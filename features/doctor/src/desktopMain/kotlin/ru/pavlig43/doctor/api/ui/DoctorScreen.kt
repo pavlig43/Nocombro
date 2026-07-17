@@ -35,6 +35,7 @@ import ru.pavlig43.doctor.internal.ui.tool.syncconflicts.DoctorSyncConflictsTool
  * выбора стороны для конфликтов синхронизации.
  */
 @Composable
+@Suppress("LongMethod")
 fun DoctorScreen(
     component: DoctorComponent,
 ) {

@@ -41,6 +41,7 @@ class SyncAnalysisReportWriter(
         return file
     }
 
+    @Suppress("MagicNumber")
     private fun uniqueReportFile(directory: File): File {
         var timestamp = java.time.LocalDateTime.now(clock)
         while (true) {

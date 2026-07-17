@@ -31,6 +31,7 @@ import ru.pavlig43.doctor.internal.ui.common.DoctorSectionCard
  * конфликт в один из callback, а новая версия создаётся в sync-слое.
  */
 @Composable
+@Suppress("LongMethod")
 internal fun DoctorSyncConflictsTool(
     conflicts: List<MirrorVersionConflict>,
     actionError: String?,

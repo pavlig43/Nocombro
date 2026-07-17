@@ -75,6 +75,7 @@ class SyncService(
      * Pull не запускается после ошибки push, чтобы не маскировать первичную причину.
      * Итог включает результат восстановления файлов, выполненного после pull.
      */
+    @Suppress("ReturnCount")
     suspend fun syncOnce(): SyncRunResult {
         val context = mirrorReconciliationService.prepareSync().getOrElse { throwable ->
             val configuration = runCatching {
@@ -129,6 +130,7 @@ class SyncService(
      * Отсутствующая remote-конфигурация считается явной ошибкой операции, а не
      * успешным no-op.
      */
+    @Suppress("ReturnCount")
     suspend fun pushOnce(): SyncRunResult {
         val mirrorPush = mirrorReconciliationService.pushLocalWinners().fold(
             onSuccess = { it },
@@ -162,6 +164,7 @@ class SyncService(
      * Ошибка S3-восстановления возвращается после успешного mirror pull: данные
      * Room уже применены, но UI получает точную информацию о неполном file recovery.
      */
+    @Suppress("ReturnCount")
     suspend fun pullOnce(): SyncRunResult {
         val mirrorPull = mirrorReconciliationService.pullRemoteWinners().fold(
             onSuccess = { it },
@@ -197,6 +200,7 @@ class SyncService(
         )
     }
 
+    @Suppress("ReturnCount")
     private suspend fun downloadMissingFilesAfterMirrorPull(): Result<RemoteFileBatchDownloadSummary?> {
         val repository = remoteFileBatchDownloadRepository
             ?: return Result.success(null)
@@ -206,6 +210,7 @@ class SyncService(
         return repository.downloadMissingLocalCopies()
     }
 
+    @Suppress("UnreachableCode")
     private suspend fun failureWithoutRefresh(
         message: String,
         configuration: MirrorRemoteStatus?,

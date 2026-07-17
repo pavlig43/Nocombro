@@ -217,6 +217,7 @@ class RootNocombroFlowSmokeTest : DesktopMainDispatcherFunSpec({
                 tabsComponent.tabNavigationComponent.addTab(MainTabConfig.ItemFormConfig.VendorFormConfig(id = 0))
             }
 
+            @Suppress("UnreachableCode")
             val createComponent = waitUntilNotNull(attempts = 250) {
                 val vendorForm = tabsComponent.tabNavigationComponent.tabChildren.value.run {
                     items[selectedIndex!!].instance as? MainTabChild.ItemFormChild.VendorFormChild

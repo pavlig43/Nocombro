@@ -1,8 +1,7 @@
 package ru.pavlig43.nocombro.mobile.sync
 
 import androidx.room.withTransaction
-import java.io.File
-import java.nio.file.Path
+import java.nio.file.Paths
 import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.datetime.getCurrentLocalDateTime
 import ru.pavlig43.nocombro.mobile.internal.database.NocombroMobileDatabase
@@ -87,7 +86,7 @@ class MobileLocalMirrorRepository(
      * другого устройства, при следующей отправке не создаст `prefix/prefix/...`.
      */
     fun localPathForObjectKey(objectKey: String): String {
-        val root = Path.of(filesDirPath, "nocombro").toAbsolutePath().normalize()
+        val root = Paths.get(filesDirPath, "nocombro").toAbsolutePath().normalize()
         val resolved = normalizeMobileLogicalFileKey(objectKey)
             .split('/')
             .fold(root) { path, segment -> path.resolve(segment) }

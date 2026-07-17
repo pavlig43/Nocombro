@@ -354,6 +354,7 @@ class DoctorComponent(
      * Ошибка sync, локальные победители и незавершённые загрузки проверяются до
      * отметки последнего pull, чтобы UI показывал наиболее опасную причину.
      */
+    @Suppress("ReturnCount")
     private fun remoteCleanupUnavailableMessage(
         syncStatus: SyncStatusSnapshot,
         pendingUploads: List<PendingUpload>,

@@ -65,6 +65,7 @@ private fun loadWindowIcon(): BitmapPainter {
     }
 }
 
+@Suppress("UnnecessarySafeCall")
 fun main() {
 
     Logger.setLogWriters(emptyList())

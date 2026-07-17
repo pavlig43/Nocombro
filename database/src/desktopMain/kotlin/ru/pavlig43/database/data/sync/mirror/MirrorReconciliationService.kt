@@ -170,6 +170,7 @@ class MirrorReconciliationService(
      *
      * @return принятые строки, фактический remote-снимок и план после push.
      */
+    @Suppress("ReturnCount", "ThrowsCount")
     private suspend fun pushWithSingleRemoteRefresh(
         initialLocal: MirrorLocalSnapshot,
         initialRemote: MirrorRemoteSnapshot,
@@ -344,6 +345,7 @@ class MirrorReconciliationService(
      *
      * @return конфликт либо `null`, если одна сторона исчезла или строки уже равны.
      */
+    @Suppress("ReturnCount", "UnreachableCode")
     private suspend fun loadConflictRows(
         table: MirrorSyncTable,
         syncId: String,

@@ -34,6 +34,7 @@ internal class DeclarationProductPdfParser {
      * Возвращает признак того, найдено ли [productName] в поддерживаемом файле
      * по пути [filePath].
      */
+    @Suppress("RedundantSuspendModifier")
     suspend fun parse(filePath: String, productName: String): ProductNameMatchResult {
         return withContext(Dispatchers.IO) {
             val extension = File(filePath).extension.lowercase()
@@ -65,6 +66,7 @@ internal class DeclarationProductPdfParser {
         }
     }
 
+    @Suppress("NestedBlockDepth")
     private fun parsePdf(
         pdfPath: String,
         normalizedProductName: String,

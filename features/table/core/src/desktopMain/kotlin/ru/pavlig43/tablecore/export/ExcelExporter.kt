@@ -1,4 +1,4 @@
-@file:Suppress("TooManyFunctions")
+@file:Suppress("MatchingDeclarationName", "TooManyFunctions")
 
 package ru.pavlig43.tablecore.export
 
@@ -30,6 +30,7 @@ data class ExcelColumn(
  *
  * Здесь только выбор файла и запись готового `.xlsx`-пакета на диск.
  */
+@Suppress("RedundantSuspendModifier")
 suspend fun exportExcelFile(
     suggestedFileName: String,
     columns: List<ExcelColumn>,
@@ -374,7 +375,7 @@ private fun blankCell(
  */
 private fun excelWidth(column: ExcelColumn): Int {
     val maxLength = maxOf(column.header.length, column.values.maxOfOrNull { displayLength(it) } ?: 0)
-    return maxLength.coerceIn(10, 60) + 2
+    return maxLength.coerceIn(MIN_EXCEL_COLUMN_WIDTH, MAX_EXCEL_COLUMN_WIDTH) + 2
 }
 
 /**
@@ -385,9 +386,9 @@ private fun displayLength(value: ExportCellValue): Int =
         ExportCellValue.Empty -> 0
         is ExportCellValue.Text -> value.value.length
         is ExportCellValue.Number -> doubleToExcelString(value.value).length
-        is ExportCellValue.BooleanValue -> if (value.value) 4 else 5
-        is ExportCellValue.Date -> 10
-        is ExportCellValue.DateTime -> 16
+        is ExportCellValue.BooleanValue -> if (value.value) TRUE_TEXT_LENGTH else FALSE_TEXT_LENGTH
+        is ExportCellValue.Date -> DATE_TEXT_LENGTH
+        is ExportCellValue.DateTime -> DATE_TIME_TEXT_LENGTH
     }
 
 /**
@@ -418,7 +419,7 @@ private fun excelSerialDateTime(value: LocalDateTime): Double {
     )
     val excelEpoch = JavaLocalDateTime.of(1899, 12, 30, 0, 0)
     val duration = java.time.Duration.between(excelEpoch, javaDateTime)
-    return duration.seconds / 86_400.0 + duration.nano / 86_400_000_000_000.0
+    return duration.seconds / SECONDS_PER_DAY + duration.nano / NANOSECONDS_PER_DAY
 }
 
 /**
@@ -434,9 +435,9 @@ private fun columnRef(index: Int): String {
     var current = index
     val builder = StringBuilder()
     do {
-        val remainder = current % 26
+        val remainder = current % EXCEL_ALPHABET_SIZE
         builder.append(('A'.code + remainder).toChar())
-        current = current / 26 - 1
+        current = current / EXCEL_ALPHABET_SIZE - 1
     } while (current >= 0)
     return builder.reverse().toString()
 }
@@ -457,3 +458,13 @@ private fun escapeXml(value: String): String =
             }
         }
     }
+
+private const val MIN_EXCEL_COLUMN_WIDTH = 10
+private const val MAX_EXCEL_COLUMN_WIDTH = 60
+private const val TRUE_TEXT_LENGTH = 4
+private const val FALSE_TEXT_LENGTH = 5
+private const val DATE_TEXT_LENGTH = 10
+private const val DATE_TIME_TEXT_LENGTH = 16
+private const val SECONDS_PER_DAY = 86_400.0
+private const val NANOSECONDS_PER_DAY = 86_400_000_000_000.0
+private const val EXCEL_ALPHABET_SIZE = 26

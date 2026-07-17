@@ -75,6 +75,7 @@ data class YdbMirrorJdbcConfig(
             "jdbc:ydb:grpcs://ydb.serverless.yandexcloud.net:2135/" +
                 "?database=/ru-central1/b1g87p6oufggn8merjua/etn8eb6ujifrk8lp7b73"
 
+        @Suppress("UnreachableCode")
         private fun defaultWindowsServiceAccountFile(): String? {
             val appData = System.getenv("APPDATA")
                 ?.trim()

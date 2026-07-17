@@ -33,7 +33,7 @@ class RealDataDocumentFormComponentSmokeTest : DesktopMainDispatcherFunSpec({
             thenResult = "essential and files tabs are assembled and the title matches the document name",
         )
     ).config(enabled = realDataDatabasePath != null) {
-        withCopiedTestDatabase(sourceDatabasePath = realDataDatabasePath!!) { db ->
+        withCopiedTestDatabase(sourceDatabasePath = requireNotNull(realDataDatabasePath)) { db ->
             val document = db.documentDao.observeOnDocuments().first().first()
             val dependencies = DocumentFormDependencies(
                 transaction = NocombroTransactionExecutor(db),

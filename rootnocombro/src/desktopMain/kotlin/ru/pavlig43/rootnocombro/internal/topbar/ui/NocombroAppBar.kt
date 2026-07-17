@@ -100,6 +100,7 @@ internal fun NocombroAppBar(
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
+@Suppress("LongMethod", "LongParameterList")
 private fun SyncStatusButton(
     syncUiState: SyncUiState,
     onSyncClick: () -> Unit,

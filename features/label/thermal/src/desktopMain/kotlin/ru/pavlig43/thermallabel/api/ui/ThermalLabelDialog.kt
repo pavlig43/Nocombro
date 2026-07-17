@@ -39,6 +39,7 @@ import ru.pavlig43.thermallabel.api.model.ThermalLabelSize
  * и возможные ошибки генерации.
  */
 @Composable
+@Suppress("LongMethod")
 fun ThermalLabelDialog(
     component: ThermalLabelDialogComponent,
 ) {

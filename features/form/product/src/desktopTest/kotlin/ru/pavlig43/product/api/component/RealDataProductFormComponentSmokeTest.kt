@@ -31,6 +31,7 @@ class RealDataProductFormComponentSmokeTest : DesktopMainDispatcherFunSpec({
         ?.takeIf { it.isNotBlank() }
         ?.let(::Path)
 
+    @Suppress("RedundantSuspendModifier")
     suspend fun waitForUpdateChild(component: ProductFormComponent): ProductFormComponent.Child.Update {
         repeat(50) {
             val child = component.stack.value.active.instance
@@ -42,6 +43,7 @@ class RealDataProductFormComponentSmokeTest : DesktopMainDispatcherFunSpec({
         error("Product form did not switch to update child in time.")
     }
 
+    @Suppress("RedundantSuspendModifier")
     suspend fun waitForTabTypes(
         component: ProductFormTabsComponent,
         expectedTypes: Set<Class<out ProductTabChild>>,
@@ -64,7 +66,7 @@ class RealDataProductFormComponentSmokeTest : DesktopMainDispatcherFunSpec({
             thenResult = "core product tabs are assembled and FOOD_PF also receives composition",
         )
     ).config(enabled = realDataDatabasePath != null) {
-        withCopiedTestDatabase(sourceDatabasePath = realDataDatabasePath!!) { db ->
+        withCopiedTestDatabase(sourceDatabasePath = requireNotNull(realDataDatabasePath)) { db ->
             val product = db.productDao.observeOnProducts().first().first()
             val dependencies = ProductFormDependencies(
                 db = db,

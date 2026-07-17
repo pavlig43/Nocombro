@@ -98,6 +98,7 @@ class LocalFilesMaintenanceRepository(
      * После удаления метод поднимается вверх по дереву и чистит пустые папки,
      * но останавливается на корневом каталоге файлов под управлением приложения.
      */
+    @Suppress("RedundantSuspendModifier")
     suspend fun deleteLocalFile(path: String): Result<Unit> {
         return runCatching {
             val rootDirectory = getManagedFilesRootDirectory().canonicalFile
@@ -114,6 +115,7 @@ class LocalFilesMaintenanceRepository(
         }
     }
 
+    @Suppress("LoopWithTooManyJumpStatements")
     private fun pruneEmptyParents(
         startDirectory: File?,
         rootDirectory: File,

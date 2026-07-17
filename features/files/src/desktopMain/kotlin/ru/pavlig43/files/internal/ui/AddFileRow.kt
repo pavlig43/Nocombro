@@ -37,6 +37,7 @@ import ru.pavlig43.theme.unknown
 import ru.pavlig43.theme.word
 
 @Composable
+@Suppress("LongParameterList")
 internal fun AddFileRow(
     fileUi: FileUi,
     openFile: (FileUi) -> Unit,

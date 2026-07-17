@@ -41,6 +41,7 @@ import ru.pavlig43.immutable.internal.component.manager.DeleteState
  * @param modifier расположение панели на экране.
  */
 @Composable
+@Suppress("LongMethod")
 internal fun SelectionActionBar(
     selectedCount: Int,
     deleteState: DeleteState,

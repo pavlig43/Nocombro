@@ -80,6 +80,7 @@ internal class FilesRepository(
      * Если локальный файл уже есть, ничего не делает. Если локального файла нет, но известен
      * `remoteObjectKey`, пытается скачать копию из object storage.
      */
+    @Suppress("ReturnCount")
     suspend fun ensureLocalFileForOpen(
         localPath: String,
         remoteObjectKey: String?,
@@ -118,6 +119,7 @@ internal class FilesRepository(
      * сверки remote mirror. После успешной Room-транзакции ключ исключается из
      * реестра незавершённых загрузок.
      */
+    @Suppress("LongParameterList")
     suspend fun replaceOwnedFile(
         ownerId: Int,
         ownerType: OwnerType,

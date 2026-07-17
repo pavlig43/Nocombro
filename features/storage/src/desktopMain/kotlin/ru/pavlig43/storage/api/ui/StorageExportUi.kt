@@ -31,6 +31,7 @@ import ua.wwind.table.state.TableState
  * чтобы экспорт совпадал с тем, что пользователь видит на экране сейчас.
  */
 @Composable
+@Suppress("LoopWithTooManyJumpStatements", "UnreachableCode")
 internal fun <T : Any, C, E> buildStorageExportColumns(
     columns: ImmutableList<ColumnSpec<T, C, E>>,
     tableState: TableState<C>,
@@ -65,6 +66,7 @@ internal fun <T : Any, C, E> buildStorageExportColumns(
  * использовали одинаковый UI и не дублировали одну и ту же compose-разметку.
  */
 @Composable
+@Suppress("LongParameterList")
 internal fun BoxScope.StorageExportActionBar(
     exportConfiguration: TableExportConfiguration<*, *>,
     isExportMenuExpanded: Boolean,
@@ -118,6 +120,7 @@ internal fun BoxScope.StorageExportActionBar(
  * Сейчас реально поддержан только Excel, но диспетчер оставлен общим,
  * чтобы позже без перестройки UI подключить PDF и Word.
  */
+@Suppress("RedundantSuspendModifier")
 internal suspend fun runStorageExport(
     exportFormat: TableExportFormat,
     exportConfiguration: TableExportConfiguration<*, *>,

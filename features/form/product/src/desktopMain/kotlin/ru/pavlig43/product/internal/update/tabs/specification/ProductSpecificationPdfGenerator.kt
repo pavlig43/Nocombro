@@ -77,6 +77,7 @@ internal class ProductSpecificationPdfGenerator {
     /**
      * Возвращает первый доступный TTF-шрифт из списка resource-path кандидатов.
      */
+    @Suppress("ReturnCount")
     private fun loadFont(
         document: PDDocument,
         resourcePaths: List<String>,
@@ -95,6 +96,7 @@ internal class ProductSpecificationPdfGenerator {
     /**
      * Загружает изображение из ресурсов проекта для последующей вставки в PDF.
      */
+    @Suppress("ReturnCount")
     private fun loadImage(
         document: PDDocument,
         resourcePath: String,
@@ -153,6 +155,7 @@ private class ProductSpecificationPdfWriter(
     /**
      * Рисует содержимое всей спецификации в документ.
      */
+    @Suppress("MagicNumber")
     fun write(
         productName: String,
         specification: ProductSpecification,
@@ -212,6 +215,7 @@ private class ProductSpecificationPdfWriter(
      * Пустые поля намеренно не печатаются, чтобы в PDF не было строк вида
      * `Цвет: -`.
      */
+    @Suppress("MagicNumber")
     private fun drawSection(
         title: String,
         content: String,
@@ -225,6 +229,7 @@ private class ProductSpecificationPdfWriter(
     /**
      * Рисует блок аллергенов таблицей с явной шапкой колонок.
      */
+    @Suppress("MagicNumber")
     private fun drawAllergensSection(
         content: String,
     ) {
@@ -321,6 +326,7 @@ private class ProductSpecificationPdfWriter(
         return lines.ifEmpty { listOf(" ") }
     }
 
+    @Suppress("MagicNumber")
     private fun drawRule() {
         ensureSpace(12f)
         stream.moveTo(margin, y)
@@ -337,6 +343,7 @@ private class ProductSpecificationPdfWriter(
     /**
      * Рисует подпись и печать единым ресурсом, чтобы сохранить нужное наложение.
      */
+    @Suppress("MagicNumber")
     private fun drawSignatureAndStamp() {
         val signatureStamp = signatureStampImage ?: return
 

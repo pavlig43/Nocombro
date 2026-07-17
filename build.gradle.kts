@@ -1,7 +1,10 @@
 import io.gitlab.arturbosch.detekt.Detekt
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
+import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.tasks.Delete
 import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
@@ -76,8 +79,11 @@ abstract class DetektAllTask : DefaultTask() {
     @get:PathSensitive(PathSensitivity.RELATIVE)
     abstract val textReports: ConfigurableFileCollection
 
+    @get:OutputFile
+    abstract val outputFile: RegularFileProperty
+
     @TaskAction
-    fun printFindings() {
+    fun writeFindings() {
         val findings = textReports.files
             .filter { it.isFile }
             .flatMap { it.readLines() }
@@ -85,8 +91,18 @@ abstract class DetektAllTask : DefaultTask() {
             .distinct()
             .sorted()
 
+        val report = outputFile.get().asFile
+        report.parentFile.mkdirs()
+        report.writeText(
+            if (findings.isEmpty()) {
+                "Detekt: no findings\n"
+            } else {
+                findings.joinToString(separator = "\n", postfix = "\n")
+            }
+        )
+
         if (findings.isEmpty()) {
-            logger.lifecycle("Detekt: no findings.")
+            logger.lifecycle("Detekt: no findings")
         } else {
             logger.warn("Detekt findings: ${findings.size}")
             findings.forEach(logger::warn)
@@ -94,10 +110,15 @@ abstract class DetektAllTask : DefaultTask() {
     }
 }
 
+val prepareDetektAllReports = tasks.register<Delete>("prepareDetektAllReports") {
+}
+
 /** Общая задача всех проверок Detekt без изменения исходников. */
 val detektAll = tasks.register<DetektAllTask>("detektAll") {
     group = "verification"
     description = "Runs every Detekt check registered in the project."
+    dependsOn(prepareDetektAllReports)
+    outputFile.set(layout.buildDirectory.file("reports/detekt/detektAll.txt"))
 }
 
 /** Общая явная задача автоисправления Detekt во всех Kotlin-модулях. */
@@ -113,6 +134,10 @@ subprojects {
             it.name != "detekt" && it.name != "detektAutoFix"
         }.configureEach {
             val detektTask = this
+            prepareDetektAllReports.configure {
+                delete(detektTask.txtReportFile)
+            }
+            detektTask.mustRunAfter(prepareDetektAllReports)
             detektAll.configure {
                 dependsOn(detektTask)
                 textReports.from(detektTask.txtReportFile)

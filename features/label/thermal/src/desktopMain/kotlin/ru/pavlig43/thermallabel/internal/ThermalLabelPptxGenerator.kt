@@ -23,6 +23,7 @@ import ru.pavlig43.thermallabel.api.model.ThermalLabelGenerationRequest
  */
 internal class ThermalLabelPptxGenerator {
 
+    @Suppress("RedundantSuspendModifier")
     suspend fun generate(
         request: ThermalLabelGenerationRequest,
     ): String {

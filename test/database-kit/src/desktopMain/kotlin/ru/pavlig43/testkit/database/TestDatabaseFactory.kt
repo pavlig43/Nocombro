@@ -42,6 +42,7 @@ fun createManagedTestDatabase(
     )
 }
 
+@Suppress("RedundantSuspendModifier")
 suspend fun createManagedCopiedDatabase(
     sourceDatabasePath: Path,
     queryDispatcher: CoroutineDispatcher = Dispatchers.IO,
@@ -76,6 +77,7 @@ suspend fun createManagedCopiedDatabase(
     )
 }
 
+@Suppress("RedundantSuspendModifier")
 suspend fun createSeededManagedTestDatabase(
     queryDispatcher: CoroutineDispatcher = Dispatchers.IO,
     rootPath: Path = createTempPath(),

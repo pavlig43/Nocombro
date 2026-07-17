@@ -207,6 +207,7 @@ internal class ProductDeclarationComponent(
      * Здесь выполняются быстрые проверки до запуска тяжелого парсинга:
      * поддерживается ли расширение и заполнено ли имя продукта.
      */
+    @Suppress("ReturnCount", "UnreachableCode")
     internal fun parseSelectedFile(filePath: String) {
         val sheetUi = parseSheetUi.value ?: return
         val fileUi = sheetUi.files.firstOrNull { it.path == filePath } ?: return

@@ -175,6 +175,7 @@ private class DragController(
     /**
      * Отмена перетаскивания с анимацией возврата в исходное положение
      */
+    @Suppress("RedundantSuspendModifier")
     suspend fun cancelDrag() {
         offset.animateTo(0f) // Плавно возвращает элемент на место
         clearDragState()
@@ -222,6 +223,7 @@ private class DragController(
     /**
      * Выполняет перестановку элементов и корректирует смещение для плавности
      */
+    @Suppress("RedundantSuspendModifier")
     private suspend fun reorderItems(currentIndex: Int, targetItem: LazyListItemInfo) {
         val targetIndex = (targetItem.contentType as DraggableMetadata).index
         onReorder(currentIndex, targetIndex) // Уведомляет родителя о смене порядка

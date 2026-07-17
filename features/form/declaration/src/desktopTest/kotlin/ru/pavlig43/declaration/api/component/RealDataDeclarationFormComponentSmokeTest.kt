@@ -36,7 +36,7 @@ class RealDataDeclarationFormComponentSmokeTest : DesktopMainDispatcherFunSpec({
             thenResult = "essential and files tabs are assembled and the title matches the declaration name",
         )
     ).config(enabled = realDataDatabasePath != null) {
-        withCopiedTestDatabase(sourceDatabasePath = realDataDatabasePath!!) { db ->
+        withCopiedTestDatabase(sourceDatabasePath = requireNotNull(realDataDatabasePath)) { db ->
             val declaration = db.declarationDao.observeOnItems().first().first()
             val dependencies = DeclarationFormDependencies(
                 transaction = NocombroTransactionExecutor(db),

@@ -19,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import java.util.Locale
 import ru.pavlig43.doctor.internal.component.DoctorTool
 
 @Composable
@@ -134,8 +135,8 @@ internal fun Long.toReadableFileSize(): String {
     val kiloByte = 1024L
     val megaByte = kiloByte * 1024
     return when {
-        this >= megaByte -> String.format("%.1f MB", this.toDouble() / megaByte)
-        this >= kiloByte -> String.format("%.1f KB", this.toDouble() / kiloByte)
+        this >= megaByte -> String.format(Locale.ROOT, "%.1f MB", this.toDouble() / megaByte)
+        this >= kiloByte -> String.format(Locale.ROOT, "%.1f KB", this.toDouble() / kiloByte)
         else -> "$this B"
     }
 }

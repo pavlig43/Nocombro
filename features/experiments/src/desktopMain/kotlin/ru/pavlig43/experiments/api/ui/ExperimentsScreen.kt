@@ -56,6 +56,7 @@ import ru.pavlig43.theme.edit
  * Desktop experiments screen with experiment, entry, reminder, and file editors.
  */
 @Composable
+@Suppress("LongMethod", "MagicNumber")
 fun ExperimentsScreen(
     component: ExperimentsComponent,
     modifier: Modifier = Modifier,
@@ -142,6 +143,7 @@ fun ExperimentsScreen(
 }
 
 @Composable
+@Suppress("LongMethod", "LongParameterList")
 private fun ExperimentListPane(
     experiments: List<ExperimentListItem>,
     selectedExperimentId: Int?,
@@ -230,6 +232,7 @@ private fun ExperimentListPane(
 }
 
 @Composable
+@Suppress("LongMethod", "LongParameterList")
 private fun ExperimentDetailsPane(
     title: String,
     ideaDescription: String,
@@ -371,6 +374,7 @@ private fun ExperimentDetailsPane(
 }
 
 @Composable
+@Suppress("LongMethod")
 private fun ReminderBlock(
     reminders: List<ExperimentReminderListItem>,
     onCreateReminder: () -> Unit,
@@ -513,6 +517,7 @@ private fun ReminderEditorDialog(
 }
 
 @Composable
+@Suppress("LongParameterList")
 private fun EntryEditorPane(
     title: String?,
     content: String,

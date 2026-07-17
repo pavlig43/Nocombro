@@ -79,7 +79,7 @@ internal fun validateAllergensEditorText(
         .mapNotNull { (lineNumber, line) ->
             val cells = line.split(';').map(String::trim)
             when {
-                cells.size != 3 -> {
+                cells.size != ALLERGEN_COLUMN_COUNT -> {
                     "Аллергены: строка $lineNumber должна быть в формате `название; да/нет; да/нет`"
                 }
                 cells[0].isBlank() -> {
@@ -105,7 +105,7 @@ private fun parseEditorLines(
         .filter(String::isNotBlank)
         .mapNotNull { line ->
             val cells = line.split(';').map(String::trim)
-            if (cells.size < 3) return@mapNotNull null
+            if (cells.size < ALLERGEN_COLUMN_COUNT) return@mapNotNull null
             ProductSpecificationAllergenRow(
                 name = cells[0],
                 inProduct = cells[1],
@@ -114,6 +114,8 @@ private fun parseEditorLines(
         }
         .toList()
 }
+
+private const val ALLERGEN_COLUMN_COUNT = 3
 
 private fun String.isYesNo(): Boolean {
     return equals("да", ignoreCase = true) || equals("нет", ignoreCase = true)

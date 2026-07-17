@@ -31,6 +31,7 @@ import ru.pavlig43.transaction.internal.update.TransactionTabChild
  */
 class TransactionFormComponentSmokeTest : DesktopMainDispatcherFunSpec({
 
+    @Suppress("RedundantSuspendModifier")
     suspend fun waitForUpdateChild(component: TransactionFormComponent): TransactionFormComponent.Child.Update {
         repeat(50) {
             val child = component.stack.value.active.instance
@@ -42,6 +43,7 @@ class TransactionFormComponentSmokeTest : DesktopMainDispatcherFunSpec({
         error("Transaction form did not switch to update child in time.")
     }
 
+    @Suppress("RedundantSuspendModifier")
     suspend fun waitForTabTypes(
         component: TransactionFormTabsComponent,
         expectedTypes: Set<Class<out TransactionTabChild>>,

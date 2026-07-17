@@ -659,6 +659,7 @@ private class ConcurrentRetryGateway(
         )
     }
 
+    @Suppress("ReturnCount")
     override suspend fun pushMirrorState(changes: List<MirrorPushEntityChange>): Result<MirrorPushResult> {
         pushCalls++
         val incoming = changes.single()

@@ -214,6 +214,7 @@ private fun <I : IMultiLineTableUi, C, E : TableData<I>> BoxScope.ImmutableTable
 }
 
 @Composable
+@Suppress("LoopWithTooManyJumpStatements", "UnreachableCode")
 private fun <I : IMultiLineTableUi, C, E : TableData<I>> buildExportColumns(
     columns: ImmutableList<ColumnSpec<I, C, E>>,
     tableState: TableState<C>,
@@ -244,6 +245,7 @@ private fun <I : IMultiLineTableUi, C, E : TableData<I>> buildExportColumns(
 }
 
 @Composable
+@Suppress("LongParameterList")
 private fun BoxScope.ExportActionBar(
     exportConfiguration: TableExportConfiguration<*, *>,
     isExportMenuExpanded: Boolean,
@@ -308,6 +310,7 @@ private fun BoxScope.ExportActionBar(
     }
 }
 
+@Suppress("RedundantSuspendModifier")
 private suspend fun runExport(
     exportFormat: TableExportFormat,
     exportConfiguration: TableExportConfiguration<*, *>,

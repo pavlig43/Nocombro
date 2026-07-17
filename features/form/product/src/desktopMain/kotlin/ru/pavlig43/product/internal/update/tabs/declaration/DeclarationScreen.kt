@@ -180,6 +180,7 @@ private fun ProductDeclarationTable(
 }
 
 @Composable
+@Suppress("LongMethod")
 private fun ParseDeclarationFilesSheet(
     ui: ParseDeclarationSheetUi,
     onDismiss: () -> Unit,

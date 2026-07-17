@@ -190,6 +190,7 @@ private fun <I : IMultiLineTableUi, C, E : TableData<I>> BoxScope.MutableTable(
  * текущее экранное представление после перестановки колонок пользователем.
  */
 @Composable
+@Suppress("LoopWithTooManyJumpStatements", "UnreachableCode")
 private fun <I : IMultiLineTableUi, C, E : TableData<I>> buildExportColumns(
     columns: ImmutableList<ColumnSpec<I, C, E>>,
     tableState: TableState<C>,
@@ -224,6 +225,7 @@ private fun <I : IMultiLineTableUi, C, E : TableData<I>> buildExportColumns(
  * так же добавлять другие table-level действия без разрастания основной функции.
  */
 @Composable
+@Suppress("LongParameterList")
 private fun BoxScope.ExportActionBar(
     exportConfiguration: TableExportConfiguration<*, *>,
     isExportMenuExpanded: Boolean,
@@ -282,6 +284,7 @@ private fun BoxScope.ExportActionBar(
 /**
  * Запускает экспорт таблицы и возвращает текст ошибки для показа в UI.
  */
+@Suppress("RedundantSuspendModifier")
 private suspend fun runExport(
     exportFormat: TableExportFormat,
     exportConfiguration: TableExportConfiguration<*, *>,

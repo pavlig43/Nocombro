@@ -145,6 +145,7 @@ class YdbJdbcMirrorSyncGateway(
      *
      * Основной sync-протокол использует tombstone и не должен вызывать этот метод.
      */
+    @Suppress("RedundantSuspendModifier")
     internal suspend fun deleteRows(
         syncIdsByTable: Map<MirrorSyncTable, List<String>>,
     ): Result<Int> {

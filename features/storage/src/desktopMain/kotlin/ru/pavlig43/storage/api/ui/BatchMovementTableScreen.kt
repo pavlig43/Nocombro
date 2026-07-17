@@ -94,7 +94,7 @@ fun BatchMovementTableScreen(
 }
 
 @OptIn(ExperimentalTableApi::class)
-@Suppress("LongParameterList")
+@Suppress("LongMethod", "LongParameterList")
 @Composable
 private fun BatchMovementTable(
     state: TableState<BatchMovementField>,

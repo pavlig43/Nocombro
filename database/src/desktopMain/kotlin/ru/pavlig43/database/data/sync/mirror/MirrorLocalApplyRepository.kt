@@ -84,6 +84,7 @@ class MirrorLocalApplyRepository(
      * Метод не открывает вложенную транзакцию и служит общей реализацией обычного
      * pull и compare-and-set при разрешении конфликта.
      */
+    @Suppress("UnreachableCode")
     private suspend fun applyInCurrentTransaction(changes: List<MirrorPushEntityChange>): TransactionResult {
         val explicitTombstones = changes.filter { it.row.deletedAt != null }
         var persistedTombstones = persistNewestTombstones(explicitTombstones)
@@ -150,6 +151,7 @@ class MirrorLocalApplyRepository(
         }
     }
 
+    @Suppress("UnreachableCode")
     private suspend fun persistNewestTombstones(changes: List<MirrorPushEntityChange>): Int {
         if (changes.isEmpty()) return 0
         val existing = db.mirrorDeletionJournalDao.getAll()
@@ -190,6 +192,7 @@ class MirrorLocalApplyRepository(
         )
     }
 
+    @Suppress("NestedBlockDepth")
     private fun collectDependentRows(
         snapshot: MirrorLocalSnapshot,
         rootTable: MirrorSyncTable,

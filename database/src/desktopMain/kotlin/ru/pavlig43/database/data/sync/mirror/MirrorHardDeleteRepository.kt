@@ -18,7 +18,7 @@ class MirrorHardDeleteRepository(
     private val db: NocombroDatabase,
     private val snapshotRepository: MirrorLocalSnapshotRepository = MirrorLocalSnapshotRepository(db),
 ) {
-    @Suppress("CyclomaticComplexMethod")
+    @Suppress("CyclomaticComplexMethod", "ReturnCount", "UnreachableCode")
     suspend fun delete(request: MirrorHardDeleteRequest): MirrorHardDeleteResult {
         val existing = snapshotRepository.loadDatabaseSnapshot(listOf(request.table))
             .rowsByTable[request.table]

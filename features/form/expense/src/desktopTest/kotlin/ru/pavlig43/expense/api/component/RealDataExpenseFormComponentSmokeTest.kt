@@ -33,7 +33,7 @@ class RealDataExpenseFormComponentSmokeTest : DesktopMainDispatcherFunSpec({
             thenResult = "essentials and files tabs are assembled and the title matches the expense type",
         )
     ).config(enabled = realDataDatabasePath != null) {
-        withCopiedTestDatabase(sourceDatabasePath = realDataDatabasePath!!) { db ->
+        withCopiedTestDatabase(sourceDatabasePath = requireNotNull(realDataDatabasePath)) { db ->
             val expense = db.expenseDao.observeAll().first().first()
             val dependencies = ExpenseFormDependencies(
                 transactionExecutor = NocombroTransactionExecutor(db),

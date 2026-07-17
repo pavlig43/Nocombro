@@ -275,6 +275,7 @@ private fun MirrorLocalSnapshot.onlySyncIds(syncIds: Set<String>) = copy(
     },
 )
 
+@Suppress("UnusedPrivateMember")
 private fun MirrorRemoteSnapshot.onlySyncIds(syncIds: Set<String>) = copy(
     rowsByTable = rowsByTable.mapValues { (_, rows) ->
         rows.filter { it.syncId in syncIds }
@@ -285,6 +286,7 @@ private fun MirrorLocalSnapshot.toChanges() = rowsByTable.flatMap { (table, rows
     rows.map { row -> MirrorPushEntityChange(table, row) }
 }
 
+@Suppress("UnusedPrivateMember")
 private fun MirrorRemoteSnapshot.toChanges() = rowsByTable.flatMap { (table, rows) ->
     rows.map { row -> MirrorPushEntityChange(table, row) }
 }

@@ -106,7 +106,7 @@ fun FilesScreen(
  * @see DuplicateFileDialog Диалоговое окно для подтверждения перезаписи дубликата
  * @see rememberFilePickerLauncher Launcher для выбора файлов
  */
-@Suppress("LongParameterList")
+@Suppress("LongMethod", "LongParameterList")
 @Composable
 private fun AddFileBody(
     files: List<FileUi>,

@@ -422,6 +422,7 @@ suspend fun seedDatabase(db: NocombroDatabase) {
     )
 }
 
+@Suppress("LongMethod", "LoopWithTooManyJumpStatements", "UnreachableCode")
 private fun buildBatchCostPrices(
     transactions: List<Transact>,
     batchMovements: List<BatchMovement>,

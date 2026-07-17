@@ -82,11 +82,11 @@ class PendingUploadRegistry(
                 val parts = line.split('\t')
                 require(parts.size == FIELD_COUNT) { "Pending upload registry is corrupt" }
                 PendingUpload(
-                    objectKey = parts[0].decodeField(),
-                    localPath = parts[1].decodeField(),
-                    firstSeenAt = LocalDateTime.parse(parts[2]),
-                    lastAttemptAt = LocalDateTime.parse(parts[3]),
-                    attemptCount = parts[4].toInt(),
+                    objectKey = parts[OBJECT_KEY_FIELD_INDEX].decodeField(),
+                    localPath = parts[LOCAL_PATH_FIELD_INDEX].decodeField(),
+                    firstSeenAt = LocalDateTime.parse(parts[FIRST_SEEN_AT_FIELD_INDEX]),
+                    lastAttemptAt = LocalDateTime.parse(parts[LAST_ATTEMPT_AT_FIELD_INDEX]),
+                    attemptCount = parts[ATTEMPT_COUNT_FIELD_INDEX].toInt(),
                 )
             }
     }
@@ -122,6 +122,11 @@ class PendingUploadRegistry(
     private companion object {
         /** Число полей в одной строке TSV-реестра. */
         const val FIELD_COUNT = 5
+        const val OBJECT_KEY_FIELD_INDEX = 0
+        const val LOCAL_PATH_FIELD_INDEX = 1
+        const val FIRST_SEEN_AT_FIELD_INDEX = 2
+        const val LAST_ATTEMPT_AT_FIELD_INDEX = 3
+        const val ATTEMPT_COUNT_FIELD_INDEX = 4
 
         /** Общий монитор, который последовательно выполняет операции всех экземпляров реестра. */
         val lock = Any()

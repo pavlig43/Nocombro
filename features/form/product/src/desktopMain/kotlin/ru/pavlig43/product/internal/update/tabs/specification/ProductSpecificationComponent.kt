@@ -24,6 +24,7 @@ import ua.wwind.table.ColumnSpec
  * Помимо обычного редактирования умеет сгенерировать системный PDF-файл
  * спецификации и попросить родительскую форму обновить вкладку файлов.
  */
+@Suppress("LongParameterList")
 internal class ProductSpecificationComponent(
     componentContext: ComponentContext,
     private val productId: Int,

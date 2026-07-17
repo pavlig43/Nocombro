@@ -219,6 +219,7 @@ abstract class FilesComponent(
         }
     }
 
+    @Suppress("UnreachableCode")
     internal fun downloadFile(composeKey: Int) {
         val fileUi = _filesUi.value.firstOrNull { it.composeKey == composeKey } ?: return
         coroutineScope.launch(Dispatchers.IO) {

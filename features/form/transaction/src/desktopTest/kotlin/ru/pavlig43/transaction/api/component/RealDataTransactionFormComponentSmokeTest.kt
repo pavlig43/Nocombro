@@ -31,6 +31,7 @@ class RealDataTransactionFormComponentSmokeTest : DesktopMainDispatcherFunSpec({
         ?.takeIf { it.isNotBlank() }
         ?.let(::Path)
 
+    @Suppress("RedundantSuspendModifier")
     suspend fun waitForUpdateChild(component: TransactionFormComponent): TransactionFormComponent.Child.Update {
         repeat(50) {
             val child = component.stack.value.active.instance
@@ -42,6 +43,7 @@ class RealDataTransactionFormComponentSmokeTest : DesktopMainDispatcherFunSpec({
         error("Transaction form did not switch to update child in time.")
     }
 
+    @Suppress("RedundantSuspendModifier")
     suspend fun waitForTabTypes(
         component: TransactionFormTabsComponent,
         expectedTypes: Set<Class<out TransactionTabChild>>,
@@ -64,7 +66,7 @@ class RealDataTransactionFormComponentSmokeTest : DesktopMainDispatcherFunSpec({
             thenResult = "core tabs are assembled and the selected dynamic tab matches the transaction type",
         )
     ).config(enabled = realDataDatabasePath != null) {
-        withCopiedTestDatabase(sourceDatabasePath = realDataDatabasePath!!) { db ->
+        withCopiedTestDatabase(sourceDatabasePath = requireNotNull(realDataDatabasePath)) { db ->
             val transaction = db.transactionDao.observeOnProductTransactions().first()
                 .first { it.transactionType in setOf(TransactionType.BUY, TransactionType.SALE, TransactionType.OPZS) }
             val dependencies = TransactionFormDependencies(

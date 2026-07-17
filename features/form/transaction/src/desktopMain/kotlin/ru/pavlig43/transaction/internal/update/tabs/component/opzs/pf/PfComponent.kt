@@ -75,6 +75,7 @@ internal class PfComponent(
         childFactory = ::createDialogChild
     )
 
+    @Suppress("LongMethod")
     private fun createDialogChild(dialogConfig: PfDialog, context: ComponentContext): PfDialogChild {
         return when (dialogConfig) {
             is PfDialog.Declaration -> {

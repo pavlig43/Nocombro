@@ -33,7 +33,7 @@ class RealDataVendorFormComponentSmokeTest : DesktopMainDispatcherFunSpec({
             thenResult = "essential and files tabs are assembled and the title matches the vendor name",
         )
     ).config(enabled = realDataDatabasePath != null) {
-        withCopiedTestDatabase(sourceDatabasePath = realDataDatabasePath!!) { db ->
+        withCopiedTestDatabase(sourceDatabasePath = requireNotNull(realDataDatabasePath)) { db ->
             val vendor = db.vendorDao.observeOnVendors().first().first()
             val dependencies = VendorFormDependencies(
                 transaction = NocombroTransactionExecutor(db),

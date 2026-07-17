@@ -151,7 +151,7 @@ fun StorageScreen(
 }
 
 @OptIn(ExperimentalTableApi::class)
-@Suppress("MagicNumber","LongParameterList")
+@Suppress("LongMethod", "LongParameterList", "MagicNumber")
 @Composable
 private fun StorageTable(
     state: TableState<StorageProductField>,

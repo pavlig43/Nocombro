@@ -1,3 +1,5 @@
+@file:Suppress("MatchingDeclarationName")
+
 package ru.pavlig43.database.data.sync.mirror
 
 import ru.pavlig43.database.data.files.OwnerType

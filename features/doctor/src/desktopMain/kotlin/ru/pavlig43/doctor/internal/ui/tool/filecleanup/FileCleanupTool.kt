@@ -31,6 +31,7 @@ import ru.pavlig43.files.api.model.RemoteOrphanFile
 import ru.pavlig43.files.api.PendingUpload
 
 @Composable
+@Suppress("LongParameterList")
 internal fun DoctorFileCleanupTool(
     state: DoctorOrphanFilesLoadState,
     actionError: String?,
@@ -159,7 +160,7 @@ private fun DoctorOrphanFileRow(
  * orphan-файлом даже при отсутствии активной строки в текущем remote snapshot.
  */
 @Composable
-@Suppress("CyclomaticComplexMethod")
+@Suppress("CyclomaticComplexMethod", "LongMethod", "LongParameterList")
 internal fun DoctorRemoteFileCleanupTool(
     state: DoctorRemoteOrphanFilesLoadState,
     actionError: String?,

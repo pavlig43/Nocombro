@@ -200,6 +200,7 @@ class SyncComponent(
         }
     }
 
+    @Suppress("LongParameterList")
     private fun updateUiState(
         status: SyncStatusSnapshot,
         isSyncRunning: Boolean,

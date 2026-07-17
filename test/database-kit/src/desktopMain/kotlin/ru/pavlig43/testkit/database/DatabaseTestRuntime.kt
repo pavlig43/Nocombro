@@ -30,6 +30,7 @@ class DatabaseTestRuntime(
     }
 }
 
+@Suppress("RedundantSuspendModifier")
 suspend fun createEmptyDatabaseRuntime(
     queryDispatcher: CoroutineDispatcher = Dispatchers.IO,
     rootPath: Path? = null,

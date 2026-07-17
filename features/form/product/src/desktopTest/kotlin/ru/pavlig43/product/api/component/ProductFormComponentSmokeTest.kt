@@ -22,6 +22,7 @@ import ru.pavlig43.testkit.scenario
 
 class ProductFormComponentSmokeTest : DesktopMainDispatcherFunSpec({
 
+    @Suppress("RedundantSuspendModifier")
     suspend fun waitForUpdateChild(component: ProductFormComponent): ProductFormComponent.Child.Update {
         repeat(50) {
             val child = component.stack.value.active.instance
@@ -33,6 +34,7 @@ class ProductFormComponentSmokeTest : DesktopMainDispatcherFunSpec({
         error("Product form did not switch to update child in time.")
     }
 
+    @Suppress("RedundantSuspendModifier")
     suspend fun waitForTabTypes(
         component: ProductFormTabsComponent,
         expectedTypes: Set<Class<out ProductTabChild>>,

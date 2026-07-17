@@ -213,6 +213,7 @@ class ExperimentsComponent(
         }
     }
 
+    @Suppress("UnreachableCode")
     fun toggleArchiveSelected() {
         val experimentId = _selectedExperimentId.value ?: return
         val shouldArchive = selectedExperiment.value?.isArchived != true
@@ -238,6 +239,7 @@ class ExperimentsComponent(
         }
     }
 
+    @Suppress("UnreachableCode")
     fun openTodayEntry() {
         val experimentId = _selectedExperimentId.value ?: return
         val today = getCurrentLocalDate()
@@ -248,6 +250,7 @@ class ExperimentsComponent(
         openTodayEntry()
     }
 
+    @Suppress("UnreachableCode")
     fun openCreateReminderDialog() {
         val experimentId = _selectedExperimentId.value ?: return
         _reminderEditorState.value = ExperimentReminderEditorState(
@@ -256,6 +259,7 @@ class ExperimentsComponent(
         )
     }
 
+    @Suppress("UnreachableCode")
     fun openEditReminderDialog(reminderId: Int) {
         val reminder = reminders.value.firstOrNull { it.id == reminderId } ?: return
         _reminderEditorState.value = ExperimentReminderEditorState(
@@ -288,6 +292,7 @@ class ExperimentsComponent(
      * Для существующей строки [defaultUpdatedAt] получает текущую версию, поэтому
      * сохранение остаётся более новым даже при откате системных часов.
      */
+    @Suppress("UnreachableCode")
     fun saveReminder() {
         val editorState = _reminderEditorState.value ?: return
         if (editorState.text.isBlank()) {
@@ -320,6 +325,7 @@ class ExperimentsComponent(
         }
     }
 
+    @Suppress("UnreachableCode")
     fun deleteReminder(reminderId: Int) {
         val reminder = reminders.value.firstOrNull { it.id == reminderId } ?: return
         coroutineScope.launch(Dispatchers.IO) {
@@ -328,6 +334,7 @@ class ExperimentsComponent(
         }
     }
 
+    @Suppress("UnreachableCode")
     fun deleteEntry(entryId: Int) {
         val entry = entries.value.firstOrNull { it.id == entryId } ?: return
         coroutineScope.launch(Dispatchers.IO) {
@@ -350,13 +357,14 @@ class ExperimentsComponent(
      * запись не меняет `updatedAt` эксперимента: порядок списка рассчитывает DAO.
      */
     @OptIn(FlowPreview::class)
+    @Suppress("UnreachableCode")
     private fun observeDraftSaves() {
         coroutineScope.launch(Dispatchers.IO) {
             combine(
                 _selectedExperimentId,
                 _experimentDraft,
             ) { experimentId, draft -> experimentId to draft }
-                .debounce(500)
+                .debounce(DRAFT_SAVE_DEBOUNCE_MILLIS)
                 .distinctUntilChanged()
                 .collectLatest { (experimentId, draft) ->
                     val current = selectedExperiment.value ?: return@collectLatest
@@ -379,7 +387,7 @@ class ExperimentsComponent(
                 _entryDraft,
                 _entryDraftEntryId,
             ) { entryId, content, draftEntryId -> Triple(entryId, content, draftEntryId) }
-                .debounce(500)
+                .debounce(DRAFT_SAVE_DEBOUNCE_MILLIS)
                 .distinctUntilChanged()
                 .collectLatest { (entryId, content, draftEntryId) ->
                     val current = selectedEntry.value ?: return@collectLatest
@@ -422,6 +430,7 @@ class ExperimentsComponent(
         )
     }
 
+    @Suppress("UnusedPrivateMember")
     private fun Experiment.toListItem(): ExperimentListItem = ExperimentListItem(
         id = id,
         title = title.ifBlank { "Без названия" },
@@ -429,6 +438,7 @@ class ExperimentsComponent(
         isArchived = isArchived,
     )
 
+    @Suppress("UnusedPrivateMember")
     private fun Experiment.toDetails(): ExperimentDetails = ExperimentDetails(
         id = id,
         title = title,
@@ -437,18 +447,21 @@ class ExperimentsComponent(
         updatedAtText = updatedAt.format(dateTimeFormat),
     )
 
+    @Suppress("UnusedPrivateMember")
     private fun ExperimentEntry.toListItem(): ExperimentEntryListItem = ExperimentEntryListItem(
         id = id,
         dateText = createdAt.format(dateTimeFormat),
         preview = content.lineSequence().firstOrNull().orEmpty(),
     )
 
+    @Suppress("UnusedPrivateMember")
     private fun ExperimentEntry.toDetails(): ExperimentEntryDetails = ExperimentEntryDetails(
         id = id,
         dateText = createdAt.format(dateTimeFormat),
         isToday = entryDate == getCurrentLocalDate(),
     )
 
+    @Suppress("UnusedPrivateMember")
     private fun ExperimentReminder.toListItem(): ExperimentReminderListItem {
         val today = getCurrentLocalDate()
         val status = when {
@@ -466,6 +479,8 @@ class ExperimentsComponent(
         )
     }
 }
+
+private const val DRAFT_SAVE_DEBOUNCE_MILLIS = 500L
 
 data class ExperimentsUiState(
     val experiments: List<ExperimentListItem> = emptyList(),
