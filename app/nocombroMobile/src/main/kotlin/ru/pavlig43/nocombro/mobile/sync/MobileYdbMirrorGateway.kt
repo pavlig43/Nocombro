@@ -225,23 +225,38 @@ private interface MobileYdbCodec {
      * @param tablePath полный путь mirror-таблицы в YDB.
      */
     fun conditionalUpsertSql(tablePath: String): String {
-        val values = columns.joinToString { "CAST(? AS ${columnType(it)})" }
-        return """
-            UPSERT INTO `$tablePath` (${columns.joinToString()})
-            SELECT $values
-            WHERE NOT EXISTS (
-                SELECT sync_id FROM `$tablePath`
-                WHERE sync_id = CAST(? AS Utf8)
-                  AND IF(
-                      deleted_at IS NOT NULL AND deleted_at > updated_at,
-                      deleted_at,
-                      updated_at
-                  ) >= CAST(? AS Utf8)
-            );
-            SELECT ${columns.joinToString()} FROM `$tablePath`
-            WHERE sync_id = CAST(? AS Utf8);
-        """.trimIndent()
+        return mobileConditionalUpsertSql(columns, tablePath)
     }
+}
+
+/**
+ * Builds the YDB-specific conditional upsert used by the Android JDBC client.
+ *
+ * YDB requires a row source when a `SELECT` containing JDBC parameters is filtered by
+ * `WHERE`. The one-row `AS_TABLE` source keeps the operation conditional without changing
+ * the values being written.
+ */
+internal fun mobileConditionalUpsertSql(
+    columns: List<String>,
+    tablePath: String,
+): String {
+    val values = columns.joinToString { "CAST(? AS ${columnType(it)})" }
+    return """
+        UPSERT INTO `$tablePath` (${columns.joinToString()})
+        SELECT $values
+        FROM AS_TABLE(AsList(AsStruct(1 AS _source)))
+        WHERE NOT EXISTS (
+            SELECT sync_id FROM `$tablePath`
+            WHERE sync_id = CAST(? AS Utf8)
+              AND IF(
+                  deleted_at IS NOT NULL AND deleted_at > updated_at,
+                  deleted_at,
+                  updated_at
+              ) >= CAST(? AS Utf8)
+        );
+        SELECT ${columns.joinToString()} FROM `$tablePath`
+        WHERE sync_id = CAST(? AS Utf8);
+    """.trimIndent()
 }
 
 private object ExperimentCodec : MobileYdbCodec {
