@@ -81,6 +81,13 @@ internal fun <I : IMultiLineTableUi, C> ImmutableTableBox(
                     onSortChanged = component::updateSort,
                     initialSort = component.sort,
                     initialFilters = component.filters,
+                    tableSettingsModify = { settings ->
+                        // SelectionContainer из table-kmp падает, если LazyColumn снимает строку
+                        // с дерева между нажатием мыши и началом выделения текста.
+                        settings.copy(
+                            enableTextSelection = false,
+                        )
+                    },
                 ) { verticalState, horizontalState, tableState, stringProvider, modifier ->
                     ImmutableTable(
                         columns = component.columns,

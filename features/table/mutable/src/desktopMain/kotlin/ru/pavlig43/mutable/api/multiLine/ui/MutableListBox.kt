@@ -44,6 +44,7 @@ import ua.wwind.table.ColumnSpec
 import ua.wwind.table.EditableTable
 import ua.wwind.table.ExperimentalTableApi
 import ua.wwind.table.config.DefaultTableCustomization
+import ua.wwind.table.config.SelectionMode
 import ua.wwind.table.config.TableCustomization
 import ua.wwind.table.config.TableDefaults
 import ua.wwind.table.config.TableSettings
@@ -69,7 +70,12 @@ fun <I : IMultiLineTableUi, C> MutableTableBox(
             TableBox(
                 columns = component.columns,
                 onFiltersChanged = component::updateFilters,
-                tableSettingsModify = tableSettingsModify,
+                tableSettingsModify = { settings ->
+                    tableSettingsModify(settings).copy(
+                        enableTextSelection = false,
+                        selectionMode = SelectionMode.None,
+                    )
+                },
                 onSortChanged = component::updateSort,
                 initialSort = component.sort,
                 initialFilters = component.filters,
