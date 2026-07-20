@@ -1,0 +1,4 @@
+interface:
+  display_name: "Проверка заказов Ингремарт"
+  short_description: "Сверяет сайт Ингремарт с локальной БД"
+  default_prompt: "Используй $audit-ingremart-orders, чтобы проверить показанные заказы Ингремарт по сайту и локальной базе Nocombro."
