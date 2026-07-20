@@ -3,6 +3,7 @@ package ru.pavlig43.transaction.internal.update
 import ru.pavlig43.core.FormTabChild
 import ru.pavlig43.transaction.internal.update.tabs.component.buy.BuyComponent
 import ru.pavlig43.transaction.internal.update.tabs.component.expenses.ExpensesComponent
+import ru.pavlig43.transaction.internal.update.tabs.component.files.TransactionFilesComponent
 import ru.pavlig43.transaction.internal.update.tabs.component.opzs.ingredients.IngredientComponent
 import ru.pavlig43.transaction.internal.update.tabs.component.opzs.pf.PfComponent
 import ru.pavlig43.transaction.internal.update.tabs.component.reminders.RemindersComponent
@@ -17,6 +18,8 @@ internal sealed interface TransactionTabChild : FormTabChild {
     class Sale(override val component: SaleComponent) : TransactionTabChild
 
     class Reminders(override val component: RemindersComponent) : TransactionTabChild
+
+    class Files(override val component: TransactionFilesComponent) : TransactionTabChild
 
     class Expenses(override val component: ExpensesComponent) : TransactionTabChild
 

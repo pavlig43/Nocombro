@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
+import ru.pavlig43.files.api.ui.FilesScreen
 import ru.pavlig43.transaction.api.component.TransactionFormComponent
 import ru.pavlig43.transaction.internal.create.ui.CreateTransactionSingleLineScreen
 import ru.pavlig43.transaction.internal.update.TransactionTabChild
@@ -82,6 +83,7 @@ private fun TransactionSlotScreen(
         is TransactionTabChild.Buy -> BuyScreen(child.component)
         is TransactionTabChild.Sale -> SaleScreen(child.component)
         is TransactionTabChild.Reminders -> RemindersScreen(child.component)
+        is TransactionTabChild.Files -> FilesScreen(child.component)
         is TransactionTabChild.Expenses -> ExpensesScreen(child.component)
         is TransactionTabChild.Pf -> PfScreen(child.component)
         is TransactionTabChild.Ingredients -> IngredientScreen(child.component)

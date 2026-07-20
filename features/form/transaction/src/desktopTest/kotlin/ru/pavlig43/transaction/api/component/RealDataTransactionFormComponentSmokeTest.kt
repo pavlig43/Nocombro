@@ -95,6 +95,7 @@ class RealDataTransactionFormComponentSmokeTest : DesktopMainDispatcherFunSpec({
                 TransactionType.BUY -> setOf(
                     TransactionTabChild.Essentials::class.java,
                     TransactionTabChild.Reminders::class.java,
+                    TransactionTabChild.Files::class.java,
                     TransactionTabChild.Buy::class.java,
                     TransactionTabChild.Expenses::class.java,
                 )
@@ -102,6 +103,7 @@ class RealDataTransactionFormComponentSmokeTest : DesktopMainDispatcherFunSpec({
                 TransactionType.SALE -> setOf(
                     TransactionTabChild.Essentials::class.java,
                     TransactionTabChild.Reminders::class.java,
+                    TransactionTabChild.Files::class.java,
                     TransactionTabChild.Sale::class.java,
                     TransactionTabChild.Expenses::class.java,
                 )
@@ -109,6 +111,7 @@ class RealDataTransactionFormComponentSmokeTest : DesktopMainDispatcherFunSpec({
                 TransactionType.OPZS -> setOf(
                     TransactionTabChild.Essentials::class.java,
                     TransactionTabChild.Reminders::class.java,
+                    TransactionTabChild.Files::class.java,
                     TransactionTabChild.Pf::class.java,
                     TransactionTabChild.Ingredients::class.java,
                 )
@@ -121,6 +124,7 @@ class RealDataTransactionFormComponentSmokeTest : DesktopMainDispatcherFunSpec({
             builtTabs.map { it::class.simpleName }.shouldContainAll(
                 "Essentials",
                 "Reminders",
+                "Files",
             )
 
             when (transaction.transactionType) {

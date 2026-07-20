@@ -12,7 +12,7 @@
 - seeded storage считается с ожидаемыми остатками и накопительными балансами;
 - seeded profitability считается с ожидаемыми итогами;
 - root bootstrap и открытие ключевых экранов проходят без падений;
-- transaction form для seeded `BUY` и `SALE` собирает ожидаемые вкладки;
+- transaction form для seeded `BUY` и `SALE` собирает ожидаемые вкладки, включая files;
 - product form для seeded `FOOD_PF` продукта собирает expected tabs, включая composition;
 - declaration и expense формы поднимают базовые tabs и корректный title;
 - vendor форма поднимает базовые tabs и корректный title;
@@ -232,14 +232,14 @@
 
 `TransactionFormComponentSmokeTest`
 
-- seeded `SALE` транзакция поднимает вкладки `sale`, `reminders` и `expenses`;
-- seeded `BUY` транзакция поднимает вкладки `buy`, `reminders` и `expenses`;
+- seeded `SALE` транзакция поднимает вкладки `sale`, `reminders`, `files` и `expenses`;
+- seeded `BUY` транзакция поднимает вкладки `buy`, `reminders`, `files` и `expenses`;
 - для обоих сценариев выбирается правильная рабочая вкладка и обновляется title формы.
 
 `RealDataTransactionFormComponentSmokeTest`
 
 - берёт первую real-data транзакцию поддерживаемого типа `BUY`, `SALE` или `OPZS`;
-- поднимает `essentials`, `reminders` и правильные динамические вкладки для типа транзакции;
+- поднимает `essentials`, `reminders`, `files` и правильные динамические вкладки для типа транзакции;
 - сверяет выбранную рабочую вкладку и title формы с живыми данными.
 
 `ProductFormComponentSmokeTest`

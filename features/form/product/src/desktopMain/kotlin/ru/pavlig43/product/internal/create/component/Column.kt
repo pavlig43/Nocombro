@@ -79,7 +79,7 @@ internal fun createProductColumns0(
             intRangeColumn(
                 key = ProductField.SHELF_LIFE_DAYS,
                 getValue = {it.shelfLifeDays},
-                headerText = "Срок годности",
+                headerText = "Срок годности (дней)",
                 range = (0..Int.MAX_VALUE),
                 updateItem = { item, newValue ->
                     onChangeItem { it.copy(shelfLifeDays = newValue) }

@@ -146,9 +146,7 @@ private fun ProductDeclarationTable(
             state = state,
             strings = RussianStringProvider,
             onRowClick = {
-                if (!it.isProductInDeclaration) {
-                    onEvent(ProductDeclarationEvent.OpenDeclaration(it.declarationId))
-                }
+                onEvent(ProductDeclarationEvent.OpenDeclaration(it.declarationId))
             },
             tableData = tableData,
             colors = TableDefaults.colors().copy(

@@ -112,7 +112,7 @@ class TransactionFormComponentSmokeTest : DesktopMainDispatcherFunSpec({
         scenario(
             given = "a seeded sale transaction",
             whenAction = "the transaction form is opened by id",
-            thenResult = "sale, reminders and expenses tabs are assembled and sale is selected",
+            thenResult = "sale, reminders, files and expenses tabs are assembled and sale is selected",
         )
     ) {
         withTransactionComponent(transactionId = 11) { component ->
@@ -122,6 +122,7 @@ class TransactionFormComponentSmokeTest : DesktopMainDispatcherFunSpec({
                 expectedTypes = setOf(
                     TransactionTabChild.Essentials::class.java,
                     TransactionTabChild.Reminders::class.java,
+                    TransactionTabChild.Files::class.java,
                     TransactionTabChild.Sale::class.java,
                     TransactionTabChild.Expenses::class.java,
                 ),
@@ -130,6 +131,7 @@ class TransactionFormComponentSmokeTest : DesktopMainDispatcherFunSpec({
             builtTabs.map { it::class.simpleName }.shouldContainAll(
                 "Essentials",
                 "Reminders",
+                "Files",
                 "Sale",
                 "Expenses",
             )
@@ -163,6 +165,7 @@ class TransactionFormComponentSmokeTest : DesktopMainDispatcherFunSpec({
                     items.map { it.configuration } shouldBe listOf(
                         TransactionTab.Essentials,
                         TransactionTab.Reminders,
+                        TransactionTab.Files,
                     )
                     selectedIndex shouldBe 0
                 }
@@ -174,7 +177,7 @@ class TransactionFormComponentSmokeTest : DesktopMainDispatcherFunSpec({
         scenario(
             given = "a seeded buy transaction",
             whenAction = "the transaction form is opened by id",
-            thenResult = "buy, reminders and expenses tabs are assembled and buy is selected",
+            thenResult = "buy, reminders, files and expenses tabs are assembled and buy is selected",
         )
     ) {
         withTransactionComponent(transactionId = 1) { component ->
@@ -184,6 +187,7 @@ class TransactionFormComponentSmokeTest : DesktopMainDispatcherFunSpec({
                 expectedTypes = setOf(
                     TransactionTabChild.Essentials::class.java,
                     TransactionTabChild.Reminders::class.java,
+                    TransactionTabChild.Files::class.java,
                     TransactionTabChild.Buy::class.java,
                     TransactionTabChild.Expenses::class.java,
                 ),
@@ -192,6 +196,7 @@ class TransactionFormComponentSmokeTest : DesktopMainDispatcherFunSpec({
             builtTabs.map { it::class.simpleName }.shouldContainAll(
                 "Essentials",
                 "Reminders",
+                "Files",
                 "Buy",
                 "Expenses",
             )

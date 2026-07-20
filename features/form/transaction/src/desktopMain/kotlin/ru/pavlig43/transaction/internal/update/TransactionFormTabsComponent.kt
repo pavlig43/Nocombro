@@ -21,6 +21,7 @@ import ru.pavlig43.transaction.internal.di.UpdateSingleLineRepositoryType
 import ru.pavlig43.transaction.internal.model.TransactionEssentialsUi
 import ru.pavlig43.transaction.internal.update.tabs.component.buy.BuyComponent
 import ru.pavlig43.transaction.internal.update.tabs.component.expenses.ExpensesComponent
+import ru.pavlig43.transaction.internal.update.tabs.component.files.TransactionFilesComponent
 import ru.pavlig43.transaction.internal.update.tabs.component.opzs.ingredients.IngredientComponent
 import ru.pavlig43.transaction.internal.update.tabs.component.opzs.pf.PfComponent
 import ru.pavlig43.transaction.internal.update.tabs.component.opzs.pf.PfUi
@@ -75,7 +76,8 @@ internal class TransactionFormTabsComponent(
             componentContext = childContext("tab"),
             startConfigurations = listOf(
                 TransactionTab.Essentials,
-                TransactionTab.Reminders
+                TransactionTab.Reminders,
+                TransactionTab.Files,
             ),
             enableBackNavigation = false,
             serializer = TransactionTab.serializer(),
@@ -117,6 +119,14 @@ internal class TransactionFormTabsComponent(
                             componentContext = context,
                             transactionId = transactionId,
                             repository = scope.get(UpdateCollectionRepositoryType.REMINDERS.qualifier)
+                        )
+                    )
+
+                    TransactionTab.Files -> TransactionTabChild.Files(
+                        TransactionFilesComponent(
+                            componentContext = context,
+                            transactionId = transactionId,
+                            dependencies = scope.get(),
                         )
                     )
 
