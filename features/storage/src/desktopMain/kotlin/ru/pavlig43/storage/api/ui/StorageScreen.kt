@@ -28,7 +28,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -45,6 +44,8 @@ import ru.pavlig43.core.model.DecimalData3
 import ru.pavlig43.coreui.ErrorScreen
 import ru.pavlig43.coreui.LoadingUi
 import ru.pavlig43.coreui.ValidationErrorsCard
+import ru.pavlig43.coreui.tab.retainTabState
+import ru.pavlig43.coreui.tab.rememberRetainedTabMutableState
 import ru.pavlig43.datetime.period.dateTime.DateTimeSelectorScreen
 import ru.pavlig43.storage.api.component.storage.LoadState
 import ru.pavlig43.storage.api.component.storage.StorageComponent
@@ -96,9 +97,13 @@ fun StorageScreen(
                     enableDragToScroll = true,
                 )
             }
-            val tableState = rememberTableState(
-                columns = StorageProductField.entries.toImmutableList(),
-                settings = tableSettings,
+            val tableState = retainTabState(
+                owner = component,
+                name = "tableState",
+                value = rememberTableState(
+                    columns = StorageProductField.entries.toImmutableList(),
+                    settings = tableSettings,
+                ),
             )
             LaunchedEffect(tableState) {
                 snapshotFlow { tableState.filters.toMap() }.collect { filters ->
@@ -163,8 +168,8 @@ private fun StorageTable(
 ) {
     val horizontalState = rememberScrollState()
     val coroutineScope = rememberCoroutineScope()
-    var exportErrorMessage by remember { mutableStateOf<String?>(null) }
-    var isExportMenuExpanded by remember { mutableStateOf(false) }
+    var exportErrorMessage by rememberRetainedTabMutableState<String?>(state, "exportErrorMessage") { null }
+    var isExportMenuExpanded by rememberRetainedTabMutableState(state, "isExportMenuExpanded") { false }
     val customization = remember { StorageTableCustomization() }
     val exportConfiguration = remember {
         TableExportConfiguration<StorageProductUi, StorageProductField>(

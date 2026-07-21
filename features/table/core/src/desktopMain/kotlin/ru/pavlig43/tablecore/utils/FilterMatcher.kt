@@ -185,7 +185,7 @@ abstract class FilterMatcher<I, C> {
     protected fun matchesDateTimeField(
         value: LocalDateTime,
         state: TableFilterState<*>,
-    ): Boolean = matchesComparableField(value, state)
+    ): Boolean = matchesDateField(value.date, state)
 
     protected fun matchesDecimalField(
         value: DecimalData,

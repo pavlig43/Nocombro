@@ -23,6 +23,7 @@ import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import kotlinx.coroutines.launch
 import ru.pavlig43.core.tabs.TabNavigationComponent
 import ru.pavlig43.coreui.BackHandler
+import ru.pavlig43.coreui.tab.RetainedTabStateProvider
 import ru.pavlig43.coreui.tab.TabLazyRowNavigationContent
 import ru.pavlig43.declaration.api.DeclarationFormScreen
 import ru.pavlig43.doctor.api.ui.DoctorScreen
@@ -155,45 +156,50 @@ fun RootNocombroScreen(rootNocombroComponent: RootNocombroComponent) {
 @Suppress("CyclomaticComplexMethod")
 @Composable
 private fun MainTabChildFactory(mainTabChild: MainTabChild?) {
-    when (mainTabChild) {
+    if (mainTabChild == null) {
+        Box(Modifier.fillMaxSize())
+        return
+    }
 
-        null -> Box(Modifier.fillMaxSize())
-        is MainTabChild.MainMoneyChild -> AnalyticMainScreen(mainTabChild.component)
-        is MainTabChild.ImmutableTableChild ->
-            ImmutableTableScreen(mainTabChild.component)
+    RetainedTabStateProvider(componentContext = mainTabChild.component) {
+        when (mainTabChild) {
+            is MainTabChild.MainMoneyChild -> AnalyticMainScreen(mainTabChild.component)
+            is MainTabChild.ImmutableTableChild ->
+                ImmutableTableScreen(mainTabChild.component)
 
-        is MainTabChild.ItemFormChild.DeclarationFormChild ->
-            DeclarationFormScreen(mainTabChild.component)
+            is MainTabChild.ItemFormChild.DeclarationFormChild ->
+                DeclarationFormScreen(mainTabChild.component)
 
-        is MainTabChild.ItemFormChild.DocumentFormChild ->
-            DocumentFormScreen(mainTabChild.component)
+            is MainTabChild.ItemFormChild.DocumentFormChild ->
+                DocumentFormScreen(mainTabChild.component)
 
-        is MainTabChild.ItemFormChild.ProductFormChild ->
-            ProductFormScreen(mainTabChild.component)
+            is MainTabChild.ItemFormChild.ProductFormChild ->
+                ProductFormScreen(mainTabChild.component)
 
-        is MainTabChild.ItemFormChild.TransactionFormChild ->
-            TransactionFormScreen(mainTabChild.component)
+            is MainTabChild.ItemFormChild.TransactionFormChild ->
+                TransactionFormScreen(mainTabChild.component)
 
-        is MainTabChild.ItemFormChild.VendorFormChild ->
-            VendorFormScreen(mainTabChild.component)
+            is MainTabChild.ItemFormChild.VendorFormChild ->
+                VendorFormScreen(mainTabChild.component)
 
-        is MainTabChild.ItemFormChild.ExpenseFormChild ->
-            ExpenseStandaloneScreen(mainTabChild.component)
+            is MainTabChild.ItemFormChild.ExpenseFormChild ->
+                ExpenseStandaloneScreen(mainTabChild.component)
 
-        is MainTabChild.NotificationChild ->
-            NotificationTabs(mainTabChild.component)
+            is MainTabChild.NotificationChild ->
+                NotificationTabs(mainTabChild.component)
 
-        is MainTabChild.SampleTableChild -> SampleTableScreen(mainTabChild.component)
+            is MainTabChild.SampleTableChild -> SampleTableScreen(mainTabChild.component)
 
-        is MainTabChild.StorageChild -> StorageScreen(mainTabChild.component)
+            is MainTabChild.StorageChild -> StorageScreen(mainTabChild.component)
 
-        is MainTabChild.ExperimentsChild -> ExperimentsScreen(mainTabChild.component)
+            is MainTabChild.ExperimentsChild -> ExperimentsScreen(mainTabChild.component)
 
-        is MainTabChild.ProfitabilityChild -> ProfitabilityScreen(mainTabChild.component)
+            is MainTabChild.ProfitabilityChild -> ProfitabilityScreen(mainTabChild.component)
 
-        is MainTabChild.DoctorChild -> DoctorScreen(mainTabChild.component)
+            is MainTabChild.DoctorChild -> DoctorScreen(mainTabChild.component)
 
-        is MainTabChild.BatchMovementChild -> BatchMovementTableScreen(mainTabChild.component)
+            is MainTabChild.BatchMovementChild -> BatchMovementTableScreen(mainTabChild.component)
+        }
     }
 }
 

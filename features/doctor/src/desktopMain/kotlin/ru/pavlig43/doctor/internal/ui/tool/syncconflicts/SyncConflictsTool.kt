@@ -13,12 +13,12 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import ru.pavlig43.coreui.ValidationErrorsCard
+import ru.pavlig43.coreui.tab.rememberRetainedTabMutableState
 import ru.pavlig43.database.data.sync.mirror.MirrorVersionConflict
 import ru.pavlig43.doctor.internal.component.DoctorSyncConflictView
 import ru.pavlig43.doctor.internal.component.toDoctorView
@@ -40,7 +40,10 @@ internal fun DoctorSyncConflictsTool(
     onUseRemote: (MirrorVersionConflict) -> Unit,
 ) {
     val conflictViews = remember(conflicts) { conflicts.map { it.toDoctorView() } }
-    var pendingResolution by remember { mutableStateOf<PendingConflictResolution?>(null) }
+    var pendingResolution by rememberRetainedTabMutableState<PendingConflictResolution?>(
+        owner = "doctor.syncConflicts",
+        name = "pendingResolution",
+    ) { null }
 
     DoctorSectionCard(
         title = "Конфликты sync: ${conflicts.size}",

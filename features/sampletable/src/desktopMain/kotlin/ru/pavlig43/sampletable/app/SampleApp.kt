@@ -20,7 +20,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -42,6 +41,9 @@ import ru.pavlig43.sampletable.column.createTableColumns
 import ru.pavlig43.sampletable.model.Person
 import ru.pavlig43.sampletable.viewmodel.SampleUiEvent
 import ru.pavlig43.sampletable.viewmodel.SampleViewModel
+import ru.pavlig43.coreui.tab.rememberRetainedTabMutableState
+import ru.pavlig43.coreui.tab.rememberRetainedTabState
+import ru.pavlig43.coreui.tab.retainTabState
 import ua.wwind.table.ExperimentalTableApi
 import ua.wwind.table.config.PinnedSide
 import ua.wwind.table.config.RowHeightMode
@@ -56,20 +58,19 @@ import ua.wwind.table.state.rememberTableState
 @OptIn(ExperimentalTableApi::class)
 @Composable
 fun SampleApp(context: ComponentContext,modifier: Modifier = Modifier,) {
-    var isDarkTheme by remember { mutableStateOf(false) }
+    var isDarkTheme by rememberRetainedTabMutableState(context, "isDarkTheme") { false }
 
-    val viewModel: SampleViewModel =
-        SampleViewModel(context)
+    val viewModel = rememberRetainedTabState(context, "viewModel") { SampleViewModel(context) }
 
-    var useStripedRows by remember { mutableStateOf(true) }
-    var showFastFilters by remember { mutableStateOf(true) }
-    var enableDragToScroll by remember { mutableStateOf(true) }
-    var pinnedColumnsCount by remember { mutableStateOf(0) }
-    var pinnedColumnsSide by remember { mutableStateOf(PinnedSide.Left) }
-    var enableEditing by remember { mutableStateOf(false) }
-    var useCompactMode by remember { mutableStateOf(true) }
-    var showFooter by remember { mutableStateOf(true) }
-    var footerPinned by remember { mutableStateOf(true) }
+    var useStripedRows by rememberRetainedTabMutableState(context, "useStripedRows") { true }
+    var showFastFilters by rememberRetainedTabMutableState(context, "showFastFilters") { true }
+    var enableDragToScroll by rememberRetainedTabMutableState(context, "enableDragToScroll") { true }
+    var pinnedColumnsCount by rememberRetainedTabMutableState(context, "pinnedColumnsCount") { 0 }
+    var pinnedColumnsSide by rememberRetainedTabMutableState(context, "pinnedColumnsSide") { PinnedSide.Left }
+    var enableEditing by rememberRetainedTabMutableState(context, "enableEditing") { false }
+    var useCompactMode by rememberRetainedTabMutableState(context, "useCompactMode") { true }
+    var showFooter by rememberRetainedTabMutableState(context, "showFooter") { true }
+    var footerPinned by rememberRetainedTabMutableState(context, "footerPinned") { true }
 
     val settings =
         remember(
@@ -123,8 +124,10 @@ fun SampleApp(context: ComponentContext,modifier: Modifier = Modifier,) {
             },
         )
 
-    val state =
-        rememberTableState(
+    val state = retainTabState(
+        owner = context,
+        name = "tableState",
+        value = rememberTableState(
             columns = PersonColumn.entries.toImmutableList(),
             settings = settings,
             dimensions =
@@ -135,7 +138,8 @@ fun SampleApp(context: ComponentContext,modifier: Modifier = Modifier,) {
                         TableDefaults.standardDimensions().copy(defaultColumnWidth = 200.dp)
                     }
                 },
-        )
+        ),
+    )
 
     // Drawer state for settings sidebar
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)

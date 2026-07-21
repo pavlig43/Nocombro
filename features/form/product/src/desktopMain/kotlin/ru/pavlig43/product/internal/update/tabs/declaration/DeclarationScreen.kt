@@ -42,6 +42,7 @@ import kotlinx.collections.immutable.toImmutableList
 import org.jetbrains.compose.resources.painterResource
 import ru.pavlig43.coreui.LoadingUi
 import ru.pavlig43.coreui.ProjectDialog
+import ru.pavlig43.coreui.tab.retainTabState
 import ru.pavlig43.immutable.api.ui.MBSImmutableTable
 import ru.pavlig43.loadinitdata.api.ui.LoadInitDataScreen
 import ru.pavlig43.tablecore.manger.SelectionUiEvent
@@ -104,6 +105,7 @@ private fun ProductDeclarationScreen(
 
         val tableData by component.tableData.collectAsState()
         ProductDeclarationTable(
+            stateOwner = component,
             columns = component.columns,
             items = tableData.displayedItems,
             onEvent = component::onEvent,
@@ -118,6 +120,7 @@ private fun ProductDeclarationScreen(
 @OptIn(ExperimentalTableApi::class)
 @Composable
 private fun ProductDeclarationTable(
+    stateOwner: Any,
     columns: ImmutableList<ColumnSpec<ProductDeclarationTableUi, ProductDeclarationField, TableData<ProductDeclarationTableUi>>>,
     items: List<ProductDeclarationTableUi>,
     onEvent: (ProductDeclarationEvent) -> Unit,
@@ -135,9 +138,13 @@ private fun ProductDeclarationTable(
     val verticalState = rememberLazyListState()
     val horizontalState = rememberScrollState()
 
-    val state = rememberTableState(
-        columns = columns.map { it.key }.toImmutableList(),
-        settings = defaultTableSettings
+    val state = retainTabState(
+        owner = stateOwner,
+        name = "tableState",
+        value = rememberTableState(
+            columns = columns.map { it.key }.toImmutableList(),
+            settings = defaultTableSettings
+        ),
     )
     Box(modifier.fillMaxSize()){
         Table(

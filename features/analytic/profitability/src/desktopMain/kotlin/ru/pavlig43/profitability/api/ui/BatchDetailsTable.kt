@@ -15,6 +15,7 @@ import ru.pavlig43.profitability.internal.component.BatchDetailsField
 import ru.pavlig43.profitability.internal.component.createBatchDetailsColumns
 import ru.pavlig43.profitability.internal.model.ProfitabilityProduct
 import ru.pavlig43.profitability.internal.model.ProfitabilityTableData
+import ru.pavlig43.coreui.tab.retainTabState
 import ru.pavlig43.tablecore.ui.RussianStringProvider
 import ua.wwind.table.ExperimentalTableApi
 import ua.wwind.table.Table
@@ -43,10 +44,14 @@ internal fun BatchDetailsTable(
             enableDragToScroll = true,
         )
     }
-    val tableState = rememberTableState(
-        columns = BatchDetailsField.entries.toImmutableList(),
-        settings = tableSettings,
-        dimensions = TableDefaults.compactDimensions(),
+    val tableState = retainTabState(
+        owner = product.productId,
+        name = "batchDetailsTableState",
+        value = rememberTableState(
+            columns = BatchDetailsField.entries.toImmutableList(),
+            settings = tableSettings,
+            dimensions = TableDefaults.compactDimensions(),
+        ),
     )
 
     Column(

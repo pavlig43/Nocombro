@@ -18,7 +18,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -30,6 +29,8 @@ import kotlinx.coroutines.launch
 import ru.pavlig43.coreui.ErrorScreen
 import ru.pavlig43.coreui.LoadingUi
 import ru.pavlig43.coreui.ValidationErrorsCard
+import ru.pavlig43.coreui.tab.retainTabState
+import ru.pavlig43.coreui.tab.rememberRetainedTabMutableState
 import ru.pavlig43.datetime.period.dateTime.DateTimeSelectorScreen
 import ru.pavlig43.storage.api.component.batchMovement.BatchMovementComponent
 import ru.pavlig43.storage.api.component.batchMovement.BatchMovementField
@@ -76,8 +77,12 @@ fun BatchMovementTableScreen(
             )
 
             val columns = remember { createBatchMovementColumns() }
-            val tableState = rememberTableState(
-                columns = BatchMovementField.entries.toImmutableList()
+            val tableState = retainTabState(
+                owner = component,
+                name = "tableState",
+                value = rememberTableState(
+                    columns = BatchMovementField.entries.toImmutableList()
+                ),
             )
             val verticalState = rememberLazyListState()
 
@@ -106,8 +111,8 @@ private fun BatchMovementTable(
 ) {
     val horizontalState = rememberScrollState()
     val coroutineScope = rememberCoroutineScope()
-    var exportErrorMessage by remember { mutableStateOf<String?>(null) }
-    var isExportMenuExpanded by remember { mutableStateOf(false) }
+    var exportErrorMessage by rememberRetainedTabMutableState<String?>(state, "exportErrorMessage") { null }
+    var isExportMenuExpanded by rememberRetainedTabMutableState(state, "isExportMenuExpanded") { false }
     val customization = remember { BatchMovementTableCustomization() }
     val exportConfiguration = remember {
         TableExportConfiguration<BatchMovementTableUi, BatchMovementField>(

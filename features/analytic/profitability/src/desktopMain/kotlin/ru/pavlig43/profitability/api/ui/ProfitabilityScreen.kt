@@ -23,6 +23,7 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import ru.pavlig43.coreui.ErrorScreen
 import ru.pavlig43.coreui.LoadingUi
+import ru.pavlig43.coreui.tab.retainTabState
 import ru.pavlig43.datetime.period.dateTime.DateTimeSelectorScreen
 import ru.pavlig43.profitability.internal.component.LoadState
 import ru.pavlig43.profitability.internal.component.ProfitabilityComponent
@@ -61,10 +62,14 @@ fun ProfitabilityScreen(component: ProfitabilityComponent) {
                     enableDragToScroll = true
                 )
             }
-            val tableState = rememberTableState(
-                columns = ProfitabilityField.entries.toImmutableList(),
-                settings = tableSettings,
-                initialSort = component.sort,
+            val tableState = retainTabState(
+                owner = component,
+                name = "tableState",
+                value = rememberTableState(
+                    columns = ProfitabilityField.entries.toImmutableList(),
+                    settings = tableSettings,
+                    initialSort = component.sort,
+                ),
             )
             component.filters.forEach { (column, filterState) ->
                 tableState.filters[column] = filterState

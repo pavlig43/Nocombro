@@ -21,8 +21,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -33,6 +31,7 @@ import kotlinx.coroutines.launch
 import ru.pavlig43.coreui.ErrorScreen
 import ru.pavlig43.coreui.LoadingUi
 import ru.pavlig43.coreui.ValidationErrorsCard
+import ru.pavlig43.coreui.tab.rememberRetainedTabMutableState
 import ru.pavlig43.immutable.internal.component.ImmutableTableComponent
 import ru.pavlig43.immutable.internal.component.ImmutableTableUiEvent
 import ru.pavlig43.immutable.internal.component.ItemListState
@@ -76,6 +75,7 @@ internal fun <I : IMultiLineTableUi, C> ImmutableTableBox(
             is ItemListState.Loading -> LoadingUi()
             is ItemListState.Success -> {
                 TableBox(
+                    stateOwner = component,
                     columns = component.columns,
                     onFiltersChanged = component::updateFilters,
                     onSortChanged = component::updateSort,
@@ -136,8 +136,8 @@ private fun <I : IMultiLineTableUi, C, E : TableData<I>> BoxScope.ImmutableTable
     modifier: Modifier
 ) {
     val coroutineScope = rememberCoroutineScope()
-    var exportErrorMessage by remember { mutableStateOf<String?>(null) }
-    var isExportMenuExpanded by remember { mutableStateOf(false) }
+    var exportErrorMessage by rememberRetainedTabMutableState<String?>(tableState, "exportErrorMessage") { null }
+    var isExportMenuExpanded by rememberRetainedTabMutableState(tableState, "isExportMenuExpanded") { false }
     // Оставляем место под верхнюю панель действий, чтобы она не слипалась с заголовком таблицы.
     val actionBarTopPadding = if (exportConfiguration != null) 132.dp else 0.dp
     val exportColumns = exportConfiguration?.let {

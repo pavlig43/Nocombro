@@ -17,6 +17,7 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import ru.pavlig43.tablecore.model.IMultiLineTableUi
 import ru.pavlig43.tablecore.model.TableData
+import ru.pavlig43.coreui.tab.retainTabState
 import ua.wwind.table.ColumnSpec
 import ua.wwind.table.ExperimentalTableApi
 import ua.wwind.table.config.RowHeightMode
@@ -33,6 +34,7 @@ import ua.wwind.table.strings.StringProvider
 @OptIn(ExperimentalTableApi::class)
 @Composable
 fun <I : IMultiLineTableUi, C, E : TableData<I>> TableBox(
+    stateOwner: Any,
     columns: ImmutableList<ColumnSpec<I, C, E>>,
     onFiltersChanged: (Map<C, TableFilterState<*>>) -> Unit,
     onSortChanged: (SortState<C>?) -> Unit,
@@ -61,10 +63,14 @@ fun <I : IMultiLineTableUi, C, E : TableData<I>> TableBox(
         pinnedColumnsCount = 0
     )
 
-    val state = rememberTableState(
-        columns = columns.map { it.key }.toImmutableList(),
-        settings = tableSettingsModify(defaultTableSettings),
-        initialSort = initialSort,
+    val state = retainTabState(
+        owner = stateOwner,
+        name = "tableState",
+        value = rememberTableState(
+            columns = columns.map { it.key }.toImmutableList(),
+            settings = tableSettingsModify(defaultTableSettings),
+            initialSort = initialSort,
+        ),
     )
     initialFilters.forEach { (column, filterState) ->
         state.filters[column] = filterState

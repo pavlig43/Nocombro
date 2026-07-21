@@ -1,0 +1,4 @@
+interface:
+  display_name: "Работа со счетами Mail.ru"
+  short_description: "Открывает письма и скачивает PDF из Edge"
+  default_prompt: "Используй $audit-mailru-invoices, чтобы пройти по открытому поиску Mail.ru в Edge и скачать нужные PDF-счета."
