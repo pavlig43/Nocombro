@@ -20,6 +20,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -29,8 +31,6 @@ import kotlinx.coroutines.launch
 import ru.pavlig43.coreui.ErrorScreen
 import ru.pavlig43.coreui.LoadingUi
 import ru.pavlig43.coreui.ValidationErrorsCard
-import ru.pavlig43.coreui.tab.retainTabState
-import ru.pavlig43.coreui.tab.rememberRetainedTabMutableState
 import ru.pavlig43.datetime.period.dateTime.DateTimeSelectorScreen
 import ru.pavlig43.storage.api.component.batchMovement.BatchMovementComponent
 import ru.pavlig43.storage.api.component.batchMovement.BatchMovementField
@@ -38,6 +38,7 @@ import ru.pavlig43.storage.api.component.batchMovement.BatchMovementLoadState
 import ru.pavlig43.storage.api.component.batchMovement.BatchMovementTableUi
 import ru.pavlig43.storage.api.component.batchMovement.createBatchMovementColumns
 import ru.pavlig43.tablecore.export.TableExportConfiguration
+import ru.pavlig43.tablecore.state.rememberSaveableTableState
 import ru.pavlig43.tablecore.ui.RussianStringProvider
 import ru.pavlig43.tablecore.ui.ScrollBar
 import ua.wwind.table.ColumnSpec
@@ -50,7 +51,6 @@ import ua.wwind.table.config.TableDefaults
 import ua.wwind.table.config.TableRowContext
 import ua.wwind.table.config.TableRowStyle
 import ua.wwind.table.state.TableState
-import ua.wwind.table.state.rememberTableState
 
 @OptIn(ExperimentalTableApi::class)
 @Composable
@@ -77,12 +77,8 @@ fun BatchMovementTableScreen(
             )
 
             val columns = remember { createBatchMovementColumns() }
-            val tableState = retainTabState(
-                owner = component,
-                name = "tableState",
-                value = rememberTableState(
-                    columns = BatchMovementField.entries.toImmutableList()
-                ),
+            val tableState = rememberSaveableTableState(
+                columns = BatchMovementField.entries.toImmutableList(),
             )
             val verticalState = rememberLazyListState()
 
@@ -111,8 +107,8 @@ private fun BatchMovementTable(
 ) {
     val horizontalState = rememberScrollState()
     val coroutineScope = rememberCoroutineScope()
-    var exportErrorMessage by rememberRetainedTabMutableState<String?>(state, "exportErrorMessage") { null }
-    var isExportMenuExpanded by rememberRetainedTabMutableState(state, "isExportMenuExpanded") { false }
+    var exportErrorMessage by rememberSaveable { mutableStateOf<String?>(null) }
+    var isExportMenuExpanded by rememberSaveable { mutableStateOf(false) }
     val customization = remember { BatchMovementTableCustomization() }
     val exportConfiguration = remember {
         TableExportConfiguration<BatchMovementTableUi, BatchMovementField>(

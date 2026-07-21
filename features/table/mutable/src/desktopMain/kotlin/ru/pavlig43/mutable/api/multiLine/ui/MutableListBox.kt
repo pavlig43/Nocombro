@@ -18,7 +18,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,7 +40,6 @@ import ru.pavlig43.tablecore.model.IMultiLineTableUi
 import ru.pavlig43.tablecore.model.TableData
 import ru.pavlig43.tablecore.ui.TableBox
 import ru.pavlig43.coreui.ValidationErrorsCard
-import ru.pavlig43.coreui.tab.rememberRetainedTabMutableState
 import ua.wwind.table.ColumnSpec
 import ua.wwind.table.EditableTable
 import ua.wwind.table.ExperimentalTableApi
@@ -67,7 +68,6 @@ fun <I : IMultiLineTableUi, C> MutableTableBox(
 
 
             TableBox(
-                stateOwner = component,
                 columns = component.columns,
                 onFiltersChanged = component::updateFilters,
                 tableSettingsModify = { settings ->
@@ -120,8 +120,8 @@ private fun <I : IMultiLineTableUi, C, E : TableData<I>> BoxScope.MutableTable(
     modifier: Modifier
 ) {
     val coroutineScope = rememberCoroutineScope()
-    var exportErrorMessage by rememberRetainedTabMutableState<String?>(tableState, "exportErrorMessage") { null }
-    var isExportMenuExpanded by rememberRetainedTabMutableState(tableState, "isExportMenuExpanded") { false }
+    var exportErrorMessage by rememberSaveable { mutableStateOf<String?>(null) }
+    var isExportMenuExpanded by rememberSaveable { mutableStateOf(false) }
     val actionBarTopPadding = 132.dp
     val exportColumns = buildExportColumns(
         columns = columns,

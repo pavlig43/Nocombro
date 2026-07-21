@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -15,7 +16,7 @@ import ru.pavlig43.profitability.internal.component.BatchDetailsField
 import ru.pavlig43.profitability.internal.component.createBatchDetailsColumns
 import ru.pavlig43.profitability.internal.model.ProfitabilityProduct
 import ru.pavlig43.profitability.internal.model.ProfitabilityTableData
-import ru.pavlig43.coreui.tab.retainTabState
+import ru.pavlig43.tablecore.state.rememberSaveableTableState
 import ru.pavlig43.tablecore.ui.RussianStringProvider
 import ua.wwind.table.ExperimentalTableApi
 import ua.wwind.table.Table
@@ -23,7 +24,6 @@ import ua.wwind.table.config.RowHeightMode
 import ua.wwind.table.config.SelectionMode
 import ua.wwind.table.config.TableDefaults
 import ua.wwind.table.config.TableSettings
-import ua.wwind.table.state.rememberTableState
 
 @OptIn(ExperimentalTableApi::class)
 @Composable
@@ -44,15 +44,13 @@ internal fun BatchDetailsTable(
             enableDragToScroll = true,
         )
     }
-    val tableState = retainTabState(
-        owner = product.productId,
-        name = "batchDetailsTableState",
-        value = rememberTableState(
+    val tableState = key(product.productId) {
+        rememberSaveableTableState(
             columns = BatchDetailsField.entries.toImmutableList(),
             settings = tableSettings,
             dimensions = TableDefaults.compactDimensions(),
-        ),
-    )
+        )
+    }
 
     Column(
         modifier = modifier.padding(top = 8.dp, bottom = 8.dp, start = 16.dp, end = 16.dp),

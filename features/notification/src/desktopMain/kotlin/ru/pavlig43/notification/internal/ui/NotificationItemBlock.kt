@@ -4,12 +4,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import ru.pavlig43.notification.api.model.NotificationItem
 import ru.pavlig43.notification.internal.model.NotificationBlockUi
-import ru.pavlig43.coreui.tab.rememberRetainedTabMutableState
 
 
 @Suppress("LongParameterList")
@@ -19,10 +20,10 @@ internal fun NotificationItemBlock(
     onOpenTab: (NotificationItem, Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var isShowFullList by rememberRetainedTabMutableState(
-        owner = notificationBlockUi.item,
-        name = "isShowFullList:${notificationBlockUi.level}",
-    ) { false }
+    var isShowFullList by rememberSaveable(
+        notificationBlockUi.item,
+        notificationBlockUi.level,
+    ) { mutableStateOf(false) }
     Column(
         modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally

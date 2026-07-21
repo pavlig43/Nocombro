@@ -17,12 +17,12 @@ import kotlinx.collections.immutable.toImmutableList
 import ru.pavlig43.loadinitdata.api.ui.LoadInitDataScreen
 import ru.pavlig43.mutable.api.singleLine.component.SingleLineComponent
 import ru.pavlig43.mutable.api.singleLine.model.ISingleLineTableUi
+import ru.pavlig43.tablecore.state.rememberSaveableTableState
 import ua.wwind.table.EditableTable
 import ua.wwind.table.ExperimentalTableApi
 import ua.wwind.table.config.RowHeightMode
 import ua.wwind.table.config.TableDefaults
 import ua.wwind.table.config.TableSettings
-import ua.wwind.table.state.rememberTableState
 @Suppress("MagicNumber")
 @OptIn(ExperimentalTableApi::class)
 @Composable
@@ -44,7 +44,7 @@ fun <I : ISingleLineTableUi, C> SingleLineBlockScreen(
             showActiveFiltersHeader = false,
             enableDragToScroll = true
         )
-        val state = rememberTableState(
+        val state = rememberSaveableTableState(
             columns = component.columns.map { it.key }.toImmutableList(),
             settings = defaultTableSettings
         )

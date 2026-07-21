@@ -20,15 +20,16 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import com.arkivanov.decompose.ComponentContext
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch
 import ru.pavlig43.sampletable.app.components.AppToolbar
@@ -36,14 +37,12 @@ import ru.pavlig43.sampletable.app.components.ConditionalFormattingDialog
 import ru.pavlig43.sampletable.app.components.MainTable
 import ru.pavlig43.sampletable.app.components.SelectionActionBar
 import ru.pavlig43.sampletable.app.components.SettingsSidebar
+import ru.pavlig43.sampletable.api.component.SampleTableComponentMain
 import ru.pavlig43.sampletable.column.PersonColumn
 import ru.pavlig43.sampletable.column.createTableColumns
 import ru.pavlig43.sampletable.model.Person
 import ru.pavlig43.sampletable.viewmodel.SampleUiEvent
-import ru.pavlig43.sampletable.viewmodel.SampleViewModel
-import ru.pavlig43.coreui.tab.rememberRetainedTabMutableState
-import ru.pavlig43.coreui.tab.rememberRetainedTabState
-import ru.pavlig43.coreui.tab.retainTabState
+import ru.pavlig43.tablecore.state.rememberSaveableTableState
 import ua.wwind.table.ExperimentalTableApi
 import ua.wwind.table.config.PinnedSide
 import ua.wwind.table.config.RowHeightMode
@@ -52,25 +51,24 @@ import ua.wwind.table.config.TableDefaults
 import ua.wwind.table.config.TableSettings
 import ua.wwind.table.filter.data.TableFilterState
 import ua.wwind.table.format.rememberCustomization
-import ua.wwind.table.state.rememberTableState
 
 @Suppress("ViewModelConstructorInComposable")
 @OptIn(ExperimentalTableApi::class)
 @Composable
-fun SampleApp(context: ComponentContext,modifier: Modifier = Modifier,) {
-    var isDarkTheme by rememberRetainedTabMutableState(context, "isDarkTheme") { false }
+fun SampleApp(component: SampleTableComponentMain,modifier: Modifier = Modifier,) {
+    var isDarkTheme by rememberSaveable { mutableStateOf(false) }
 
-    val viewModel = rememberRetainedTabState(context, "viewModel") { SampleViewModel(context) }
+    val viewModel = component.viewModel
 
-    var useStripedRows by rememberRetainedTabMutableState(context, "useStripedRows") { true }
-    var showFastFilters by rememberRetainedTabMutableState(context, "showFastFilters") { true }
-    var enableDragToScroll by rememberRetainedTabMutableState(context, "enableDragToScroll") { true }
-    var pinnedColumnsCount by rememberRetainedTabMutableState(context, "pinnedColumnsCount") { 0 }
-    var pinnedColumnsSide by rememberRetainedTabMutableState(context, "pinnedColumnsSide") { PinnedSide.Left }
-    var enableEditing by rememberRetainedTabMutableState(context, "enableEditing") { false }
-    var useCompactMode by rememberRetainedTabMutableState(context, "useCompactMode") { true }
-    var showFooter by rememberRetainedTabMutableState(context, "showFooter") { true }
-    var footerPinned by rememberRetainedTabMutableState(context, "footerPinned") { true }
+    var useStripedRows by rememberSaveable { mutableStateOf(true) }
+    var showFastFilters by rememberSaveable { mutableStateOf(true) }
+    var enableDragToScroll by rememberSaveable { mutableStateOf(true) }
+    var pinnedColumnsCount by rememberSaveable { mutableStateOf(0) }
+    var pinnedColumnsSide by rememberSaveable { mutableStateOf(PinnedSide.Left) }
+    var enableEditing by rememberSaveable { mutableStateOf(false) }
+    var useCompactMode by rememberSaveable { mutableStateOf(true) }
+    var showFooter by rememberSaveable { mutableStateOf(true) }
+    var footerPinned by rememberSaveable { mutableStateOf(true) }
 
     val settings =
         remember(
@@ -124,21 +122,17 @@ fun SampleApp(context: ComponentContext,modifier: Modifier = Modifier,) {
             },
         )
 
-    val state = retainTabState(
-        owner = context,
-        name = "tableState",
-        value = rememberTableState(
-            columns = PersonColumn.entries.toImmutableList(),
-            settings = settings,
-            dimensions =
-                remember(useCompactMode) {
-                    if (useCompactMode) {
-                        TableDefaults.compactDimensions().copy(defaultColumnWidth = 100.dp)
-                    } else {
-                        TableDefaults.standardDimensions().copy(defaultColumnWidth = 200.dp)
-                    }
-                },
-        ),
+    val state = rememberSaveableTableState(
+        columns = PersonColumn.entries.toImmutableList(),
+        settings = settings,
+        dimensions =
+            remember(useCompactMode) {
+                if (useCompactMode) {
+                    TableDefaults.compactDimensions().copy(defaultColumnWidth = 100.dp)
+                } else {
+                    TableDefaults.standardDimensions().copy(defaultColumnWidth = 200.dp)
+                }
+            },
     )
 
     // Drawer state for settings sidebar

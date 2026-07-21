@@ -28,8 +28,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -44,8 +46,6 @@ import ru.pavlig43.core.model.DecimalData3
 import ru.pavlig43.coreui.ErrorScreen
 import ru.pavlig43.coreui.LoadingUi
 import ru.pavlig43.coreui.ValidationErrorsCard
-import ru.pavlig43.coreui.tab.retainTabState
-import ru.pavlig43.coreui.tab.rememberRetainedTabMutableState
 import ru.pavlig43.datetime.period.dateTime.DateTimeSelectorScreen
 import ru.pavlig43.storage.api.component.storage.LoadState
 import ru.pavlig43.storage.api.component.storage.StorageComponent
@@ -57,6 +57,7 @@ import ru.pavlig43.tablecore.export.ExportCellValue
 import ru.pavlig43.tablecore.export.TableExportConfiguration
 import ru.pavlig43.tablecore.export.defaultExportValue
 import ru.pavlig43.tablecore.export.formatValue
+import ru.pavlig43.tablecore.state.rememberSaveableTableState
 import ru.pavlig43.tablecore.ui.RussianStringProvider
 import ru.pavlig43.tablecore.ui.ScrollBar
 import ru.pavlig43.theme.Res
@@ -72,7 +73,6 @@ import ua.wwind.table.config.TableRowContext
 import ua.wwind.table.config.TableRowStyle
 import ua.wwind.table.config.TableSettings
 import ua.wwind.table.state.TableState
-import ua.wwind.table.state.rememberTableState
 
 @Suppress("LongMethod")
 @Composable
@@ -97,13 +97,9 @@ fun StorageScreen(
                     enableDragToScroll = true,
                 )
             }
-            val tableState = retainTabState(
-                owner = component,
-                name = "tableState",
-                value = rememberTableState(
-                    columns = StorageProductField.entries.toImmutableList(),
-                    settings = tableSettings,
-                ),
+            val tableState = rememberSaveableTableState(
+                columns = StorageProductField.entries.toImmutableList(),
+                settings = tableSettings,
             )
             LaunchedEffect(tableState) {
                 snapshotFlow { tableState.filters.toMap() }.collect { filters ->
@@ -168,8 +164,8 @@ private fun StorageTable(
 ) {
     val horizontalState = rememberScrollState()
     val coroutineScope = rememberCoroutineScope()
-    var exportErrorMessage by rememberRetainedTabMutableState<String?>(state, "exportErrorMessage") { null }
-    var isExportMenuExpanded by rememberRetainedTabMutableState(state, "isExportMenuExpanded") { false }
+    var exportErrorMessage by rememberSaveable { mutableStateOf<String?>(null) }
+    var isExportMenuExpanded by rememberSaveable { mutableStateOf(false) }
     val customization = remember { StorageTableCustomization() }
     val exportConfiguration = remember {
         TableExportConfiguration<StorageProductUi, StorageProductField>(

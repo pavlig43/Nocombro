@@ -13,12 +13,13 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import ru.pavlig43.coreui.ValidationErrorsCard
-import ru.pavlig43.coreui.tab.rememberRetainedTabMutableState
 import ru.pavlig43.database.data.sync.mirror.MirrorVersionConflict
 import ru.pavlig43.doctor.internal.component.DoctorSyncConflictView
 import ru.pavlig43.doctor.internal.component.toDoctorView
@@ -40,10 +41,15 @@ internal fun DoctorSyncConflictsTool(
     onUseRemote: (MirrorVersionConflict) -> Unit,
 ) {
     val conflictViews = remember(conflicts) { conflicts.map { it.toDoctorView() } }
-    var pendingResolution by rememberRetainedTabMutableState<PendingConflictResolution?>(
-        owner = "doctor.syncConflicts",
-        name = "pendingResolution",
-    ) { null }
+    var pendingTable by rememberSaveable { mutableStateOf<String?>(null) }
+    var pendingSyncId by rememberSaveable { mutableStateOf<String?>(null) }
+    var pendingUseLocal by rememberSaveable { mutableStateOf(false) }
+    val pendingResolution = pendingTable?.let { table ->
+        val syncId = pendingSyncId ?: return@let null
+        conflictViews
+            .firstOrNull { conflict -> conflict.table == table && conflict.syncId == syncId }
+            ?.let { conflict -> PendingConflictResolution(conflict, pendingUseLocal) }
+    }
 
     DoctorSectionCard(
         title = "Конфликты sync: ${conflicts.size}",
@@ -87,14 +93,18 @@ internal fun DoctorSyncConflictsTool(
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             Button(
                                 onClick = {
-                                    pendingResolution = PendingConflictResolution(conflict, useLocal = true)
+                                    pendingTable = conflict.table
+                                    pendingSyncId = conflict.syncId
+                                    pendingUseLocal = true
                                 },
                             ) {
                                 Text("Выбрать локальную")
                             }
                             OutlinedButton(
                                 onClick = {
-                                    pendingResolution = PendingConflictResolution(conflict, useLocal = false)
+                                    pendingTable = conflict.table
+                                    pendingSyncId = conflict.syncId
+                                    pendingUseLocal = false
                                 },
                             ) {
                                 Text("Выбрать удалённую")
@@ -115,7 +125,10 @@ internal fun DoctorSyncConflictsTool(
     pendingResolution?.let { pending ->
         val sourceName = if (pending.useLocal) "локальную" else "удалённую"
         AlertDialog(
-            onDismissRequest = { pendingResolution = null },
+            onDismissRequest = {
+                pendingTable = null
+                pendingSyncId = null
+            },
             title = { Text("Подтвердите выбор") },
             text = {
                 Text(
@@ -132,14 +145,20 @@ internal fun DoctorSyncConflictsTool(
                         } else {
                             onUseRemote(pending.conflict.source)
                         }
-                        pendingResolution = null
+                        pendingTable = null
+                        pendingSyncId = null
                     },
                 ) {
                     Text("Подтвердить")
                 }
             },
             dismissButton = {
-                TextButton(onClick = { pendingResolution = null }) {
+                TextButton(
+                    onClick = {
+                        pendingTable = null
+                        pendingSyncId = null
+                    },
+                ) {
                     Text("Отмена")
                 }
             },

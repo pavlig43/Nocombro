@@ -23,7 +23,6 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import ru.pavlig43.coreui.ErrorScreen
 import ru.pavlig43.coreui.LoadingUi
-import ru.pavlig43.coreui.tab.retainTabState
 import ru.pavlig43.datetime.period.dateTime.DateTimeSelectorScreen
 import ru.pavlig43.profitability.internal.component.LoadState
 import ru.pavlig43.profitability.internal.component.ProfitabilityComponent
@@ -33,13 +32,13 @@ import ru.pavlig43.profitability.internal.model.ProfitabilityProduct
 import ru.pavlig43.profitability.internal.model.ProfitabilityTableData
 import ru.pavlig43.tablecore.ui.RussianStringProvider
 import ru.pavlig43.tablecore.ui.ScrollBar
+import ru.pavlig43.tablecore.state.rememberSaveableTableState
 import ua.wwind.table.ColumnSpec
 import ua.wwind.table.ExperimentalTableApi
 import ua.wwind.table.Table
 import ua.wwind.table.config.TableDefaults
 import ua.wwind.table.config.TableSettings
 import ua.wwind.table.state.TableState
-import ua.wwind.table.state.rememberTableState
 
 @Composable
 fun ProfitabilityScreen(component: ProfitabilityComponent) {
@@ -62,14 +61,10 @@ fun ProfitabilityScreen(component: ProfitabilityComponent) {
                     enableDragToScroll = true
                 )
             }
-            val tableState = retainTabState(
-                owner = component,
-                name = "tableState",
-                value = rememberTableState(
-                    columns = ProfitabilityField.entries.toImmutableList(),
-                    settings = tableSettings,
-                    initialSort = component.sort,
-                ),
+            val tableState = rememberSaveableTableState(
+                columns = ProfitabilityField.entries.toImmutableList(),
+                settings = tableSettings,
+                initialSort = component.sort,
             )
             component.filters.forEach { (column, filterState) ->
                 tableState.filters[column] = filterState

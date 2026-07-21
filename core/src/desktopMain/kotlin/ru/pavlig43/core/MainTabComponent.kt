@@ -1,6 +1,5 @@
 package ru.pavlig43.core
 
-import com.arkivanov.decompose.ComponentContext
 import kotlinx.coroutines.flow.StateFlow
 
 /**
@@ -11,7 +10,7 @@ import kotlinx.coroutines.flow.StateFlow
  * где основная навигация приложения по вкладкам
  * (сейчас rootnocombro/src/commonMain/kotlin/ru/pavlig43/rootnocombro/internal/navigation/MainTabNavigationComponent.kt)
  */
-interface MainTabComponent : ComponentContext {
+interface MainTabComponent {
 
     /**
      * Поток состояния вкладки, содержащий данные для отображения.
