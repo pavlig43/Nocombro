@@ -41,6 +41,8 @@ class FilesRepositoryTest : DesktopMainDispatcherFunSpec({
                 .shouldNotBeNull()
                 .deletedAt
                 .shouldNotBeNull()
+            managed.database.fileDao.getFiles(vendor.id, OwnerType.VENDOR)
+                .shouldContainExactly(emptyList())
             storage.deletedKeys.shouldContainExactly(emptyList())
             localFile.exists() shouldBe true
             managed.database.mirrorDeletionJournalDao.getAll()

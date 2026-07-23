@@ -13,7 +13,7 @@ interface FileDao {
     @Query("SELECT * FROM file")
     suspend fun getAllFiles(): List<FileBD>
 
-    @Query("SELECT * FROM file WHERE owner_id = :ownerId AND owner_type =:ownerFileType")
+    @Query("SELECT * FROM file WHERE owner_id = :ownerId AND owner_type = :ownerFileType AND deleted_at IS NULL")
     suspend fun getFiles(ownerId: Int,ownerFileType: OwnerType):List<FileBD>
 
     @Query(
