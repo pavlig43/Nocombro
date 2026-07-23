@@ -89,7 +89,12 @@ fun StorageScreen(
         is LoadState.Error -> ErrorScreen(state.message)
         is LoadState.Loading -> LoadingUi()
         is LoadState.Success -> {
-            val columns = remember { createStorageColumns(component::toggleExpand) }
+            val columns = remember {
+                createStorageColumns(
+                    onToggleExpand = component::toggleExpand,
+                    onOpenProduct = component::openProduct,
+                )
+            }
             val tableSettings = remember {
                 TableSettings(
                     showActiveFiltersHeader = true,

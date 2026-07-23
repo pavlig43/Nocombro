@@ -2,6 +2,7 @@
 
 package ru.pavlig43.storage.api.component.storage
 
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -16,6 +17,7 @@ import ru.pavlig43.storage.internal.model.StorageTableData
 import ru.pavlig43.theme.Res
 import ru.pavlig43.theme.arrow_downward
 import ru.pavlig43.theme.arrow_upward
+import ru.pavlig43.theme.search
 import ua.wwind.table.ColumnSpec
 import ua.wwind.table.ReadonlyTableColumnsBuilder
 import ua.wwind.table.filter.data.TableFilterType
@@ -31,7 +33,8 @@ enum class StorageProductField {
 }
 
 internal fun createStorageColumns(
-    onToggleExpand: (productId: Int) -> Unit
+    onToggleExpand: (productId: Int) -> Unit,
+    onOpenProduct: (productId: Int) -> Unit,
 ): ImmutableList<ColumnSpec<StorageProductUi, StorageProductField, StorageTableData>> =
     tableColumns {
 
@@ -39,7 +42,11 @@ internal fun createStorageColumns(
             title { "" }
             autoWidth()
             cell { item, _ ->
-                ExpandedCell(item, onToggleExpand)
+                ProductActionsCell(
+                    item = item,
+                    onToggleExpand = onToggleExpand,
+                    onOpenProduct = onOpenProduct,
+                )
             }
         }
         nameColumn()
@@ -69,28 +76,31 @@ internal fun createStorageColumns(
     }
 
 @Composable
-private fun ExpandedCell(
+private fun ProductActionsCell(
     item: StorageProductUi,
-    onToggleExpand: (productId: Int) -> Unit
+    onToggleExpand: (productId: Int) -> Unit,
+    onOpenProduct: (productId: Int) -> Unit,
 ) {
-    if (item.isProduct && !item.isExpanded) {
-        ToolTipIconButton(
-            tooltipText = "Развернуть",
-            onClick = { onToggleExpand(item.itemId) },
-            icon = Res.drawable.arrow_downward,
-        )
-    }
-    if (item.isProduct && item.isExpanded) {
-        ToolTipIconButton(
-            tooltipText = "Свернуть",
-            onClick = { onToggleExpand(item.itemId) },
-            icon = Res.drawable.arrow_upward,
-        )
-    }
-    if (!item.isProduct) {
+    if (item.isProduct) {
+        Row {
+            ToolTipIconButton(
+                tooltipText = if (item.isExpanded) "Свернуть" else "Развернуть",
+                onClick = { onToggleExpand(item.productId) },
+                icon = if (item.isExpanded) {
+                    Res.drawable.arrow_upward
+                } else {
+                    Res.drawable.arrow_downward
+                },
+            )
+            ToolTipIconButton(
+                tooltipText = "Открыть товар",
+                onClick = { onOpenProduct(item.productId) },
+                icon = Res.drawable.search,
+            )
+        }
+    } else {
         Text("")
     }
-
 }
 
 private fun ReadonlyTableColumnsBuilder<StorageProductUi, StorageProductField, StorageTableData>.nameColumn(

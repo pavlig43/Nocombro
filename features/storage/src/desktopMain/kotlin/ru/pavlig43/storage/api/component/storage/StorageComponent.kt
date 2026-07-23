@@ -125,11 +125,14 @@ class StorageComponent(
         filterManager.update(filters)
     }
 
+    internal fun openProduct(productId: Int) {
+        tabOpener.openProductTab(productId)
+    }
+
     internal fun onRowClick(item: StorageProductUi) {
         when {
             item.isProduct -> {
-                // При клике на продукт можно открыть форму продукта (опционально)
-                // tabOpener.openProductTab(item.productId)
+                // Товар открывается по отдельной кнопке в строке.
             }
             else -> {
                 // При клике на партию открываем таблицу движений партии
