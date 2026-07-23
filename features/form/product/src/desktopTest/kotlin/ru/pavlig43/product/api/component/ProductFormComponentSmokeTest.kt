@@ -5,13 +5,18 @@ import com.arkivanov.essenty.backhandler.BackDispatcher
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlinx.coroutines.delay
+import ru.pavlig43.core.model.ChangeSet
 import ru.pavlig43.database.NocombroTransactionExecutor
 import ru.pavlig43.database.data.files.remote.NoopRemoteFileStorageGateway
+import ru.pavlig43.database.data.product.ProductDeclarationIn
+import ru.pavlig43.database.data.sync.mirror.MirrorSyncTable
 import ru.pavlig43.files.api.FilesDependencies
 import ru.pavlig43.immutable.api.ImmutableTableDependencies
 import ru.pavlig43.product.api.ProductFormDependencies
+import ru.pavlig43.product.internal.di.ProductDeclarationRepository
 import ru.pavlig43.product.internal.update.ProductFormTabsComponent
 import ru.pavlig43.product.internal.update.ProductTabChild
 import ru.pavlig43.testkit.DesktopMainDispatcherFunSpec
@@ -119,6 +124,39 @@ class ProductFormComponentSmokeTest : DesktopMainDispatcherFunSpec({
             }
             selected.shouldBeInstanceOf<ProductTabChild.Essentials>()
             component.model.value.title shouldBe " Колбаски Баварские"
+        }
+    }
+
+    test(
+        scenario(
+            given = "a product linked to one declaration",
+            whenAction = "the declaration is replaced",
+            thenResult = "the old link becomes a tombstone and the new link is saved",
+        )
+    ) {
+        val managedDatabase = createSeededManagedTestDatabase()
+        try {
+            val repository = ProductDeclarationRepository(managedDatabase.database)
+            val oldLinks = repository.getInit(3).getOrThrow()
+            val oldLink = oldLinks.single()
+            val replacement = ProductDeclarationIn(
+                productId = 3,
+                declarationId = 6,
+                isProductInDeclaration = true,
+            )
+
+            repository.update(ChangeSet(oldLinks, listOf(replacement))).getOrThrow()
+
+            val currentLink = repository.getInit(3).getOrThrow().single()
+            currentLink.declarationId shouldBe 6
+            currentLink.isProductInDeclaration shouldBe true
+            currentLink.syncId shouldNotBe oldLink.syncId
+
+            val tombstone = managedDatabase.database.mirrorDeletionJournalDao.getAll()
+                .single { it.entityTable == MirrorSyncTable.PRODUCT_DECLARATION.tableName }
+            tombstone.syncId shouldBe oldLink.syncId
+        } finally {
+            managedDatabase.close()
         }
     }
 })
