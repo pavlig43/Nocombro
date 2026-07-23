@@ -61,25 +61,28 @@ private fun <T : Any, C, E> EditableColumnBuilder<T, C, E>.textWithSearchIconCel
     cell { item, _ ->
         NameRowWithSearchIcon(
             text = valueOf(item),
-            onOpenChooseDialog = { onOpenDialog(item) }
+            onClick = { onOpenDialog(item) },
         )
     }
 }
 @Composable
-private fun NameRowWithSearchIcon(
+fun NameRowWithSearchIcon(
     text: String,
-    onOpenChooseDialog: () -> Unit
+    onClick: () -> Unit,
+    tooltipText: String = "Выбрать",
+    modifier: Modifier = Modifier,
 ) {
     Row(
+        modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Text(text, Modifier.weight(1f).padding(horizontal = 4.dp))
         ToolTipIconButton(
-            tooltipText = "Выбрать",
-            onClick = onOpenChooseDialog,
+            tooltipText = tooltipText,
+            onClick = onClick,
             icon = Res.drawable.search,
-            tint = MaterialTheme.colorScheme.primary
+            tint = MaterialTheme.colorScheme.primary,
         )
     }
 }
