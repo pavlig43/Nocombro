@@ -67,6 +67,7 @@ include(
 
 include(
     ":features:analytic:main",
+    ":features:analytic:money",
     ":features:analytic:profitability",
 )
 

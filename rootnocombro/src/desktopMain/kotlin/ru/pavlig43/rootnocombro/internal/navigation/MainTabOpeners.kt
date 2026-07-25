@@ -10,6 +10,7 @@ import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemFormConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemFormConfig.ProductFormConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemFormConfig.TransactionFormConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemFormConfig.VendorFormConfig
+import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.MoneyReportConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ProfitabilityConfig
 
 internal fun createMainTabOpener(
@@ -54,5 +55,9 @@ internal fun createMainTabOpener(
 
     override fun openProfitabilityTab() {
         addTab(ProfitabilityConfig())
+    }
+
+    override fun openMoneyReportTab() {
+        addTab(MoneyReportConfig())
     }
 }

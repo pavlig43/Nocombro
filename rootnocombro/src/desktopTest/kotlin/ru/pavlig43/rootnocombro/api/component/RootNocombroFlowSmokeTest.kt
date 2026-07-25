@@ -13,6 +13,7 @@ import org.koin.core.context.stopKoin
 import org.koin.java.KoinJavaComponent.getKoin
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.datastore.DATASTORE_PATH_PROPERTY
+import ru.pavlig43.main.api.component.ItemNavigation
 import ru.pavlig43.rootnocombro.api.RootDependencies
 import ru.pavlig43.rootnocombro.internal.di.initKoin
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild
@@ -113,6 +114,36 @@ class RootNocombroFlowSmokeTest : DesktopMainDispatcherFunSpec({
                 items[selectedIndex!!].instance
             }
             analyticSelected.shouldBeInstanceOf<MainTabChild.MainMoneyChild>()
+        }
+    }
+
+    test(
+        scenario(
+            given = "an empty money journal",
+            whenAction = "the money report route is opened",
+            thenResult = "a separate money report tab is created",
+        )
+    ) {
+        withRootComponent(seeded = false) { root ->
+            val tabsComponent = root.stack.value.active.instance
+                .shouldBeInstanceOf<RootChild.Tabs>()
+                .component
+
+            runOnUiThread {
+                tabsComponent.openScreenFromDrawer(DrawerDestination.Analytic)
+            }
+            val analytic = tabsComponent.tabNavigationComponent.tabChildren.value.run {
+                items[selectedIndex!!].instance
+            }.shouldBeInstanceOf<MainTabChild.MainMoneyChild>()
+
+            runOnUiThread {
+                analytic.component.onOpenTab(ItemNavigation.MONEY)
+            }
+
+            val selected = tabsComponent.tabNavigationComponent.tabChildren.value.run {
+                items[selectedIndex!!].instance
+            }
+            selected.shouldBeInstanceOf<MainTabChild.MoneyReportChild>()
         }
     }
 

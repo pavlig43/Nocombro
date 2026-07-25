@@ -155,6 +155,7 @@ subprojects {
 
 val smokeCoreDesktopTasks = listOf(
     ":database:desktopTest",
+    ":features:analytic:money:desktopTest",
     ":features:analytic:profitability:desktopTest",
     ":features:files:desktopTest",
     ":rootnocombro:desktopTest",

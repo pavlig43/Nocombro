@@ -23,6 +23,7 @@ import ru.pavlig43.immutable.api.component.TransactionImmutableTableBuilder
 import ru.pavlig43.immutable.api.component.VendorImmutableTableBuilder
 import ru.pavlig43.immutable.internal.component.items.expense.ExpenseTableUi
 import ru.pavlig43.main.api.component.AnalyticMainComponent
+import ru.pavlig43.money.api.component.MoneyReportComponent
 import ru.pavlig43.notification.api.component.NotificationComponent
 import ru.pavlig43.notification.api.model.NotificationItem
 import ru.pavlig43.doctor.api.component.DoctorComponent
@@ -39,6 +40,7 @@ import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ItemFormChild.P
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ItemFormChild.TransactionFormChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ItemFormChild.VendorFormChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.MainMoneyChild
+import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.MoneyReportChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.NotificationChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.ProfitabilityChild
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabChild.SampleTableChild
@@ -62,6 +64,7 @@ import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.DoctorConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ExperimentConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ExperimentsConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.NotificationConfig
+import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.MoneyReportConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ProfitabilityConfig
 import ru.pavlig43.rootnocombro.internal.navigation.drawer.component.DrawerComponent
 import ru.pavlig43.rootnocombro.internal.navigation.drawer.component.DrawerDestination
@@ -153,6 +156,15 @@ internal class MainTabNavigationComponent(
                             ProfitabilityComponent(
                                 componentContext = context,
                                 dependencies = scope.get()
+                            )
+                        )
+                    }
+
+                    is MoneyReportConfig -> {
+                        MoneyReportChild(
+                            MoneyReportComponent(
+                                componentContext = context,
+                                dependencies = scope.get(),
                             )
                         )
                     }

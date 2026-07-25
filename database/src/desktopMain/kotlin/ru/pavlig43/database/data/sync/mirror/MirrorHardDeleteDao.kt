@@ -12,6 +12,8 @@ import ru.pavlig43.database.data.experiment.EXPERIMENT_ENTRY_TABLE_NAME
 import ru.pavlig43.database.data.experiment.EXPERIMENT_REMINDER_TABLE_NAME
 import ru.pavlig43.database.data.experiment.EXPERIMENT_TABLE_NAME
 import ru.pavlig43.database.data.files.FILE_TABLE_NAME
+import ru.pavlig43.database.data.money.MONEY_ACCOUNT_TABLE_NAME
+import ru.pavlig43.database.data.money.MONEY_MOVEMENT_TABLE_NAME
 import ru.pavlig43.database.data.product.COMPOSITION_TABLE_NAME
 import ru.pavlig43.database.data.product.PRODUCT_DECLARATION_TABLE_NAME
 import ru.pavlig43.database.data.product.PRODUCT_SPECIFICATION_TABLE_NAME
@@ -82,6 +84,12 @@ interface MirrorHardDeleteDao {
 
     @Query("DELETE FROM $SALE_TABLE_NAME WHERE sync_id = :syncId")
     suspend fun deleteSale(syncId: String): Int
+
+    @Query("DELETE FROM $MONEY_MOVEMENT_TABLE_NAME WHERE sync_id = :syncId")
+    suspend fun deleteMoneyMovement(syncId: String): Int
+
+    @Query("DELETE FROM $MONEY_ACCOUNT_TABLE_NAME WHERE sync_id = :syncId")
+    suspend fun deleteMoneyAccount(syncId: String): Int
 
     @Query("DELETE FROM $FILE_TABLE_NAME WHERE sync_id = :syncId")
     suspend fun deleteFile(syncId: String): Int

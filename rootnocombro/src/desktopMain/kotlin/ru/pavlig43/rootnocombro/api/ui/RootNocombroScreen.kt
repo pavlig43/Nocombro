@@ -31,6 +31,7 @@ import ru.pavlig43.experiments.api.ui.ExperimentsScreen
 import ru.pavlig43.expense.api.ui.ExpenseStandaloneScreen
 import ru.pavlig43.immutable.api.ui.ImmutableTableScreen
 import ru.pavlig43.main.api.ui.AnalyticMainScreen
+import ru.pavlig43.money.api.ui.MoneyReportScreen
 import ru.pavlig43.notification.api.ui.NotificationTabs
 import ru.pavlig43.product.api.ui.ProductFormScreen
 import ru.pavlig43.profitability.api.ui.ProfitabilityScreen
@@ -193,6 +194,8 @@ private fun MainTabChildFactory(mainTabChild: MainTabChild?) {
         is MainTabChild.ExperimentsChild -> ExperimentsScreen(mainTabChild.component)
 
         is MainTabChild.ProfitabilityChild -> ProfitabilityScreen(mainTabChild.component)
+
+        is MainTabChild.MoneyReportChild -> MoneyReportScreen(mainTabChild.component)
 
         is MainTabChild.DoctorChild -> DoctorScreen(mainTabChild.component)
 

@@ -39,4 +39,5 @@ object NoopTabOpener : TabOpener {
 
     override fun openExpenseFormTab(id: Int) = Unit
     override fun openProfitabilityTab() = Unit
+    override fun openMoneyReportTab() = Unit
 }

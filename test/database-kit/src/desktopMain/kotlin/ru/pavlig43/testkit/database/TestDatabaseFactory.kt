@@ -11,6 +11,7 @@ import ru.pavlig43.database.MIGRATION_4_5
 import ru.pavlig43.database.MIGRATION_5_6
 import ru.pavlig43.database.MIGRATION_6_7
 import ru.pavlig43.database.MIGRATION_7_8
+import ru.pavlig43.database.MIGRATION_8_9
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.seedDatabase
 import ru.pavlig43.testkit.createTempPath
@@ -32,6 +33,7 @@ fun createManagedTestDatabase(
         .addMigrations(MIGRATION_5_6)
         .addMigrations(MIGRATION_6_7)
         .addMigrations(MIGRATION_7_8)
+        .addMigrations(MIGRATION_8_9)
         .setDriver(BundledSQLiteDriver())
         .setQueryCoroutineContext(queryDispatcher)
         .build()
@@ -67,6 +69,7 @@ suspend fun createManagedCopiedDatabase(
         .addMigrations(MIGRATION_5_6)
         .addMigrations(MIGRATION_6_7)
         .addMigrations(MIGRATION_7_8)
+        .addMigrations(MIGRATION_8_9)
         .setDriver(BundledSQLiteDriver())
         .setQueryCoroutineContext(queryDispatcher)
         .build()

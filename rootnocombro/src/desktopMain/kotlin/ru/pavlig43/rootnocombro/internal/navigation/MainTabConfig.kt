@@ -28,6 +28,9 @@ sealed interface MainTabConfig{
     class ProfitabilityConfig: MainTabConfig
 
     @Serializable
+    class MoneyReportConfig: MainTabConfig
+
+    @Serializable
     data object DoctorConfig: MainTabConfig
 
     @Serializable

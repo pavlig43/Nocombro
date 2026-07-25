@@ -49,6 +49,8 @@ Legacy transport удалён:
 - `experiment`
 - `experiment_entry`
 - `experiment_reminder`
+- `money_account`
+- `money_movement`
 
 Инвентарь таблиц находится в
 `database/src/desktopMain/kotlin/ru/pavlig43/database/data/sync/mirror/MirrorSyncTable.kt`.

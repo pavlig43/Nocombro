@@ -28,6 +28,9 @@ import ru.pavlig43.database.data.expense.ExpenseBD
 import ru.pavlig43.database.data.expense.dao.ExpenseDao
 import ru.pavlig43.database.data.files.FileBD
 import ru.pavlig43.database.data.files.FileDao
+import ru.pavlig43.database.data.money.MoneyAccount
+import ru.pavlig43.database.data.money.MoneyDao
+import ru.pavlig43.database.data.money.MoneyMovement
 import ru.pavlig43.database.data.product.CompositionIn
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductDeclarationIn
@@ -92,11 +95,14 @@ import ru.pavlig43.database.data.vendor.dao.VendorDao
         ExperimentEntry::class,
         ExperimentReminder::class,
 
+        MoneyAccount::class,
+        MoneyMovement::class,
+
         SyncStateEntity::class,
         MirrorDeletionJournalEntity::class,
 
     ],
-    version = 8,
+    version = 9,
 
 )
 @TypeConverters(Converters::class)
@@ -127,6 +133,7 @@ abstract class NocombroDatabase : RoomDatabase() {
     abstract val experimentDao: ExperimentDao
     abstract val experimentEntryDao: ExperimentEntryDao
     abstract val experimentReminderDao: ExperimentReminderDao
+    abstract val moneyDao: MoneyDao
     abstract val pfDao: PfDao
     abstract val ingredientDao: IngredientDao
 

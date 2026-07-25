@@ -316,6 +316,8 @@ internal val supportedYdbMirrorCodecs: Map<MirrorSyncTable, YdbMirrorRowCodec> =
     ExpenseYdbMirrorCodec,
     BuyYdbMirrorCodec,
     SaleYdbMirrorCodec,
+    MoneyAccountYdbMirrorCodec,
+    MoneyMovementYdbMirrorCodec,
     FileYdbMirrorCodec,
 ).associateBy(YdbMirrorRowCodec::table)
 

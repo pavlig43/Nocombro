@@ -48,12 +48,17 @@ internal fun MirrorSyncRow.dependencyKeys(): List<MirrorEntityKey> = when (this)
         MirrorEntityKey(MirrorSyncTable.BATCH_MOVEMENT, movementSyncId),
         MirrorEntityKey(MirrorSyncTable.VENDOR, clientSyncId),
     )
+    is MoneyMovementMirrorRow -> listOfNotNull(
+        fromAccountSyncId?.let { MirrorEntityKey(MirrorSyncTable.MONEY_ACCOUNT, it) },
+        toAccountSyncId?.let { MirrorEntityKey(MirrorSyncTable.MONEY_ACCOUNT, it) },
+    ).distinct()
     is FileMirrorRow -> listOf(MirrorEntityKey(ownerType.ownerMirrorSyncTable(), ownerSyncId))
     is VendorMirrorRow,
     is DocumentMirrorRow,
     is ProductMirrorRow,
     is TransactionMirrorRow,
     is ExperimentMirrorRow,
+    is MoneyAccountMirrorRow,
     -> emptyList()
 }
 

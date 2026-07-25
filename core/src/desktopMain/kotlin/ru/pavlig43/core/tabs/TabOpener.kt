@@ -13,4 +13,5 @@ interface TabOpener {
     fun openExpenseFormTab(id: Int)
 
     fun openProfitabilityTab()
+    fun openMoneyReportTab()
 }

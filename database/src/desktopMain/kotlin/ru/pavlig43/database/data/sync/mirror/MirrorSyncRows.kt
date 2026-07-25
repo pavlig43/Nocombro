@@ -7,6 +7,9 @@ import ru.pavlig43.database.data.batch.MovementType
 import ru.pavlig43.database.data.document.DocumentType
 import ru.pavlig43.database.data.expense.ExpenseType
 import ru.pavlig43.database.data.files.OwnerType
+import ru.pavlig43.database.data.money.MoneyAccountType
+import ru.pavlig43.database.data.money.MoneyMovementCategory
+import ru.pavlig43.database.data.money.MoneyMovementKind
 import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.database.data.transact.TransactionType
 
@@ -252,6 +255,32 @@ data class TransactionMirrorRow(
     val createdAt: LocalDateTime,
     val comment: String,
     val isCompleted: Boolean,
+    override val updatedAt: LocalDateTime,
+    override val deletedAt: LocalDateTime? = null,
+) : MirrorSyncRow
+
+@Serializable
+data class MoneyAccountMirrorRow(
+    override val syncId: String,
+    val name: String,
+    val accountType: MoneyAccountType,
+    val openedAt: LocalDateTime,
+    val isArchived: Boolean,
+    override val updatedAt: LocalDateTime,
+    override val deletedAt: LocalDateTime? = null,
+) : MirrorSyncRow
+
+@Serializable
+data class MoneyMovementMirrorRow(
+    override val syncId: String,
+    val kind: MoneyMovementKind,
+    val category: MoneyMovementCategory?,
+    val amount: Long,
+    val occurredAt: LocalDateTime,
+    val fromAccountSyncId: String?,
+    val toAccountSyncId: String?,
+    val counterparty: String,
+    val comment: String,
     override val updatedAt: LocalDateTime,
     override val deletedAt: LocalDateTime? = null,
 ) : MirrorSyncRow

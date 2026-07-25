@@ -10,6 +10,7 @@
 - встроенный seeded-набор читается с ожидаемыми количествами;
 - ключевые связи seeded-набора не развалены;
 - seeded storage считается с ожидаемыми остатками и накопительными балансами;
+- журнал денег проверяется от автоматического технического счёта до прихода, выплаты и итогового остатка;
 - seeded profitability считается с ожидаемыми итогами;
 - root bootstrap и открытие ключевых экранов проходят без падений;
 - transaction form для seeded `BUY` и `SALE` собирает ожидаемые вкладки, включая files;
@@ -27,6 +28,10 @@
 - `database/src/desktopTest/kotlin/ru/pavlig43/database/RealDataDatabaseSmokeTest.kt`
 - `database/src/desktopTest/kotlin/ru/pavlig43/database/StorageSmokeTest.kt`
 - `database/src/desktopTest/kotlin/ru/pavlig43/database/RealDataStorageSmokeTest.kt`
+- `database/src/desktopTest/kotlin/ru/pavlig43/database/MoneyDaoTest.kt`
+- `database/src/desktopTest/kotlin/ru/pavlig43/database/DatabaseMigration8To9Test.kt`
+- `features/analytic/money/src/desktopTest/kotlin/ru/pavlig43/money/api/component/MoneyReportComponentSmokeTest.kt`
+- `features/analytic/money/src/desktopTest/kotlin/ru/pavlig43/money/internal/model/MoneyReportCalculatorTest.kt`
 - `features/analytic/profitability/src/desktopTest/kotlin/ru/pavlig43/profitability/internal/di/ProfitabilitySmokeTest.kt`
 - `features/analytic/profitability/src/desktopTest/kotlin/ru/pavlig43/profitability/internal/di/RealDataProfitabilitySmokeTest.kt`
 - `features/form/declaration/src/desktopTest/kotlin/ru/pavlig43/declaration/api/component/DeclarationFormComponentSmokeTest.kt`
@@ -96,6 +101,12 @@
 
 ```powershell
 .\gradlew :features:analytic:profitability:desktopTest --tests "*ProfitabilitySmokeTest*"
+```
+
+Прогнать тесты отчёта «Деньги»:
+
+```powershell
+.\gradlew :features:analytic:money:desktopTest
 ```
 
 Прогнать real-data profitability smoke на реальном дампе:
@@ -215,6 +226,14 @@
 - seeded profitability по марту 2026 даёт ожидаемые summary totals;
 - продуктовые строки и детали согласованы с seeded sale-данными.
 
+`MoneyReportComponentSmokeTest` и `MoneyReportCalculatorTest`
+
+- пустой журнал показывает нулевой итог без ручного создания счёта;
+- один технический счёт создаётся автоматически и не создаёт движение начального остатка;
+- движения с 2025 года, приходы, выплаты и их суммы по категориям считаются предсказуемо;
+- границы срока и одинаковое время операций дают стабильный порядок и верный итог;
+- старые начальные остатки и переводы остаются совместимы с общим итогом.
+
 `RealDataProfitabilitySmokeTest`
 
 - `summary.totalRevenue` сходится с суммой product revenue;
@@ -226,6 +245,7 @@
 
 - root стартует в `Tabs`;
 - profitability открывается как дефолтный таб;
+- отдельный таб «Деньги» открывается по своему маршруту;
 - drawer умеет открыть `storage` и `analytic`;
 - таб-навигация умеет собрать product list и базовые формы по `id`;
 - seeded CRUD-маршруты для vendor, declaration и expense открываются без падений.

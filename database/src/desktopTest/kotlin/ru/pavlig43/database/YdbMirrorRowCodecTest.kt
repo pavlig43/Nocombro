@@ -5,6 +5,8 @@ import io.kotest.matchers.string.shouldContain
 import ru.pavlig43.database.data.sync.mirror.BatchCostPriceYdbMirrorCodec
 import ru.pavlig43.database.data.sync.mirror.ExperimentYdbMirrorCodec
 import ru.pavlig43.database.data.sync.mirror.MirrorSyncTable
+import ru.pavlig43.database.data.sync.mirror.MoneyAccountYdbMirrorCodec
+import ru.pavlig43.database.data.sync.mirror.MoneyMovementYdbMirrorCodec
 import ru.pavlig43.database.data.sync.mirror.ProductYdbMirrorCodec
 import ru.pavlig43.database.data.sync.mirror.TransactionYdbMirrorCodec
 import ru.pavlig43.database.data.sync.mirror.VendorYdbMirrorCodec
@@ -63,6 +65,24 @@ class YdbMirrorRowCodecTest : DesktopMainDispatcherFunSpec({
         ProductYdbMirrorCodec.upsertSql("product") shouldContain "CAST(? AS Int32)"
         TransactionYdbMirrorCodec.upsertSql("transact") shouldContain "CAST(? AS Bool)"
         ExperimentYdbMirrorCodec.upsertSql("experiment") shouldContain "CAST(? AS Bool)"
+    }
+
+    test("money codecs use sync ids for account relations") {
+        MoneyAccountYdbMirrorCodec.upsertSql("money_account") shouldContain "CAST(? AS Bool)"
+        MoneyMovementYdbMirrorCodec.upsertSql("money_movement") shouldContain "CAST(? AS Int64)"
+        MoneyMovementYdbMirrorCodec.columnNames shouldBe listOf(
+            "sync_id",
+            "kind",
+            "category",
+            "amount",
+            "occurred_at",
+            "from_account_sync_id",
+            "to_account_sync_id",
+            "counterparty",
+            "comment",
+            "updated_at",
+            "deleted_at",
+        )
     }
 
     test("every mirror codec contains sync and version columns") {

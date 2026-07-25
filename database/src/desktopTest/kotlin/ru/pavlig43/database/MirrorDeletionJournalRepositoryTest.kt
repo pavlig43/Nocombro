@@ -2,12 +2,17 @@ package ru.pavlig43.database
 
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.nulls.shouldNotBeNull
+import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.database.data.files.FileBD
 import ru.pavlig43.database.data.files.OwnerType
+import ru.pavlig43.database.data.money.MoneyAccount
+import ru.pavlig43.database.data.money.MoneyAccountType
+import ru.pavlig43.database.data.money.MoneyMovement
+import ru.pavlig43.database.data.money.MoneyMovementKind
 import ru.pavlig43.database.data.sync.mirror.MirrorDeletionJournalRepository
 import ru.pavlig43.database.data.sync.mirror.MirrorLocalSnapshotRepository
 import ru.pavlig43.database.data.sync.mirror.MirrorPushEntityChange
@@ -88,6 +93,44 @@ class MirrorDeletionJournalRepositoryTest : DesktopMainDispatcherFunSpec({
             tombstones.orderedForLocalApply().map(MirrorPushEntityChange::table) shouldContainExactly
                 listOf(MirrorSyncTable.FILE, MirrorSyncTable.DECLARATION, MirrorSyncTable.VENDOR)
 
+        }
+    }
+
+    test("hard deleting a money movement keeps a typed tombstone") {
+        withEmptyTestDatabase { db ->
+            val openedAt = LocalDateTime(2026, 7, 1, 0, 0)
+            val accountId = db.moneyDao.createAccount(
+                MoneyAccount(
+                    name = "Cash",
+                    accountType = MoneyAccountType.CASH,
+                    openedAt = openedAt,
+                    syncId = "journal-money-account",
+                    updatedAt = openedAt,
+                )
+            ).toInt()
+            val movement = MoneyMovement(
+                kind = MoneyMovementKind.OPENING_BALANCE,
+                category = null,
+                amount = 100_000,
+                occurredAt = openedAt,
+                fromAccountId = null,
+                toAccountId = accountId,
+                syncId = "journal-money-movement",
+                updatedAt = openedAt,
+            )
+            db.moneyDao.createMovement(movement)
+
+            MirrorDeletionJournalRepository(db).captureHardDeletes {
+                db.moneyDao.deleteMovementBySyncId(movement.syncId)
+            }
+
+            db.moneyDao.getMovementBySyncId(movement.syncId).shouldBeNull()
+            val tombstone = MirrorLocalSnapshotRepository(db)
+                .loadSnapshot(listOf(MirrorSyncTable.MONEY_MOVEMENT))
+                .rowsByTable.getValue(MirrorSyncTable.MONEY_MOVEMENT)
+                .single()
+            tombstone.syncId shouldBe movement.syncId
+            tombstone.deletedAt.shouldNotBeNull()
         }
     }
 })

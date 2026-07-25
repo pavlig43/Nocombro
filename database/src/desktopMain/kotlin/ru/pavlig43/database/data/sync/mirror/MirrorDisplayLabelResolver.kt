@@ -72,6 +72,11 @@ class MirrorDisplayLabelResolver(
                 "${row.text} · ${nameOf(MirrorSyncTable.EXPERIMENT, row.experimentSyncId)}"
             is TransactionMirrorRow ->
                 "${row.transactionType} · ${row.createdAt.date} · ${row.comment.ifBlank { row.syncId }}"
+            is MoneyAccountMirrorRow -> row.name
+            is MoneyMovementMirrorRow ->
+                row.comment.ifBlank {
+                    row.counterparty.ifBlank { row.category?.name ?: row.kind.name }
+                }
             is FileMirrorRow ->
                 "${row.displayName} · ${row.ownerType} · " +
                     nameOf(row.ownerType.mirrorTable(), row.ownerSyncId)
@@ -92,6 +97,7 @@ class MirrorDisplayLabelResolver(
             is ExperimentEntryMirrorRow ->
                 "${nameOf(MirrorSyncTable.EXPERIMENT, row.experimentSyncId)} от ${row.entryDate}"
             is ExpenseMirrorRow -> row.comment.ifBlank { row.expenseType.toString() }
+            is MoneyAccountMirrorRow -> row.name
             else -> syncId
         }
     }

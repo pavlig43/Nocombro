@@ -125,13 +125,16 @@ internal class CompositionComponent(
                 }
             }
             @Suppress("MagicNumber")
-            val totalSum = lst.filter {
-                it.productType in arrayOf(
-                    ProductType.FOOD_BASE,
-                    ProductType.FOOD_PF
-                )
-            }.sumOf { it.count.value / 1000.0 }
-            if (totalSum != 1.0) {
+            val totalSumInThousandths = lst
+                .filter {
+                    it.productType in arrayOf(
+                        ProductType.FOOD_BASE,
+                        ProductType.FOOD_PF
+                    )
+                }
+                .sumOf { it.count.value }
+            val totalSum = DecimalData3(totalSumInThousandths)
+            if (totalSumInThousandths != 1_000L) {
                 add("Сумма в составе должна быть равна 1 кг (сейчас: ${totalSum}кг)")
             }
         }

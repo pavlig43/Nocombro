@@ -10,6 +10,7 @@ import ru.pavlig43.experiments.api.ExperimentsDependencies
 import ru.pavlig43.expense.api.ExpenseFormDependencies
 import ru.pavlig43.files.api.FilesDependencies
 import ru.pavlig43.immutable.api.ImmutableTableDependencies
+import ru.pavlig43.money.api.MoneyReportDependencies
 import ru.pavlig43.notification.api.NotificationDependencies
 import ru.pavlig43.product.api.ProductFormDependencies
 import ru.pavlig43.profitability.api.ProfitabilityDependencies
@@ -33,6 +34,7 @@ internal val featureDependenciesModule = listOf(module {
     factoryOf(::ExpenseFormDependencies)
     factoryOf(::StorageDependencies)
     factoryOf(::ProfitabilityDependencies)
+    factoryOf(::MoneyReportDependencies)
     factoryOf(::DoctorDependencies)
     factoryOf(::ExperimentsDependencies)
 

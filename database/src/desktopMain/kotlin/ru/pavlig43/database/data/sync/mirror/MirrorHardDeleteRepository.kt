@@ -53,6 +53,8 @@ class MirrorHardDeleteRepository(
             MirrorSyncTable.EXPENSE -> db.mirrorHardDeleteDao.deleteExpense(request.syncId)
             MirrorSyncTable.BUY -> db.mirrorHardDeleteDao.deleteBuy(request.syncId)
             MirrorSyncTable.SALE -> db.mirrorHardDeleteDao.deleteSale(request.syncId)
+            MirrorSyncTable.MONEY_ACCOUNT -> db.mirrorHardDeleteDao.deleteMoneyAccount(request.syncId)
+            MirrorSyncTable.MONEY_MOVEMENT -> db.mirrorHardDeleteDao.deleteMoneyMovement(request.syncId)
             MirrorSyncTable.FILE -> db.mirrorHardDeleteDao.deleteFile(request.syncId)
         }
         return MirrorHardDeleteResult(

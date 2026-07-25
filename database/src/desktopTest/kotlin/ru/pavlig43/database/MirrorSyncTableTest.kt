@@ -7,6 +7,10 @@ import ru.pavlig43.database.data.batch.BatchBD
 import ru.pavlig43.database.data.batch.BatchCostPriceEntity
 import ru.pavlig43.database.data.files.FileBD
 import ru.pavlig43.database.data.files.OwnerType
+import ru.pavlig43.database.data.money.MoneyAccount
+import ru.pavlig43.database.data.money.MoneyAccountType
+import ru.pavlig43.database.data.money.MoneyMovement
+import ru.pavlig43.database.data.money.MoneyMovementKind
 import ru.pavlig43.database.data.sync.mirror.BatchCostPriceMirrorMapper
 import ru.pavlig43.database.data.sync.mirror.BatchCostPriceMirrorRow
 import ru.pavlig43.database.data.sync.mirror.BatchMirrorRow
@@ -21,6 +25,8 @@ import ru.pavlig43.database.data.sync.mirror.ExperimentReminderMirrorRow
 import ru.pavlig43.database.data.sync.mirror.ExpenseMirrorRow
 import ru.pavlig43.database.data.sync.mirror.FileMirrorRow
 import ru.pavlig43.database.data.sync.mirror.MirrorLocalSnapshotRepository
+import ru.pavlig43.database.data.sync.mirror.MoneyAccountMirrorRow
+import ru.pavlig43.database.data.sync.mirror.MoneyMovementMirrorRow
 import ru.pavlig43.database.data.sync.mirror.MirrorSyncTable
 import ru.pavlig43.database.data.sync.mirror.ProductMirrorRow
 import ru.pavlig43.database.data.sync.mirror.ProductDeclarationMirrorRow
@@ -58,8 +64,16 @@ class MirrorSyncTableTest : DesktopMainDispatcherFunSpec({
                 "expense",
                 "buy",
                 "sale",
+                "money_account",
+                "money_movement",
                 "file",
             )
+    }
+
+    test("money movement is mirrored after money account") {
+        MirrorSyncTable.fromTableName("money_account") shouldBe MirrorSyncTable.MONEY_ACCOUNT
+        MirrorSyncTable.fromTableName("money_movement") shouldBe MirrorSyncTable.MONEY_MOVEMENT
+        MirrorSyncTable.MONEY_MOVEMENT.applyOrder shouldBe MirrorSyncTable.MONEY_ACCOUNT.applyOrder + 1
     }
 
     test("batch cost price is mirrored after its batch") {
@@ -289,6 +303,55 @@ class MirrorSyncTableTest : DesktopMainDispatcherFunSpec({
             snapshot.rowsByTable.keys shouldBe MirrorSyncTable.mirroredBusinessTables.toSet()
             file.ownerSyncId shouldBe product.syncId
             file.ownerType shouldBe OwnerType.PRODUCT
+        }
+    }
+
+    test("local snapshot replaces money account ids with sync ids") {
+        withSeededTestDatabase { db ->
+            val openedAt = LocalDateTime(2026, 7, 1, 0, 0)
+            val fromId = db.moneyDao.createAccount(
+                MoneyAccount(
+                    name = "Cash",
+                    accountType = MoneyAccountType.CASH,
+                    openedAt = openedAt,
+                    syncId = "money-cash-sync",
+                    updatedAt = openedAt,
+                )
+            ).toInt()
+            val toId = db.moneyDao.createAccount(
+                MoneyAccount(
+                    name = "Bank",
+                    accountType = MoneyAccountType.BANK,
+                    openedAt = openedAt,
+                    syncId = "money-bank-sync",
+                    updatedAt = openedAt,
+                )
+            ).toInt()
+            db.moneyDao.createMovement(
+                MoneyMovement(
+                    kind = MoneyMovementKind.TRANSFER,
+                    category = null,
+                    amount = 30_000,
+                    occurredAt = LocalDateTime(2026, 7, 2, 10, 0),
+                    fromAccountId = fromId,
+                    toAccountId = toId,
+                    syncId = "money-transfer-sync",
+                    updatedAt = LocalDateTime(2026, 7, 2, 10, 0),
+                )
+            )
+
+            val rows = MirrorLocalSnapshotRepository(db).loadSnapshot(
+                listOf(MirrorSyncTable.MONEY_ACCOUNT, MirrorSyncTable.MONEY_MOVEMENT)
+            ).rowsByTable
+            val accounts = rows.getValue(MirrorSyncTable.MONEY_ACCOUNT)
+                .filterIsInstance<MoneyAccountMirrorRow>()
+            val movement = rows.getValue(MirrorSyncTable.MONEY_MOVEMENT)
+                .single() as MoneyMovementMirrorRow
+
+            accounts.map { it.syncId }.toSet() shouldBe setOf("money-cash-sync", "money-bank-sync")
+            movement.fromAccountSyncId shouldBe "money-cash-sync"
+            movement.toAccountSyncId shouldBe "money-bank-sync"
+            movement.amount shouldBe 30_000
         }
     }
 })

@@ -222,6 +222,32 @@ CREATE TABLE IF NOT EXISTS `experiment_reminder` (
     PRIMARY KEY (sync_id)
 );
 
+CREATE TABLE IF NOT EXISTS `money_account` (
+    sync_id Utf8,
+    name Utf8,
+    account_type Utf8,
+    opened_at Utf8,
+    is_archived Bool,
+    updated_at Utf8,
+    deleted_at Utf8,
+    PRIMARY KEY (sync_id)
+);
+
+CREATE TABLE IF NOT EXISTS `money_movement` (
+    sync_id Utf8,
+    kind Utf8,
+    category Utf8,
+    amount Int64,
+    occurred_at Utf8,
+    from_account_sync_id Utf8,
+    to_account_sync_id Utf8,
+    counterparty Utf8,
+    comment Utf8,
+    updated_at Utf8,
+    deleted_at Utf8,
+    PRIMARY KEY (sync_id)
+);
+
 CREATE TABLE IF NOT EXISTS `file` (
     sync_id Utf8,
     owner_type Utf8,

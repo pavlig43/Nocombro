@@ -10,6 +10,8 @@ import ru.pavlig43.database.data.experiment.EXPERIMENT_ENTRY_TABLE_NAME
 import ru.pavlig43.database.data.experiment.EXPERIMENT_REMINDER_TABLE_NAME
 import ru.pavlig43.database.data.experiment.EXPERIMENT_TABLE_NAME
 import ru.pavlig43.database.data.files.FILE_TABLE_NAME
+import ru.pavlig43.database.data.money.MONEY_ACCOUNT_TABLE_NAME
+import ru.pavlig43.database.data.money.MONEY_MOVEMENT_TABLE_NAME
 import ru.pavlig43.database.data.product.COMPOSITION_TABLE_NAME
 import ru.pavlig43.database.data.product.PRODUCT_DECLARATION_TABLE_NAME
 import ru.pavlig43.database.data.product.PRODUCT_SPECIFICATION_TABLE_NAME
@@ -53,7 +55,9 @@ enum class MirrorSyncTable(
     EXPENSE(EXPENSE_TABLE_NAME, 16),
     BUY(BUY_TABLE_NAME, 17),
     SALE(SALE_TABLE_NAME, 18),
-    FILE(FILE_TABLE_NAME, 19),
+    MONEY_ACCOUNT(MONEY_ACCOUNT_TABLE_NAME, 19),
+    MONEY_MOVEMENT(MONEY_MOVEMENT_TABLE_NAME, 20),
+    FILE(FILE_TABLE_NAME, 21),
     ;
 
     companion object {

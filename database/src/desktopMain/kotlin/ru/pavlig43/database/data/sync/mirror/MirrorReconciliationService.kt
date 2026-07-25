@@ -529,6 +529,8 @@ internal fun MirrorSyncRow.markDeleted(at: LocalDateTime): MirrorSyncRow = when 
     is ExperimentEntryMirrorRow -> copy(updatedAt = at, deletedAt = at)
     is ExperimentReminderMirrorRow -> copy(updatedAt = at, deletedAt = at)
     is TransactionMirrorRow -> copy(updatedAt = at, deletedAt = at)
+    is MoneyAccountMirrorRow -> copy(updatedAt = at, deletedAt = at)
+    is MoneyMovementMirrorRow -> copy(updatedAt = at, deletedAt = at)
     is FileMirrorRow -> copy(updatedAt = at, deletedAt = at)
 }
 
@@ -561,6 +563,8 @@ internal fun MirrorSyncRow.withSyncVersion(at: LocalDateTime): MirrorSyncRow {
         is ExperimentEntryMirrorRow -> copy(updatedAt = at)
         is ExperimentReminderMirrorRow -> copy(updatedAt = at)
         is TransactionMirrorRow -> copy(updatedAt = at)
+        is MoneyAccountMirrorRow -> copy(updatedAt = at)
+        is MoneyMovementMirrorRow -> copy(updatedAt = at)
         is FileMirrorRow -> copy(updatedAt = at)
     }
 }

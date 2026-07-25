@@ -32,6 +32,7 @@ kotlin {
         implementation(projects.features.storage)
 
         implementation(projects.features.analytic.main)
+        implementation(projects.features.analytic.money)
         implementation(projects.features.analytic.profitability)
         implementation(libs.filekit.dialogs)
     }

@@ -7,6 +7,9 @@ import ru.pavlig43.database.data.batch.MovementType
 import ru.pavlig43.database.data.document.DocumentType
 import ru.pavlig43.database.data.expense.ExpenseType
 import ru.pavlig43.database.data.files.OwnerType
+import ru.pavlig43.database.data.money.MoneyAccountType
+import ru.pavlig43.database.data.money.MoneyMovementCategory
+import ru.pavlig43.database.data.money.MoneyMovementKind
 import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.database.data.product.ProductUnit
 import ru.pavlig43.database.data.transact.TransactionType
@@ -58,6 +61,25 @@ class Converters {
 
     @TypeConverter
     fun fromExpenseTypeEnum(value: ExpenseType): String = value.name
+
+    @TypeConverter
+    fun toMoneyAccountType(value: String): MoneyAccountType = enumValueOf<MoneyAccountType>(value)
+
+    @TypeConverter
+    fun fromMoneyAccountType(value: MoneyAccountType): String = value.name
+
+    @TypeConverter
+    fun toMoneyMovementKind(value: String): MoneyMovementKind = enumValueOf<MoneyMovementKind>(value)
+
+    @TypeConverter
+    fun fromMoneyMovementKind(value: MoneyMovementKind): String = value.name
+
+    @TypeConverter
+    fun toMoneyMovementCategory(value: String?): MoneyMovementCategory? =
+        value?.let { enumValueOf<MoneyMovementCategory>(it) }
+
+    @TypeConverter
+    fun fromMoneyMovementCategory(value: MoneyMovementCategory?): String? = value?.name
 
     @TypeConverter
     fun toLocalDate(value: String): LocalDate = LocalDate.parse(value)

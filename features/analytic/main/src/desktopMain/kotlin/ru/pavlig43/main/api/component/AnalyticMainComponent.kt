@@ -15,9 +15,10 @@ class AnalyticMainComponent(
     private val _model = MutableStateFlow(MainTabComponent.NavTabState("Аналитика"))
     override val model: StateFlow<MainTabComponent.NavTabState> = _model.asStateFlow()
 
-    internal fun onOpenTab(item: ItemNavigation) {
+    fun onOpenTab(item: ItemNavigation) {
         when (item) {
             ItemNavigation.PROFITABILITY -> {tabOpener.openProfitabilityTab()}
+            ItemNavigation.MONEY -> tabOpener.openMoneyReportTab()
         }
     }
 
@@ -31,6 +32,11 @@ enum class ItemNavigation(
         title = "Прибыльность",
         subtitle = "Сводка по товарам, партиям и финансовому результату.",
         description = "Открывает таблицу прибыльности с периодом, фильтрами, сортировкой и деталями по партиям.",
-    )
+    ),
+    MONEY(
+        title = "Деньги",
+        subtitle = "Остатки по кассам и счетам, приходы и выплаты.",
+        description = "Показывает фактические движения денег, остатки и разбивку выплат за выбранный период.",
+    ),
 
 }

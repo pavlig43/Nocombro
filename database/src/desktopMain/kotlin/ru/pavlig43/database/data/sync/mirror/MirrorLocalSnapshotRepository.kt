@@ -160,6 +160,18 @@ class MirrorLocalSnapshotRepository(
                         db.saleDao.getAll().map { it.toMirrorRow(db) },
                     )
                 }
+                if (MirrorSyncTable.MONEY_ACCOUNT in requestedTables) {
+                    put(
+                        MirrorSyncTable.MONEY_ACCOUNT,
+                        db.moneyDao.getAllAccounts().map { it.toMirrorRow() },
+                    )
+                }
+                if (MirrorSyncTable.MONEY_MOVEMENT in requestedTables) {
+                    put(
+                        MirrorSyncTable.MONEY_MOVEMENT,
+                        db.moneyDao.getAllMovements().map { it.toMirrorRow(db) },
+                    )
+                }
                 if (MirrorSyncTable.FILE in requestedTables) {
                     put(
                         MirrorSyncTable.FILE,

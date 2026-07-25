@@ -20,6 +20,8 @@ import ru.pavlig43.database.data.sync.mirror.MirrorRemoteStatus
 import ru.pavlig43.database.data.sync.mirror.MirrorSyncRemoteGateway
 import ru.pavlig43.database.data.sync.mirror.MirrorSyncTable
 import ru.pavlig43.database.data.sync.mirror.MirrorStartupMaintenance
+import ru.pavlig43.database.data.sync.mirror.MoneyAccountMirrorRow
+import ru.pavlig43.database.data.sync.mirror.MoneyMovementMirrorRow
 import ru.pavlig43.database.data.sync.mirror.VendorMirrorRow
 import ru.pavlig43.database.data.sync.mirror.BatchCostPriceMirrorRow
 import ru.pavlig43.database.data.sync.mirror.FileMirrorRow
@@ -27,6 +29,8 @@ import ru.pavlig43.database.data.sync.mirror.markDeleted
 import ru.pavlig43.database.data.sync.mirror.toMirrorRow
 import ru.pavlig43.database.data.files.FileBD
 import ru.pavlig43.database.data.files.OwnerType
+import ru.pavlig43.database.data.money.MoneyAccountType
+import ru.pavlig43.database.data.money.MoneyMovementKind
 import ru.pavlig43.testkit.DesktopMainDispatcherFunSpec
 import ru.pavlig43.testkit.database.createManagedTestDatabase
 import ru.pavlig43.testkit.database.createSeededManagedTestDatabase
@@ -279,6 +283,117 @@ class MirrorLocalApplyRepositoryTest : DesktopMainDispatcherFunSpec({
             result.deletedRows shouldBe 1
         } finally {
             localFile.delete()
+            target.close()
+        }
+    }
+
+    test("money mirror restores local account relations from sync ids") {
+        val target = createManagedTestDatabase()
+        try {
+            val openedAt = LocalDateTime(2026, 7, 1, 0, 0)
+            val from = MoneyAccountMirrorRow(
+                syncId = "money-from",
+                name = "Cash",
+                accountType = MoneyAccountType.CASH,
+                openedAt = openedAt,
+                isArchived = false,
+                updatedAt = openedAt,
+            )
+            val to = MoneyAccountMirrorRow(
+                syncId = "money-to",
+                name = "Bank",
+                accountType = MoneyAccountType.BANK,
+                openedAt = openedAt,
+                isArchived = false,
+                updatedAt = openedAt,
+            )
+            val movement = MoneyMovementMirrorRow(
+                syncId = "money-transfer",
+                kind = MoneyMovementKind.TRANSFER,
+                category = null,
+                amount = 300_000,
+                occurredAt = LocalDateTime(2026, 7, 2, 12, 0),
+                fromAccountSyncId = from.syncId,
+                toAccountSyncId = to.syncId,
+                counterparty = "",
+                comment = "Transfer",
+                updatedAt = LocalDateTime(2026, 7, 2, 12, 0),
+            )
+
+            createApplyRepository(target.database).apply(
+                listOf(
+                    MirrorPushEntityChange(MirrorSyncTable.MONEY_MOVEMENT, movement),
+                    MirrorPushEntityChange(MirrorSyncTable.MONEY_ACCOUNT, to),
+                    MirrorPushEntityChange(MirrorSyncTable.MONEY_ACCOUNT, from),
+                )
+            )
+
+            val restoredFrom = target.database.moneyDao.getAccountBySyncId(from.syncId).shouldNotBeNull()
+            val restoredTo = target.database.moneyDao.getAccountBySyncId(to.syncId).shouldNotBeNull()
+            val restoredMovement = target.database.moneyDao.getMovementBySyncId(movement.syncId).shouldNotBeNull()
+            restoredMovement.fromAccountId shouldBe restoredFrom.id
+            restoredMovement.toAccountId shouldBe restoredTo.id
+            restoredMovement.amount shouldBe movement.amount
+        } finally {
+            target.close()
+        }
+    }
+
+    test("money account tombstone deletes its dependent movements first") {
+        val target = createManagedTestDatabase()
+        try {
+            val openedAt = LocalDateTime(2026, 7, 1, 0, 0)
+            val from = MoneyAccountMirrorRow(
+                syncId = "money-delete-from",
+                name = "Cash",
+                accountType = MoneyAccountType.CASH,
+                openedAt = openedAt,
+                isArchived = false,
+                updatedAt = openedAt,
+            )
+            val to = MoneyAccountMirrorRow(
+                syncId = "money-delete-to",
+                name = "Bank",
+                accountType = MoneyAccountType.BANK,
+                openedAt = openedAt,
+                isArchived = false,
+                updatedAt = openedAt,
+            )
+            val movement = MoneyMovementMirrorRow(
+                syncId = "money-delete-transfer",
+                kind = MoneyMovementKind.TRANSFER,
+                category = null,
+                amount = 50_000,
+                occurredAt = LocalDateTime(2026, 7, 2, 12, 0),
+                fromAccountSyncId = from.syncId,
+                toAccountSyncId = to.syncId,
+                counterparty = "",
+                comment = "",
+                updatedAt = LocalDateTime(2026, 7, 2, 12, 0),
+            )
+            val repository = createApplyRepository(target.database)
+            repository.apply(
+                listOf(
+                    MirrorPushEntityChange(MirrorSyncTable.MONEY_ACCOUNT, from),
+                    MirrorPushEntityChange(MirrorSyncTable.MONEY_ACCOUNT, to),
+                    MirrorPushEntityChange(MirrorSyncTable.MONEY_MOVEMENT, movement),
+                )
+            )
+
+            val result = repository.apply(
+                listOf(
+                    MirrorPushEntityChange(
+                        MirrorSyncTable.MONEY_ACCOUNT,
+                        from.markDeleted(LocalDateTime(2099, 7, 2, 12, 0)),
+                    )
+                )
+            )
+
+            result.deletedRows shouldBe 2
+            target.database.moneyDao.getAccountBySyncId(from.syncId).shouldBeNull()
+            target.database.moneyDao.getMovementBySyncId(movement.syncId).shouldBeNull()
+            target.database.moneyDao.getAccountBySyncId(to.syncId).shouldNotBeNull()
+        } finally {
             target.close()
         }
     }

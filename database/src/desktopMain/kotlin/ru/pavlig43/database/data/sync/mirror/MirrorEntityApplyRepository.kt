@@ -24,6 +24,10 @@ import ru.pavlig43.database.data.files.OwnerType
 import ru.pavlig43.database.data.files.buildCanonicalFileKey
 import ru.pavlig43.database.data.files.buildManagedLocalFilePath
 import ru.pavlig43.database.data.files.extractFileName
+import ru.pavlig43.database.data.money.MONEY_ACCOUNT_TABLE_NAME
+import ru.pavlig43.database.data.money.MONEY_MOVEMENT_TABLE_NAME
+import ru.pavlig43.database.data.money.MoneyAccount
+import ru.pavlig43.database.data.money.MoneyMovement
 import ru.pavlig43.database.data.product.COMPOSITION_TABLE_NAME
 import ru.pavlig43.database.data.product.PRODUCT_DECLARATION_TABLE_NAME
 import ru.pavlig43.database.data.product.PRODUCT_SPECIFICATION_TABLE_NAME
@@ -122,6 +126,8 @@ class MirrorEntityApplyRepository(
             EXPERIMENT_REMINDER_TABLE_NAME -> applyExperimentReminder(change)
             BUY_TABLE_NAME -> applyBuy(change)
             SALE_TABLE_NAME -> applySale(change)
+            MONEY_ACCOUNT_TABLE_NAME -> applyMoneyAccount(change)
+            MONEY_MOVEMENT_TABLE_NAME -> applyMoneyMovement(change)
             FILE_TABLE_NAME -> applyFile(change)
         }
     }
@@ -656,6 +662,66 @@ class MirrorEntityApplyRepository(
         db.saleDao.upsertSaleBd(incoming)
     }
 
+    private suspend fun applyMoneyAccount(change: MirrorEntityApplyChange) {
+        val existing = db.moneyDao.getAccountBySyncId(change.entitySyncId)
+        if (change.changeType == MirrorApplyChangeType.DELETE) {
+            existing?.let {
+                if (!isStale(it.updatedAt, change.changedAt)) {
+                    db.moneyDao.upsertAccount(
+                        it.copy(deletedAt = change.changedAt, updatedAt = change.changedAt)
+                    )
+                }
+            }
+            return
+        }
+
+        val payload = change.row as MoneyAccountMirrorRow
+        val incoming = MoneyAccount(
+            name = payload.name,
+            accountType = payload.accountType,
+            openedAt = payload.openedAt,
+            isArchived = payload.isArchived,
+            id = existing?.id ?: 0,
+            syncId = payload.syncId,
+            updatedAt = payload.updatedAt,
+            deletedAt = payload.deletedAt,
+        )
+        if (existing != null && isStale(existing.updatedAt, incoming.updatedAt)) return
+        db.moneyDao.upsertAccount(incoming)
+    }
+
+    private suspend fun applyMoneyMovement(change: MirrorEntityApplyChange) {
+        val existing = db.moneyDao.getMovementBySyncId(change.entitySyncId)
+        if (change.changeType == MirrorApplyChangeType.DELETE) {
+            existing?.let {
+                if (!isStale(it.updatedAt, change.changedAt)) {
+                    db.moneyDao.upsertMovement(
+                        it.copy(deletedAt = change.changedAt, updatedAt = change.changedAt)
+                    )
+                }
+            }
+            return
+        }
+
+        val payload = change.row as MoneyMovementMirrorRow
+        val incoming = MoneyMovement(
+            kind = payload.kind,
+            category = payload.category,
+            amount = payload.amount,
+            occurredAt = payload.occurredAt,
+            fromAccountId = payload.fromAccountSyncId?.let { requireMoneyAccount(it).id },
+            toAccountId = payload.toAccountSyncId?.let { requireMoneyAccount(it).id },
+            counterparty = payload.counterparty,
+            comment = payload.comment,
+            id = existing?.id ?: 0,
+            syncId = payload.syncId,
+            updatedAt = payload.updatedAt,
+            deletedAt = payload.deletedAt,
+        )
+        if (existing != null && isStale(existing.updatedAt, incoming.updatedAt)) return
+        db.moneyDao.upsertMovement(incoming)
+    }
+
     private suspend fun applyFile(change: MirrorEntityApplyChange) {
         val existing = db.fileDao.getFileBySyncId(change.entitySyncId)
         if (change.changeType == MirrorApplyChangeType.DELETE) {
@@ -724,6 +790,11 @@ class MirrorEntityApplyRepository(
     private suspend fun requireMovement(syncId: String): BatchMovement {
         return db.batchMovementDao.getMovementBySyncId(syncId)
             ?: error("Missing movement dependency for syncId=$syncId")
+    }
+
+    private suspend fun requireMoneyAccount(syncId: String): MoneyAccount {
+        return db.moneyDao.getAccountBySyncId(syncId)
+            ?: error("Missing money account dependency for syncId=$syncId")
     }
 
     private suspend fun requireOwnerId(

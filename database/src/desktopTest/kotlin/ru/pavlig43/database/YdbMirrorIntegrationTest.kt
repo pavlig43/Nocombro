@@ -9,6 +9,8 @@ import io.kotest.matchers.nulls.shouldBeNull
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.database.data.product.ProductType
+import ru.pavlig43.database.data.money.MoneyAccountType
+import ru.pavlig43.database.data.money.MoneyMovementKind
 import ru.pavlig43.database.data.sync.mirror.MirrorEntityApplyRepository
 import ru.pavlig43.database.data.sync.mirror.BatchCostPriceMirrorRow
 import ru.pavlig43.database.data.sync.mirror.BatchMirrorRow
@@ -21,6 +23,8 @@ import ru.pavlig43.database.data.sync.mirror.MirrorReconciliationPlanner
 import ru.pavlig43.database.data.sync.mirror.MirrorRemoteSnapshot
 import ru.pavlig43.database.data.sync.mirror.MirrorSyncRow
 import ru.pavlig43.database.data.sync.mirror.MirrorSyncTable
+import ru.pavlig43.database.data.sync.mirror.MoneyAccountMirrorRow
+import ru.pavlig43.database.data.sync.mirror.MoneyMovementMirrorRow
 import ru.pavlig43.database.data.sync.mirror.ProductMirrorRow
 import ru.pavlig43.database.data.sync.mirror.VendorMirrorRow
 import ru.pavlig43.database.data.sync.mirror.YdbJdbcMirrorSyncGateway
@@ -139,6 +143,11 @@ class YdbMirrorIntegrationTest : FunSpec({
                 target.database.batchCostDao
                     .getBySyncId("$prefix-batch")
                     ?.costPricePerUnit shouldBe 42_500L
+                target.database.moneyDao
+                    .getMovementBySyncId("$prefix-money-opening")
+                    ?.toAccountId shouldBe target.database.moneyDao
+                    .getAccountBySyncId("$prefix-money-account")
+                    ?.id
 
                 val newerVendor = (rows.single { it.table == MirrorSyncTable.VENDOR }.row as VendorMirrorRow)
                     .copy(displayName = "Device A newer vendor", updatedAt = newerAt)
@@ -204,6 +213,8 @@ private val LINKED_TABLES = listOf(
     MirrorSyncTable.PRODUCT,
     MirrorSyncTable.BATCH,
     MirrorSyncTable.BATCH_COST_PRICE,
+    MirrorSyncTable.MONEY_ACCOUNT,
+    MirrorSyncTable.MONEY_MOVEMENT,
 )
 
 private fun linkedRows(
@@ -264,6 +275,32 @@ private fun linkedRows(
             syncId = "$prefix-batch",
             batchSyncId = "$prefix-batch",
             costPricePerUnit = 42_500L,
+            updatedAt = updatedAt,
+        ),
+    ),
+    MirrorPushEntityChange(
+        MirrorSyncTable.MONEY_ACCOUNT,
+        MoneyAccountMirrorRow(
+            syncId = "$prefix-money-account",
+            name = "Device A cash",
+            accountType = MoneyAccountType.CASH,
+            openedAt = updatedAt,
+            isArchived = false,
+            updatedAt = updatedAt,
+        ),
+    ),
+    MirrorPushEntityChange(
+        MirrorSyncTable.MONEY_MOVEMENT,
+        MoneyMovementMirrorRow(
+            syncId = "$prefix-money-opening",
+            kind = MoneyMovementKind.OPENING_BALANCE,
+            category = null,
+            amount = 100_000L,
+            occurredAt = updatedAt,
+            fromAccountSyncId = null,
+            toAccountSyncId = "$prefix-money-account",
+            counterparty = "",
+            comment = "",
             updatedAt = updatedAt,
         ),
     ),
