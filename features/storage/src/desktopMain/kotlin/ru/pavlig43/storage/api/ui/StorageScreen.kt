@@ -84,6 +84,36 @@ fun StorageScreen(
         component.dTPeriodComponent
     )
 
+    val storageLocation by component.storageLocation.collectAsState()
+    StorageLocationSelector(
+        selected = storageLocation,
+        onSelect = component::onSelectStorageLocation,
+    )
+
+    val batchActions by component.batchActions.collectAsState()
+    batchActions?.let { state ->
+        StorageBatchActionsDialog(
+            state = state,
+            onDismiss = component::onDismissBatchActions,
+            onHistory = component::onOpenBatchHistory,
+            onTransfer = component::onOpenTransfer,
+            onWriteOff = component::onOpenWriteOff,
+        )
+    }
+
+    val operationDialog by component.operationDialog.collectAsState()
+    operationDialog?.let { state ->
+        StorageOperationDialog(
+            state = state,
+            onDismiss = component::onDismissOperation,
+            onCountChange = component::onUpdateOperationCount,
+            onDateTimeChange = component::onUpdateOperationDateTime,
+            onReasonChange = component::onUpdateOperationReason,
+            onCommentChange = component::onUpdateOperationComment,
+            onSubmit = component::onSubmitOperation,
+        )
+    }
+
     val loadState by component.loadState.collectAsState()
     when (val state = loadState) {
         is LoadState.Error -> ErrorScreen(state.message)

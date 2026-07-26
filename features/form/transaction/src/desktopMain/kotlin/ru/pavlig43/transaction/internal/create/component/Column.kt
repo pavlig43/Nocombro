@@ -19,7 +19,9 @@ import ua.wwind.table.editableTableColumns
  * при создании, пока их бизнес-редактор не реализован.
  */
 internal val creatableTransactionTypes = TransactionType.entries.filterNot {
-    it == TransactionType.WRITE_OFF || it == TransactionType.INVENTORY
+    it == TransactionType.WRITE_OFF ||
+        it == TransactionType.INVENTORY ||
+        it == TransactionType.STORAGE_TRANSFER
 }
 
 internal fun createTransactionColumns0(

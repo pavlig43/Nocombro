@@ -5,6 +5,7 @@ import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.database.data.document.DocumentType
 import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.database.data.transact.TransactionType
+import ru.pavlig43.database.data.transact.StockOperationReason
 import java.sql.PreparedStatement
 import java.sql.ResultSet
 
@@ -233,6 +234,7 @@ internal object TransactionYdbMirrorCodec : YdbMirrorRowCodec {
         "created_at",
         "comment",
         "is_completed",
+        "stock_operation_reason",
         "updated_at",
         "deleted_at",
     )
@@ -245,8 +247,9 @@ internal object TransactionYdbMirrorCodec : YdbMirrorRowCodec {
         statement.setString(3, row.createdAt.toString())
         statement.setString(4, row.comment)
         statement.setBoolean(5, row.isCompleted)
-        statement.setString(6, row.updatedAt.toString())
-        statement.setString(7, row.deletedAt?.toString())
+        statement.setString(6, row.stockOperationReason?.name)
+        statement.setString(7, row.updatedAt.toString())
+        statement.setString(8, row.deletedAt?.toString())
     }
 
     override fun read(resultSet: ResultSet): MirrorSyncRow {
@@ -257,6 +260,7 @@ internal object TransactionYdbMirrorCodec : YdbMirrorRowCodec {
             comment = resultSet.getString("comment"),
             isCompleted = resultSet.getBoolean("is_completed"),
             updatedAt = LocalDateTime.parse(resultSet.getString("updated_at")),
+            stockOperationReason = resultSet.getString("stock_operation_reason")?.let { enumValueOf<StockOperationReason>(it) },
             deletedAt = resultSet.getString("deleted_at")?.let(LocalDateTime::parse),
         )
     }

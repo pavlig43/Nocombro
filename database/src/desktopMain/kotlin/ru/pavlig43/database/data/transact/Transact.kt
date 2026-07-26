@@ -28,6 +28,9 @@ data class Transact(
     @ColumnInfo("is_completed")
     val isCompleted:Boolean,
 
+    @ColumnInfo("stock_operation_reason")
+    val stockOperationReason: StockOperationReason? = null,
+
     @PrimaryKey(autoGenerate = true)
     override val id: Int = 0,
 

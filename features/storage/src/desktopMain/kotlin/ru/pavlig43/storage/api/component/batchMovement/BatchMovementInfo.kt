@@ -10,6 +10,8 @@ data class BatchMovementTableUi(
     val outgoing: DecimalData3,
     val balanceOnEnd: DecimalData3,
     val transactionId: Int,
+    val storageLocation: String,
+    val reason: String,
 )
 
 internal data class BatchMovementInfo(

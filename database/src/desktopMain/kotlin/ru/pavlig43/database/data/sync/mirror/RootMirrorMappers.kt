@@ -52,6 +52,7 @@ internal fun Transact.toMirrorRow() = TransactionMirrorRow(
     createdAt = createdAt,
     comment = comment,
     isCompleted = isCompleted,
+    stockOperationReason = stockOperationReason,
     updatedAt = updatedAt,
     deletedAt = deletedAt,
 )

@@ -59,6 +59,14 @@ DDL находится в `database/ydb/mirror_sync_v1.sql`. Приложени�
 mirror tables во время работы. Таблицы нужно создать или мигрировать заранее
 через SQL.
 
+Для складов `MAIN`/`EXPERIMENTAL` перед выпуском клиента нужно применить
+`database/ydb/migrate_storage_locations_v2.sql`. Пустое значение в поле
+`storage_location` читается как `MAIN`. Старые клиенты нужно обновить до начала
+создания транзакций `STORAGE_TRANSFER`.
+
+Подробные правила складских операций и расчётов описаны в
+[`docs/STORAGE_LOCATIONS.md`](docs/STORAGE_LOCATIONS.md).
+
 Старые remote-таблицы приложение не удаляет. После выпуска новой версии,
 успешного push/pull и проверки восстановления их можно удалить вручную SQL из
 `database/ydb/drop_legacy_sync_tables.sql`.

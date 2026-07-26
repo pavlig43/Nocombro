@@ -10,6 +10,7 @@ internal data class ProfitabilitySummary(
     val totalRevenue: DecimalData2,
     val batchExpenses: DecimalData2,
     val mainExpenses: DecimalData2,
+    val materialWriteOffExpenses: DecimalData2,
     val profit: DecimalData2,
     val mainExpensesByType: List<ExpenseByType>
 )

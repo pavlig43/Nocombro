@@ -128,6 +128,7 @@ CREATE TABLE IF NOT EXISTS `batch_movement` (
     movement_type Utf8,
     count Int64,
     transaction_sync_id Utf8,
+    storage_location Utf8,
     updated_at Utf8,
     deleted_at Utf8,
     PRIMARY KEY (sync_id)
@@ -139,6 +140,7 @@ CREATE TABLE IF NOT EXISTS `transact` (
     created_at Utf8,
     comment Utf8,
     is_completed Bool,
+    stock_operation_reason Utf8,
     updated_at Utf8,
     deleted_at Utf8,
     PRIMARY KEY (sync_id)

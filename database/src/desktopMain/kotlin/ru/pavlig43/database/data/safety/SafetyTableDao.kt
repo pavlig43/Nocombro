@@ -23,7 +23,7 @@ import ru.pavlig43.database.data.product.SafetyStock
 abstract class SafetyTableDao {
 
     @Transaction
-    @Query("SELECT * FROM batch_movement")
+    @Query("SELECT * FROM batch_movement WHERE storage_location = 'MAIN' AND deleted_at IS NULL")
     internal abstract fun observeOnAllMovements(): Flow<List<MovementOut>>
 
     internal fun observeOnCountProductOnStorage(): Flow<List<StorageProductNow>> {

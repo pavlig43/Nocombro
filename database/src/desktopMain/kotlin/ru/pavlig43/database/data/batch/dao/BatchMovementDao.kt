@@ -15,6 +15,7 @@ import ru.pavlig43.database.data.batch.BatchBD
 import ru.pavlig43.database.data.batch.BatchMovement
 import ru.pavlig43.database.data.batch.BatchOut
 import ru.pavlig43.database.data.batch.BatchWithBalanceOut
+import ru.pavlig43.database.data.batch.StorageLocation
 import ru.pavlig43.database.data.batch.MovementType
 import ru.pavlig43.database.data.transact.Transact
 
@@ -55,12 +56,33 @@ abstract class BatchMovementDao {
     @Query("SELECT * FROM $BATCH_MOVEMENT_TABLE_NAME")
     abstract suspend fun getAll(): List<BatchMovement>
 
+    @Query(
+        """
+        SELECT COALESCE(SUM(CASE movement_type
+            WHEN 'INCOMING' THEN count
+            ELSE -count
+        END), 0)
+        FROM batch_movement
+        WHERE batch_id = :batchId
+          AND storage_location = :storageLocation
+          AND deleted_at IS NULL
+        """
+    )
+    abstract suspend fun getBalance(batchId: Int, storageLocation: StorageLocation): Long
+
     @Transaction
-    @Query("SELECT * FROM batch_movement WHERE batch_id IN (SELECT id FROM batch WHERE product_id = :productId)")
+    @Query(
+        """
+        SELECT * FROM batch_movement
+        WHERE batch_id IN (SELECT id FROM batch WHERE product_id = :productId)
+          AND storage_location = 'MAIN'
+          AND deleted_at IS NULL
+        """
+    )
     internal abstract fun observeMovementsByProductId(productId: Int): Flow<List<MovementOut>>
 
     @Transaction
-    @Query("SELECT * FROM batch_movement")
+    @Query("SELECT * FROM batch_movement WHERE storage_location = 'MAIN' AND deleted_at IS NULL")
     abstract fun observeAllMovementsWithBatch(): Flow<List<MovementOut>>
 
 

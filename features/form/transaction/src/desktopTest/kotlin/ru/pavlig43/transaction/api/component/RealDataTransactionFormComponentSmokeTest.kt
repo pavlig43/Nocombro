@@ -117,6 +117,7 @@ class RealDataTransactionFormComponentSmokeTest : DesktopMainDispatcherFunSpec({
                 )
 
                 TransactionType.WRITE_OFF,
+                TransactionType.STORAGE_TRANSFER,
                 TransactionType.INVENTORY -> error("Unsupported transaction type for real-data smoke: ${transaction.transactionType}")
             }
             val builtTabs = waitForTabTypes(updateChild.component, expectedTypes)
@@ -150,6 +151,7 @@ class RealDataTransactionFormComponentSmokeTest : DesktopMainDispatcherFunSpec({
                 }
 
                 TransactionType.WRITE_OFF,
+                TransactionType.STORAGE_TRANSFER,
                 TransactionType.INVENTORY -> error("Unsupported transaction type for real-data smoke: ${transaction.transactionType}")
             }
 

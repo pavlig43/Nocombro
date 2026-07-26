@@ -37,8 +37,10 @@ internal class ProfitabilityRepository(
         end: LocalDateTime
     ): Flow<Result<AllProfitability>> {
         return combine(
-            expenseDao.observeMainExpense(start, end), dao.observeOnSale(start, end)
-        ) { expenses, sales ->
+            expenseDao.observeMainExpense(start, end),
+            dao.observeOnSale(start, end),
+            dao.observeMaterialWriteOffCost(start, end),
+        ) { expenses, sales, materialWriteOffCost ->
             runCatching {
                 // Группируем продажи по транзакциям для распределения расходов транзакции
                 val quantityFromTransaction =
@@ -134,7 +136,7 @@ internal class ProfitabilityRepository(
 
                 val totalRevenue = products.sumOf { it.revenue.value }
                 val batchExpenses = products.sumOf { it.totalExpenses.value }
-                val totalMainExpenses = expenses.sumOf { it.amount }
+                val totalMainExpenses = expenses.sumOf { it.amount } + materialWriteOffCost
                 val profit = totalRevenue - batchExpenses - totalMainExpenses
                 val mainExpensesByType = expenses
                     .groupBy { it.expenseType }
@@ -145,6 +147,7 @@ internal class ProfitabilityRepository(
                 val summary = ProfitabilitySummary(
                     totalRevenue = DecimalData2(totalRevenue),
                     batchExpenses = DecimalData2(batchExpenses),
+                    materialWriteOffExpenses = DecimalData2(materialWriteOffCost),
                     mainExpenses = DecimalData2(totalMainExpenses),
                     profit = DecimalData2(profit),
                     mainExpensesByType = mainExpensesByType

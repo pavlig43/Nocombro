@@ -7,5 +7,6 @@ enum class TransactionType(override val displayName: String): ItemType {
     SALE("Продажа"),
     OPZS("ОПЗС"),
     WRITE_OFF("Списание"),
+    STORAGE_TRANSFER("Перенос между складами"),
     INVENTORY("Инвентаризация")
 }

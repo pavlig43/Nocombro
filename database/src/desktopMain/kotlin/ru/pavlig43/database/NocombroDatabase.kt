@@ -102,7 +102,7 @@ import ru.pavlig43.database.data.vendor.dao.VendorDao
         MirrorDeletionJournalEntity::class,
 
     ],
-    version = 9,
+    version = 10,
 
 )
 @TypeConverters(Converters::class)

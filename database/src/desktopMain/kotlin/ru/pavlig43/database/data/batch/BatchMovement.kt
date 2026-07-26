@@ -44,6 +44,9 @@ data class BatchMovement(
     @ColumnInfo("transaction_id", index = true)
     val transactionId: Int,
 
+    @ColumnInfo("storage_location", defaultValue = "MAIN")
+    val storageLocation: StorageLocation = StorageLocation.MAIN,
+
     @PrimaryKey(autoGenerate = true)
     override val id: Int = 0,
 

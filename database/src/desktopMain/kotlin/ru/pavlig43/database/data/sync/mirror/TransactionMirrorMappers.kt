@@ -19,6 +19,7 @@ internal suspend fun BatchMovement.toMirrorRow(
         movementType = movementType,
         count = count,
         transactionSyncId = transaction.syncId,
+        storageLocation = storageLocation,
         updatedAt = updatedAt,
         deletedAt = deletedAt,
     )

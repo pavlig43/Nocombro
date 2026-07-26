@@ -92,6 +92,25 @@ internal fun ProfitabilitySummaryCard(
                     value = summary.mainExpenses
                 )
 
+                if (summary.materialWriteOffExpenses.value != 0L) {
+                    Row(
+                        modifier = Modifier.padding(start = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        Text(
+                            text = "Списания материалов",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        Text(
+                            text = summary.materialWriteOffExpenses.toStartDoubleFormat(),
+                            style = MaterialTheme.typography.bodySmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+
                 summary.mainExpensesByType.forEach { expenseByType ->
                     Row(
                         modifier = Modifier.padding(start = 16.dp),

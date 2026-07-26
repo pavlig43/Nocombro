@@ -4,6 +4,7 @@ import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
 import com.arkivanov.essenty.instancekeeper.getOrCreate
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -18,9 +19,15 @@ import ru.pavlig43.core.MainTabComponent
 import ru.pavlig43.core.componentCoroutineScope
 import ru.pavlig43.core.tabs.TabOpener
 import ru.pavlig43.corekoin.ComponentKoinContext
+import ru.pavlig43.database.data.batch.StorageLocation
+import ru.pavlig43.database.data.storage.StorageOperationPreview
 import ru.pavlig43.database.data.storage.StorageProduct
+import ru.pavlig43.database.data.storage.StorageTransferRequest
+import ru.pavlig43.database.data.storage.StorageWriteOffRequest
 import ru.pavlig43.datetime.period.dateTime.DTPeriod
+import ru.pavlig43.database.data.transact.StockOperationReason
 import ru.pavlig43.datetime.period.dateTime.DateTimePeriodComponent
+import ru.pavlig43.datetime.getCurrentLocalDateTime
 import ru.pavlig43.datetime.single.datetime.DateTimeComponent
 import ru.pavlig43.storage.api.StorageDependencies
 import ru.pavlig43.storage.internal.di.StorageRepository
@@ -57,13 +64,25 @@ class StorageComponent(
 
     private val _products = MutableStateFlow<List<StorageProductUi>>(emptyList())
 
+    private val _storageLocation = MutableStateFlow(StorageLocation.MAIN)
+    internal val storageLocation = _storageLocation.asStateFlow()
+
+    private val _batchActions = MutableStateFlow<StorageBatchActionsState?>(null)
+    internal val batchActions = _batchActions.asStateFlow()
+
+    private val _operationDialog = MutableStateFlow<StorageOperationDialogState?>(null)
+    internal val operationDialog = _operationDialog.asStateFlow()
     @OptIn(ExperimentalCoroutinesApi::class)
-    internal val loadState: StateFlow<LoadState> = dTPeriodComponent.dateTimePeriodForData
-        .transformLatest { dateTimePeriod ->
+    internal val loadState: StateFlow<LoadState> = combine(
+        dTPeriodComponent.dateTimePeriodForData,
+        _storageLocation,
+    ) { period, location -> period to location }
+        .transformLatest { (dateTimePeriod, location) ->
             emit(LoadState.Loading)
             storageRepository.observeOnStorageProducts(
                 start = dateTimePeriod.start,
-                end = dateTimePeriod.end
+                end = dateTimePeriod.end,
+                storageLocation = location,
             )
                 .map { result ->
                     result.fold(
@@ -129,21 +148,185 @@ class StorageComponent(
         tabOpener.openProductTab(productId)
     }
 
-    internal fun onRowClick(item: StorageProductUi) {
-        when {
-            item.isProduct -> {
-                // Товар открывается по отдельной кнопке в строке.
-            }
-            else -> {
-                // При клике на партию открываем таблицу движений партии
-                tabOpener.openBatchMovementTab(
-                    batchId = item.itemId,
-                    productName = item.productName,
-                    start = dTPeriodComponent.dateTimePeriodForData.value.start,
-                    end = dTPeriodComponent.dateTimePeriodForData.value.end
+    internal fun onSelectStorageLocation(location: StorageLocation) {
+        _storageLocation.value = location
+        _batchActions.value = null
+    }
+
+    internal fun onDismissBatchActions() {
+        _batchActions.value = null
+    }
+
+    internal fun onOpenBatchHistory() {
+        val item = _batchActions.value?.item ?: return
+        _batchActions.value = null
+        tabOpener.openBatchMovementTab(
+            batchId = item.itemId,
+            productName = item.productName,
+            start = dTPeriodComponent.dateTimePeriodForData.value.start,
+            end = dTPeriodComponent.dateTimePeriodForData.value.end,
+        )
+    }
+
+    internal fun onOpenTransfer() {
+        val actions = _batchActions.value ?: return
+        val target = when (actions.storageLocation) {
+            StorageLocation.MAIN -> StorageLocation.EXPERIMENTAL
+            StorageLocation.EXPERIMENTAL -> StorageLocation.MAIN
+        }
+        openOperation(
+            kind = StorageOperationKind.TRANSFER,
+            item = actions.item,
+            source = actions.storageLocation,
+            target = target,
+            reason = if (target == StorageLocation.MAIN) {
+                StockOperationReason.RETURN
+            } else {
+                StockOperationReason.EXPERIMENT
+            },
+        )
+    }
+
+    internal fun onOpenWriteOff() {
+        val actions = _batchActions.value ?: return
+        openOperation(
+            kind = StorageOperationKind.WRITE_OFF,
+            item = actions.item,
+            source = actions.storageLocation,
+            target = null,
+            reason = StockOperationReason.EXPERIMENT,
+        )
+    }
+
+    private fun openOperation(
+        kind: StorageOperationKind,
+        item: StorageProductUi,
+        source: StorageLocation,
+        target: StorageLocation?,
+        reason: StockOperationReason,
+    ) {
+        _operationDialog.value = StorageOperationDialogState(
+            kind = kind,
+            batchId = item.itemId,
+            productName = item.productName,
+            batchName = item.itemName,
+            source = source,
+            target = target,
+            availableCount = item.balanceOnEnd,
+            occurredAt = getCurrentLocalDateTime(),
+            reason = reason,
+        )
+        coroutineScope.launch {
+            storageRepository.previewOperation(item.itemId, source, 0L).fold(
+                onSuccess = { preview -> applyPreview(item.itemId, preview) },
+                onFailure = { error ->
+                    _operationDialog.update { state ->
+                        state?.takeIf { it.batchId == item.itemId }?.copy(
+                            isPreviewLoading = false,
+                            error = error.message ?: "Не удалось рассчитать остаток партии",
+                        )
+                    }
+                },
+            )
+        }
+    }
+
+    private fun applyPreview(batchId: Int, preview: StorageOperationPreview) {
+        _operationDialog.update { state ->
+            state?.takeIf { it.batchId == batchId }?.copy(
+                availableCount = preview.availableCount,
+                costPricePerUnit = preview.costPricePerUnit,
+                expiryDate = preview.expiryDate,
+                isPreviewLoading = false,
+                error = null,
+            )
+        }
+    }
+
+    internal fun onUpdateOperationCount(value: String) {
+        _operationDialog.update { current ->
+            current?.copy(countText = value, error = null)?.let { updated ->
+                updated.copy(
+                    selectedCost = updated.costPricePerUnit
+                        ?.let { cost -> updated.count?.let { count -> cost * count / 1000 } }
+                        ?: 0,
+                    requiresMissingCostConfirmation = false,
                 )
             }
         }
+    }
+
+    internal fun onUpdateOperationDateTime(value: kotlinx.datetime.LocalDateTime) {
+        _operationDialog.update { it?.copy(occurredAt = value, error = null) }
+    }
+
+    internal fun onUpdateOperationReason(value: StockOperationReason) {
+        _operationDialog.update { it?.copy(reason = value, error = null) }
+    }
+
+    internal fun onUpdateOperationComment(value: String) {
+        _operationDialog.update { it?.copy(comment = value, error = null) }
+    }
+
+    internal fun onDismissOperation() {
+        if (_operationDialog.value?.isSaving != true) _operationDialog.value = null
+    }
+
+    internal fun onSubmitOperation(confirmMissingCost: Boolean = false) {
+        val state = _operationDialog.value ?: return
+        val count = state.count
+        if (count == null || count <= 0) {
+            _operationDialog.value = state.copy(error = "Укажите количество больше нуля")
+            return
+        }
+        if (count > state.availableCount) {
+            _operationDialog.value = state.copy(error = "Количество больше остатка на складе")
+            return
+        }
+        if (state.kind == StorageOperationKind.WRITE_OFF && state.costPricePerUnit == null && !confirmMissingCost) {
+            _operationDialog.value = state.copy(
+                requiresMissingCostConfirmation = true,
+                error = "Себестоимость не рассчитана. В расходы попадёт 0 ₽.",
+            )
+            return
+        }
+        saveOperation(state, count)
+    }
+
+    private fun saveOperation(state: StorageOperationDialogState, count: Long) {
+        _operationDialog.value = state.copy(isSaving = true, error = null)
+        coroutineScope.launch {
+            val result = when (state.kind) {
+                StorageOperationKind.TRANSFER -> storageRepository.transfer(
+                    StorageTransferRequest(state.batchId, state.source, requireNotNull(state.target), count, state.occurredAt, state.reason, state.comment)
+                )
+                StorageOperationKind.WRITE_OFF -> storageRepository.writeOff(
+                    StorageWriteOffRequest(
+                        batchId = state.batchId,
+                        source = state.source,
+                        count = count,
+                        occurredAt = state.occurredAt,
+                        reason = state.reason,
+                        comment = state.comment,
+                        allowMissingCost = state.requiresMissingCostConfirmation,
+                    )
+                )
+            }
+            result.fold(
+                onSuccess = { _operationDialog.value = null; _batchActions.value = null },
+                onFailure = { error ->
+                    _operationDialog.update { it?.copy(isSaving = false, error = error.message ?: "Не удалось сохранить операцию") }
+                },
+            )
+        }
+    }
+
+    internal fun onRowClick(item: StorageProductUi) {
+        if (!item.isProduct) {
+            _batchActions.value = StorageBatchActionsState(item, _storageLocation.value)
+            return
+        }
+        // Товар открывается по отдельной кнопке в строке.
     }
 
 }

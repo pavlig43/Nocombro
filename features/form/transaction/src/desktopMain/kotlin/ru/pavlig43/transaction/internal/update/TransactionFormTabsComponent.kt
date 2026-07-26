@@ -217,6 +217,7 @@ internal class TransactionFormTabsComponent(
                     }
 
                     TransactionType.WRITE_OFF,
+                    TransactionType.STORAGE_TRANSFER,
                     TransactionType.INVENTORY -> {
                         _unsupportedTransactionType.value = transaction.transactionType
                         tabNavigationComponent.onSelectTab(0)

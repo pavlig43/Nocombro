@@ -4,6 +4,7 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.serialization.Serializable
 import ru.pavlig43.database.data.batch.MovementType
+import ru.pavlig43.database.data.batch.StorageLocation
 import ru.pavlig43.database.data.document.DocumentType
 import ru.pavlig43.database.data.expense.ExpenseType
 import ru.pavlig43.database.data.files.OwnerType
@@ -13,6 +14,7 @@ import ru.pavlig43.database.data.money.MoneyMovementKind
 import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.database.data.transact.TransactionType
 
+import ru.pavlig43.database.data.transact.StockOperationReason
 /**
  * Общий сериализуемый контракт строки typed mirror.
  *
@@ -166,6 +168,7 @@ data class BatchMovementMirrorRow(
     val movementType: MovementType,
     val count: Long,
     val transactionSyncId: String,
+    val storageLocation: StorageLocation = StorageLocation.MAIN,
     override val updatedAt: LocalDateTime,
     override val deletedAt: LocalDateTime? = null,
 ) : MirrorSyncRow
@@ -255,6 +258,7 @@ data class TransactionMirrorRow(
     val createdAt: LocalDateTime,
     val comment: String,
     val isCompleted: Boolean,
+    val stockOperationReason: StockOperationReason? = null,
     override val updatedAt: LocalDateTime,
     override val deletedAt: LocalDateTime? = null,
 ) : MirrorSyncRow

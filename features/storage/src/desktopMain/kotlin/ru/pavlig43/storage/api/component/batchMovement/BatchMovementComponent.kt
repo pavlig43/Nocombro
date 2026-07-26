@@ -102,7 +102,9 @@ private fun BatchMovementWithBalanceInfoBD.toLoadState(): BatchMovementLoadState
                     incoming = DecimalData3(movement.incoming),
                     outgoing = DecimalData3(movement.outgoing),
                     balanceOnEnd = DecimalData3(movement.balanceOnEnd),
-                    transactionId = movement.transactionId
+                    transactionId = movement.transactionId,
+                    storageLocation = movement.storageLocation.displayName,
+                    reason = movement.reason?.displayName.orEmpty(),
                 )
             }
         )

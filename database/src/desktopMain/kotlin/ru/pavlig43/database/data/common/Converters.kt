@@ -4,6 +4,7 @@ import androidx.room.TypeConverter
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.database.data.batch.MovementType
+import ru.pavlig43.database.data.batch.StorageLocation
 import ru.pavlig43.database.data.document.DocumentType
 import ru.pavlig43.database.data.expense.ExpenseType
 import ru.pavlig43.database.data.files.OwnerType
@@ -13,6 +14,7 @@ import ru.pavlig43.database.data.money.MoneyMovementKind
 import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.database.data.product.ProductUnit
 import ru.pavlig43.database.data.transact.TransactionType
+import ru.pavlig43.database.data.transact.StockOperationReason
 import kotlin.time.ExperimentalTime
 
 @Suppress("TooManyFunctions")
@@ -51,11 +53,24 @@ class Converters {
     fun fromOperationType(value: MovementType) = value.name
 
     @TypeConverter
+    fun toStorageLocation(value: String): StorageLocation = enumValueOf<StorageLocation>(value)
+
+    @TypeConverter
+    fun fromStorageLocation(value: StorageLocation): String = value.name
+
+    @TypeConverter
     fun toTransactionType(value: String): TransactionType = enumValueOf<TransactionType>(value)
 
     @TypeConverter
     fun fromTransactionType(value: TransactionType): String = value.name
 
+
+    @TypeConverter
+    fun toStockOperationReason(value: String?): StockOperationReason? =
+        value?.let { enumValueOf<StockOperationReason>(it) }
+
+    @TypeConverter
+    fun fromStockOperationReason(value: StockOperationReason?): String? = value?.name
     @TypeConverter
     fun toExpenseTypeEnum(value: String): ExpenseType = enumValueOf<ExpenseType>(value)
 

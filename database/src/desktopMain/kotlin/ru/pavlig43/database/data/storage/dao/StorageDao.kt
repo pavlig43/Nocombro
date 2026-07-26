@@ -12,6 +12,7 @@ import kotlinx.datetime.format
 import ru.pavlig43.core.mapParallel
 import ru.pavlig43.core.model.toVendorNamesText
 import ru.pavlig43.database.data.batch.MovementType
+import ru.pavlig43.database.data.batch.StorageLocation
 import ru.pavlig43.database.data.batch.dao.MovementOut
 import ru.pavlig43.database.data.storage.BatchMovementWithBalanceBD
 import ru.pavlig43.database.data.storage.BatchMovementWithBalanceInfoBD
@@ -31,9 +32,14 @@ abstract class StorageDao {
         SELECT bm.* FROM batch_movement bm
         INNER JOIN transact t ON bm.transaction_id = t.id
         WHERE t.created_at <= :end
+          AND bm.storage_location = :storageLocation
+          AND bm.deleted_at IS NULL
     """
     )
-    internal abstract fun observeMovementsUntil(end: LocalDateTime): Flow<List<MovementOut>>
+    internal abstract fun observeMovementsUntil(
+        end: LocalDateTime,
+        storageLocation: StorageLocation,
+    ): Flow<List<MovementOut>>
 
     /**
      * Наблюдает за остатками на складе с разбивкой по продуктам и партиям.
@@ -58,9 +64,10 @@ abstract class StorageDao {
     @Suppress("LongMethod")
     fun observeOnStorageProduct(
         start: LocalDateTime,
-        end: LocalDateTime
+        end: LocalDateTime,
+        storageLocation: StorageLocation = StorageLocation.MAIN,
     ): Flow<List<StorageProduct>> {
-        return observeMovementsUntil(end).map { fillList ->
+        return observeMovementsUntil(end, storageLocation).map { fillList ->
             fillList
                 .groupBy { it.batchOut.product }
                 .values
@@ -217,7 +224,9 @@ abstract class StorageDao {
                         incoming = incoming,
                         outgoing = outgoing,
                         balanceOnEnd = currentBalance + incoming - outgoing,
-                        transactionId = movementOut.movement.transactionId
+                        transactionId = movementOut.movement.transactionId,
+                        storageLocation = movementOut.movement.storageLocation,
+                        reason = movementOut.transaction.stockOperationReason,
                     )
                 )
                 currentBalance += incoming - outgoing
@@ -232,7 +241,9 @@ abstract class StorageDao {
                         incoming = 0L,
                         outgoing = 0L,
                         balanceOnEnd = balanceBeforeStart,
-                        transactionId = allMovements.first().movement.transactionId
+                        transactionId = allMovements.first().movement.transactionId,
+                        storageLocation = allMovements.first().movement.storageLocation,
+                        reason = allMovements.first().transaction.stockOperationReason,
                     )
                 )
             } else {

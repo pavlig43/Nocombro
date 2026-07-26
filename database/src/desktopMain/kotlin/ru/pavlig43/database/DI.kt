@@ -28,6 +28,7 @@ fun getNocombroDatabase(): NocombroDatabase {
         .addMigrations(MIGRATION_6_7)
         .addMigrations(MIGRATION_7_8)
         .addMigrations(MIGRATION_8_9)
+        .addMigrations(MIGRATION_9_10)
         .setDriver(BundledSQLiteDriver())
         .setQueryCoroutineContext(Dispatchers.IO)
         .build()

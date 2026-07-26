@@ -4,10 +4,12 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
+import androidx.room.Transaction
 import kotlinx.coroutines.flow.Flow
 import ru.pavlig43.database.data.batch.BATCH_TABLE_NAME
 import ru.pavlig43.database.data.batch.BatchBD
 import ru.pavlig43.database.data.batch.BatchMovement
+import ru.pavlig43.database.data.batch.BatchOut
 
 @Dao
 interface BatchDao {
@@ -20,6 +22,10 @@ interface BatchDao {
 
     @Query("SELECT * FROM $BATCH_TABLE_NAME WHERE id = :id")
     suspend fun getBatch(id: Int): BatchBD
+
+    @Transaction
+    @Query("SELECT * FROM $BATCH_TABLE_NAME WHERE id = :id")
+    suspend fun getBatchOut(id: Int): BatchOut
 
     @Query("SELECT * FROM $BATCH_TABLE_NAME WHERE sync_id = :syncId")
     suspend fun getBatchBySyncId(syncId: String): BatchBD?

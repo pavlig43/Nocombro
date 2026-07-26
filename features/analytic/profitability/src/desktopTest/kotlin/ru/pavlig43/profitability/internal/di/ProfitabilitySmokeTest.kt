@@ -5,6 +5,10 @@ import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.flow.first
 import kotlinx.datetime.LocalDateTime
+import ru.pavlig43.database.data.batch.StorageLocation
+import ru.pavlig43.database.data.storage.StorageOperationsRepository
+import ru.pavlig43.database.data.storage.StorageWriteOffRequest
+import ru.pavlig43.database.data.transact.StockOperationReason
 import ru.pavlig43.testkit.DesktopMainDispatcherFunSpec
 import ru.pavlig43.testkit.database.withSeededTestDatabase
 import ru.pavlig43.testkit.scenario
@@ -46,6 +50,37 @@ class ProfitabilitySmokeTest : DesktopMainDispatcherFunSpec({
                 profitability shouldBe (84.17714646464647 plusOrMinus 0.000001)
                 details.shouldHaveSize(4)
             }
+        }
+    }
+
+    test("material write off reduces profit once without changing sales cost") {
+        withSeededTestDatabase { db ->
+            val operations = StorageOperationsRepository(db)
+            val preview = operations.preview(
+                batchId = 1,
+                source = StorageLocation.MAIN,
+                count = 1_000,
+            )
+            operations.writeOff(
+                StorageWriteOffRequest(
+                    batchId = 1,
+                    source = StorageLocation.MAIN,
+                    count = 1_000,
+                    occurredAt = LocalDateTime(2026, 3, 20, 12, 0),
+                    reason = StockOperationReason.EXPERIMENT,
+                    comment = "profitability test",
+                )
+            ).getOrThrow()
+
+            val result = ProfitabilityRepository(db)
+                .observeOnProducts(marchStart, marchEnd)
+                .first()
+                .getOrThrow()
+
+            result.summary.materialWriteOffExpenses.value shouldBe preview.selectedCost
+            result.summary.mainExpenses.value shouldBe preview.selectedCost
+            result.summary.batchExpenses.value shouldBe 1_253_170L
+            result.summary.profit.value shouldBe 6_666_830L - preview.selectedCost
         }
     }
 })

@@ -3,6 +3,7 @@ package ru.pavlig43.database.data.sync.mirror
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.database.data.batch.MovementType
+import ru.pavlig43.database.data.batch.StorageLocation
 import ru.pavlig43.database.data.expense.ExpenseType
 import ru.pavlig43.database.data.files.OwnerType
 import java.sql.PreparedStatement
@@ -255,7 +256,7 @@ internal object BatchMovementYdbMirrorCodec : YdbMirrorRowCodec {
     override val table = MirrorSyncTable.BATCH_MOVEMENT
     override val columnNames = listOf(
         "sync_id", "batch_sync_id", "movement_type", "count",
-        "transaction_sync_id", "updated_at", "deleted_at",
+        "transaction_sync_id", "storage_location", "updated_at", "deleted_at",
     )
 
     @Suppress("MagicNumber")
@@ -266,8 +267,9 @@ internal object BatchMovementYdbMirrorCodec : YdbMirrorRowCodec {
         statement.setString(3, row.movementType.name)
         statement.setLong(4, row.count)
         statement.setString(5, row.transactionSyncId)
-        statement.setString(6, row.updatedAt.toString())
-        statement.setString(7, row.deletedAt?.toString())
+        statement.setString(6, row.storageLocation.name)
+        statement.setString(7, row.updatedAt.toString())
+        statement.setString(8, row.deletedAt?.toString())
     }
 
     override fun read(resultSet: ResultSet) = BatchMovementMirrorRow(
@@ -276,6 +278,7 @@ internal object BatchMovementYdbMirrorCodec : YdbMirrorRowCodec {
         movementType = enumValueOf<MovementType>(resultSet.getString("movement_type")),
         count = resultSet.getLong("count"),
         transactionSyncId = resultSet.getString("transaction_sync_id"),
+        storageLocation = resultSet.getString("storage_location")?.let { enumValueOf<StorageLocation>(it) } ?: StorageLocation.MAIN,
         updatedAt = resultSet.dateTime("updated_at"),
         deletedAt = resultSet.nullableDateTime("deleted_at"),
     )
