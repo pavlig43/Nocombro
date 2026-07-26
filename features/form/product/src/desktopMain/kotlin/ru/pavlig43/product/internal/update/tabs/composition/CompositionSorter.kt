@@ -14,7 +14,8 @@ internal object CompositionSorter : SortMatcher<CompositionUi, CompositionField>
         }
         val sortedList =
             when (sort.column) {
-                CompositionField.PRODUCT_NAME -> items.sortedBy { it.productName }
+                CompositionField.PRODUCT_NAME -> items.sortedBy { it.productName.lowercase() }
+                CompositionField.VENDOR_NAME -> items.sortedBy { it.vendorNames.lowercase() }
                 CompositionField.COUNT -> items.sortedBy { it.count }
                 else -> items
             }

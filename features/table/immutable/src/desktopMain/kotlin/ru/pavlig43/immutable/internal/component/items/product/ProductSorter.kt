@@ -16,6 +16,7 @@ internal object ProductSorter: SortMatcher<ProductTableUi, ProductField> {
         val sortedList =
             when (sort.column) {
                 ProductField.NAME -> items.sortedBy { it.displayName.lowercase() }
+                ProductField.VENDOR_NAME -> items.sortedBy { it.vendorNames.lowercase() }
                 ProductField.SECOND_NAME -> items.sortedBy { it.secondName.lowercase() }
                 ProductField.TYPE -> items.sortedBy { it.type.displayName.lowercase() }
                 ProductField.CREATED_AT -> items.sortedBy { it.createdAt }

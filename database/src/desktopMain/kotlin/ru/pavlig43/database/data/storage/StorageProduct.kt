@@ -3,6 +3,7 @@ package ru.pavlig43.database.data.storage
 data class StorageProduct(
     val productId: Int,
     val productName: String,
+    val vendorNames: String,
     val balanceBeforeStart: Long,
     val incoming: Long,
     val outgoing: Long,
@@ -13,6 +14,7 @@ data class StorageProduct(
 data class StorageBatch(
     val batchId: Int,
     val batchName: String,
+    val vendorName: String,
     val balanceBeforeStart: Long,
     val incoming: Long,
     val outgoing: Long,

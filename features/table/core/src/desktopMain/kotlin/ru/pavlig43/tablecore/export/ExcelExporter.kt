@@ -34,14 +34,15 @@ data class ExcelColumn(
 suspend fun exportExcelFile(
     suggestedFileName: String,
     columns: List<ExcelColumn>,
+    highlightedRowIndexes: Set<Int> = emptySet(),
 ): Result<Unit> =
     runCatching {
         val saveFile = FileKit.openFileSaver(
             suggestedName = suggestedFileName,
-            extension = "xlsx",
+            defaultExtension = "xlsx",
         ) ?: return@runCatching Unit
 
-        saveFile.write(createWorkbookBytes(columns))
+        saveFile.write(createWorkbookBytes(columns, highlightedRowIndexes))
         FileKit.openFileWithDefaultApplication(saveFile)
     }
 
@@ -51,7 +52,10 @@ suspend fun exportExcelFile(
  * `.xlsx` — это обычный zip-архив с набором XML-файлов.
  * Здесь мы создаем только те части, которых Excel достаточно для открытия таблицы.
  */
-private fun createWorkbookBytes(columns: List<ExcelColumn>): ByteArray {
+internal fun createWorkbookBytes(
+    columns: List<ExcelColumn>,
+    highlightedRowIndexes: Set<Int>,
+): ByteArray {
     val output = ByteArrayOutputStream()
     ZipOutputStream(output).use { zip ->
         zip.writeEntry("[Content_Types].xml", contentTypesXml())
@@ -61,7 +65,10 @@ private fun createWorkbookBytes(columns: List<ExcelColumn>): ByteArray {
         zip.writeEntry("xl/workbook.xml", workbookXml())
         zip.writeEntry("xl/styles.xml", stylesXml())
         zip.writeEntry("xl/_rels/workbook.xml.rels", workbookRelsXml())
-        zip.writeEntry("xl/worksheets/sheet1.xml", worksheetXml(columns))
+        zip.writeEntry(
+            "xl/worksheets/sheet1.xml",
+            worksheetXml(columns, highlightedRowIndexes),
+        )
     }
     return output.toByteArray()
 }
@@ -183,11 +190,12 @@ private fun stylesXml(): String =
           <name val="Calibri"/>
         </font>
       </fonts>
-      <fills count="4">
+      <fills count="5">
         <fill><patternFill patternType="none"/></fill>
         <fill><patternFill patternType="gray125"/></fill>
         <fill><patternFill patternType="solid"><fgColor rgb="FFDCE6F1"/><bgColor indexed="64"/></patternFill></fill>
         <fill><patternFill patternType="solid"><fgColor rgb="FFF7F9FC"/><bgColor indexed="64"/></patternFill></fill>
+        <fill><patternFill patternType="solid"><fgColor rgb="FFFFF0B8"/><bgColor indexed="64"/></patternFill></fill>
       </fills>
       <borders count="2">
         <border><left/><right/><top/><bottom/><diagonal/></border>
@@ -202,7 +210,7 @@ private fun stylesXml(): String =
       <cellStyleXfs count="1">
         <xf numFmtId="0" fontId="0" fillId="0" borderId="0"/>
       </cellStyleXfs>
-      <cellXfs count="7">
+      <cellXfs count="11">
         <xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>
         <xf numFmtId="0" fontId="1" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1">
           <alignment horizontal="center" vertical="center"/>
@@ -213,6 +221,9 @@ private fun stylesXml(): String =
         <xf numFmtId="164" fontId="0" fillId="3" borderId="1" xfId="0" applyNumberFormat="1" applyFill="1" applyBorder="1"/>
         <xf numFmtId="165" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1"/>
         <xf numFmtId="165" fontId="0" fillId="3" borderId="1" xfId="0" applyNumberFormat="1" applyFill="1" applyBorder="1"/>
+        <xf numFmtId="0" fontId="0" fillId="4" borderId="1" xfId="0" applyFill="1" applyBorder="1"/>
+        <xf numFmtId="164" fontId="0" fillId="4" borderId="1" xfId="0" applyNumberFormat="1" applyFill="1" applyBorder="1"/>
+        <xf numFmtId="165" fontId="0" fillId="4" borderId="1" xfId="0" applyNumberFormat="1" applyFill="1" applyBorder="1"/>
       </cellXfs>
       <cellStyles count="1">
         <cellStyle name="Normal" xfId="0" builtinId="0"/>
@@ -227,7 +238,10 @@ private fun stylesXml(): String =
  * Чередование строк задается стилями, поэтому "зебра" остается только визуальным слоем,
  * а типы ячеек для Excel сохраняются корректными.
  */
-private fun worksheetXml(columns: List<ExcelColumn>): String {
+private fun worksheetXml(
+    columns: List<ExcelColumn>,
+    highlightedRowIndexes: Set<Int>,
+): String {
     val dataRows = columns.maxOfOrNull { it.values.size } ?: 0
     val rowCount = dataRows + 1
     val lastColumnRef = if (columns.isEmpty()) "A" else columnRef(columns.lastIndex)
@@ -242,6 +256,7 @@ private fun worksheetXml(columns: List<ExcelColumn>): String {
         for (rowIndex in 0 until dataRows) {
             val excelRow = rowIndex + 2
             val zebra = rowIndex % 2 == 1
+            val highlighted = rowIndex in highlightedRowIndexes
             append("""<row r="$excelRow">""")
             columns.forEachIndexed { index, column ->
                 append(
@@ -249,6 +264,7 @@ private fun worksheetXml(columns: List<ExcelColumn>): String {
                         ref = "${columnRef(index)}$excelRow",
                         value = column.values.getOrElse(rowIndex) { ExportCellValue.Empty },
                         zebra = zebra,
+                        highlighted = highlighted,
                     ),
                 )
             }
@@ -291,22 +307,28 @@ private fun cellXml(
     ref: String,
     value: ExportCellValue,
     zebra: Boolean,
+    highlighted: Boolean,
 ): String =
     when (value) {
-        ExportCellValue.Empty -> blankCell(ref, zebra)
-        is ExportCellValue.Text -> textCell(ref, value.value, zebra)
-        is ExportCellValue.Number -> numericCell(ref, value.value, styleIndex = null, zebra = zebra)
-        is ExportCellValue.BooleanValue -> booleanCell(ref, value.value, zebra)
+        ExportCellValue.Empty -> blankCell(ref, zebra, highlighted)
+        is ExportCellValue.Text -> textCell(ref, value.value, zebra, highlighted)
+        is ExportCellValue.Number -> numericCell(
+            ref = ref,
+            value = value.value,
+            styleIndex = HIGHLIGHTED_STYLE.takeIf { highlighted },
+            zebra = zebra,
+        )
+        is ExportCellValue.BooleanValue -> booleanCell(ref, value.value, zebra, highlighted)
         is ExportCellValue.Date -> numericCell(
             ref,
             excelSerialDate(value.value),
-            styleIndex = if (zebra) 5 else 4,
+            styleIndex = if (highlighted) HIGHLIGHTED_DATE_STYLE else if (zebra) 5 else 4,
             zebra = zebra,
         )
         is ExportCellValue.DateTime -> numericCell(
             ref,
             excelSerialDateTime(value.value),
-            styleIndex = if (zebra) 7 else 6,
+            styleIndex = if (highlighted) HIGHLIGHTED_DATE_TIME_STYLE else if (zebra) 7 else 6,
             zebra = zebra,
         )
     }
@@ -326,8 +348,9 @@ private fun textCell(
     ref: String,
     value: String,
     zebra: Boolean,
+    highlighted: Boolean,
 ): String {
-    val style = if (zebra) 3 else 2
+    val style = if (highlighted) HIGHLIGHTED_STYLE else if (zebra) 3 else 2
     return """<c r="$ref" s="$style" t="inlineStr"><is><t xml:space="preserve">${escapeXml(value)}</t></is></c>"""
 }
 
@@ -353,8 +376,9 @@ private fun booleanCell(
     ref: String,
     value: Boolean,
     zebra: Boolean,
+    highlighted: Boolean,
 ): String {
-    val style = if (zebra) 3 else 2
+    val style = if (highlighted) HIGHLIGHTED_STYLE else if (zebra) 3 else 2
     return """<c r="$ref" s="$style" t="b"><v>${if (value) 1 else 0}</v></c>"""
 }
 
@@ -364,8 +388,9 @@ private fun booleanCell(
 private fun blankCell(
     ref: String,
     zebra: Boolean,
+    highlighted: Boolean,
 ): String {
-    val style = if (zebra) 3 else 2
+    val style = if (highlighted) HIGHLIGHTED_STYLE else if (zebra) 3 else 2
     return """<c r="$ref" s="$style"/>"""
 }
 
@@ -468,3 +493,6 @@ private const val DATE_TIME_TEXT_LENGTH = 16
 private const val SECONDS_PER_DAY = 86_400.0
 private const val NANOSECONDS_PER_DAY = 86_400_000_000_000.0
 private const val EXCEL_ALPHABET_SIZE = 26
+private const val HIGHLIGHTED_STYLE = 8
+private const val HIGHLIGHTED_DATE_STYLE = 9
+private const val HIGHLIGHTED_DATE_TIME_STYLE = 10

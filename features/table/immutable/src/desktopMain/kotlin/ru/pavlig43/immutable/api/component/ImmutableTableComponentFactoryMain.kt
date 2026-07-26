@@ -14,10 +14,8 @@ import ru.pavlig43.database.data.batch.BatchWithBalanceOut
 import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.database.data.document.Document
 import ru.pavlig43.database.data.expense.MainExpenseBD
-import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductDeclarationOut
 import ru.pavlig43.database.data.safety.SafetyTableItem
-import ru.pavlig43.database.data.transact.Transact
 import ru.pavlig43.database.data.vendor.Vendor
 import ru.pavlig43.immutable.api.ImmutableTableDependencies
 import ru.pavlig43.immutable.internal.component.ImmutableTableComponent
@@ -26,9 +24,11 @@ import ru.pavlig43.immutable.internal.component.items.declaration.DeclarationTab
 import ru.pavlig43.immutable.internal.component.items.document.DocumentTableComponent
 import ru.pavlig43.immutable.internal.component.items.expense.ExpenseTableComponent
 import ru.pavlig43.immutable.internal.component.items.product.ProductTableComponent
+import ru.pavlig43.immutable.internal.component.items.product.ProductTableItem
 import ru.pavlig43.immutable.internal.component.items.productDeclaration.ProductDeclarationTableComponent
 import ru.pavlig43.immutable.internal.component.items.safety.SafetyTableComponent
 import ru.pavlig43.immutable.internal.component.items.transaction.TransactionTableComponent
+import ru.pavlig43.immutable.internal.component.items.transaction.TransactionTableItem
 import ru.pavlig43.immutable.internal.component.items.vendor.VendorTableComponent
 import ru.pavlig43.immutable.internal.data.ImmutableListRepository
 import ru.pavlig43.immutable.internal.di.ImmutableTableRepositoryType
@@ -82,7 +82,7 @@ class ImmutableTableComponentFactoryMain(
                 tableBuilder = immutableTableBuilderData,
                 onItemClick = onItemClick,
                 onCreate = { tabOpener.openProductTab(0) },
-                repository = scope.get<ImmutableListRepository<Product>>(
+                repository = scope.get<ImmutableListRepository<ProductTableItem>>(
                     ImmutableTableRepositoryType.PRODUCT.qualifier
                 ),
             )
@@ -91,7 +91,7 @@ class ImmutableTableComponentFactoryMain(
                 tableBuilder = immutableTableBuilderData,
                 onItemClick = onItemClick,
                 onCreate = { tabOpener.openTransactionTab(0) },
-                repository = scope.get<ImmutableListRepository<Transact>>(
+                repository = scope.get<ImmutableListRepository<TransactionTableItem>>(
                     ImmutableTableRepositoryType.TRANSACTION.qualifier
                 ),
             )

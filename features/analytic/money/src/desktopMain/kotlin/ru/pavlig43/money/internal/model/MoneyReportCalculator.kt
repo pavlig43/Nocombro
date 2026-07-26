@@ -1,52 +1,46 @@
 package ru.pavlig43.money.internal.model
 
-import ru.pavlig43.database.data.money.MoneyMovement
-import ru.pavlig43.database.data.money.MoneyMovementCategory
-import ru.pavlig43.database.data.money.MoneyMovementKind
 import ru.pavlig43.datetime.period.dateTime.DTPeriod
 
 object MoneyReportCalculator {
     fun calculate(
-        movements: List<MoneyMovement>,
+        entries: List<MoneyReportEntry>,
         period: DTPeriod,
     ): MoneyReportData {
-        val sorted = movements
+        val sorted = entries
             .asSequence()
-            .filter { it.deletedAt == null && it.occurredAt <= period.end }
-            .sortedWith(compareBy<MoneyMovement>({ it.occurredAt }, { it.syncId }))
+            .filter { it.amount > 0 && it.occurredAt <= period.end }
+            .sortedWith(
+                compareBy<MoneyReportEntry>(
+                    { it.occurredAt },
+                    { it.operationGroupKey ?: it.sourceKey },
+                    { if (it.sourceKey.startsWith("expense:")) 1 else 0 },
+                    { it.sourceKey },
+                ),
+            )
             .toList()
 
         var runningBalance = 0L
         var openingBalance = 0L
         var received = 0L
         var spent = 0L
-        var openingBalancesEntered = 0L
         val rows = mutableListOf<MoneyMovementRow>()
 
-        sorted.forEach { movement ->
-            runningBalance += globalImpact(movement)
-
-            if (movement.occurredAt < period.start) {
+        sorted.forEach { entry ->
+            runningBalance += entry.signedAmount()
+            if (entry.occurredAt < period.start) {
                 openingBalance = runningBalance
             } else {
-                when (movement.kind) {
-                    MoneyMovementKind.INCOME -> received += movement.amount
-                    MoneyMovementKind.EXPENSE -> spent += movement.amount
-                    MoneyMovementKind.OPENING_BALANCE -> {
-                        openingBalancesEntered += globalImpact(movement)
-                    }
-                    MoneyMovementKind.TRANSFER -> Unit
+                when (entry.kind) {
+                    MoneyReportEntryKind.INCOME -> received += entry.amount
+                    MoneyReportEntryKind.EXPENSE -> spent += entry.amount
                 }
-                rows += MoneyMovementRow(
-                    movement = movement,
-                    runningBalance = runningBalance,
-                )
+                rows += MoneyMovementRow(entry, runningBalance)
             }
         }
 
-        val incomeByCategory = categoryTotals(rows, MoneyMovementKind.INCOME)
-        val expensesByCategory = categoryTotals(rows, MoneyMovementKind.EXPENSE)
-
+        val incomeByCategory = categoryTotals(rows, MoneyReportEntryKind.INCOME)
+        val expensesByCategory = categoryTotals(rows, MoneyReportEntryKind.EXPENSE)
         val netChange = received - spent
         return MoneyReportData(
             summary = MoneySummary(
@@ -54,7 +48,7 @@ object MoneyReportCalculator {
                 received = received,
                 spent = spent,
                 netChange = netChange,
-                closingBalance = openingBalance + netChange + openingBalancesEntered,
+                closingBalance = openingBalance + netChange,
             ),
             incomeByCategory = incomeByCategory,
             expensesByCategory = expensesByCategory,
@@ -64,23 +58,19 @@ object MoneyReportCalculator {
 
     private fun categoryTotals(
         rows: List<MoneyMovementRow>,
-        kind: MoneyMovementKind,
+        kind: MoneyReportEntryKind,
     ): List<MoneyCategoryTotal> = rows
         .asSequence()
-        .map(MoneyMovementRow::movement)
+        .map(MoneyMovementRow::entry)
         .filter { it.kind == kind }
-        .groupBy { it.category ?: MoneyMovementCategory.OTHER }
+        .groupBy(MoneyReportEntry::category)
         .map { (category, items) ->
-            MoneyCategoryTotal(category, items.sumOf(MoneyMovement::amount))
+            MoneyCategoryTotal(category, items.sumOf(MoneyReportEntry::amount))
         }
         .sortedByDescending(MoneyCategoryTotal::amount)
+}
 
-    private fun globalImpact(movement: MoneyMovement): Long = when (movement.kind) {
-        MoneyMovementKind.OPENING_BALANCE -> {
-            if (movement.toAccountId != null) movement.amount else -movement.amount
-        }
-        MoneyMovementKind.INCOME -> movement.amount
-        MoneyMovementKind.EXPENSE -> -movement.amount
-        MoneyMovementKind.TRANSFER -> 0L
-    }
+fun MoneyReportEntry.signedAmount(): Long = when (kind) {
+    MoneyReportEntryKind.INCOME -> amount
+    MoneyReportEntryKind.EXPENSE -> -amount
 }

@@ -113,6 +113,7 @@ fun DoctorScreen(
                         statusMessage = remoteCleanupStatusMessage,
                         pendingUploads = pendingUploads,
                         onDismissActionError = component::dismissRemoteOrphanFilesActionError,
+                        onReleasePendingUpload = component::releasePendingUpload,
                         onLogCompare = component::logRemoteFileComparison,
                         onRefresh = component::refreshRemoteOrphanFiles,
                         onDelete = component::deleteRemoteOrphanFile,

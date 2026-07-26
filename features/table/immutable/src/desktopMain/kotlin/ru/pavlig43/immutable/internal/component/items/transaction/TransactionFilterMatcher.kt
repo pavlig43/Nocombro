@@ -16,6 +16,7 @@ internal object TransactionFilterMatcher: FilterMatcher<TransactionTableUi, Tran
                 TransactionField.ID -> true
                 TransactionField.IS_COMPLETED -> matchesBooleanField(item.isCompleted,stateAny)
                 TransactionField.TRANSACTION_TYPE -> matchesTypeField(item.transactionType,stateAny)
+                TransactionField.COUNTERPARTY -> matchesTextField(item.counterpartyNames, stateAny)
                 TransactionField.CREATED_AT -> matchesDateTimeField(item.createdAt,stateAny)
                 TransactionField.COMMENT -> matchesTextField(item.comment, stateAny)
 

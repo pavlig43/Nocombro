@@ -237,14 +237,15 @@ class DoctorComponent(
     }
 
     fun deleteRemoteOrphanFile(objectKey: String) {
+        val currentFiles = (remoteOrphanFilesState.value as? DoctorRemoteOrphanFilesLoadState.Success)
+            ?.files ?: return
         coroutineScope.launch(Dispatchers.IO) {
             _remoteOrphanFilesState.value = DoctorRemoteOrphanFilesLoadState.Loading
-            if (!refreshRemoteCleanupAvailability()) {
-                return@launch
-            }
             remoteFilesMaintenanceRepository.deleteRemoteFile(objectKey)
                 .onSuccess {
-                    refreshRemoteOrphanFiles()
+                    _remoteOrphanFilesState.value = DoctorRemoteOrphanFilesLoadState.Success(
+                        currentFiles.filterNot { it.objectKey == objectKey }
+                    )
                 }
                 .onFailure { throwable ->
                     _remoteOrphanFilesActionError.value =
@@ -258,9 +259,6 @@ class DoctorComponent(
             remoteOrphanFilesState.value as? DoctorRemoteOrphanFilesLoadState.Success ?: return
         coroutineScope.launch(Dispatchers.IO) {
             _remoteOrphanFilesState.value = DoctorRemoteOrphanFilesLoadState.Loading
-            if (!refreshRemoteCleanupAvailability()) {
-                return@launch
-            }
             remoteFilesMaintenanceRepository
                 .deleteRemoteFiles(currentState.files.mapTo(mutableSetOf()) { it.objectKey })
                 .onFailure { throwable ->
@@ -268,12 +266,30 @@ class DoctorComponent(
                         throwable.message ?: "Не удалось удалить orphan-объекты S3."
                     return@launch
                 }
-            refreshRemoteOrphanFiles()
+            _remoteOrphanFilesState.value = DoctorRemoteOrphanFilesLoadState.Success(emptyList())
         }
     }
 
     fun dismissRemoteOrphanFilesActionError() {
         _remoteOrphanFilesActionError.value = null
+    }
+
+    /**
+     * Убирает выбранную запись из pending-реестра, не удаляя объект из S3.
+     *
+     * После этого список S3 перечитывается с обычной защитой Room и mirror:
+     * непривязанный объект станет orphan, но будет удалён лишь отдельным действием.
+     */
+    fun releasePendingUpload(objectKey: String) {
+        coroutineScope.launch(Dispatchers.IO) {
+            _remoteOrphanFilesActionError.value = null
+            remoteFilesMaintenanceRepository.releasePendingUpload(objectKey)
+                .onSuccess { refreshRemoteOrphanFiles() }
+                .onFailure { throwable ->
+                    _remoteOrphanFilesActionError.value =
+                        throwable.message ?: "Не удалось снять блокировку загрузки."
+                }
+        }
     }
 
     fun logRemoteFileComparison() {

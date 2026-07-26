@@ -14,6 +14,7 @@ import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductDeclarationIn
 import ru.pavlig43.database.data.product.ProductDeclarationOut
+import ru.pavlig43.database.data.product.ProductVendorName
 import ru.pavlig43.datetime.getCurrentLocalDate
 
 /**
@@ -74,6 +75,29 @@ abstract class ProductDeclarationDao {
     fun observeOnProductDeclarationOut(productId: Int): Flow<List<ProductDeclarationOut>> {
         return observeOnProductDeclarationByProductId(productId).mapValues(InternalProductDeclaration::toProductDeclarationOut)
     }
+
+    @Query(
+        """
+        SELECT DISTINCT
+            pd.product_id AS productId,
+            d.vendor_name AS vendorName
+        FROM product_declaration pd
+        INNER JOIN declaration d ON d.id = pd.declaration_id
+        """
+    )
+    abstract fun observeAllProductVendorNames(): Flow<List<ProductVendorName>>
+
+    @Query(
+        """
+        SELECT DISTINCT
+            pd.product_id AS productId,
+            d.vendor_name AS vendorName
+        FROM product_declaration pd
+        INNER JOIN declaration d ON d.id = pd.declaration_id
+        WHERE pd.product_id IN (:productIds)
+        """
+    )
+    abstract suspend fun getProductVendorNames(productIds: List<Int>): List<ProductVendorName>
 
     /**
      * Удаляет связи с указанными идентификаторами.

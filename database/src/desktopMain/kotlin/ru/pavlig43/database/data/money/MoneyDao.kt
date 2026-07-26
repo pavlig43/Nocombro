@@ -9,9 +9,85 @@ import androidx.room.Update
 import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.LocalDateTime
+import ru.pavlig43.database.data.expense.ExpenseType
 
 @Dao
 abstract class MoneyDao {
+    @Query(
+        """
+        SELECT
+            t.id AS documentId,
+            t.sync_id AS documentSyncId,
+            t.created_at AS occurredAt,
+            s.price AS price,
+            bm.count AS count,
+            COALESCE(v.display_name, '') AS counterparty,
+            t.comment AS documentComment,
+            s.comment AS lineComment
+        FROM sale s
+        JOIN transact t ON t.id = s.transaction_id
+        JOIN batch_movement bm ON bm.id = s.movement_id
+        LEFT JOIN vendor v ON v.id = s.client_id AND v.deleted_at IS NULL
+        WHERE s.deleted_at IS NULL
+          AND t.deleted_at IS NULL
+          AND bm.deleted_at IS NULL
+          AND t.created_at <= :endInclusive
+        ORDER BY t.created_at ASC, t.sync_id ASC, s.sync_id ASC
+        """,
+    )
+    abstract fun observeRecordedSalesUntil(
+        endInclusive: LocalDateTime,
+    ): Flow<List<RecordedTransactionMoneyLine>>
+
+    @Query(
+        """
+        SELECT
+            t.id AS documentId,
+            t.sync_id AS documentSyncId,
+            t.created_at AS occurredAt,
+            b.price AS price,
+            bm.count AS count,
+            COALESCE(d.vendor_name, '') AS counterparty,
+            t.comment AS documentComment,
+            b.comment AS lineComment
+        FROM buy b
+        JOIN transact t ON t.id = b.transaction_id
+        JOIN batch_movement bm ON bm.id = b.movement_id
+        LEFT JOIN batch batch_row ON batch_row.id = bm.batch_id AND batch_row.deleted_at IS NULL
+        LEFT JOIN declaration d ON d.id = batch_row.declaration_id AND d.deleted_at IS NULL
+        WHERE b.deleted_at IS NULL
+          AND t.deleted_at IS NULL
+          AND bm.deleted_at IS NULL
+          AND t.created_at <= :endInclusive
+        ORDER BY t.created_at ASC, t.sync_id ASC, b.sync_id ASC
+        """,
+    )
+    abstract fun observeRecordedPurchasesUntil(
+        endInclusive: LocalDateTime,
+    ): Flow<List<RecordedTransactionMoneyLine>>
+
+    @Query(
+        """
+        SELECT
+            e.id AS sourceId,
+            e.sync_id AS sourceSyncId,
+            e.transaction_id AS transactionId,
+            t.sync_id AS transactionSyncId,
+            e.expense_date_time AS occurredAt,
+            e.amount AS amount,
+            e.expense_type AS expenseType,
+            e.comment AS comment
+        FROM expense e
+        LEFT JOIN transact t ON t.id = e.transaction_id AND t.deleted_at IS NULL
+        WHERE e.deleted_at IS NULL
+          AND e.expense_date_time <= :endInclusive
+        ORDER BY e.expense_date_time ASC, e.sync_id ASC
+        """,
+    )
+    abstract fun observeRecordedExpensesUntil(
+        endInclusive: LocalDateTime,
+    ): Flow<List<RecordedExpenseMoneyRow>>
+
     @Query(
         """
         SELECT * FROM $MONEY_ACCOUNT_TABLE_NAME
@@ -229,3 +305,25 @@ abstract class MoneyDao {
         }
     }
 }
+
+data class RecordedTransactionMoneyLine(
+    val documentId: Int,
+    val documentSyncId: String,
+    val occurredAt: LocalDateTime,
+    val price: Long,
+    val count: Long,
+    val counterparty: String,
+    val documentComment: String,
+    val lineComment: String,
+)
+
+data class RecordedExpenseMoneyRow(
+    val sourceId: Int,
+    val sourceSyncId: String,
+    val transactionId: Int?,
+    val transactionSyncId: String?,
+    val occurredAt: LocalDateTime,
+    val amount: Long,
+    val expenseType: ExpenseType,
+    val comment: String,
+)

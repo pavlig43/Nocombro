@@ -103,6 +103,26 @@ class RemoteFilesMaintenanceRepositoryTest : DesktopMainDispatcherFunSpec({
                 .map { it.objectKey } shouldContainExactly listOf("pending")
         }
     }
+
+    test("releasing a pending upload keeps the S3 object and exposes it as orphan") {
+        withEmptyTestDatabase { db ->
+            val storage = FakeStorage(setOf("pending"))
+            val registry = testRegistry().also { it.markPending("pending", "missing-local") }
+            val repository = RemoteFilesMaintenanceRepository(
+                db,
+                storage,
+                FakeMirrorGateway(emptyList()),
+                registry,
+            )
+
+            repository.releasePendingUpload("pending").getOrThrow()
+
+            repository.getPendingUploads().getOrThrow() shouldBe emptyList()
+            repository.getOrphanRemoteFiles().getOrThrow()
+                .map { it.objectKey } shouldContainExactly listOf("pending")
+            storage.deletedKeys shouldBe emptyList()
+        }
+    }
 })
 
 /** Создаёт изолированный реестр, чтобы тесты не читали профиль пользователя. */

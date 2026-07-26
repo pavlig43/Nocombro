@@ -2,7 +2,7 @@ package ru.pavlig43.immutable.internal.component.items.product
 
 import com.arkivanov.decompose.ComponentContext
 import kotlinx.collections.immutable.ImmutableList
-import ru.pavlig43.database.data.product.Product
+
 import ru.pavlig43.immutable.api.component.ProductImmutableTableBuilder
 import ru.pavlig43.immutable.internal.component.ImmutableTableComponent
 import ru.pavlig43.immutable.internal.data.ImmutableListRepository
@@ -15,8 +15,8 @@ internal class ProductTableComponent(
     tableBuilder: ProductImmutableTableBuilder,
     onItemClick: (ProductTableUi) -> Unit,
     onCreate: () -> Unit,
-    repository: ImmutableListRepository<Product>,
-) : ImmutableTableComponent<Product, ProductTableUi, ProductField>(
+    repository: ImmutableListRepository<ProductTableItem>,
+) : ImmutableTableComponent<ProductTableItem, ProductTableUi, ProductField>(
     componentContext = componentContext,
     tableBuilder = tableBuilder,
     onCreate = onCreate,
@@ -36,15 +36,16 @@ internal class ProductTableComponent(
         )
 
 }
-private fun Product.toUi(): ProductTableUi {
+private fun ProductTableItem.toUi(): ProductTableUi {
     return ProductTableUi(
-        composeId = id,
-        displayName = displayName,
-        secondName = secondName,
-        type = type,
-        createdAt = createdAt,
-        comment = comment,
-        priceForSale = priceForSale,
-        recNds = recNds
+        composeId = product.id,
+        displayName = product.displayName,
+        secondName = product.secondName,
+        vendorNames = vendorNames,
+        type = product.type,
+        createdAt = product.createdAt,
+        comment = product.comment,
+        priceForSale = product.priceForSale,
+        recNds = product.recNds
     )
 }

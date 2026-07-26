@@ -12,6 +12,7 @@ internal object StorageFilterMatcher : FilterMatcher<StorageProductUi, StoragePr
     ): Boolean {
         return when (column) {
             StorageProductField.NAME -> matchesTextField(item.productName, stateAny)
+            StorageProductField.VENDOR_NAME -> matchesTextField(item.vendorNames, stateAny)
             else -> true
         }
     }

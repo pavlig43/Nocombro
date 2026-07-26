@@ -12,6 +12,7 @@ internal object ProductFilterMatcher : FilterMatcher<ProductTableUi, ProductFiel
         val matches =
             when (column) {
                 ProductField.NAME -> matchesTextField(item.displayName, stateAny)
+                ProductField.VENDOR_NAME -> matchesTextField(item.vendorNames, stateAny)
                 ProductField.SECOND_NAME -> matchesTextField(item.secondName, stateAny)
                 ProductField.SELECTION -> true
                 ProductField.ID -> matchesIntField(item.composeId, stateAny)

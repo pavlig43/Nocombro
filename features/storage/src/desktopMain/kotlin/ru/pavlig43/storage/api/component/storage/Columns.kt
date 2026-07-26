@@ -25,6 +25,7 @@ import ua.wwind.table.tableColumns
 enum class StorageProductField {
     EXPAND,
     NAME,
+    VENDOR_NAME,
     BALANCE_BEFORE,
     INCOMING,
     OUTGOING,
@@ -45,6 +46,13 @@ internal fun createStorageColumns(
             }
         }
         nameColumn(onOpenProduct)
+
+        column(StorageProductField.VENDOR_NAME, valueOf = { it.vendorNames }) {
+            title { "Поставщик" }
+            autoWidth()
+            cell { item, _ -> Text(item.vendorNames) }
+            filter(TableFilterType.TextTableFilter())
+        }
 
         decimalColumn(
             column = StorageProductField.BALANCE_BEFORE,

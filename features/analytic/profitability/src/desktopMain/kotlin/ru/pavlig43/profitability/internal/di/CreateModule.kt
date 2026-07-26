@@ -9,6 +9,7 @@ import org.koin.dsl.module
 import ru.pavlig43.core.mapParallel
 import ru.pavlig43.core.model.DecimalData2
 import ru.pavlig43.core.model.DecimalData3
+import ru.pavlig43.core.model.toVendorNamesText
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.profitability.api.ProfitabilityDependencies
 import ru.pavlig43.profitability.internal.model.AllProfitability
@@ -117,6 +118,9 @@ internal class ProfitabilityRepository(
                         ProfitabilityProduct(
                             productId = productId,
                             productName = productName,
+                            vendorNames = sales
+                                .map { it.movementOut.batchOut.declaration.vendorName }
+                                .toVendorNamesText(),
                             quantity = DecimalData3(quantity),
                             revenue = DecimalData2(allRevenue),
                             totalExpenses = DecimalData2(productExpenses),

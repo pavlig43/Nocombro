@@ -15,6 +15,7 @@ import kotlinx.serialization.Serializable
 import ru.pavlig43.core.tabs.TabOpener
 import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.database.data.transact.pf.PfBD
+import ru.pavlig43.datetime.getCurrentLocalDate
 import ru.pavlig43.immutable.api.ImmutableTableDependencies
 import ru.pavlig43.immutable.api.component.MBSImmutableTableComponent
 import ru.pavlig43.immutable.api.component.ProductDeclarationImmutableTableBuilder
@@ -141,7 +142,7 @@ internal class PfComponent(
                         componentContext = context,
                         productId = currentItem.productId,
                         productName = currentItem.productName,
-                        defaultDate = getDateBorn(),
+                        defaultDate = getCurrentLocalDate(),
                         service = thermalLabelTemplateService,
                         onDismissed = dialogNavigation::dismiss,
                     )

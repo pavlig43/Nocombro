@@ -11,6 +11,7 @@ kotlin {
         implementation(projects.coreui)
         implementation(projects.database)
         implementation(projects.datetime)
+        implementation(projects.features.table.core)
     }
 
     sourceSets {

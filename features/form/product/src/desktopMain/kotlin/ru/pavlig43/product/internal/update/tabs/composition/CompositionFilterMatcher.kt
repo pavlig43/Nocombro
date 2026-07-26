@@ -14,6 +14,7 @@ internal object CompositionFilterMatcher : FilterMatcher<CompositionUi, Composit
                 CompositionField.COMPOSE_ID -> true
                 CompositionField.SELECTION -> true
                 CompositionField.PRODUCT_NAME -> matchesTextField(item.productName, stateAny)
+                CompositionField.VENDOR_NAME -> matchesTextField(item.vendorNames, stateAny)
                 CompositionField.COUNT -> matchesLongField(item.count.value, stateAny)
                 CompositionField.PRODUCT_TYPE -> matchesTypeField(item.productType, stateAny)
             }

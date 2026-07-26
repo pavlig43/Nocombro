@@ -1,6 +1,6 @@
 package ru.pavlig43.money.internal.model
 
-import ru.pavlig43.database.data.money.MoneyMovement
+import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.database.data.money.MoneyMovementCategory
 
 data class MoneyReportData(
@@ -23,7 +23,25 @@ data class MoneyCategoryTotal(
     val amount: Long,
 )
 
+data class MoneyReportEntry(
+    val sourceKey: String,
+    val sourceLabel: String,
+    val kind: MoneyReportEntryKind,
+    val category: MoneyMovementCategory,
+    val amount: Long,
+    val occurredAt: LocalDateTime,
+    val counterparty: String,
+    val comment: String,
+    val operationGroupKey: String? = null,
+    val operationGroupLabel: String? = null,
+)
+
+enum class MoneyReportEntryKind {
+    INCOME,
+    EXPENSE,
+}
+
 data class MoneyMovementRow(
-    val movement: MoneyMovement,
+    val entry: MoneyReportEntry,
     val runningBalance: Long,
 )

@@ -17,6 +17,7 @@ internal object TransactionSorter : SortMatcher<TransactionTableUi, TransactionF
             when (sort.column) {
                 TransactionField.ID -> items.sortedBy { it.composeId }
                 TransactionField.COMMENT -> items.sortedBy { it.comment.lowercase() }
+                TransactionField.COUNTERPARTY -> items.sortedBy { it.counterpartyNames.lowercase() }
                 TransactionField.CREATED_AT -> items.sortedBy { it.createdAt }
                 else -> items
             }

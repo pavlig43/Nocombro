@@ -26,6 +26,7 @@ internal data class AllProfitability(
 internal data class ProfitabilityProduct(
     val productId: Int,
     val productName: String,
+    val vendorNames: String,
     val quantity: DecimalData3,
     val revenue: DecimalData2,
     val totalExpenses: DecimalData2,

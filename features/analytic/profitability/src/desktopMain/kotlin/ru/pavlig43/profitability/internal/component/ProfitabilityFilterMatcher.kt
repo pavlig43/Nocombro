@@ -12,6 +12,7 @@ internal object ProfitabilityFilterMatcher : FilterMatcher<ProfitabilityProduct,
     ): Boolean {
         return when (column) {
             ProfitabilityField.PRODUCT_NAME -> matchesTextField(item.productName, stateAny)
+            ProfitabilityField.VENDOR_NAME -> matchesTextField(item.vendorNames, stateAny)
             ProfitabilityField.QUANTITY -> matchesDecimalField(item.quantity,stateAny)
             ProfitabilityField.REVENUE -> matchesDecimalField(item.revenue,stateAny)
             ProfitabilityField.EXPENSES -> matchesDecimalField(item.totalExpenses,stateAny)

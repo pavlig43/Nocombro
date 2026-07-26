@@ -6,6 +6,7 @@ import org.koin.core.qualifier.qualifier
 import org.koin.dsl.module
 import ru.pavlig43.core.TransactionExecutor
 import ru.pavlig43.core.model.ChangeSet
+import ru.pavlig43.core.model.toVendorNamesText
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.database.data.files.FileBD
@@ -113,10 +114,22 @@ private class CompositionCollectionRepository(
 ) {
 
     private val dao = db.compositionDao
+    private val productDeclarationDao = db.productDeclarationDao
 
     override suspend fun getInit(id: Int): Result<List<CompositionOut>> {
         return runCatching {
-            dao.getCompositionOut(id)
+            val composition = dao.getCompositionOut(id)
+            val productIds = composition.map { it.productId }.distinct()
+            val vendorNamesByProduct = if (productIds.isEmpty()) {
+                emptyMap()
+            } else {
+                productDeclarationDao.getProductVendorNames(productIds)
+                    .groupBy { it.productId }
+                    .mapValues { (_, rows) -> rows.map { it.vendorName }.toVendorNamesText() }
+            }
+            composition.map { item ->
+                item.copy(vendorNames = vendorNamesByProduct[item.productId].orEmpty())
+            }
         }
     }
 

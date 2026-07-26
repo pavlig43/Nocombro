@@ -253,7 +253,8 @@ data class SyncUiState(
     val runningActionLabel: String? = null,
 )
 
-private const val STATUS_CHECK_INTERVAL_MILLIS = 3 * 60 * 1000L
+// Полный статус читает все mirror-таблицы, поэтому частый опрос расходует квоту YDB.
+private const val STATUS_CHECK_INTERVAL_MILLIS = 15 * 60 * 1000L
 
 /**
  * Сводит технический результат массовой догрузки файлов к короткой строке для UI.

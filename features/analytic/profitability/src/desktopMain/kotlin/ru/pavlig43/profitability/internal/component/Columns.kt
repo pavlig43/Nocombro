@@ -35,6 +35,7 @@ import ua.wwind.table.tableColumns
 enum class ProfitabilityField {
     EXPAND,
     PRODUCT_NAME,
+    VENDOR_NAME,
     QUANTITY,
     REVENUE,
     EXPENSES,
@@ -82,6 +83,13 @@ internal fun createProfitabilityColumns(
             headerText = "Продукт",
             column = ProfitabilityField.PRODUCT_NAME,
             valueOf = { it.productName },
+            filterType = TableFilterType.TextTableFilter(),
+        )
+
+        readTextColumn(
+            headerText = "Поставщик",
+            column = ProfitabilityField.VENDOR_NAME,
+            valueOf = { it.vendorNames },
             filterType = TableFilterType.TextTableFilter(),
         )
 

@@ -33,6 +33,7 @@ internal enum class TransactionField {
     ID,
     IS_COMPLETED,
     TRANSACTION_TYPE,
+    COUNTERPARTY,
     CREATED_AT,
     COMMENT
 }
@@ -79,6 +80,13 @@ internal fun createTransactionColumn(
                     getTitle = { it.displayName }
                 ),
                 getTitle = { it.displayName }
+            )
+
+            readTextColumn(
+                headerText = "Контрагент",
+                column = TransactionField.COUNTERPARTY,
+                valueOf = { it.counterpartyNames },
+                filterType = TableFilterType.TextTableFilter()
             )
 
             readDateTimeColumn(

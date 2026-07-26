@@ -2,21 +2,23 @@ package ru.pavlig43.immutable.internal.di
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import org.koin.core.qualifier.qualifier
 import org.koin.dsl.module
+import ru.pavlig43.core.model.toVendorNamesText
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.batch.BatchWithBalanceOut
 import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.database.data.document.Document
 import ru.pavlig43.database.data.expense.MainExpenseBD
-import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductDeclarationOut
 import ru.pavlig43.database.data.safety.SafetyTableItem
-import ru.pavlig43.database.data.transact.Transact
 import ru.pavlig43.database.data.vendor.Vendor
 import ru.pavlig43.database.data.sync.mirror.MirrorDeletionJournalRepository
 import ru.pavlig43.immutable.api.ImmutableTableDependencies
+import ru.pavlig43.immutable.internal.component.items.product.ProductTableItem
+import ru.pavlig43.immutable.internal.component.items.transaction.TransactionTableItem
 import ru.pavlig43.immutable.internal.data.ImmutableListRepository
 
 
@@ -139,16 +141,31 @@ private class DeclarationRepository(db: NocombroDatabase) : ImmutableListReposit
 /**
  * Репозиторий для работы с продуктами.
  */
-private class ProductRepository(db: NocombroDatabase) : ImmutableListRepository<Product> {
-    private val dao = db.productDao
+private class ProductRepository(db: NocombroDatabase) : ImmutableListRepository<ProductTableItem> {
+    private val productDao = db.productDao
+    private val productDeclarationDao = db.productDeclarationDao
     private val deletionJournal = MirrorDeletionJournalRepository(db)
+
     override suspend fun deleteByIds(ids: Set<Int>): Result<Unit> {
-        return runCatching { deletionJournal.captureHardDeletes { dao.deleteProductsByIds(ids) } }
+        return runCatching { deletionJournal.captureHardDeletes { productDao.deleteProductsByIds(ids) } }
     }
 
     @Suppress("UNUSED_PARAMETER")
-    override fun observeOnItems(parentId: Int): Flow<Result<List<Product>>> {
-        return dao.observeOnProducts().map { Result.success(it) }
+    override fun observeOnItems(parentId: Int): Flow<Result<List<ProductTableItem>>> {
+        return combine(
+            productDao.observeOnProducts(),
+            productDeclarationDao.observeAllProductVendorNames(),
+        ) { products, vendorRows ->
+            val vendorNamesByProduct = vendorRows
+                .groupBy { it.productId }
+                .mapValues { (_, rows) -> rows.map { it.vendorName }.toVendorNamesText() }
+            products.map { product ->
+                ProductTableItem(
+                    product = product,
+                    vendorNames = vendorNamesByProduct[product.id].orEmpty(),
+                )
+            }
+        }.map { Result.success(it) }
             .catch { emit(Result.failure(it)) }
     }
 }
@@ -173,7 +190,7 @@ private class VendorRepository(db: NocombroDatabase) : ImmutableListRepository<V
 /**
  * Репозиторий для работы с транзакциями.
  */
-private class TransactionRepository(db: NocombroDatabase) : ImmutableListRepository<Transact> {
+private class TransactionRepository(db: NocombroDatabase) : ImmutableListRepository<TransactionTableItem> {
     private val dao = db.transactionDao
     private val deletionJournal = MirrorDeletionJournalRepository(db)
     override suspend fun deleteByIds(ids: Set<Int>): Result<Unit> {
@@ -181,8 +198,21 @@ private class TransactionRepository(db: NocombroDatabase) : ImmutableListReposit
     }
 
     @Suppress("UNUSED_PARAMETER")
-    override fun observeOnItems(parentId: Int): Flow<Result<List<Transact>>> {
-        return dao.observeOnProductTransactions().map { Result.success(it) }
+    override fun observeOnItems(parentId: Int): Flow<Result<List<TransactionTableItem>>> {
+        return combine(
+            dao.observeOnProductTransactions(),
+            dao.observeCounterpartyNames(),
+        ) { transactions, counterpartyRows ->
+            val counterpartiesByTransaction = counterpartyRows
+                .groupBy { it.transactionId }
+                .mapValues { (_, rows) -> rows.map { it.counterpartyName }.toVendorNamesText() }
+            transactions.map { transaction ->
+                TransactionTableItem(
+                    transaction = transaction,
+                    counterpartyNames = counterpartiesByTransaction[transaction.id].orEmpty(),
+                )
+            }
+        }.map { Result.success(it) }
             .catch { emit(Result.failure(it)) }
     }
 }

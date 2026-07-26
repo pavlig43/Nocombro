@@ -168,6 +168,7 @@ internal fun DoctorRemoteFileCleanupTool(
     statusMessage: String,
     pendingUploads: List<PendingUpload>,
     onDismissActionError: () -> Unit,
+    onReleasePendingUpload: (String) -> Unit,
     onLogCompare: () -> Unit,
     onRefresh: () -> Unit,
     onDelete: (String) -> Unit,
@@ -218,14 +219,28 @@ internal fun DoctorRemoteFileCleanupTool(
                 style = MaterialTheme.typography.titleSmall,
                 color = MaterialTheme.colorScheme.error,
             )
+            Text(
+                text = "Снятие блокировки удалит только запись журнала. " +
+                    "Объект останется в S3 до отдельного удаления.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 pendingUploads.forEach { pending ->
-                    Text(
-                        text = "${pending.objectKey} — попыток: ${pending.attemptCount}",
-                        style = MaterialTheme.typography.bodySmall,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                    )
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text(
+                            modifier = Modifier.weight(1f),
+                            text = "${pending.objectKey} — попыток: ${pending.attemptCount}",
+                            style = MaterialTheme.typography.bodySmall,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                        OutlinedButton(
+                            onClick = { onReleasePendingUpload(pending.objectKey) },
+                        ) {
+                            Text("Снять блокировку")
+                        }
+                    }
                 }
             }
             Spacer(Modifier.height(8.dp))

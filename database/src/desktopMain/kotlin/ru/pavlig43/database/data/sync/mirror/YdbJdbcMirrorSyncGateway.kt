@@ -1,10 +1,14 @@
 package ru.pavlig43.database.data.sync.mirror
 
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import ru.pavlig43.datetime.getCurrentLocalDateTime
 import java.sql.Connection
 import java.sql.DriverManager
 import java.util.Properties
 import kotlin.time.TimeSource
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * JDBC-реализация typed mirror gateway для YDB.
@@ -16,6 +20,9 @@ import kotlin.time.TimeSource
 class YdbJdbcMirrorSyncGateway(
     private val config: YdbMirrorJdbcConfig,
 ) : MirrorSyncRemoteGateway {
+    private val operationMutex = Mutex()
+    private var connection: Connection? = null
+
     override suspend fun getConfigurationStatus() = MirrorRemoteStatus(
         configured = true,
         availableTables = emptySet(),
@@ -28,12 +35,15 @@ class YdbJdbcMirrorSyncGateway(
      * Ожидаемые JDBC-ошибки возвращаются в [MirrorRemoteStatus.error], чтобы UI
      * мог показать диагностику без исключения.
      */
-    override suspend fun getStatus(): MirrorRemoteStatus {
-        return runCatching {
+    override suspend fun getStatus(): MirrorRemoteStatus = operationMutex.withLock {
+        runCatching {
             val availableTables = withConnection { connection ->
-                supportedYdbMirrorCodecs.values.mapTo(mutableSetOf()) { codec ->
-                    checkTableReadable(connection, codec)
-                    codec.table.tableName
+                buildSet {
+                    supportedYdbMirrorCodecs.values.forEach { codec ->
+                        retryYdbResourceExhausted { checkTableReadable(connection, codec) }
+                        add(codec.table.tableName)
+                        delay(YDB_TABLE_READ_PAUSE_MILLIS.milliseconds)
+                    }
                 }
             }
             MirrorRemoteStatus(
@@ -54,12 +64,16 @@ class YdbJdbcMirrorSyncGateway(
     /** Загружает полный snapshot запрошенных таблиц через их typed codecs. */
     override suspend fun loadRemoteSnapshot(
         tables: List<MirrorSyncTable>,
-    ): Result<MirrorRemoteSnapshot> {
-        return runCatching {
+    ): Result<MirrorRemoteSnapshot> = operationMutex.withLock {
+        runCatching {
             val codecs = requireSupportedCodecs(tables)
             val rows = withConnection { connection ->
-                codecs.associate { codec ->
-                    codec.table to loadRows(connection, codec)
+                buildMap {
+                    codecs.forEach { codec ->
+                        val tableRows = retryYdbResourceExhausted { loadRows(connection, codec) }
+                        put(codec.table, tableRows)
+                        delay(YDB_TABLE_READ_PAUSE_MILLIS.milliseconds)
+                    }
                 }
             }
             MirrorRemoteSnapshot(
@@ -78,8 +92,8 @@ class YdbJdbcMirrorSyncGateway(
      */
     override suspend fun pushMirrorState(
         changes: List<MirrorPushEntityChange>,
-    ): Result<MirrorPushResult> {
-        return runCatching {
+    ): Result<MirrorPushResult> = operationMutex.withLock {
+        runCatching {
             val tables = changes.map(MirrorPushEntityChange::table).distinct()
             val codecs = requireSupportedCodecs(tables).associateBy(YdbMirrorRowCodec::table)
             val accepted = mutableListOf<MirrorPushEntityChange>()
@@ -145,11 +159,10 @@ class YdbJdbcMirrorSyncGateway(
      *
      * Основной sync-протокол использует tombstone и не должен вызывать этот метод.
      */
-    @Suppress("RedundantSuspendModifier")
     internal suspend fun deleteRows(
         syncIdsByTable: Map<MirrorSyncTable, List<String>>,
-    ): Result<Int> {
-        return runCatching {
+    ): Result<Int> = operationMutex.withLock {
+        runCatching {
             var deletedRows = 0
             withConnection { connection ->
                 syncIdsByTable.forEach { (table, syncIds) ->
@@ -207,8 +220,8 @@ class YdbJdbcMirrorSyncGateway(
         }
     }
 
-    private fun <T> withConnection(
-        block: (Connection) -> T,
+    private suspend fun <T> withConnection(
+        block: suspend (Connection) -> T,
     ): T {
         val properties = Properties().apply {
             val serviceAccountFile = config.serviceAccountFile?.takeIf(String::isNotBlank)
@@ -220,11 +233,19 @@ class YdbJdbcMirrorSyncGateway(
                     ?.let { setProperty("token", it) }
             }
         }
-        val connectionMark = TimeSource.Monotonic.markNow()
-        val connection = DriverManager.getConnection(config.jdbcUrl, properties)
-        LOGGER.fine("Mirror sync stage=connection durationMs=${connectionMark.elapsedNow().inWholeMilliseconds}")
-        return connection.use(block)
+        val activeConnection = connection?.takeIf { current ->
+            runCatching { !current.isClosed }.getOrDefault(false)
+        } ?: openConnection(properties).also { connection = it }
+        return block(activeConnection)
     }
+
+    private fun openConnection(properties: Properties): Connection {
+        val connectionMark = TimeSource.Monotonic.markNow()
+        return DriverManager.getConnection(config.jdbcUrl, properties).also {
+            LOGGER.fine("Mirror sync stage=connection durationMs=${connectionMark.elapsedNow().inWholeMilliseconds}")
+        }
+    }
+
 
     /**
      * Условно записывает строку и читает победителя из того же serializable DML.
@@ -266,3 +287,34 @@ class YdbJdbcMirrorSyncGateway(
         val LOGGER: java.util.logging.Logger = java.util.logging.Logger.getLogger("MirrorSync")
     }
 }
+
+/** Повторяет только безопасное чтение после временного отказа YDB по ресурсам. */
+internal suspend fun <T> retryYdbResourceExhausted(
+    retryDelaysMillis: List<Long> = YDB_RESOURCE_EXHAUSTED_RETRY_DELAYS_MILLIS,
+    delayAction: suspend (Long) -> Unit = { delay(it.milliseconds) },
+    block: suspend () -> T,
+): T {
+    retryDelaysMillis.forEach { retryDelayMillis ->
+        try {
+            return block()
+        } catch (throwable: Throwable) {
+            if (!throwable.isYdbResourceExhausted()) throw throwable
+            delayAction(retryDelayMillis)
+        }
+    }
+    return block()
+}
+
+/** Ищет код временного отказа во всей цепочке JDBC-исключений. */
+internal fun Throwable.isYdbResourceExhausted(): Boolean {
+    return generateSequence(this) { it.cause }.any { cause ->
+        val message = cause.message.orEmpty()
+        message.contains("RESOURCE_EXHAUSTED", ignoreCase = true) ||
+            message.contains("ResourceExhausted", ignoreCase = true) ||
+            message.contains("CLIENT_RESOURCE_EXHAUSTED", ignoreCase = true) ||
+            message.contains("401020")
+    }
+}
+
+private val YDB_RESOURCE_EXHAUSTED_RETRY_DELAYS_MILLIS = listOf(2_000L, 5_000L)
+private const val YDB_TABLE_READ_PAUSE_MILLIS = 500L

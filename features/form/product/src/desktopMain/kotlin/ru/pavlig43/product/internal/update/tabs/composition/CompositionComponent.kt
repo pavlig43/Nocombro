@@ -64,6 +64,7 @@ internal class CompositionComponent(
                         compositionUi.copy(
                             productId = product.composeId,
                             productName = product.displayName,
+                            vendorNames = product.vendorNames,
                             productType = product.type
                         )
                     )
@@ -86,6 +87,7 @@ internal class CompositionComponent(
             id = 0,
             productId = 0,
             productName = "",
+            vendorNames = "",
             productType = null,
             count = DecimalData3(0)
         )
@@ -97,6 +99,7 @@ internal class CompositionComponent(
             id = id,
             productId = productId,
             productName = productName,
+            vendorNames = vendorNames,
             productType = productType,
             count = DecimalData3(count),
             syncId = syncId,

@@ -182,6 +182,7 @@ private fun StorageTable(
                     ExportCellValue.Text(displayName)
                 }
 
+                StorageProductField.VENDOR_NAME -> ExportCellValue.Text(item.vendorNames)
                 StorageProductField.BALANCE_BEFORE -> defaultExportValue(DecimalData3(item.balanceBeforeStart))
                 StorageProductField.INCOMING -> defaultExportValue(DecimalData3(item.incoming))
                 StorageProductField.OUTGOING -> defaultExportValue(DecimalData3(item.outgoing))

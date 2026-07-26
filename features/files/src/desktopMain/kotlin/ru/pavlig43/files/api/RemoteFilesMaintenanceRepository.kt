@@ -111,6 +111,16 @@ class RemoteFilesMaintenanceRepository(
     }
 
     /**
+     * Снимает защитную отметку с загрузки, которую пользователь проверил вручную.
+     *
+     * Объект S3 не удаляется. Если его нет в Room и активном mirror, следующая
+     * проверка Doctor покажет его как orphan и потребует отдельного удаления.
+     */
+    fun releasePendingUpload(objectKey: String): Result<Unit> = runCatching {
+        pendingUploadRegistry.complete(objectKey)
+    }
+
+    /**
      * Собирает ключи, которые нельзя считать orphan-объектами.
      *
      * В набор входят активный remote mirror, текущая Room-БД и незавершённые
@@ -126,12 +136,9 @@ class RemoteFilesMaintenanceRepository(
     }
 
     private suspend fun loadActiveMirrorKeys(): Set<String> {
-        val status = mirrorSyncRemoteGateway.getStatus()
+        val status = mirrorSyncRemoteGateway.getConfigurationStatus()
         require(status.configured) { status.error ?: "Mirror sync is not configured." }
         require(status.error == null) { status.error ?: "Mirror sync is unavailable." }
-        require(MirrorSyncTable.FILE.tableName in status.availableTables) {
-            "Mirror file table is unavailable."
-        }
 
         return mirrorSyncRemoteGateway
             .loadRemoteSnapshot(listOf(MirrorSyncTable.FILE))

@@ -9,6 +9,8 @@ data class TransactionTableUi(
 
     val transactionType: TransactionType = TransactionType.BUY,
 
+    val counterpartyNames: String = "",
+
     val createdAt: LocalDateTime = emptyLocalDateTime,
 
     val comment: String = "",

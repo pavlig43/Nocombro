@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.format
 import ru.pavlig43.core.mapParallel
+import ru.pavlig43.core.model.toVendorNamesText
 import ru.pavlig43.database.data.batch.MovementType
 import ru.pavlig43.database.data.batch.dao.MovementOut
 import ru.pavlig43.database.data.storage.BatchMovementWithBalanceBD
@@ -108,6 +109,7 @@ abstract class StorageDao {
                             StorageBatch(
                                 batchId = batchId,
                                 batchName = batchName,
+                                vendorName = moves.first().batchOut.declaration.vendorName,
                                 balanceBeforeStart = balanceBeforePeriod,
                                 incoming = incoming,
                                 outgoing = outgoing,
@@ -131,6 +133,7 @@ abstract class StorageDao {
                     StorageProduct(
                         productId = productId,
                         productName = productName,
+                        vendorNames = batches.map { it.vendorName }.toVendorNamesText(),
                         balanceBeforeStart = totals.first,
                         incoming = totals.second,
                         outgoing = totals.third,

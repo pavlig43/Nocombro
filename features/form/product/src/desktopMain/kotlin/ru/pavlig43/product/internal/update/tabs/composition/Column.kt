@@ -7,6 +7,7 @@ import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.mutable.api.column.decimalColumn
 import ru.pavlig43.mutable.api.column.idWithSelection
 import ru.pavlig43.mutable.api.column.readItemTypeColumn
+import ru.pavlig43.mutable.api.column.readTextColumn
 import ru.pavlig43.mutable.api.column.textWithSearchIconColumn
 import ru.pavlig43.mutable.api.multiLine.component.MutableUiEvent
 import ru.pavlig43.tablecore.model.TableData
@@ -18,6 +19,7 @@ internal enum class CompositionField {
     COMPOSE_ID,
     SELECTION,
     PRODUCT_NAME,
+    VENDOR_NAME,
     PRODUCT_TYPE,
 
     COUNT
@@ -42,6 +44,13 @@ internal fun createCompositionColumn(
                 column = CompositionField.PRODUCT_NAME,
                 valueOf = { it.productName },
                 onOpenDialog = { onOpenProductDialog(it.composeId) },
+                filterType = TableFilterType.TextTableFilter()
+            )
+
+            readTextColumn(
+                headerText = "Поставщик",
+                column = CompositionField.VENDOR_NAME,
+                valueOf = { it.vendorNames },
                 filterType = TableFilterType.TextTableFilter()
             )
 

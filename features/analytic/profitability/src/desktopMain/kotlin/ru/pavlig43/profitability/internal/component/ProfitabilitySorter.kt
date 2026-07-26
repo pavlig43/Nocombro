@@ -15,6 +15,7 @@ internal object ProfitabilitySorter : SortMatcher<ProfitabilityProduct, Profitab
 
         val sorted = when (sort.column) {
             ProfitabilityField.PRODUCT_NAME -> items.sortedBy { it.productName }
+            ProfitabilityField.VENDOR_NAME -> items.sortedBy { it.vendorNames }
             ProfitabilityField.QUANTITY -> items.sortedBy { it.quantity }
             ProfitabilityField.REVENUE -> items.sortedBy { it.revenue }
             ProfitabilityField.EXPENSES -> items.sortedBy { it.totalExpenses }

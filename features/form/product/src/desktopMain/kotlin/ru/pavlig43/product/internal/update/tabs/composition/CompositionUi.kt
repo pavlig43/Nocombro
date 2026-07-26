@@ -10,6 +10,7 @@ internal data class CompositionUi(
     val id: Int,
     val productId: Int,
     val productName: String,
+    val vendorNames: String,
     val productType: ProductType?,
     val count: DecimalData,
     val syncId: String = defaultSyncId(),

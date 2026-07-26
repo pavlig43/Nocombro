@@ -59,6 +59,7 @@ data class CompositionOut(
     val productType: ProductType,
     val count: Long,
     val syncId: String,
+    val vendorNames: String = "",
 ): CollectionObject
 
 
