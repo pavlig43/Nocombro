@@ -109,6 +109,7 @@ class StorageComponent(
             .filter { it.isProduct && it.isExpanded }
             .map { it.productId }
             .toSet()
+        val productItems = products.filter { it.isProduct }
 
         val filtered = products.filter { item ->
             val matchesFilter = StorageFilterMatcher.matchesItem(item, filters)
@@ -118,12 +119,16 @@ class StorageComponent(
                                     item.balanceOnEnd < 0
             val isVisible = when {
                 item.isProduct -> true
+                item.hasNegativeBalanceHistory -> true
                 hasNegativeValues -> true  // Показывать партии с отрицательными значениями
                 else -> item.productId in expandedProductIds
             }
             matchesFilter && isVisible
         }
-        StorageTableData(displayedProducts = filtered)
+        StorageTableData(
+            displayedProducts = filtered,
+            areAllProductsExpanded = productItems.isNotEmpty() && productItems.all { it.isExpanded },
+        )
     }.stateIn(
         coroutineScope,
         SharingStarted.Lazily,
@@ -136,6 +141,31 @@ class StorageComponent(
                 product.copy(isExpanded = !product.isExpanded)
             } else {
                 product
+            }
+        }
+    }
+
+    internal fun toggleExpandAll() {
+        _products.update { products ->
+            val shouldExpand = products.any { it.isProduct && !it.isExpanded }
+            products.map { product ->
+                if (product.isProduct) {
+                    product.copy(isExpanded = shouldExpand)
+                } else {
+                    product
+                }
+            }
+        }
+    }
+
+    internal fun expandProduct(productId: Int) {
+        _products.update { products ->
+            products.map { product ->
+                if (product.productId == productId && product.isProduct && !product.isExpanded) {
+                    product.copy(isExpanded = true)
+                } else {
+                    product
+                }
             }
         }
     }
@@ -368,6 +398,7 @@ private fun StorageProduct.toUi(): List<StorageProductUi> {
             outgoing = batch.outgoing,
             balanceOnEnd = batch.balanceOnEnd,
             isProduct = false,
+            hasNegativeBalanceHistory = batch.hasNegativeBalanceHistory,
         )
     }
 

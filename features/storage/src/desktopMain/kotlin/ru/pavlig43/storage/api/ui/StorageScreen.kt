@@ -3,6 +3,7 @@ package ru.pavlig43.storage.api.ui
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
@@ -40,6 +42,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import ru.pavlig43.core.model.DecimalData3
@@ -73,6 +76,9 @@ import ua.wwind.table.config.TableRowContext
 import ua.wwind.table.config.TableRowStyle
 import ua.wwind.table.config.TableSettings
 import ua.wwind.table.state.TableState
+
+private val StorageWideLayoutMinWidth = 1440.dp
+private val NegativeBatchesPanelWidth = 440.dp
 
 @Suppress("LongMethod")
 @Composable
@@ -119,9 +125,11 @@ fun StorageScreen(
         is LoadState.Error -> ErrorScreen(state.message)
         is LoadState.Loading -> LoadingUi()
         is LoadState.Success -> {
+            val tableData by component.tableData.collectAsState()
             val columns = remember {
                 createStorageColumns(
                     onToggleExpand = component::toggleExpand,
+                    onToggleExpandAll = component::toggleExpandAll,
                     onOpenProduct = component::openProduct,
                 )
             }
@@ -143,7 +151,6 @@ fun StorageScreen(
                     )
                 }
             }
-            val tableData by component.tableData.collectAsState()
             val verticalState = rememberLazyListState()
             val coroutineScope = rememberCoroutineScope()
 
@@ -151,37 +158,69 @@ fun StorageScreen(
                 getNegativeBatches(tableData).toImmutableList()
             }
 
-            if (negativeBatches.isNotEmpty()) {
-                NegativeBatchesCard(
-                    negativeBatches = negativeBatches,
-                    onBatchClick = { productId, itemId ->
-                        coroutineScope.launch {
-                            // Сначала раскрываем продукт
-                            component.toggleExpand(productId)
+            val onNegativeBatchClick: (Int, Int) -> Unit = { productId, itemId ->
+                coroutineScope.launch {
+                    // Сначала раскрываем продукт
+                    component.expandProduct(productId)
 
-                            // Получаем актуальные данные
-                            val currentData = component.tableData.value
-                            val newIndex = currentData.displayedProducts
-                                .indexOfFirst { it.itemId == itemId }
-
-                            if (newIndex >= 0) {
-                                verticalState.animateScrollToItem(
-                                    index = newIndex,
-                                    scrollOffset = -80
-                                )
-                            }
+                    // Получаем актуальные данные
+                    val currentData = component.tableData.first { data ->
+                        data.displayedProducts.any { item ->
+                            item.isProduct && item.productId == productId && item.isExpanded
                         }
                     }
-                )
+                    val newIndex = currentData.displayedProducts
+                        .indexOfFirst { item ->
+                            !item.isProduct &&
+                                item.productId == productId &&
+                                item.itemId == itemId
+                        }
+
+                    if (newIndex >= 0) {
+                        verticalState.animateScrollToItem(
+                            index = newIndex,
+                            scrollOffset = -80
+                        )
+                    }
+                }
             }
 
-            StorageTable(
-                state = tableState,
-                tableData = tableData,
-                columns = columns,
-                verticalState = verticalState,
-                onRowClick = component::onRowClick,
-            )
+            BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+                if (negativeBatches.isNotEmpty() && (maxWidth >= StorageWideLayoutMinWidth)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.Top,
+                    ) {
+                        StorageTable(
+                            state = tableState,
+                            tableData = tableData,
+                            columns = columns,
+                            verticalState = verticalState,
+                            onRowClick = component::onRowClick,
+                            modifier = Modifier.weight(1f),
+                        )
+                        NegativeBatchesCard(
+                            negativeBatches = negativeBatches,
+                            onBatchClick = onNegativeBatchClick,
+                            modifier = Modifier.width(NegativeBatchesPanelWidth),
+                        )
+                    }
+                } else {
+                    if (negativeBatches.isNotEmpty()) {
+                        NegativeBatchesCard(
+                            negativeBatches = negativeBatches,
+                            onBatchClick = onNegativeBatchClick,
+                        )
+                    }
+                    StorageTable(
+                        state = tableState,
+                        tableData = tableData,
+                        columns = columns,
+                        verticalState = verticalState,
+                        onRowClick = component::onRowClick,
+                    )
+                }
+            }
         }
     }
 }
@@ -330,12 +369,7 @@ private fun getNegativeBatches(tableData: StorageTableData): List<NegativeBatchI
             // Только партии (isProduct = false)
             if (item.isProduct) return@mapNotNull null
 
-            val hasNegative = item.balanceBeforeStart < 0 ||
-                    item.incoming < 0 ||
-                    item.outgoing < 0 ||
-                    item.balanceOnEnd < 0
-
-            if (hasNegative) {
+            if (item.hasNegativeBalanceHistory) {
                 val displayName = "${item.productName} — ${item.itemName}"
                 NegativeBatchItem(item.productId, item.itemId, displayName)
             } else null

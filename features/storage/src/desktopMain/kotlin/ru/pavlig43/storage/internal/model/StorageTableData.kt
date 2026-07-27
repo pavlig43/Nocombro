@@ -4,5 +4,6 @@ import androidx.compose.runtime.Immutable
 
 @Immutable
 internal data class StorageTableData(
-    val displayedProducts: List<StorageProductUi> = emptyList()
+    val displayedProducts: List<StorageProductUi> = emptyList(),
+    val areAllProductsExpanded: Boolean = false,
 )

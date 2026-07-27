@@ -3,7 +3,15 @@ package ru.pavlig43.database
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.flow.first
+import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
+import ru.pavlig43.database.data.batch.BatchBD
+import ru.pavlig43.database.data.batch.BatchMovement
+import ru.pavlig43.database.data.batch.MovementType
+import ru.pavlig43.database.data.storage.StorageBatch
+import ru.pavlig43.database.data.storage.StorageProduct
+import ru.pavlig43.database.data.transact.Transact
+import ru.pavlig43.database.data.transact.TransactionType
 import ru.pavlig43.testkit.DesktopMainDispatcherFunSpec
 import ru.pavlig43.testkit.database.withSeededTestDatabase
 import ru.pavlig43.testkit.scenario
@@ -96,4 +104,135 @@ class StorageSmokeTest : DesktopMainDispatcherFunSpec({
             }
         }
     }
+
+    test(
+        scenario(
+            given = "batches with ordered and invalid movement histories",
+            whenAction = "storage is calculated for different period boundaries",
+            thenResult = "negative history depends on the period end but not its start",
+        )
+    ) {
+        withSeededTestDatabase { db ->
+            val repairedBatchId = db.createStorageTestBatch(
+                StorageMovementSeed(
+                    createdAt = LocalDateTime(2027, 1, 2, 10, 0),
+                    movementType = MovementType.OUTGOING,
+                    count = 1000L,
+                ),
+                StorageMovementSeed(
+                    createdAt = LocalDateTime(2027, 1, 3, 10, 0),
+                    movementType = MovementType.INCOMING,
+                    count = 1000L,
+                ),
+            )
+            val healthyBatchId = db.createStorageTestBatch(
+                StorageMovementSeed(
+                    createdAt = LocalDateTime(2027, 1, 2, 11, 0),
+                    movementType = MovementType.INCOMING,
+                    count = 1000L,
+                ),
+                StorageMovementSeed(
+                    createdAt = LocalDateTime(2027, 1, 3, 11, 0),
+                    movementType = MovementType.OUTGOING,
+                    count = 1000L,
+                ),
+            )
+            val outgoingOnlyBatchId = db.createStorageTestBatch(
+                StorageMovementSeed(
+                    createdAt = LocalDateTime(2027, 1, 2, 12, 0),
+                    movementType = MovementType.OUTGOING,
+                    count = 500L,
+                ),
+            )
+
+            val beforeFirstMovement = db.storageDao.observeOnStorageProduct(
+                start = LocalDateTime(2026, 12, 1, 0, 0),
+                end = LocalDateTime(2027, 1, 1, 23, 59),
+            ).first()
+            beforeFirstMovement.findBatch(repairedBatchId) shouldBe null
+
+            val whileNegative = db.storageDao.observeOnStorageProduct(
+                start = LocalDateTime(2027, 1, 2, 0, 0),
+                end = LocalDateTime(2027, 1, 2, 23, 59),
+            ).first()
+            requireNotNull(whileNegative.findBatch(repairedBatchId)).apply {
+                outgoing shouldBe 1000L
+                balanceOnEnd shouldBe -1000L
+                hasNegativeBalanceHistory shouldBe true
+            }
+
+            val afterRepair = db.storageDao.observeOnStorageProduct(
+                start = LocalDateTime(2027, 1, 4, 0, 0),
+                end = LocalDateTime(2027, 1, 5, 23, 59),
+            ).first()
+            requireNotNull(afterRepair.findBatch(repairedBatchId)).apply {
+                balanceBeforeStart shouldBe 0L
+                incoming shouldBe 0L
+                outgoing shouldBe 0L
+                balanceOnEnd shouldBe 0L
+                hasNegativeBalanceHistory shouldBe true
+            }
+            val healthyHistory = db.storageDao.observeOnStorageProduct(
+                start = LocalDateTime(2027, 1, 2, 0, 0),
+                end = LocalDateTime(2027, 1, 3, 23, 59),
+            ).first()
+            requireNotNull(healthyHistory.findBatch(healthyBatchId)).apply {
+                balanceOnEnd shouldBe 0L
+                hasNegativeBalanceHistory shouldBe false
+            }
+            requireNotNull(afterRepair.findBatch(outgoingOnlyBatchId)).apply {
+                balanceOnEnd shouldBe -500L
+                hasNegativeBalanceHistory shouldBe true
+            }
+        }
+    }
 })
+
+private data class StorageMovementSeed(
+    val createdAt: LocalDateTime,
+    val movementType: MovementType,
+    val count: Long,
+)
+
+private suspend fun NocombroDatabase.createStorageTestBatch(
+    vararg movements: StorageMovementSeed,
+): Int {
+    val batchId = batchDao.createBatch(
+        BatchBD(
+            id = 0,
+            productId = 1,
+            dateBorn = LocalDate(2027, 1, 1),
+            declarationId = 1,
+        )
+    ).toInt()
+
+    movements.forEach { movement ->
+        val transactionId = transactionDao.create(
+            Transact(
+                transactionType = when (movement.movementType) {
+                    MovementType.INCOMING -> TransactionType.BUY
+                    MovementType.OUTGOING -> TransactionType.OPZS
+                },
+                createdAt = movement.createdAt,
+                comment = "",
+                isCompleted = true,
+            )
+        ).toInt()
+        batchMovementDao.createMovement(
+            BatchMovement(
+                batchId = batchId,
+                movementType = movement.movementType,
+                count = movement.count,
+                transactionId = transactionId,
+            )
+        )
+    }
+
+    return batchId
+}
+
+private fun List<StorageProduct>.findBatch(batchId: Int): StorageBatch? {
+    return asSequence()
+        .flatMap { it.batches.asSequence() }
+        .firstOrNull { it.batchId == batchId }
+}

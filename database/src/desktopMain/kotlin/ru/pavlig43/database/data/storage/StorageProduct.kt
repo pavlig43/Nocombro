@@ -19,4 +19,5 @@ data class StorageBatch(
     val incoming: Long,
     val outgoing: Long,
     val balanceOnEnd: Long,
+    val hasNegativeBalanceHistory: Boolean,
 )

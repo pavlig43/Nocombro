@@ -83,8 +83,25 @@ abstract class StorageDao {
                         .map { (batch, moves) ->
                             val batchId = batch.id
                             val batchName = "($batchId) ${batch.dateBorn.format(dateFormat)}"
+                            val sortedMoves = moves.sortedWith(
+                                compareBy<MovementOut> { it.transaction.createdAt }
+                                    .thenBy { it.transaction.id }
+                                    .thenBy { it.movement.id }
+                            )
 
-                            val (balanceBeforePeriod, incoming, outgoing) = moves.fold(
+                            var runningBalance = 0L
+                            var hasNegativeBalanceHistory = false
+                            sortedMoves.forEach { move ->
+                                runningBalance += when (move.movement.movementType) {
+                                    MovementType.INCOMING -> move.movement.count
+                                    MovementType.OUTGOING -> -move.movement.count
+                                }
+                                if (runningBalance < 0L) {
+                                    hasNegativeBalanceHistory = true
+                                }
+                            }
+
+                            val (balanceBeforePeriod, incoming, outgoing) = sortedMoves.fold(
                                 Triple(
                                     0L,
                                     0L,
@@ -120,10 +137,14 @@ abstract class StorageDao {
                                 balanceBeforeStart = balanceBeforePeriod,
                                 incoming = incoming,
                                 outgoing = outgoing,
-                                balanceOnEnd = balanceBeforePeriod + incoming - outgoing
+                                balanceOnEnd = balanceBeforePeriod + incoming - outgoing,
+                                hasNegativeBalanceHistory = hasNegativeBalanceHistory,
                             )
                         }.filter { batch ->
-                            batch.incoming != 0L || batch.outgoing != 0L || batch.balanceOnEnd != 0L
+                            batch.hasNegativeBalanceHistory ||
+                                batch.incoming != 0L ||
+                                batch.outgoing != 0L ||
+                                batch.balanceOnEnd != 0L
                         }
 
                     // Пропускаем продукты без живых партий

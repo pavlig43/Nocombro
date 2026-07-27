@@ -34,12 +34,18 @@ enum class StorageProductField {
 
 internal fun createStorageColumns(
     onToggleExpand: (productId: Int) -> Unit,
+    onToggleExpandAll: () -> Unit,
     onOpenProduct: (productId: Int) -> Unit,
 ): ImmutableList<ColumnSpec<StorageProductUi, StorageProductField, StorageTableData>> =
     tableColumns {
 
         column(StorageProductField.EXPAND, valueOf = { it.isExpanded }) {
-            title { "" }
+            header { tableData ->
+                ExpandedHeader(
+                    areAllProductsExpanded = tableData.areAllProductsExpanded,
+                    onToggleExpandAll = onToggleExpandAll,
+                )
+            }
             autoWidth()
             cell { item, _ ->
                 ExpandedCell(item, onToggleExpand)
@@ -77,6 +83,22 @@ internal fun createStorageColumns(
 
 
     }
+
+@Composable
+private fun ExpandedHeader(
+    areAllProductsExpanded: Boolean,
+    onToggleExpandAll: () -> Unit,
+) {
+    ToolTipIconButton(
+        tooltipText = if (areAllProductsExpanded) "???????? ???" else "?????????? ???",
+        onClick = onToggleExpandAll,
+        icon = if (areAllProductsExpanded) {
+            Res.drawable.arrow_upward
+        } else {
+            Res.drawable.arrow_downward
+        },
+    )
+}
 
 @Composable
 private fun ExpandedCell(
