@@ -10,6 +10,7 @@ import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import ru.pavlig43.datetime.single.date.DatePickerDialog
 import ru.pavlig43.mutable.api.singleLine.ui.CreateSingleItemScreen
+import ru.pavlig43.product.internal.ProductEssentialsCards
 import ru.pavlig43.product.internal.create.component.CreateProductSingleLineComponent
 
 /**
@@ -29,7 +30,17 @@ internal fun CreateProductSingleLineScreen(
             .fillMaxWidth()
             .padding(vertical = 8.dp)
     ) {
-        CreateSingleItemScreen(component)
+        CreateSingleItemScreen(
+            component = component,
+            itemContent = { modifier ->
+                ProductEssentialsCards(
+                    component = component,
+                    editableProductType = true,
+                    onOpenDateDialog = component::onOpenDateDialog,
+                    modifier = modifier,
+                )
+            },
+        )
     }
 
     // Отображение диалога выбора даты

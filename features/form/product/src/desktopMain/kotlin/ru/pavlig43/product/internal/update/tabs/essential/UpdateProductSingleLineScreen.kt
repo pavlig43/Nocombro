@@ -4,14 +4,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import ru.pavlig43.datetime.single.date.DatePickerDialog
-import ru.pavlig43.mutable.api.singleLine.ui.SingleLineBlockScreen
+import ru.pavlig43.product.internal.ProductEssentialsCards
 
 @Composable
 internal fun UpdateProductSingleLineScreen(
     component: ProductUpdateSingleLineComponent
 ) {
     val dialog by component.dialog.subscribeAsState()
-    SingleLineBlockScreen(component)
+    ProductEssentialsCards(
+        component = component,
+        editableProductType = false,
+        onOpenDateDialog = component::onOpenDateDialog,
+    )
     dialog.child?.instance?.also {
         DatePickerDialog(it)
     }

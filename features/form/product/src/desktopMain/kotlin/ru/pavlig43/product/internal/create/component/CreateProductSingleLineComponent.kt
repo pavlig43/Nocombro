@@ -61,11 +61,13 @@ internal class CreateProductSingleLineComponent(
 
     override val columns: ImmutableList<ColumnSpec<ProductEssentialsUi, ProductField, Unit>> =
         createProductColumns0(
-            onOpenDateDialog = {
-                dialogNavigation.activate(CreateDatePickerDialogConfig)
-            },
+            onOpenDateDialog = ::onOpenDateDialog,
             onChangeItem = ::onChangeItem
         )
+
+    fun onOpenDateDialog() {
+        dialogNavigation.activate(CreateDatePickerDialogConfig)
+    }
 
     /**
      * Создаёт компонент диалога выбора даты

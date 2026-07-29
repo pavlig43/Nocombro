@@ -24,19 +24,25 @@ import ru.pavlig43.mutable.api.singleLine.model.ISingleLineTableUi
 
 
 @Composable
-fun <I : ISingleLineTableUi, C>CreateSingleItemScreen(
-    component: CreateSingleLineComponent<out SingleItem,I,C>
-){
+fun <I : ISingleLineTableUi, C> CreateSingleItemScreen(
+    component: CreateSingleLineComponent<out SingleItem, I, C>,
+    itemContent: (@Composable (Modifier) -> Unit)? = null,
+) {
     val createState by component.createState.collectAsState()
     val errorMessages by component.errorTableMessages.collectAsState()
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        SingleLineBlockScreen(
-            component = component,
-            modifier = Modifier.weight(1f)
-        )
+        val contentModifier = Modifier.weight(1f)
+        if (itemContent == null) {
+            SingleLineBlockScreen(
+                component = component,
+                modifier = contentModifier,
+            )
+        } else {
+            itemContent(contentModifier)
+        }
         CreateButton(
             onCreate = component::create,
             errorMessages = errorMessages,
