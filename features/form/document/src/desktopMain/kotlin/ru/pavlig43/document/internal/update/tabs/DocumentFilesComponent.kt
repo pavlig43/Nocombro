@@ -19,11 +19,11 @@ internal class DocumentFilesComponent(
     dependencies = dependencies
 ) {
     override val errorMessages: Flow<List<String>> = combine(
-        isAllFilesUpload,
+        areAllFilesStoredLocally,
         filesUi
-    ){isUpload,files->
+    ){areStored,files->
         buildList { 
-            if (!isUpload) add( "Идет загрузка")
+            if (!areStored) add("Идёт локальное сохранение файлов")
             if (files.isEmpty()) add("Добавь хотя бы один файл")
         }
     }

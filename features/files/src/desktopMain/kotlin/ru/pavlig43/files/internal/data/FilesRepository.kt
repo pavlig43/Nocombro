@@ -7,23 +7,19 @@ import ru.pavlig43.database.data.files.FileBD
 import ru.pavlig43.database.data.files.OwnerType
 import ru.pavlig43.database.data.files.remote.RemoteFileStorageGateway
 import ru.pavlig43.database.inTransaction
-import ru.pavlig43.files.api.PendingUploadRegistry
 import ru.pavlig43.database.data.sync.defaultUpdatedAt
 
 /**
  * Репозиторий вкладки файлов.
  *
- * Он отвечает за два разных слоя одновременно:
- * - метаданные файлов в локальной `Room` таблице `file`;
- * - операции с удалённым object storage, если он настроен.
+ * Он сохраняет metadata в локальной `Room` и при открытии восстанавливает
+ * отсутствующую локальную копию из S3.
  *
- * Такое разделение позволяет не смешивать сетевую интеграцию с UI-компонентом
- * и держать логику удаления/обновления вложений в одном месте.
+ * Новые бинарные копии этот репозиторий не загружает: их отправляет sync перед YDB.
  */
 internal class FilesRepository(
     db: NocombroDatabase,
     private val remoteFileStorageGateway: RemoteFileStorageGateway,
-    private val pendingUploadRegistry: PendingUploadRegistry = PendingUploadRegistry(),
 )  {
     private val dao = db.fileDao
     private val database = db
@@ -46,31 +42,6 @@ internal class FilesRepository(
             ownerId = ownerId,
             ownerFileType = ownerType,
             displayName = displayName,
-        )
-    }
-
-    /**
-     * Пытается отправить локальную копию файла в object storage.
-     *
-     * Если удалённое хранилище не настроено, метод считается успешным и ничего не делает.
-     * Это позволяет приложению работать в локальном режиме без отдельной ветки кода в UI.
-     * Перед сетью ключ сохраняется в [PendingUploadRegistry]. Даже успешная загрузка
-     * остаётся pending до записи метаданных в Room через [replaceOwnedFile] или [update].
-     */
-    suspend fun uploadRemoteCopy(
-        objectKey: String,
-        localPath: String,
-    ): Result<Unit> {
-        if (!remoteFileStorageGateway.isConfigured()) {
-            return Result.success(Unit)
-        }
-        pendingUploadRegistry.markPending(objectKey, localPath)
-        return remoteFileStorageGateway.upload(
-            objectKey = objectKey,
-            localPath = localPath,
-        ).fold(
-            onSuccess = { Result.success(Unit) },
-            onFailure = { Result.failure(it) },
         )
     }
 
@@ -116,8 +87,7 @@ internal class FilesRepository(
      * Создаёт или заменяет метаданные файла с новой монотонной sync-версией.
      *
      * Старый S3-объект здесь не удаляется: физическую чистку делает Doctor после
-     * сверки remote mirror. После успешной Room-транзакции ключ исключается из
-     * реестра незавершённых загрузок.
+     * сверки remote mirror. Новую копию sync отправит в S3 перед записью metadata в YDB.
      */
     @Suppress("LongParameterList")
     suspend fun replaceOwnedFile(
@@ -147,7 +117,7 @@ internal class FilesRepository(
                 dao.upsertFiles(listOf(file))
                 file
             }
-        }.onSuccess { file -> file.remoteObjectKey?.let(pendingUploadRegistry::complete) }
+        }
     }
 
     /**
@@ -159,7 +129,7 @@ internal class FilesRepository(
      *
      * Сравнение ведётся по `syncId`, потому что локальный `id` не годится как стабильный
      * идентификатор для будущей multi-device синхронизации файлов.
-     * После успешной транзакции ключи нового списка удаляются из pending-реестра.
+     * Бинарные копии отправляются позже обычным sync.
      */
     suspend fun update(changeSet: ChangeSet<List<FileBD>>): Result<Unit> {
         return runCatching {
@@ -192,11 +162,7 @@ internal class FilesRepository(
                     dao.upsertFiles(filesForUpsert)
                 }
             }
-        }.onSuccess {
-            changeSet.new.mapNotNull(FileBD::remoteObjectKey)
-                .forEach(pendingUploadRegistry::complete)
         }
-
     }
 
 }

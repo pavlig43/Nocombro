@@ -5,6 +5,9 @@ import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.ints.shouldBeGreaterThan
 import kotlinx.coroutines.Dispatchers
+import ru.pavlig43.database.data.files.remote.RemoteFileBatchUploadRepository
+import ru.pavlig43.database.data.files.remote.S3RemoteFileStorageConfig
+import ru.pavlig43.database.data.files.remote.S3RemoteFileStorageGateway
 import ru.pavlig43.database.data.sync.mirror.MirrorEntityApplyRepository
 import ru.pavlig43.database.data.sync.mirror.MirrorLocalApplyRepository
 import ru.pavlig43.database.data.sync.mirror.MirrorLocalSnapshotRepository
@@ -47,6 +50,11 @@ class YdbMirrorWorkingDatabaseRebuildTest : FunSpec({
                     remoteGateway = YdbJdbcMirrorSyncGateway(config),
                     planner = MirrorReconciliationPlanner(),
                     localApplyRepository = MirrorLocalApplyRepository(db, entityApplyRepository),
+                    remoteFileBatchUploadRepository = RemoteFileBatchUploadRepository(
+                        S3RemoteFileStorageGateway(
+                            requireNotNull(S3RemoteFileStorageConfig.fromEnvironment()),
+                        ),
+                    ),
                 )
 
                 val result = service.rebuildRemoteFromLocal().getOrThrow()

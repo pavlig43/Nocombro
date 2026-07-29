@@ -15,13 +15,14 @@ import ru.pavlig43.database.data.sync.defaultUpdatedAt
 /**
  * Генерирует и сохраняет единственный системный PDF-файл спецификации продукта.
  *
- * Репозиторий собирает локальный PDF, при необходимости загружает его в remote
- * storage и обновляет запись в таблице `file` без создания дублей.
+ * Репозиторий собирает локальный PDF и обновляет запись в таблице `file` без создания дублей.
+ * Удалённая копия будет загружена во время синхронизации.
  */
 internal class ProductSpecificationPdfRepository(
     private val fileDao: FileDao,
     private val remoteFileStorageGateway: RemoteFileStorageGateway,
     private val pdfGenerator: ProductSpecificationPdfGenerator,
+    private val managedLocalFilePath: (String) -> String = ::buildManagedLocalFilePath,
 ) {
     /**
      * Сохраняет `Спецификация.pdf` для продукта и возвращает локальный путь.
@@ -47,7 +48,7 @@ internal class ProductSpecificationPdfRepository(
                 fileSyncId = syncId,
                 originalName = PRODUCT_SPECIFICATION_FILE_NAME,
             )
-            val localPath = buildManagedLocalFilePath(canonicalFileKey)
+            val localPath = managedLocalFilePath(canonicalFileKey)
 
             pdfGenerator.generate(
                 outputPath = localPath,
@@ -55,23 +56,16 @@ internal class ProductSpecificationPdfRepository(
                 specification = specification,
             )
 
-            val remoteRef = if (remoteFileStorageGateway.isConfigured()) {
-                remoteFileStorageGateway.upload(
-                    objectKey = canonicalFileKey,
-                    localPath = localPath,
-                ).getOrThrow()
-            } else {
-                null
-            }
-
             val updatedAt = defaultUpdatedAt()
             val file = FileBD(
                 ownerId = specification.productId,
                 ownerFileType = OwnerType.PRODUCT,
                 displayName = PRODUCT_SPECIFICATION_FILE_NAME,
                 path = localPath,
-                remoteObjectKey = remoteRef?.objectKey,
-                remoteStorageProvider = remoteRef?.providerId,
+                remoteObjectKey = canonicalFileKey,
+                remoteStorageProvider = remoteFileStorageGateway.providerId.takeIf {
+                    remoteFileStorageGateway.isConfigured()
+                },
                 id = existingFile?.id ?: 0,
                 syncId = syncId,
                 updatedAt = updatedAt,

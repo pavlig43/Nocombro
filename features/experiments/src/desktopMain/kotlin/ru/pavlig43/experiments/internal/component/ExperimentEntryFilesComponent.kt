@@ -19,9 +19,9 @@ internal class ExperimentEntryFilesComponent(
 ) {
     override val persistFilesOnChange: Boolean = true
 
-    override val errorMessages: Flow<List<String>> = isAllFilesUpload.map { isUpload ->
+    override val errorMessages: Flow<List<String>> = areAllFilesStoredLocally.map { areStored ->
         buildList {
-            if (!isUpload) add("Идет загрузка файлов")
+            if (!areStored) add("Идёт локальное сохранение файлов")
         }
     }
 }

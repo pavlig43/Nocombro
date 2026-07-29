@@ -17,9 +17,9 @@ internal class VendorFilesComponent(
     ownerType = OwnerType.VENDOR,
     dependencies = dependencies
 ) {
-    override val errorMessages: Flow<List<String>> = isAllFilesUpload.map { isUpload ->
+    override val errorMessages: Flow<List<String>> = areAllFilesStoredLocally.map { areStored ->
         buildList {
-            if (!isUpload) add("Идет загрузка")
+            if (!areStored) add("Идёт локальное сохранение файлов")
         }
     }
 }

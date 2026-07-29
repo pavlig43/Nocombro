@@ -5,6 +5,8 @@ import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.assertions.throwables.shouldThrow
+import ru.pavlig43.database.data.files.remote.NoopRemoteFileStorageGateway
+import ru.pavlig43.database.data.files.remote.RemoteFileBatchUploadRepository
 import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.database.data.sync.mirror.MirrorEntityApplyRepository
 import ru.pavlig43.database.data.sync.mirror.MirrorLocalApplyRepository
@@ -98,6 +100,7 @@ class MirrorLocalApplyRepositoryTest : DesktopMainDispatcherFunSpec({
                 remoteGateway = gateway,
                 planner = MirrorReconciliationPlanner(),
                 localApplyRepository = applyRepository,
+                remoteFileBatchUploadRepository = RemoteFileBatchUploadRepository(NoopRemoteFileStorageGateway()),
             )
 
             val result = service.rebuildRemoteFromLocal().getOrThrow()

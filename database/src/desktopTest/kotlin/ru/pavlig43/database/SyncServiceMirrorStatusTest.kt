@@ -1,7 +1,12 @@
 package ru.pavlig43.database
 
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.collections.shouldContainExactly
+import ru.pavlig43.database.data.files.FileBD
+import ru.pavlig43.database.data.files.OwnerType
 import kotlinx.datetime.LocalDateTime
+import ru.pavlig43.database.data.files.remote.NoopRemoteFileStorageGateway
+import ru.pavlig43.database.data.files.remote.RemoteFileBatchUploadRepository
 import ru.pavlig43.database.data.files.remote.RemoteFileBatchDownloadRepository
 import ru.pavlig43.database.data.files.remote.RemoteFileRef
 import ru.pavlig43.database.data.files.remote.RemoteFileStorageGateway
@@ -9,6 +14,7 @@ import ru.pavlig43.database.data.files.remote.RemoteStorageObject
 import ru.pavlig43.database.data.sync.SyncService
 import ru.pavlig43.database.data.sync.SyncAnalysisReportWriter
 import ru.pavlig43.database.data.sync.SyncStateEntity
+import ru.pavlig43.database.data.sync.mirror.FileMirrorRow
 import ru.pavlig43.database.data.sync.SyncStateRepository
 import ru.pavlig43.database.data.sync.defaultUpdatedAt
 import ru.pavlig43.database.data.sync.mirror.MirrorEntityApplyRepository
@@ -349,6 +355,67 @@ class SyncServiceMirrorStatusTest : DesktopMainDispatcherFunSpec({
         }
     }
 
+    test("file conflict uploads S3 only when the local side wins") {
+        listOf(
+            MirrorConflictWinner.LOCAL to listOf("s3", "ydb"),
+            MirrorConflictWinner.REMOTE to listOf("ydb"),
+        ).forEach { (winner, expectedEvents) ->
+            withEmptyTestDatabase { db ->
+                val version = LocalDateTime(2026, 7, 22, 10, 0)
+                val vendor = Vendor(displayName = "File owner", updatedAt = version)
+                val vendorId = db.vendorDao.create(vendor).toInt()
+                val localFile = Files.createTempFile("nocombro-file-conflict", ".bin").toFile()
+                localFile.writeText("local")
+                try {
+                    db.fileDao.upsertFiles(
+                        listOf(
+                            FileBD(
+                                ownerId = vendorId,
+                                ownerFileType = OwnerType.VENDOR,
+                                displayName = "local.bin",
+                                path = localFile.absolutePath,
+                                remoteObjectKey = "files/vendor/file-conflict/local.bin",
+                                remoteStorageProvider = "fake",
+                                syncId = "file-conflict",
+                                updatedAt = version,
+                            )
+                        )
+                    )
+                    val remoteRow = FileMirrorRow(
+                        syncId = "file-conflict",
+                        ownerType = OwnerType.VENDOR,
+                        ownerSyncId = vendor.syncId,
+                        displayName = "remote.bin",
+                        path = "missing-remote.bin",
+                        remoteObjectKey = "files/vendor/file-conflict/remote.bin",
+                        remoteStorageProvider = "fake",
+                        updatedAt = version,
+                    )
+                    val events = mutableListOf<String>()
+                    val fileGateway = ConfiguredFileStorageGateway(events)
+                    val mirrorGateway = ConditionalFileGateway(remoteRow, events)
+                    val service = createSyncService(
+                        db = db,
+                        gateway = mirrorGateway,
+                        uploadGateway = fileGateway,
+                    )
+                    val conflict = service.getStatus().conflicts.single {
+                        it.table == MirrorSyncTable.FILE
+                    }
+
+                    service.resolveConflict(conflict, winner).getOrThrow()
+
+                    events shouldBe expectedEvents
+                    fileGateway.uploadCalls shouldBe if (winner == MirrorConflictWinner.LOCAL) 1 else 0
+                    mirrorGateway.remoteRow.displayName shouldBe
+                        if (winner == MirrorConflictWinner.LOCAL) "local.bin" else "remote.bin"
+                } finally {
+                    localFile.delete()
+                }
+            }
+        }
+    }
+
     test("rejected conflict resolution keeps Room and returns refreshed rows to Doctor") {
         withEmptyTestDatabase { db ->
             val version = LocalDateTime(2026, 1, 1, 0, 0)
@@ -433,6 +500,87 @@ class SyncServiceMirrorStatusTest : DesktopMainDispatcherFunSpec({
         }
     }
 
+    test("file push uploads S3 before YDB and retries after either failure") {
+        withEmptyTestDatabase { db ->
+            val initialState = SyncStateEntity(
+                lastPushAt = LocalDateTime(2026, 7, 20, 10, 0),
+                lastPullAt = LocalDateTime(2026, 7, 20, 11, 0),
+            )
+            db.syncStateDao.upsertSyncState(initialState)
+            val vendor = Vendor(
+                displayName = "File owner",
+                updatedAt = LocalDateTime(2026, 7, 21, 10, 0),
+            )
+            val vendorId = db.vendorDao.create(vendor).toInt()
+            val localFile = Files.createTempFile("nocombro-sync-file", ".bin").toFile()
+            localFile.writeText("content")
+            try {
+                db.fileDao.upsertFiles(
+                    listOf(
+                        FileBD(
+                            ownerId = vendorId,
+                            ownerFileType = OwnerType.VENDOR,
+                            displayName = "attachment.bin",
+                            path = localFile.absolutePath,
+                            remoteObjectKey = "files/vendor/file-sync/attachment.bin",
+                            remoteStorageProvider = "fake",
+                            syncId = "file-sync",
+                            updatedAt = LocalDateTime(2026, 7, 21, 10, 1),
+                        )
+                    )
+                )
+                val events = mutableListOf<String>()
+                val fileGateway = ConfiguredFileStorageGateway(events).apply {
+                    failUploads = true
+                }
+                val mirrorGateway = StatusMirrorGateway(
+                    checkedAt = LocalDateTime(2026, 7, 21, 12, 0),
+                    events = events,
+                )
+                val service = createSyncService(
+                    db = db,
+                    gateway = mirrorGateway,
+                    uploadGateway = fileGateway,
+                )
+
+                val s3Failure = service.syncOnce()
+
+                s3Failure.error?.contains("S3 upload") shouldBe true
+                events.shouldContainExactly("s3")
+                mirrorGateway.pushCalls shouldBe 0
+                db.syncStateDao.getSyncState() shouldBe initialState
+                db.fileDao.getFiles(vendorId, OwnerType.VENDOR).size shouldBe 1
+
+                fileGateway.failUploads = false
+                db.vendorDao.getVendorBySyncId("remote-vendor-0") shouldBe null
+                mirrorGateway.pushError = "YDB unavailable"
+                events.clear()
+
+                val ydbFailure = service.syncOnce()
+
+                ydbFailure.error?.contains("YDB unavailable") shouldBe true
+                events.shouldContainExactly("s3", "ydb")
+                mirrorGateway.pushCalls shouldBe 1
+                db.syncStateDao.getSyncState() shouldBe initialState
+
+                mirrorGateway.pushError = null
+                db.vendorDao.getVendorBySyncId("remote-vendor-0") shouldBe null
+                events.clear()
+
+                val success = service.syncOnce()
+
+                success.error shouldBe null
+                events.shouldContainExactly("s3", "ydb")
+                fileGateway.uploadCalls shouldBe 3
+                mirrorGateway.pushCalls shouldBe 2
+                db.fileDao.getFiles(vendorId, OwnerType.VENDOR).size shouldBe 1
+            } finally {
+                db.vendorDao.getVendorBySyncId("remote-vendor-0")?.displayName shouldBe "Remote vendor 0"
+                localFile.delete()
+            }
+        }
+    }
+
     test("sync state timestamps upsert the default row atomically") {
         withEmptyTestDatabase { db ->
             val repository = SyncStateRepository(db.syncStateDao)
@@ -455,6 +603,7 @@ private fun createSyncService(
     gateway: MirrorSyncRemoteGateway,
     fileRepository: RemoteFileBatchDownloadRepository? = null,
     reportWriter: SyncAnalysisReportWriter = SyncAnalysisReportWriter(),
+    uploadGateway: RemoteFileStorageGateway = NoopRemoteFileStorageGateway(),
 ): SyncService {
     val applyRepository = MirrorLocalApplyRepository(
         db = db,
@@ -467,18 +616,30 @@ private fun createSyncService(
             remoteGateway = gateway,
             planner = MirrorReconciliationPlanner(),
             localApplyRepository = applyRepository,
+            remoteFileBatchUploadRepository = RemoteFileBatchUploadRepository(uploadGateway),
         ),
         remoteFileBatchDownloadRepository = fileRepository,
         syncAnalysisReportWriter = reportWriter,
     )
 }
 
-private class ConfiguredFileStorageGateway : RemoteFileStorageGateway {
+private class ConfiguredFileStorageGateway(
+    private val events: MutableList<String>? = null,
+) : RemoteFileStorageGateway {
     var downloadCalls = 0
+    var uploadCalls = 0
+    var failUploads = false
     override val providerId = "fake"
     override fun isConfigured() = true
-    override suspend fun upload(objectKey: String, localPath: String) =
-        Result.success(RemoteFileRef(providerId, objectKey))
+    override suspend fun upload(objectKey: String, localPath: String): Result<RemoteFileRef> {
+        uploadCalls++
+        events?.add("s3")
+        return if (failUploads) {
+            Result.failure(IllegalStateException("S3 unavailable"))
+        } else {
+            Result.success(RemoteFileRef(providerId, objectKey))
+        }
+    }
     override suspend fun download(objectKey: String, localPath: String): Result<Unit> {
         downloadCalls++
         return Result.success(Unit)
@@ -499,6 +660,8 @@ private class StatusMirrorGateway(
     private val configured: Boolean = true,
     private val snapshotError: String? = null,
     private val onSnapshotLoad: suspend () -> Unit = {},
+    private val events: MutableList<String>? = null,
+    var pushError: String? = null,
 ) : MirrorSyncRemoteGateway {
     var configurationStatusCalls = 0
     var statusCalls = 0
@@ -550,6 +713,10 @@ private class StatusMirrorGateway(
 
     override suspend fun pushMirrorState(changes: List<MirrorPushEntityChange>): Result<MirrorPushResult> {
         pushCalls++
+        events?.add("ydb")
+        pushError?.let { message ->
+            return Result.failure(IllegalStateException(message))
+        }
         return Result.success(MirrorPushResult(checkedAt, changes.mapTo(mutableSetOf()) { it.table }))
     }
 
@@ -874,3 +1041,50 @@ private fun Vendor.toMirrorRowForTest() = VendorMirrorRow(
     updatedAt = updatedAt,
     deletedAt = deletedAt,
 )
+
+private class ConditionalFileGateway(
+    initialRemoteRow: FileMirrorRow,
+    private val events: MutableList<String>,
+) : MirrorSyncRemoteGateway {
+    var remoteRow = initialRemoteRow
+        private set
+
+    override suspend fun getConfigurationStatus() = MirrorRemoteStatus(
+        configured = true,
+        availableTables = setOf(MirrorSyncTable.FILE.tableName),
+        checkedAt = remoteRow.updatedAt,
+    )
+
+    override suspend fun getStatus() = getConfigurationStatus()
+
+    override suspend fun loadRemoteSnapshot(
+        tables: List<MirrorSyncTable>,
+    ): Result<MirrorRemoteSnapshot> {
+        return Result.success(
+            MirrorRemoteSnapshot(
+                loadedAt = remoteRow.updatedAt,
+                rowsByTable = tables.associateWith { table ->
+                    if (table == MirrorSyncTable.FILE) listOf(remoteRow) else emptyList()
+                },
+            )
+        )
+    }
+
+    override suspend fun pushMirrorState(
+        changes: List<MirrorPushEntityChange>,
+    ): Result<MirrorPushResult> {
+        events += "ydb"
+        val incoming = changes.single()
+        remoteRow = incoming.row as FileMirrorRow
+        return Result.success(
+            MirrorPushResult(
+                pushedAt = remoteRow.updatedAt,
+                affectedTables = setOf(MirrorSyncTable.FILE),
+                acceptedChanges = listOf(incoming),
+            )
+        )
+    }
+
+    override suspend fun pullMirrorState(request: MirrorPullRequest) =
+        Result.success(MirrorPullResult(remoteRow.updatedAt, emptyList()))
+}

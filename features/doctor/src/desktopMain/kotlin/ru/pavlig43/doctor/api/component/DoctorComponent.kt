@@ -78,7 +78,7 @@ class DoctorComponent(
     val remoteCleanupStatusMessage = _remoteCleanupStatusMessage.asStateFlow()
 
     private val _pendingUploads = MutableStateFlow<List<PendingUpload>>(emptyList())
-    /** Незавершённые S3-загрузки, каждая из которых блокирует удалённую чистку. */
+    /** Старые незавершённые S3-загрузки, каждая из которых блокирует удалённую чистку. */
     val pendingUploads = _pendingUploads.asStateFlow()
 
     private val _syncConflicts = MutableStateFlow<List<MirrorVersionConflict>>(emptyList())
@@ -385,7 +385,7 @@ class DoctorComponent(
             return "Есть локальные изменения для отправки. Сначала выполните sync/push."
         }
         if (pendingUploads.isNotEmpty()) {
-            return "Есть незавершённые загрузки файлов. Чистка S3 заблокирована."
+            return "Есть старые незавершённые загрузки файлов. Чистка S3 заблокирована."
         }
         if (syncStatus.lastPullAt == null) {
             return "Проверка S3 недоступна, пока приложение не синхронизировано."

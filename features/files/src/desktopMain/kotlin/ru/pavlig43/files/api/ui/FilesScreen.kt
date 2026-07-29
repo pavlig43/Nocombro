@@ -72,7 +72,7 @@ fun FilesScreen(
                 hasLocalFile = component::hasLocalFile,
                 downloadingComposeKeys = downloadingComposeKeys,
                 removeFile = component::removeFile,
-                retryLoadFile = component::retryLoadFile,
+                retrySaveFile = component::retrySaveFile,
                 calculateNocombroFileName = component::calculateNocombroFileName,
                 modifier = it
 
@@ -94,7 +94,7 @@ fun FilesScreen(
  * @param calculateNocombroFileName Функция для вычисления имени файла.
  *                                  Используется для проверки дубликатов
  * @param removeFile Callback для удаления файла из стэйта ui по его composeKey
- * @param retryLoadFile Callback для повторной загрузки файла по его composeKey (например, при ошибке загрузки)
+ * @param retrySaveFile Callback для повтора локального сохранения файла после ошибки
  *
  * ## Логика работы:
  * 1. **Добавление файла**: Пользователь выбирает файл через системный файл-пикер
@@ -119,7 +119,7 @@ private fun AddFileBody(
     downloadingComposeKeys: Set<Int>,
     calculateNocombroFileName: (PlatformFile) -> String,
     removeFile: (Int) -> Unit,
-    retryLoadFile: (Int) -> Unit,
+    retrySaveFile: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     // Состояние для управления диалогом дубликатов файлов
@@ -201,7 +201,7 @@ private fun AddFileBody(
                 downloadFile = downloadFile,
                 hasLocalFile = hasLocalFile(file),
                 isDownloading = file.composeKey in downloadingComposeKeys,
-                retryLoadFile = retryLoadFile
+                retrySaveFile = retrySaveFile
             )
         }
     }

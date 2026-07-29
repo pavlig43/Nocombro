@@ -215,7 +215,7 @@ internal fun DoctorRemoteFileCleanupTool(
 
         if (pendingUploads.isNotEmpty()) {
             Text(
-                text = "Незавершённые загрузки: ${pendingUploads.size}",
+                text = "Старые незавершённые загрузки: ${pendingUploads.size}",
                 style = MaterialTheme.typography.titleSmall,
                 color = MaterialTheme.colorScheme.error,
             )

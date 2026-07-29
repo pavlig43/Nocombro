@@ -4,7 +4,7 @@ import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.name
 import io.github.vinceglb.filekit.path
 import kotlinx.datetime.LocalDateTime
-import ru.pavlig43.files.api.uploadState.UploadState
+import ru.pavlig43.files.api.localstate.LocalFileState
 
 
 data class FileUi(
@@ -14,7 +14,7 @@ data class FileUi(
     val composeKey: Int,
     val displayName: String,
     internal val platformFile: PlatformFile,
-    internal val uploadState: UploadState,
+    internal val localState: LocalFileState,
     val remoteObjectKey: String? = null,
     val remoteStorageProvider: String? = null,
 ) {

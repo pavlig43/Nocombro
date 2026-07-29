@@ -24,8 +24,8 @@ import org.jetbrains.compose.resources.painterResource
 import ru.pavlig43.coreui.LoadingUi
 import ru.pavlig43.coreui.tooltip.ToolTipIconButton
 import ru.pavlig43.coreui.tooltip.ToolTipProject
+import ru.pavlig43.files.api.localstate.LocalFileState
 import ru.pavlig43.files.api.model.FileUi
-import ru.pavlig43.files.api.uploadState.UploadState
 import ru.pavlig43.theme.Res
 import ru.pavlig43.theme.check
 import ru.pavlig43.theme.cloud_download
@@ -45,7 +45,7 @@ internal fun AddFileRow(
     hasLocalFile: Boolean,
     isDownloading: Boolean,
     removeFile: (Int) -> Unit,
-    retryLoadFile: (Int) -> Unit,
+    retrySaveFile: (Int) -> Unit,
     modifier: Modifier = Modifier.Companion
 ) {
 
@@ -94,9 +94,9 @@ internal fun AddFileRow(
             fileUi = fileUi,
             removeFile = removeFile
         )
-        UploadIcon(
+        LocalSaveIcon(
             fileUi = fileUi,
-            retryLoadFile = retryLoadFile
+            retrySaveFile = retrySaveFile
         )
 
     }
@@ -111,7 +111,7 @@ private fun OnOpenIconButton(
         tooltipText = "Открыть",
         onClick = { onOpenFile(fileUi) },
         icon = Res.drawable.search,
-        enabled = fileUi.uploadState !is UploadState.Loading,
+        enabled = fileUi.localState !is LocalFileState.Saving,
 
         )
 }
@@ -123,19 +123,19 @@ private fun FilePresenceStatus(
     hasLocalFile: Boolean,
     isDownloading: Boolean,
 ) {
-    val uploadSucceeded = fileUi.uploadState is UploadState.Success
     val statusText = when {
-        fileUi.uploadState is UploadState.Error -> "Ошибка загрузки"
+        fileUi.localState is LocalFileState.Error -> "Ошибка локального сохранения"
+        fileUi.localState is LocalFileState.Saving -> "Сохраняется локально"
         isDownloading -> "Скачивается"
-        hasLocalFile && uploadSucceeded -> "Локально и загружен"
-        !hasLocalFile && uploadSucceeded -> "Загружен, локальной копии нет"
+        hasLocalFile && fileUi.localState is LocalFileState.Saved -> "Сохранён локально"
+        !hasLocalFile && fileUi.localState is LocalFileState.Saved -> "Локальной копии нет"
         hasLocalFile && fileUi.remoteObjectKey != null -> "Локально, есть remote key"
         hasLocalFile -> "Локально"
         fileUi.remoteObjectKey != null -> "Локально нет, есть remote key"
         else -> "Нет локальной копии"
     }
     val statusColor = when {
-        fileUi.uploadState is UploadState.Error -> MaterialTheme.colorScheme.error
+        fileUi.localState is LocalFileState.Error -> MaterialTheme.colorScheme.error
         isDownloading -> MaterialTheme.colorScheme.primary
         hasLocalFile -> MaterialTheme.colorScheme.secondary
         else -> MaterialTheme.colorScheme.outline
@@ -168,7 +168,7 @@ private fun DownloadIconButton(
         tooltipText = "Скачать локальную копию",
         onClick = { onDownload(fileUi.composeKey) },
         icon = Res.drawable.cloud_download,
-        enabled = fileUi.uploadState !is UploadState.Loading,
+        enabled = fileUi.localState !is LocalFileState.Saving,
     )
 }
 
@@ -179,7 +179,7 @@ private fun RemoveIconButton(
 ) {
     ToolTipIconButton(
         tooltipText = "Удалить вложение из записи",
-        enabled = fileUi.uploadState !is UploadState.Loading,
+        enabled = fileUi.localState !is LocalFileState.Saving,
         onClick = { removeFile(fileUi.composeKey) },
         icon = Res.drawable.delete
     )
@@ -187,21 +187,21 @@ private fun RemoveIconButton(
 }
 
 @Composable
-private fun UploadIcon(
+private fun LocalSaveIcon(
     fileUi: FileUi,
-    retryLoadFile: (Int) -> Unit
+    retrySaveFile: (Int) -> Unit
 ) {
-    when (val state = fileUi.uploadState) {
-        UploadState.Loading -> LoadingUi(Modifier.size(24.dp))
-        UploadState.Success -> ToolTipProject(
-            tooltipText = "Загружено"
+    when (val state = fileUi.localState) {
+        LocalFileState.Saving -> LoadingUi(Modifier.size(24.dp))
+        LocalFileState.Saved -> ToolTipProject(
+            tooltipText = "Сохранён локально"
         ) { Icon(painterResource(Res.drawable.check), contentDescription = null) }
 
-        is UploadState.Error -> Column {
+        is LocalFileState.Error -> Column {
             Text(state.message)
             ToolTipIconButton(
-                tooltipText = "${state.message} Повторить загрузку",
-                onClick = { retryLoadFile(fileUi.composeKey) },
+                tooltipText = "${state.message} Повторить сохранение",
+                onClick = { retrySaveFile(fileUi.composeKey) },
                 icon = Res.drawable.cloud_download
             )
         }

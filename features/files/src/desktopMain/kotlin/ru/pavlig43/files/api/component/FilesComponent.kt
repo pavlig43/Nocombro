@@ -27,8 +27,8 @@ import ru.pavlig43.database.data.files.buildManagedLocalFilePath
 import ru.pavlig43.database.data.sync.defaultSyncId
 import ru.pavlig43.database.data.sync.defaultUpdatedAt
 import ru.pavlig43.files.api.FilesDependencies
+import ru.pavlig43.files.api.localstate.LocalFileState
 import ru.pavlig43.files.api.model.FileUi
-import ru.pavlig43.files.api.uploadState.UploadState
 import ru.pavlig43.files.internal.data.FilesRepository
 import ru.pavlig43.files.internal.di.filesModule
 import ru.pavlig43.loadinitdata.api.component.LoadInitDataComponent
@@ -37,14 +37,12 @@ import java.io.File
 /**
  * Базовый tab-компонент для вложений в формах.
  *
- * Компонент по-прежнему работает как локальный менеджер файлов для формы, но теперь ещё
- * готовит ключ объекта и запускает загрузку удалённой копии через репозиторий.
+ * Компонент копирует файл в управляемый каталог и заранее готовит ключ S3.
  *
- * Важный принцип здесь такой:
- * - UI и форма работают с `PlatformFile` и локальным состоянием;
- * - репозиторий занимается метаданными и удалённым хранилищем;
- * - стабильный `syncId` файла создаётся сразу при добавлении вложения, чтобы не зависеть
- *   от локального `id` из Room.
+ * UI и форма считают файл готовым после локального копирования. Удалённую копию
+ * позже отправляет обычная синхронизация перед записью metadata в YDB.
+ *
+ * Стабильный `syncId` файла создаётся сразу, чтобы не зависеть от локального `id` Room.
  */
 @Suppress("TooManyFunctions")
 abstract class FilesComponent(
@@ -125,7 +123,7 @@ abstract class FilesComponent(
             platformFile = platformFile,
             composeKey = composeKey,
             displayName = platformFile.name,
-            uploadState = UploadState.Loading,
+            localState = LocalFileState.Saving,
         )
 
         _filesUi.update { lst ->
@@ -139,8 +137,8 @@ abstract class FilesComponent(
 
     @Suppress("RedundantSuspendModifier")
     /**
-     * Сохраняет локальную копию файла в каталоге приложения и, если доступно удалённое хранилище,
-     * отправляет этот же файл в удалённый bucket.
+     * Сохраняет локальную копию файла в каталоге приложения.
+     * Сетевых операций здесь нет.
      */
     private suspend fun saveFileInNocombro(fileUi: FileUi) {
         val remoteObjectKey = calculateRemoteObjectKey(fileUi.syncId, fileUi.platformFile)
@@ -151,10 +149,6 @@ abstract class FilesComponent(
         val result: Result<Unit> = runCatching {
             File(nocombroFile.path).parentFile?.mkdirs()
             nocombroFile.write(fileUi.platformFile)
-            filesRepository.uploadRemoteCopy(
-                objectKey = remoteObjectKey,
-                localPath = nocombroFile.path,
-            ).getOrThrow()
         }
         _filesUi.update { lst ->
             lst.map { file ->
@@ -167,9 +161,9 @@ abstract class FilesComponent(
                         } else {
                             file.remoteStorageProvider
                         },
-                        uploadState = if (result.isSuccess) UploadState.Success else UploadState.Error(
-                            message = result.exceptionOrNull()?.message ?: "unknown error"
-                        )
+                        localState = if (result.isSuccess) LocalFileState.Saved else LocalFileState.Error(
+                            message = result.exceptionOrNull()?.message ?: "unknown error",
+                        ),
                     )
                 } else file
             }
@@ -183,20 +177,19 @@ abstract class FilesComponent(
     /**
      * Повторяет сохранение файла только из состояния ошибки.
      *
-     * Проверка и перевод в `Loading` защищены [retryLock], поэтому быстрые двойные
-     * клики запускают не больше одной загрузки. Дисковая и сетевая работа идёт на
-     * IO dispatcher.
+     * Проверка и перевод в `Saving` защищены [retryLock], поэтому быстрые двойные
+     * клики запускают не больше одного копирования на IO dispatcher.
      *
      * @param composeKey стабильный ключ строки файла в текущем UI-снимке.
      */
-    internal fun retryLoadFile(composeKey: Int) {
+    internal fun retrySaveFile(composeKey: Int) {
         val file = synchronized(retryLock) {
             val current = _filesUi.value.firstOrNull { it.composeKey == composeKey }
                 ?: return
-            if (current.uploadState !is UploadState.Error) return
-            val loading = current.copy(uploadState = UploadState.Loading)
-            _filesUi.value = _filesUi.value.map { if (it.composeKey == composeKey) loading else it }
-            loading
+            if (current.localState !is LocalFileState.Error) return
+            val saving = current.copy(localState = LocalFileState.Saving)
+            _filesUi.value = _filesUi.value.map { if (it.composeKey == composeKey) saving else it }
+            saving
         }
         coroutineScope.launch(Dispatchers.IO) {
             saveFileInNocombro(file)
@@ -300,8 +293,8 @@ abstract class FilesComponent(
         initDataComponent.retryLoadInitData()
     }
 
-    protected val isAllFilesUpload: Flow<Boolean> =
-        _filesUi.map { it.all { file -> file.uploadState is UploadState.Success } }
+    protected val areAllFilesStoredLocally: Flow<Boolean> =
+        _filesUi.map { it.all { file -> file.localState is LocalFileState.Saved } }
 
     override suspend fun onUpdate(): Result<Unit> {
         val old = initDataComponent.firstData.value?.toDto()
@@ -339,7 +332,7 @@ private fun FileBD.toFileUI(composeKey: Int): FileUi {
         composeKey = composeKey,
         displayName = displayName,
         platformFile = PlatformFile(path),
-        uploadState = UploadState.Success,
+        localState = LocalFileState.Saved,
         remoteObjectKey = remoteObjectKey,
         remoteStorageProvider = remoteStorageProvider,
     )

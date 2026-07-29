@@ -1,6 +1,7 @@
 package ru.pavlig43.database.data.sync.mirror
 
 import kotlinx.datetime.LocalDateTime
+import ru.pavlig43.database.data.files.remote.RemoteFileBatchUploadRepository
 import ru.pavlig43.database.data.sync.defaultUpdatedAt
 import kotlin.time.TimeSource
 
@@ -21,6 +22,7 @@ class MirrorReconciliationService(
     private val remoteGateway: MirrorSyncRemoteGateway,
     private val planner: MirrorReconciliationPlanner,
     private val localApplyRepository: MirrorLocalApplyRepository,
+    private val remoteFileBatchUploadRepository: RemoteFileBatchUploadRepository,
 ) {
     /** Возвращает низкоуровневый статус remote gateway без загрузки snapshot. */
     suspend fun getStatus(): MirrorRemoteStatus = remoteGateway.getStatus()
@@ -185,6 +187,7 @@ class MirrorReconciliationService(
             )
         }
 
+        uploadLocalFiles(initialPlan.pushChanges)
         val firstResult = remoteGateway.pushMirrorState(initialPlan.pushChanges)
             .getOrElse { throw stageFailure("push", it) }
         val acceptedChanges = firstResult.acceptedOrLegacy(initialPlan.pushChanges).toMutableList()
@@ -211,6 +214,7 @@ class MirrorReconciliationService(
             )
         }
 
+        uploadLocalFiles(refreshedPlan.pushChanges)
         val retryResult = remoteGateway.pushMirrorState(refreshedPlan.pushChanges)
             .getOrElse { throw stageFailure("push retry", it) }
         if (retryResult.rejectedChanges.isNotEmpty()) {
@@ -280,6 +284,7 @@ class MirrorReconciliationService(
         val tombstones = rowsToTombstone.map { change ->
             change.copy(row = change.row.markDeleted(tombstonedAt))
         }
+        uploadLocalFiles(localChanges)
         val pushResult = remoteGateway.pushMirrorState(localChanges + tombstones).getOrThrow()
         check(pushResult.rejectedChanges.isEmpty()) {
             "Remote rebuild rejected ${pushResult.rejectedChanges.size} newer rows"
@@ -319,6 +324,9 @@ class MirrorReconciliationService(
             MirrorConflictWinner.REMOTE -> current.remoteRow
         }.withSyncVersion(defaultUpdatedAt(newestVersion))
         val change = MirrorPushEntityChange(current.table, selected)
+        if (winner == MirrorConflictWinner.LOCAL) {
+            uploadLocalFiles(listOf(change))
+        }
         val localApplied = localApplyRepository.applyIfCurrentMatches(
             expected = MirrorPushEntityChange(current.table, current.localRow),
             change = change,
@@ -338,6 +346,16 @@ class MirrorReconciliationService(
                     "table=${current.table.tableName}, sync_id=${current.localRow.syncId}"
             )
         MirrorConflictResolutionResult.Rejected(rejected)
+    }
+
+    /**
+     * Не допускает запись file-метаданных в YDB до успешной загрузки локальных файлов.
+     */
+    private suspend fun uploadLocalFiles(changes: List<MirrorPushEntityChange>) {
+        remoteFileBatchUploadRepository.uploadLocalWinners(changes)
+            .getOrElse { throwable ->
+                throw stageFailure("S3 upload", throwable)
+            }
     }
 
     /**

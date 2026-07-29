@@ -6,6 +6,7 @@ import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.NocombroTransactionExecutor
 import ru.pavlig43.database.data.files.remote.NoopRemoteFileStorageGateway
 import ru.pavlig43.database.data.files.remote.RemoteFileBatchDownloadRepository
+import ru.pavlig43.database.data.files.remote.RemoteFileBatchUploadRepository
 import ru.pavlig43.database.data.files.remote.RemoteFileStorageGateway
 import ru.pavlig43.database.data.files.remote.S3RemoteFileStorageConfig
 import ru.pavlig43.database.data.files.remote.S3RemoteFileStorageGateway
@@ -37,6 +38,7 @@ internal fun getDatabaseModule(rootDependencies: RootDependencies) = listOf(
         }
         single { SyncStateRepository(get<NocombroDatabase>().syncStateDao) }
         single { RemoteFileBatchDownloadRepository(get(), get()) }
+        single { RemoteFileBatchUploadRepository(get()) }
         single { MirrorEntityApplyRepository(get()) }
         single { MirrorHardDeleteRepository(get()) }
         single { MirrorLocalSnapshotRepository(get()) }
@@ -46,7 +48,7 @@ internal fun getDatabaseModule(rootDependencies: RootDependencies) = listOf(
             val config = YdbMirrorJdbcConfig.fromEnvironment()
             YdbJdbcMirrorSyncGateway(config)
         }
-        single { MirrorReconciliationService(get(), get(), get(), get()) }
+        single { MirrorReconciliationService(get(), get(), get(), get(), get()) }
         single { SyncService(get(), get(), get()) }
     },
 )
