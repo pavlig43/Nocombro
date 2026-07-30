@@ -32,7 +32,7 @@ internal class ExpenseUpdateSingleLineComponent(
     componentFactory = componentFactory,
     observeOnItem = observeOnItem,
     onSuccessInitData = onSuccessInitData,
-    mapperToDTO = { toDto() }
+    mapperToDTO = { toDto() },
 ) {
     private val dialogNavigation = SlotNavigation<UpdateDateTimeDialogConfig>()
 
@@ -42,24 +42,25 @@ internal class ExpenseUpdateSingleLineComponent(
         key = "date_time_picker_dialog",
         serializer = UpdateDateTimeDialogConfig.serializer(),
         handleBackButton = true,
-        childFactory = { _, context ->
-            createDateTimeDialog(context)
-        }
+        childFactory = { _, context -> createDateTimeDialog(context) },
     )
+
+    /** Открывает диалог выбора даты и времени расхода. */
+    fun onOpenDateTimeDialog() {
+        dialogNavigation.activate(UpdateDateTimeDialogConfig)
+    }
 
     override val columns: ImmutableList<ColumnSpec<ExpenseEssentialsUi, ExpenseField, Unit>> =
         createExpenseColumns(
-            onOpenDateTimeDialog = {
-                dialogNavigation.activate(UpdateDateTimeDialogConfig)
-            },
-            onChangeItem = ::onChangeItem
+            onOpenDateTimeDialog = ::onOpenDateTimeDialog,
+            onChangeItem = ::onChangeItem,
         )
 
     /**
      * Создаёт компонент диалога выбора даты/времени
      */
     private fun createDateTimeDialog(
-        context: ComponentContext
+        context: ComponentContext,
     ): DateTimeComponent {
         val item = item.value
 
@@ -69,7 +70,7 @@ internal class ExpenseUpdateSingleLineComponent(
             onDismissRequest = { dialogNavigation.dismiss() },
             onChangeDate = { newDateTime ->
                 onChangeItem { it.copy(expenseDateTime = newDateTime) }
-            }
+            },
         )
     }
 

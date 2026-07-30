@@ -18,12 +18,10 @@ import ru.pavlig43.mutable.api.singleLine.data.CreateSingleItemRepository
 import ua.wwind.table.ColumnSpec
 
 /**
- * Компонент для создания расхода через таблицу с одной строкой.
+ * Компонент создания расхода в карточной форме.
  *
- * Использует [CreateSingleLineComponent] как базу и добавляет:
- * - Диалог выбора даты/времени через [SlotNavigation]
- * - Колонки таблицы для полей расхода
- * - Валидацию обязательных полей
+ * Использует [CreateSingleLineComponent] как базу и держит диалог выбора даты
+ * и времени в [SlotNavigation].
  *
  * @param componentContext Decompose контекст компонента
  * @param onSuccessCreate Callback при успешном создании (принимает ID нового расхода)
@@ -41,7 +39,7 @@ internal class CreateExpenseSingleLineComponent(
     componentFactory = componentFactory,
     createSingleItemRepository = createExpenseRepository,
     mapperToDTO = ExpenseEssentialsUi::toDto,
-    observeOnItem = observeOnItem
+    observeOnItem = observeOnItem,
 ) {
     // Навигация для диалогов
     private val dialogNavigation = SlotNavigation<CreateDateTimeDialogConfig>()
@@ -52,24 +50,25 @@ internal class CreateExpenseSingleLineComponent(
         key = "date_time_picker_dialog",
         serializer = CreateDateTimeDialogConfig.serializer(),
         handleBackButton = true,
-        childFactory = { _, context ->
-            createDateTimeDialog(context)
-        }
+        childFactory = { _, context -> createDateTimeDialog(context) },
     )
+
+    /** Открывает диалог выбора даты и времени расхода. */
+    fun onOpenDateTimeDialog() {
+        dialogNavigation.activate(CreateDateTimeDialogConfig)
+    }
 
     override val columns: ImmutableList<ColumnSpec<ExpenseEssentialsUi, ExpenseField, Unit>> =
         createExpenseColumns(
-            onOpenDateTimeDialog = {
-                dialogNavigation.activate(CreateDateTimeDialogConfig)
-            },
-            onChangeItem = ::onChangeItem
+            onOpenDateTimeDialog = ::onOpenDateTimeDialog,
+            onChangeItem = ::onChangeItem,
         )
 
     /**
      * Создаёт компонент диалога выбора даты/времени
      */
     private fun createDateTimeDialog(
-        context: ComponentContext
+        context: ComponentContext,
     ): DateTimeComponent {
         val item = item.value
 
@@ -79,7 +78,7 @@ internal class CreateExpenseSingleLineComponent(
             onDismissRequest = { dialogNavigation.dismiss() },
             onChangeDate = { newDateTime ->
                 onChangeItem { it.copy(expenseDateTime = newDateTime) }
-            }
+            },
         )
     }
 
