@@ -13,7 +13,6 @@ internal fun UpdateProductSingleLineScreen(
     val dialog by component.dialog.subscribeAsState()
     ProductEssentialsCards(
         component = component,
-        editableProductType = false,
         onOpenDateDialog = component::onOpenDateDialog,
     )
     dialog.child?.instance?.also {

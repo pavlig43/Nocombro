@@ -3,6 +3,7 @@ package ru.pavlig43.mutable.api.singleLine.component
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
@@ -31,7 +32,8 @@ abstract class SingleLineComponent<I : SingleItem, UI : ISingleLineTableUi, C>(
 ) : ComponentContext by componentContext {
     protected val coroutineScope = componentCoroutineScope()
 
-    abstract val columns: ImmutableList<ColumnSpec<UI, C, Unit>>
+    /** Колонки старого табличного вида; карточным формам они не нужны. */
+    open val columns: ImmutableList<ColumnSpec<UI, C, Unit>> = persistentListOf()
 
     private val _itemFields = MutableStateFlow(listOf(componentFactory.initItem))
 

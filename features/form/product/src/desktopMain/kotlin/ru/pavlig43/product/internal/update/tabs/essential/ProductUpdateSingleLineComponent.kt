@@ -5,7 +5,6 @@ import com.arkivanov.decompose.router.slot.SlotNavigation
 import com.arkivanov.decompose.router.slot.activate
 import com.arkivanov.decompose.router.slot.childSlot
 import com.arkivanov.decompose.router.slot.dismiss
-import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.Serializable
 import ru.pavlig43.database.data.product.Product
@@ -13,17 +12,14 @@ import ru.pavlig43.datetime.single.date.DateComponent
 import ru.pavlig43.mutable.api.singleLine.component.SingleLineComponentFactory
 import ru.pavlig43.mutable.api.singleLine.component.UpdateSingleLineComponent
 import ru.pavlig43.mutable.api.singleLine.data.UpdateSingleLineRepository
-import ru.pavlig43.product.internal.ProductField
 import ru.pavlig43.product.internal.model.ProductEssentialsUi
 import ru.pavlig43.product.internal.model.toDto
-import ua.wwind.table.ColumnSpec
 
 /**
- * Компонент для редактирования продукта через таблицу с одной строкой.
+ * Компонент карточки редактирования продукта.
  *
  * Использует [ru.pavlig43.mutable.api.singleLine.component.UpdateSingleLineComponent] как базу и добавляет:
  * - Диалог выбора даты через [com.arkivanov.decompose.router.slot.SlotNavigation]
- * - Колонки таблицы для полей продукта (createdAt read-only в режиме редактирования)
  *
  * @param componentContext Decompose контекст компонента
  * @param productId ID продукта для редактирования
@@ -38,7 +34,7 @@ internal class ProductUpdateSingleLineComponent(
     componentFactory: SingleLineComponentFactory<Product, ProductEssentialsUi>,
     observeOnItem: (ProductEssentialsUi) -> Unit,
     onSuccessInitData: (ProductEssentialsUi) -> Unit,
-) : UpdateSingleLineComponent<Product, ProductEssentialsUi, ProductField>(
+) : UpdateSingleLineComponent<Product, ProductEssentialsUi, Unit>(
     componentContext = componentContext,
     id = productId,
     updateSingleLineRepository = updateRepository,
@@ -59,12 +55,6 @@ internal class ProductUpdateSingleLineComponent(
             createDatePickerDialog(context)
         }
     )
-
-    override val columns: ImmutableList<ColumnSpec<ProductEssentialsUi, ProductField, Unit>> =
-        createProductColumns1(
-            onOpenDateDialog = ::onOpenDateDialog,
-            onChangeItem = ::onChangeItem
-        )
 
     fun onOpenDateDialog() {
         dialogNavigation.activate(UpdateDatePickerDialogConfig)

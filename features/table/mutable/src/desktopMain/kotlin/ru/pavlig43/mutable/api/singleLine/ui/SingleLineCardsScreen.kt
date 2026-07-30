@@ -17,24 +17,42 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 import ru.pavlig43.loadinitdata.api.ui.LoadInitDataScreen
 import ru.pavlig43.mutable.api.singleLine.component.SingleLineComponent
 import ru.pavlig43.mutable.api.singleLine.model.ISingleLineTableUi
 
+/** Поле карточной формы с подписью и UI-содержимым. */
 data class SingleLineFormField<I : Any>(
     val label: String,
-    val fullWidth: Boolean = false,
     val content: @Composable (item: I, modifier: Modifier) -> Unit,
 )
 
-data class SingleLineFormSection<I : Any>(
-    val title: String,
+/** Явно заданная строка полей внутри карточки. */
+data class SingleLineFormRow<I : Any>(
     val fields: ImmutableList<SingleLineFormField<I>>,
 )
 
+/** Секция формы, показанная отдельной карточкой. */
+data class SingleLineFormSection<I : Any>(
+    val title: String,
+    val rows: ImmutableList<SingleLineFormRow<I>>,
+)
+
+/** Создаёт строку из одного или нескольких полей одинаковой ширины. */
+fun <I : Any> singleLineFormRow(
+    vararg fields: SingleLineFormField<I>,
+): SingleLineFormRow<I> = SingleLineFormRow(persistentListOf(*fields))
+
+/**
+ * Показывает single-форму как список карточек.
+ *
+ * @param component источник модели и событий формы
+ * @param sections готовая схема секций и строк
+ */
 @Composable
-fun <I : ISingleLineTableUi, C> SingleLineCardsScreen(
-    component: SingleLineComponent<*, I, C>,
+fun <I : ISingleLineTableUi> SingleLineCardsScreen(
+    component: SingleLineComponent<*, I, *>,
     sections: ImmutableList<SingleLineFormSection<I>>,
     modifier: Modifier = Modifier,
 ) {
@@ -58,6 +76,7 @@ fun <I : ISingleLineTableUi, C> SingleLineCardsScreen(
     }
 }
 
+/** Показывает одну секцию формы как карточку. */
 @Composable
 private fun <I : Any> SingleLineSectionCard(
     section: SingleLineFormSection<I>,
@@ -76,45 +95,37 @@ private fun <I : Any> SingleLineSectionCard(
                 color = MaterialTheme.colorScheme.primary,
             )
 
-            var fieldIndex = 0
-            while (fieldIndex < section.fields.size) {
-                val firstField = section.fields[fieldIndex]
-                val secondField = section.fields
-                    .getOrNull(fieldIndex + 1)
-                    ?.takeUnless { firstField.fullWidth || it.fullWidth }
-
-                if (firstField.fullWidth) {
-                    SingleLineFormFieldContent(
-                        field = firstField,
-                        item = item,
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                    fieldIndex += 1
-                } else {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    ) {
-                        SingleLineFormFieldContent(
-                            field = firstField,
-                            item = item,
-                            modifier = Modifier.weight(1f),
-                        )
-                        if (secondField != null) {
-                            SingleLineFormFieldContent(
-                                field = secondField,
-                                item = item,
-                                modifier = Modifier.weight(1f),
-                            )
-                        }
-                    }
-                    fieldIndex += if (secondField == null) 1 else 2
-                }
+            section.rows.forEach { row ->
+                SingleLineFormRowContent(
+                    row = row,
+                    item = item,
+                )
             }
         }
     }
 }
 
+/** Показывает одну явно заданную строку полей. */
+@Composable
+private fun <I : Any> SingleLineFormRowContent(
+    row: SingleLineFormRow<I>,
+    item: I,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        row.fields.forEach { field ->
+            SingleLineFormFieldContent(
+                field = field,
+                item = item,
+                modifier = Modifier.weight(1f),
+            )
+        }
+    }
+}
+
+/** Показывает подпись и содержимое одного поля. */
 @Composable
 private fun <I : Any> SingleLineFormFieldContent(
     field: SingleLineFormField<I>,

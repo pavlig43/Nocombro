@@ -35,7 +35,6 @@ internal fun CreateProductSingleLineScreen(
             itemContent = { modifier ->
                 ProductEssentialsCards(
                     component = component,
-                    editableProductType = true,
                     onOpenDateDialog = component::onOpenDateDialog,
                     modifier = modifier,
                 )

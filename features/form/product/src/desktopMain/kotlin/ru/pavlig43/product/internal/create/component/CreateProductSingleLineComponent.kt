@@ -5,24 +5,20 @@ import com.arkivanov.decompose.router.slot.SlotNavigation
 import com.arkivanov.decompose.router.slot.activate
 import com.arkivanov.decompose.router.slot.childSlot
 import com.arkivanov.decompose.router.slot.dismiss
-import kotlinx.collections.immutable.ImmutableList
 import kotlinx.serialization.Serializable
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.datetime.single.date.DateComponent
 import ru.pavlig43.mutable.api.singleLine.component.CreateSingleLineComponent
 import ru.pavlig43.mutable.api.singleLine.component.SingleLineComponentFactory
 import ru.pavlig43.mutable.api.singleLine.data.CreateSingleItemRepository
-import ru.pavlig43.product.internal.ProductField
 import ru.pavlig43.product.internal.model.ProductEssentialsUi
 import ru.pavlig43.product.internal.model.toDto
-import ua.wwind.table.ColumnSpec
 
 /**
- * Компонент для создания продукта через таблицу с одной строкой.
+ * Компонент карточки создания продукта.
  *
  * Использует [ru.pavlig43.mutable.api.singleLine.component.CreateSingleLineComponent] как базу и добавляет:
  * - Диалог выбора даты через [com.arkivanov.decompose.router.slot.SlotNavigation]
- * - Колонки таблицы для полей продукта
  * - Валидацию обязательных полей
  *
  * @param componentContext Decompose контекст компонента
@@ -37,7 +33,7 @@ internal class CreateProductSingleLineComponent(
     observeOnItem: (ProductEssentialsUi) -> Unit,
     componentFactory: SingleLineComponentFactory<Product, ProductEssentialsUi>,
     createProductRepository: CreateSingleItemRepository<Product>,
-) : CreateSingleLineComponent<Product, ProductEssentialsUi, ProductField>(
+) : CreateSingleLineComponent<Product, ProductEssentialsUi, Unit>(
     componentContext = componentContext,
     onSuccessCreate = onSuccessCreate,
     componentFactory = componentFactory,
@@ -58,12 +54,6 @@ internal class CreateProductSingleLineComponent(
             createDatePickerDialog(context)
         }
     )
-
-    override val columns: ImmutableList<ColumnSpec<ProductEssentialsUi, ProductField, Unit>> =
-        createProductColumns0(
-            onOpenDateDialog = ::onOpenDateDialog,
-            onChangeItem = ::onChangeItem
-        )
 
     fun onOpenDateDialog() {
         dialogNavigation.activate(CreateDatePickerDialogConfig)

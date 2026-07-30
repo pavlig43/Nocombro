@@ -15,11 +15,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import ru.pavlig43.core.model.DecimalData
 import ru.pavlig43.core.model.toStartDoubleFormat
+import ru.pavlig43.mutable.api.input.normalizeDecimalInput
+import ru.pavlig43.mutable.api.input.toDecimalInputText
+import ru.pavlig43.mutable.api.input.toDecimalInputOrNull
 import ua.wwind.table.EditableColumnBuilder
 import ua.wwind.table.EditableTableColumnsBuilder
 import ua.wwind.table.component.TableCellTextFieldWithTooltipError
 import ua.wwind.table.filter.data.TableFilterType
-import kotlin.math.pow
 
 
 @Suppress("LongParameterList")
@@ -142,55 +144,21 @@ private fun<DECIMAL: DecimalData> TableCellTextFieldNumber(
     var error by remember { mutableStateOf(errorMessage) }
     // Отображаемое значение, должно быть всегда, хоть изменение и реактивное, но если введенное
     // значение нельзя привести к числовому формату то функция обновления не сработает
-    var displayValue by remember {
-        mutableStateOf(
-            data.takeIf { it.value != 0L }?.toStartDoubleFormat().orEmpty()
-        )
-    }
+    var displayValue by remember { mutableStateOf(data.toDecimalInputText()) }
 
     TableCellTextFieldWithTooltipError(
         value = displayValue,
         onValueChange = { input ->
-            /**
-             * Проверяется ввод посимвольно, берется пустая строка и к ней лепится
-             * (если число - да
-             * если еще не содержит точку - да
-             * иначе пропускается символ
-            )
-             */
-            val result = input.fold("") { acc: String, element: Char ->
-                when {
-                    element.isDigit() -> acc + element
-                    !acc.contains('.') -> acc + '.'
-
-                    else -> acc
-                }
-            }
-
-            /**
-             * Если точка есть, то обрезает дробную часть до количества знаков [DecimalFormat.countDecimal]
-             */
-            val parts = result.split('.')
-            val finalText = if (parts.size == 2) {
-                parts[0] + "." + parts[1].take(data.countDecimal)
-            } else result
-
-            displayValue = finalText
-            /**
-             * Если введеный текст можно привести к Double, то происходит реактивное изменение модели
-             * в компоненте через приведение к целочисленному значению.
-             */
-            if (displayValue.toDoubleOrNull() != null) {
-
-                val intCount =
-                    (displayValue.toDouble() * 10.0.pow(data.countDecimal)).toLong()
-                saveInModel(data.copyValue(value = intCount) as DECIMAL)
-                error = ""
-            } else {
+            val normalizedInput = input.normalizeDecimalInput(data.countDecimal)
+            displayValue = normalizedInput
+            val parsedInput = normalizedInput.toDecimalInputOrNull(data.countDecimal)
+            if (parsedInput == null) {
                 error = "Не число"
+                return@TableCellTextFieldWithTooltipError
             }
 
-
+            saveInModel(data.copyValue(value = parsedInput.value) as DECIMAL)
+            error = ""
         },
         errorMessage = error,
         placeholder = { Text("") },

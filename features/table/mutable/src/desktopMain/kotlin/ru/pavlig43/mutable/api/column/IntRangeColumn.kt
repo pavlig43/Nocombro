@@ -15,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import ru.pavlig43.mutable.api.input.toIntInputValueOrNull
 import ua.wwind.table.EditableTableColumnsBuilder
 import ua.wwind.table.component.TableCellTextFieldWithTooltipError
 
@@ -71,16 +72,10 @@ private fun TableCellIntRangeField(
     TableCellTextFieldWithTooltipError(
         value = displayValue,
         onValueChange = { input ->
-            val digitsOnly = input.filter { it.isDigit() }
-            val parsed = digitsOnly.toIntOrNull()
-
-            if (parsed != null && parsed in range) {
-                displayValue = digitsOnly
-                saveInModel(parsed)
-            } else if (digitsOnly.isEmpty()) {
-                displayValue = ""
-                saveInModel(range.first)
-            }
+            val parsedValue = input.toIntInputValueOrNull(range)
+                ?: return@TableCellTextFieldWithTooltipError
+            displayValue = input
+            saveInModel(parsedValue)
         },
         errorMessage = "",
         placeholder = { Text(placeholder) },
