@@ -41,7 +41,7 @@ internal class CreateDocumentSingleLineComponent(
     componentFactory = componentFactory,
     createSingleItemRepository = createDocumentRepository,
     mapperToDTO = DocumentEssentialsUi::toDto,
-    observeOnItem = observeOnItem
+    observeOnItem = observeOnItem,
 ) {
     // Навигация для диалогов
     private val dialogNavigation = SlotNavigation<CreateDatePickerDialogConfig>()
@@ -57,12 +57,15 @@ internal class CreateDocumentSingleLineComponent(
         }
     )
 
+    /** Открывает диалог выбора даты документа. */
+    fun onOpenDateDialog() {
+        dialogNavigation.activate(CreateDatePickerDialogConfig)
+    }
+
     override val columns: ImmutableList<ColumnSpec<DocumentEssentialsUi, DocumentField, Unit>> =
         createDocumentColumns0(
-            onOpenDateDialog = {
-                dialogNavigation.activate(CreateDatePickerDialogConfig)
-            },
-            onChangeItem = ::onChangeItem
+            onOpenDateDialog = ::onOpenDateDialog,
+            onChangeItem = ::onChangeItem,
         )
 
     /**

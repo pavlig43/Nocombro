@@ -9,17 +9,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import ru.pavlig43.datetime.single.date.DatePickerDialog
+import ru.pavlig43.document.internal.DocumentEssentialsCards
 import ru.pavlig43.document.internal.create.component.CreateDocumentSingleLineComponent
 import ru.pavlig43.mutable.api.singleLine.ui.CreateSingleItemScreen
 
 /**
- * UI экран для создания документа через таблицу с одной строкой
+ * Показывает карточную форму создания документа.
  *
- * @param component Компонент создания документа
+ * @param component компонент создания документа
  */
 @Composable
 internal fun CreateDocumentSingleLineScreen(
-    component: CreateDocumentSingleLineComponent
+    component: CreateDocumentSingleLineComponent,
 ) {
     val dialog by component.dialog.subscribeAsState()
 
@@ -27,9 +28,18 @@ internal fun CreateDocumentSingleLineScreen(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp)
+            .padding(vertical = 8.dp),
     ) {
-        CreateSingleItemScreen(component)
+        CreateSingleItemScreen(
+            component = component,
+            itemContent = { modifier ->
+                DocumentEssentialsCards(
+                    component = component,
+                    onOpenDateDialog = component::onOpenDateDialog,
+                    modifier = modifier,
+                )
+            },
+        )
     }
 
     // Отображение диалога выбора даты
