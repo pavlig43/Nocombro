@@ -65,9 +65,6 @@ internal class PfComponent(
     override val title: String
         get() = "ПФ"
     private val dialogNavigation = SlotNavigation<PfDialog>()
-    val isLabelButtonEnabled: Flow<Boolean> = item.map { it.productId != 0 }
-
-
     val dialog: Value<ChildSlot<PfDialog, PfDialogChild>> = childSlot(
         source = dialogNavigation,
         key = "pf_dialog",
@@ -151,15 +148,41 @@ internal class PfComponent(
         }
     }
 
+    /** Открывает диалог печати этикетки для выбранного продукта. */
     fun openThermalLabelDialog() {
         if (item.value.productId == 0) return
         dialogNavigation.activate(PfDialog.Label)
     }
 
+    /** Открывает диалог выбора продукта. */
+    fun openProductDialog() {
+        dialogNavigation.activate(PfDialog.Product)
+    }
+
+    /** Открывает выбранный продукт в отдельной вкладке. */
+    fun openSelectedProduct() {
+        item.value.productId
+            .takeIf { it != 0 }
+            ?.let(tabOpener::openProductTab)
+    }
+
+    /** Открывает диалог выбора декларации для выбранного продукта. */
+    fun openDeclarationDialog() {
+        if (item.value.productId == 0) return
+        dialogNavigation.activate(PfDialog.Declaration)
+    }
+
+    /** Открывает выбранную декларацию в отдельной вкладке. */
+    fun openSelectedDeclaration() {
+        item.value.declarationId
+            .takeIf { it != 0 }
+            ?.let(tabOpener::openDeclarationTab)
+    }
+
     override val columns: ImmutableList<ColumnSpec<PfUi, PfField, Unit>> =
         createPfColumns(
-            onOpenProductDialog = { dialogNavigation.activate(PfDialog.Product) },
-            onOpenDeclarationDialog = { dialogNavigation.activate(PfDialog.Declaration) },
+            onOpenProductDialog = ::openProductDialog,
+            onOpenDeclarationDialog = ::openDeclarationDialog,
             onChangeItem = ::onChangeItem
         )
 
