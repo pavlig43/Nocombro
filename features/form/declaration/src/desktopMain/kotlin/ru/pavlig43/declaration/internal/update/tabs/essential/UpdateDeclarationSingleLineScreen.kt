@@ -5,18 +5,25 @@ import androidx.compose.runtime.getValue
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import ru.pavlig43.datetime.single.date.DatePickerDialog
 import ru.pavlig43.immutable.api.ui.MBSImmutableTable
-import ru.pavlig43.mutable.api.singleLine.ui.SingleLineBlockScreen
+import ru.pavlig43.declaration.internal.DeclarationEssentialsCards
 
+/** Показывает карточную форму правки декларации. */
 @Composable
 internal fun UpdateDeclarationSingleLineScreen(
     component: DeclarationUpdateSingleLineComponent,
 ) {
     val dialog by component.dialog.subscribeAsState()
 
-    SingleLineBlockScreen(component)
+    DeclarationEssentialsCards(
+        component = component,
+        onOpenVendorDialog = component::onOpenVendorDialog,
+        onOpenVendor = component::onOpenVendor,
+        onOpenBornDateDialog = component::onOpenBornDateDialog,
+        onOpenBestBeforeDialog = component::onOpenBestBeforeDialog,
+    )
 
     dialog.child?.instance?.also { dialogChild ->
-        when(dialogChild){
+        when (dialogChild) {
             is UpdateDialogChild.Date -> DatePickerDialog(dialogChild.component)
             is UpdateDialogChild.Vendor -> MBSImmutableTable(dialogChild.component)
         }

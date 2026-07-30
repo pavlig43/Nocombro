@@ -4,22 +4,36 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import ru.pavlig43.datetime.single.date.DatePickerDialog
+import ru.pavlig43.declaration.internal.DeclarationEssentialsCards
 import ru.pavlig43.declaration.internal.create.component.CreateDeclarationSingleLineComponent
 import ru.pavlig43.declaration.internal.create.component.DialogChild
 import ru.pavlig43.immutable.api.ui.MBSImmutableTable
 import ru.pavlig43.mutable.api.singleLine.ui.CreateSingleItemScreen
 
 @Composable
+/** Показывает карточную форму создания декларации. */
 internal fun CreateDeclarationSingleLineScreen(
     component: CreateDeclarationSingleLineComponent,
 ) {
     val dialog by component.dialog.subscribeAsState()
 
-    CreateSingleItemScreen(component)
+    CreateSingleItemScreen(
+        component = component,
+        itemContent = { modifier ->
+            DeclarationEssentialsCards(
+                component = component,
+                onOpenVendorDialog = component::onOpenVendorDialog,
+                onOpenVendor = component::onOpenVendor,
+                onOpenBornDateDialog = component::onOpenBornDateDialog,
+                onOpenBestBeforeDialog = component::onOpenBestBeforeDialog,
+                modifier = modifier,
+            )
+        },
+    )
 
 
     dialog.child?.instance?.also { dialogChild ->
-        when(dialogChild){
+        when (dialogChild) {
             is DialogChild.Date -> DatePickerDialog(dialogChild.component)
             is DialogChild.Vendor -> MBSImmutableTable(dialogChild.component)
         }

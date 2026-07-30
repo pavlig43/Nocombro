@@ -39,7 +39,7 @@ internal class CreateDeclarationSingleLineComponent(
     componentFactory = componentFactory,
     createSingleItemRepository = createDeclarationRepository,
     mapperToDTO = { toDto() },
-    observeOnItem = observeOnItem
+    observeOnItem = observeOnItem,
 ) {
     private val dialogNavigation = SlotNavigation<DialogConfig>()
 
@@ -48,8 +48,28 @@ internal class CreateDeclarationSingleLineComponent(
         key = "dialog",
         serializer = DialogConfig.serializer(),
         handleBackButton = true,
-        childFactory = ::dialogChild
+        childFactory = ::dialogChild,
     )
+
+    /** Открывает диалог выбора поставщика. */
+    fun onOpenVendorDialog() {
+        dialogNavigation.activate(DialogConfig.Vendor)
+    }
+
+    /** Открывает выбранного поставщика в отдельной вкладке. */
+    fun onOpenVendor() {
+        item.value.vendorId?.let(tabOpener::openVendorTab)
+    }
+
+    /** Открывает диалог даты создания декларации. */
+    fun onOpenBornDateDialog() {
+        dialogNavigation.activate(DialogConfig.Born)
+    }
+
+    /** Открывает диалог даты истечения декларации. */
+    fun onOpenBestBeforeDialog() {
+        dialogNavigation.activate(DialogConfig.BestBefore)
+    }
 
     private fun dialogChild(config: DialogConfig, context: ComponentContext): DialogChild {
         return when (config) {
@@ -98,10 +118,10 @@ internal class CreateDeclarationSingleLineComponent(
 
     override val columns: ImmutableList<ColumnSpec<DeclarationEssentialsUi, DeclarationField, Unit>> =
         createDeclarationColumns0(
-            onOpenVendorDialog = { dialogNavigation.activate(DialogConfig.Vendor) },
-            onOpenBornDateDialog = { dialogNavigation.activate(DialogConfig.Born) },
-            onOpenBestBeforeDialog = { dialogNavigation.activate(DialogConfig.BestBefore) },
-            onChangeItem = ::onChangeItem
+            onOpenVendorDialog = ::onOpenVendorDialog,
+            onOpenBornDateDialog = ::onOpenBornDateDialog,
+            onOpenBestBeforeDialog = ::onOpenBestBeforeDialog,
+            onChangeItem = ::onChangeItem,
         )
 }
 

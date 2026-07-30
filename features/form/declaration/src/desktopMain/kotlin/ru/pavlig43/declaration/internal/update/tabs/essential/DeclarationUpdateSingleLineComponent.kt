@@ -42,15 +42,15 @@ internal class DeclarationUpdateSingleLineComponent(
     componentFactory = componentFactory,
     observeOnItem = observeOnItem,
     onSuccessInitData = onSuccessInitData,
-    mapperToDTO = { toDto() }
+    mapperToDTO = { toDto() },
 ) {
 
     override val columns: ImmutableList<ColumnSpec<DeclarationEssentialsUi, DeclarationField, Unit>> =
         createDeclarationColumns1(
-            onOpenVendorDialog = { dialogNavigation.activate(UpdateDialogConfig.Vendor) },
-            onOpenBornDateDialog = { dialogNavigation.activate(UpdateDialogConfig.Born) },
-            onOpenBestBeforeDialog = { dialogNavigation.activate(UpdateDialogConfig.BestBefore) },
-            onChangeItem = ::onChangeItem
+            onOpenVendorDialog = ::onOpenVendorDialog,
+            onOpenBornDateDialog = ::onOpenBornDateDialog,
+            onOpenBestBeforeDialog = ::onOpenBestBeforeDialog,
+            onChangeItem = ::onChangeItem,
         )
 
     private val dialogNavigation = SlotNavigation<UpdateDialogConfig>()
@@ -60,8 +60,28 @@ internal class DeclarationUpdateSingleLineComponent(
         key = "dialog",
         serializer = UpdateDialogConfig.serializer(),
         handleBackButton = true,
-        childFactory = ::dialogChild
+        childFactory = ::dialogChild,
     )
+
+    /** Открывает диалог выбора поставщика. */
+    fun onOpenVendorDialog() {
+        dialogNavigation.activate(UpdateDialogConfig.Vendor)
+    }
+
+    /** Открывает выбранного поставщика в отдельной вкладке. */
+    fun onOpenVendor() {
+        item.value.vendorId?.let(tabOpener::openVendorTab)
+    }
+
+    /** Открывает диалог даты создания декларации. */
+    fun onOpenBornDateDialog() {
+        dialogNavigation.activate(UpdateDialogConfig.Born)
+    }
+
+    /** Открывает диалог даты истечения декларации. */
+    fun onOpenBestBeforeDialog() {
+        dialogNavigation.activate(UpdateDialogConfig.BestBefore)
+    }
 
     private fun dialogChild(config: UpdateDialogConfig, context: ComponentContext): UpdateDialogChild {
         return when (config) {
