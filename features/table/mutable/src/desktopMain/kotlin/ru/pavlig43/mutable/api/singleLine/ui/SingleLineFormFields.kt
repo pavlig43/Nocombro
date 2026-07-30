@@ -1,5 +1,6 @@
 package ru.pavlig43.mutable.api.singleLine.ui
 
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.text.KeyboardOptions
@@ -8,8 +9,11 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -21,14 +25,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.format
+import org.jetbrains.compose.resources.painterResource
 import ru.pavlig43.core.model.DecimalData
 import ru.pavlig43.core.model.ItemType
 import ru.pavlig43.datetime.dateFormat
+import ru.pavlig43.datetime.dateTimeFormat
 import ru.pavlig43.mutable.api.input.normalizeDecimalInput
 import ru.pavlig43.mutable.api.input.toDecimalInputText
 import ru.pavlig43.mutable.api.input.toDecimalInputOrNull
 import ru.pavlig43.mutable.api.input.toIntInputValueOrNull
+import ru.pavlig43.theme.Res
+import ru.pavlig43.theme.open_in_new
+import ru.pavlig43.theme.search
 
 /** Текстовое поле карточной формы с лимитом длины и режимом чтения. */
 @Composable
@@ -183,7 +193,11 @@ fun <T : ItemType> SingleLineItemTypeField(
     }
 }
 
-/** Однострочное поле только для чтения. */
+/**
+ * Показывает значение в отключённом поле с цветами текущей Material-темы.
+ *
+ * Поле сохраняет размер и рамку, но не принимает ввод и не открывает меню.
+ */
 @Composable
 fun SingleLineReadOnlyField(
     value: String,
@@ -193,6 +207,7 @@ fun SingleLineReadOnlyField(
         value = value,
         onValueChange = {},
         modifier = modifier.fillMaxWidth(),
+        enabled = false,
         readOnly = true,
         singleLine = true,
     )
@@ -220,4 +235,104 @@ fun SingleLineDateField(
     ) {
         Text(value.format(dateFormat))
     }
+}
+
+/**
+ * Показывает дату и время либо открывает переданный диалог выбора.
+ *
+ * @param readOnly при `true` показывает значение через [SingleLineReadOnlyField]
+ */
+@Composable
+fun SingleLineDateTimeField(
+    value: LocalDateTime,
+    onOpenDialog: () -> Unit,
+    modifier: Modifier = Modifier,
+    readOnly: Boolean = false,
+) {
+    if (readOnly) {
+        SingleLineReadOnlyField(
+            value = value.format(dateTimeFormat),
+            modifier = modifier,
+        )
+        return
+    }
+
+    OutlinedButton(
+        onClick = onOpenDialog,
+        modifier = modifier.heightIn(min = 56.dp),
+    ) {
+        Text(value.format(dateTimeFormat))
+    }
+}
+
+/**
+ * Показывает логический признак как общий переключатель карточной формы.
+ *
+ * @param readOnly при `true` оставляет значение видимым, но запрещает смену
+ */
+@Composable
+fun SingleLineSwitchField(
+    value: Boolean,
+    onValueChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier,
+    readOnly: Boolean = false,
+) {
+    Switch(
+        checked = value,
+        onCheckedChange = onValueChange,
+        modifier = modifier,
+        enabled = !readOnly,
+    )
+}
+
+/**
+ * Показывает связь и две внешние команды: выбор значения и открытие выбранного.
+ *
+ * Функция не хранит ID и не знает тип связанной сущности. Доступность каждой
+ * команды и переходы задаёт компонент формы.
+ *
+ * @param value текст выбранного значения
+ * @param onSelect открывает диалог выбора
+ * @param onOpenSelected открывает выбранный объект
+ * @param selectEnabled доступность выбора
+ * @param openEnabled доступность открытия выбранного объекта
+ */
+@Composable
+fun SingleLineReferenceField(
+    value: String,
+    onSelect: () -> Unit,
+    onOpenSelected: () -> Unit,
+    selectEnabled: Boolean,
+    openEnabled: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = {},
+        modifier = modifier.fillMaxWidth(),
+        readOnly = true,
+        singleLine = true,
+        trailingIcon = {
+            Row {
+                IconButton(
+                    onClick = onSelect,
+                    enabled = selectEnabled,
+                ) {
+                    Icon(
+                        painter = painterResource(Res.drawable.search),
+                        contentDescription = "Выбрать значение",
+                    )
+                }
+                IconButton(
+                    onClick = onOpenSelected,
+                    enabled = openEnabled,
+                ) {
+                    Icon(
+                        painter = painterResource(Res.drawable.open_in_new),
+                        contentDescription = "Открыть выбранное",
+                    )
+                }
+            }
+        },
+    )
 }

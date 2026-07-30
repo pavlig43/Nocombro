@@ -14,6 +14,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.ImmutableList
@@ -33,10 +34,17 @@ data class SingleLineFormRow<I : Any>(
     val fields: ImmutableList<SingleLineFormField<I>>,
 )
 
-/** Секция формы, показанная отдельной карточкой. */
+/**
+ * Секция формы, показанная отдельной карточкой.
+ *
+ * @param title заголовок карточки
+ * @param rows явно заданные строки полей
+ * @param actions необязательные действия справа от заголовка
+ */
 data class SingleLineFormSection<I : Any>(
     val title: String,
     val rows: ImmutableList<SingleLineFormRow<I>>,
+    val actions: (@Composable (item: I) -> Unit)? = null,
 )
 
 /** Создаёт строку из одного или нескольких полей одинаковой ширины. */
@@ -89,11 +97,18 @@ private fun <I : Any> SingleLineSectionCard(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Text(
-                text = section.title,
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.primary,
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = section.title,
+                    modifier = Modifier.weight(1f),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+                section.actions?.invoke(item)
+            }
 
             section.rows.forEach { row ->
                 SingleLineFormRowContent(
