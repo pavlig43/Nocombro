@@ -1,7 +1,6 @@
 package ru.pavlig43.product.internal.update.tabs.safety
 
 import com.arkivanov.decompose.ComponentContext
-import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.Flow
 import ru.pavlig43.core.model.DecimalData3
 import ru.pavlig43.database.data.sync.defaultSyncId
@@ -10,14 +9,13 @@ import ru.pavlig43.database.data.product.SafetyStock
 import ru.pavlig43.mutable.api.singleLine.component.SingleLineComponentFactory
 import ru.pavlig43.mutable.api.singleLine.component.UpdateSingleLineComponent
 import ru.pavlig43.mutable.api.singleLine.data.UpdateSingleLineRepository
-import ua.wwind.table.ColumnSpec
 
 
 internal class SafetyStockComponent(
     componentContext: ComponentContext,
     productId: Int,
     updateRepository: UpdateSingleLineRepository<SafetyStock>,
-) : UpdateSingleLineComponent<SafetyStock, SafetyStockUi, SafetyStockField>(
+) : UpdateSingleLineComponent<SafetyStock, SafetyStockUi>(
     componentContext = componentContext,
     id = productId,
     updateSingleLineRepository = updateRepository,
@@ -25,12 +23,7 @@ internal class SafetyStockComponent(
     mapperToDTO = { toDto() }
 ) {
     override val title: String = "Нескончаемый"
-    override val columns: ImmutableList<ColumnSpec<SafetyStockUi, SafetyStockField, Unit>> =
-        createSafetyStockColumns(
-            onChangeItem = ::onChangeItem
-        )
-
-    override val errorMessages: Flow<List<String>> = errorTableMessages
+    override val errorMessages: Flow<List<String>> = validationErrors
 }
 
 private val safetyStockComponentFactory = SingleLineComponentFactory<SafetyStock, SafetyStockUi>(

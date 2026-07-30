@@ -7,13 +7,11 @@ import com.arkivanov.decompose.router.slot.activate
 import com.arkivanov.decompose.router.slot.childSlot
 import com.arkivanov.decompose.router.slot.dismiss
 import com.arkivanov.decompose.value.Value
-import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.Serializable
 import ru.pavlig43.core.tabs.TabOpener
 import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.datetime.single.date.DateComponent
-import ru.pavlig43.declaration.internal.DeclarationField
 import ru.pavlig43.declaration.internal.model.DeclarationEssentialsUi
 import ru.pavlig43.declaration.internal.model.toDto
 import ru.pavlig43.immutable.api.ImmutableTableDependencies
@@ -23,7 +21,6 @@ import ru.pavlig43.immutable.internal.component.items.vendor.VendorTableUi
 import ru.pavlig43.mutable.api.singleLine.component.SingleLineComponentFactory
 import ru.pavlig43.mutable.api.singleLine.component.UpdateSingleLineComponent
 import ru.pavlig43.mutable.api.singleLine.data.UpdateSingleLineRepository
-import ua.wwind.table.ColumnSpec
 
 @Suppress("LongParameterList")
 internal class DeclarationUpdateSingleLineComponent(
@@ -35,7 +32,7 @@ internal class DeclarationUpdateSingleLineComponent(
     onSuccessInitData: (DeclarationEssentialsUi) -> Unit,
     private val immutableDependencies: ImmutableTableDependencies,
     private val tabOpener: TabOpener,
-) : UpdateSingleLineComponent<Declaration, DeclarationEssentialsUi, DeclarationField>(
+) : UpdateSingleLineComponent<Declaration, DeclarationEssentialsUi>(
     componentContext = componentContext,
     id = declarationId,
     updateSingleLineRepository = updateRepository,
@@ -44,14 +41,6 @@ internal class DeclarationUpdateSingleLineComponent(
     onSuccessInitData = onSuccessInitData,
     mapperToDTO = { toDto() },
 ) {
-
-    override val columns: ImmutableList<ColumnSpec<DeclarationEssentialsUi, DeclarationField, Unit>> =
-        createDeclarationColumns1(
-            onOpenVendorDialog = ::onOpenVendorDialog,
-            onOpenBornDateDialog = ::onOpenBornDateDialog,
-            onOpenBestBeforeDialog = ::onOpenBestBeforeDialog,
-            onChangeItem = ::onChangeItem,
-        )
 
     private val dialogNavigation = SlotNavigation<UpdateDialogConfig>()
 
@@ -123,7 +112,7 @@ internal class DeclarationUpdateSingleLineComponent(
         }
     }
 
-    override val errorMessages: Flow<List<String>> = errorTableMessages
+    override val errorMessages: Flow<List<String>> = validationErrors
 }
 
 @Serializable

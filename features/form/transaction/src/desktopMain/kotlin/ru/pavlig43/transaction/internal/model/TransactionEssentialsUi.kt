@@ -6,7 +6,6 @@ import ru.pavlig43.database.data.transact.TransactionType
 import ru.pavlig43.database.data.sync.defaultSyncId
 import ru.pavlig43.database.data.sync.defaultUpdatedAt
 import ru.pavlig43.datetime.getCurrentLocalDateTime
-import ru.pavlig43.mutable.api.singleLine.model.ISingleLineTableUi
 import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalTime::class)
@@ -27,7 +26,7 @@ internal data class TransactionEssentialsUi(
 
     val deletedAt: LocalDateTime? = null,
 
-    ) : ISingleLineTableUi
+)
 
 
 internal fun Transact.toUi(): TransactionEssentialsUi {

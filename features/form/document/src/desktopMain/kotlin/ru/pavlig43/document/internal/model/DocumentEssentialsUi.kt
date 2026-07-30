@@ -7,7 +7,6 @@ import ru.pavlig43.database.data.document.DocumentType
 import ru.pavlig43.database.data.sync.defaultSyncId
 import ru.pavlig43.database.data.sync.defaultUpdatedAt
 import ru.pavlig43.datetime.getCurrentLocalDate
-import ru.pavlig43.mutable.api.singleLine.model.ISingleLineTableUi
 import kotlin.time.ExperimentalTime
 
 internal data class DocumentEssentialsUi(
@@ -26,7 +25,7 @@ internal data class DocumentEssentialsUi(
     val updatedAt: LocalDateTime = defaultUpdatedAt(),
 
     val deletedAt: LocalDateTime? = null,
-): ISingleLineTableUi
+)
 @OptIn(ExperimentalTime::class)
 internal fun DocumentEssentialsUi.toDto(): Document {
     return Document(

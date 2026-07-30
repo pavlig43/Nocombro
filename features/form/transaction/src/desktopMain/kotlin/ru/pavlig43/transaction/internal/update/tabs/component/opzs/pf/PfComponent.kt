@@ -7,7 +7,6 @@ import com.arkivanov.decompose.router.slot.activate
 import com.arkivanov.decompose.router.slot.childSlot
 import com.arkivanov.decompose.router.slot.dismiss
 import com.arkivanov.decompose.value.Value
-import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.LocalDate
@@ -27,7 +26,6 @@ import ru.pavlig43.mutable.api.singleLine.component.UpdateSingleLineComponent
 import ru.pavlig43.mutable.api.singleLine.data.UpdateSingleLineRepository
 import ru.pavlig43.thermallabel.api.component.ThermalLabelDialogComponent
 import ru.pavlig43.thermallabel.api.data.ThermalLabelTemplateService
-import ua.wwind.table.ColumnSpec
 
 private fun factory(transactionId: Int) = SingleLineComponentFactory<PfBD, PfUi>(
     initItem = PfUi(),
@@ -53,7 +51,7 @@ internal class PfComponent(
     private val thermalLabelTemplateService: ThermalLabelTemplateService,
     observeOnItem: (PfUi) -> Unit,
     onSuccessInitData: (PfUi) -> Unit,
-) : UpdateSingleLineComponent<PfBD, PfUi, PfField>(
+) : UpdateSingleLineComponent<PfBD, PfUi>(
     componentContext = componentContext,
     id = transactionId,
     updateSingleLineRepository = updateSingleLineRepository,
@@ -178,13 +176,6 @@ internal class PfComponent(
             .takeIf { it != 0 }
             ?.let(tabOpener::openDeclarationTab)
     }
-
-    override val columns: ImmutableList<ColumnSpec<PfUi, PfField, Unit>> =
-        createPfColumns(
-            onOpenProductDialog = ::openProductDialog,
-            onOpenDeclarationDialog = ::openDeclarationDialog,
-            onChangeItem = ::onChangeItem
-        )
 
     override val errorMessages: Flow<List<String>> = item.map { item ->
         buildList {

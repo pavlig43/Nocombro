@@ -7,7 +7,6 @@ import ru.pavlig43.database.data.expense.ExpenseType
 import ru.pavlig43.database.data.sync.defaultSyncId
 import ru.pavlig43.database.data.sync.defaultUpdatedAt
 import ru.pavlig43.datetime.getCurrentLocalDateTime
-import ru.pavlig43.mutable.api.singleLine.model.ISingleLineTableUi
 
 internal data class ExpenseEssentialsUi(
     val expenseType: ExpenseType? = null,
@@ -18,7 +17,7 @@ internal data class ExpenseEssentialsUi(
     val syncId: String = defaultSyncId(),
     val updatedAt: LocalDateTime = defaultUpdatedAt(),
     val deletedAt: LocalDateTime? = null,
-) : ISingleLineTableUi
+)
 
 internal fun ExpenseEssentialsUi.toDto(): ExpenseBD {
     return ExpenseBD(

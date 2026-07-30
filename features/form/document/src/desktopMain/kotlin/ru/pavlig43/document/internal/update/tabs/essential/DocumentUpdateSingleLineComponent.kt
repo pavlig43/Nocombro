@@ -5,18 +5,15 @@ import com.arkivanov.decompose.router.slot.SlotNavigation
 import com.arkivanov.decompose.router.slot.activate
 import com.arkivanov.decompose.router.slot.childSlot
 import com.arkivanov.decompose.router.slot.dismiss
-import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.Serializable
 import ru.pavlig43.database.data.document.Document
 import ru.pavlig43.datetime.single.date.DateComponent
-import ru.pavlig43.document.internal.DocumentField
 import ru.pavlig43.document.internal.model.DocumentEssentialsUi
 import ru.pavlig43.document.internal.model.toDto
 import ru.pavlig43.mutable.api.singleLine.component.SingleLineComponentFactory
 import ru.pavlig43.mutable.api.singleLine.component.UpdateSingleLineComponent
 import ru.pavlig43.mutable.api.singleLine.data.UpdateSingleLineRepository
-import ua.wwind.table.ColumnSpec
 
 
 internal class DocumentUpdateSingleLineComponent(
@@ -26,7 +23,7 @@ internal class DocumentUpdateSingleLineComponent(
     componentFactory: SingleLineComponentFactory<Document, DocumentEssentialsUi>,
     observeOnItem: (DocumentEssentialsUi) -> Unit,
     onSuccessInitData: (DocumentEssentialsUi) -> Unit,
-) : UpdateSingleLineComponent<Document, DocumentEssentialsUi, DocumentField>(
+) : UpdateSingleLineComponent<Document, DocumentEssentialsUi>(
     componentContext = componentContext,
     id = documentId,
     updateSingleLineRepository = updateRepository,
@@ -53,12 +50,6 @@ internal class DocumentUpdateSingleLineComponent(
         dialogNavigation.activate(UpdateDatePickerDialogConfig)
     }
 
-    override val columns: ImmutableList<ColumnSpec<DocumentEssentialsUi, DocumentField, Unit>> =
-        createDocumentColumns1(
-            onOpenDateDialog = ::onOpenDateDialog,
-            onChangeItem = ::onChangeItem,
-        )
-
     /**
      * Создаёт компонент диалога выбора даты
      */
@@ -77,7 +68,7 @@ internal class DocumentUpdateSingleLineComponent(
         )
     }
 
-    override val errorMessages: Flow<List<String>> = errorTableMessages
+    override val errorMessages: Flow<List<String>> = validationErrors
 
     /**
      * Конфигурация для диалога выбора даты

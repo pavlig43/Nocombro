@@ -5,7 +5,6 @@ import ru.pavlig43.core.model.DecimalData3
 import ru.pavlig43.database.data.product.SafetyStock
 import ru.pavlig43.database.data.sync.defaultSyncId
 import ru.pavlig43.database.data.sync.defaultUpdatedAt
-import ru.pavlig43.mutable.api.singleLine.model.ISingleLineTableUi
 
 data class SafetyStockUi(
     val id: Int,
@@ -15,7 +14,7 @@ data class SafetyStockUi(
     val syncId: String = defaultSyncId(),
     val updatedAt: LocalDateTime = defaultUpdatedAt(),
     val deletedAt: LocalDateTime? = null,
-): ISingleLineTableUi
+)
 
 internal fun SafetyStockUi.toDto(): SafetyStock {
     return SafetyStock(

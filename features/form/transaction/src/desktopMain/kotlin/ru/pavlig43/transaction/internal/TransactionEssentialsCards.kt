@@ -32,7 +32,7 @@ internal val creatableTransactionTypes = TransactionType.entries.filterNot {
 /** Показывает общую карточную форму транзакции для создания и правки. */
 @Composable
 internal fun TransactionEssentialsCards(
-    component: SingleLineComponent<*, TransactionEssentialsUi, *>,
+    component: SingleLineComponent<*, TransactionEssentialsUi>,
     onOpenCreatedAtDialog: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -52,7 +52,7 @@ internal fun TransactionEssentialsCards(
 
 /** Строит неизменяемую схему секций и строк транзакции. */
 private fun transactionEssentialsSections(
-    component: SingleLineComponent<*, TransactionEssentialsUi, *>,
+    component: SingleLineComponent<*, TransactionEssentialsUi>,
     onOpenCreatedAtDialog: () -> Unit,
 ): ImmutableList<SingleLineFormSection<TransactionEssentialsUi>> = persistentListOf(
     SingleLineFormSection(

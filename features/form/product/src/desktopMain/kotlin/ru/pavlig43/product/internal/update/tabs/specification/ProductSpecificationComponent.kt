@@ -1,7 +1,6 @@
 package ru.pavlig43.product.internal.update.tabs.specification
 
 import com.arkivanov.decompose.ComponentContext
-import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -16,7 +15,6 @@ import ru.pavlig43.mutable.api.singleLine.component.SingleLineComponentFactory
 import ru.pavlig43.mutable.api.singleLine.component.UpdateSingleLineComponent
 import ru.pavlig43.mutable.api.singleLine.data.UpdateSingleLineRepository
 import ru.pavlig43.product.internal.update.tabs.composition.CompositionUi
-import ua.wwind.table.ColumnSpec
 
 /**
  * Компонент вкладки "Спецификация".
@@ -34,7 +32,7 @@ internal class ProductSpecificationComponent(
     private val getCurrentComposition: () -> List<CompositionUi>,
     private val getProductName: () -> String,
     private val onPdfGenerated: suspend () -> Unit,
-) : UpdateSingleLineComponent<ProductSpecification, ProductSpecificationUi, ProductSpecificationField>(
+) : UpdateSingleLineComponent<ProductSpecification, ProductSpecificationUi>(
     componentContext = componentContext,
     id = productId,
     updateSingleLineRepository = updateRepository,
@@ -42,13 +40,7 @@ internal class ProductSpecificationComponent(
     mapperToDTO = { toDto() }
 ) {
     override val title: String = "Спецификация"
-    override val columns: ImmutableList<ColumnSpec<ProductSpecificationUi, ProductSpecificationField, Unit>> =
-        createProductSpecificationColumns(
-            onChangeItem = ::onChangeItem,
-            onGenerateComposition = ::generateComposition,
-        )
-
-    override val errorMessages: Flow<List<String>> = errorTableMessages
+    override val errorMessages: Flow<List<String>> = validationErrors
 
     private val _generationProgress = MutableStateFlow<SpecificationPdfProgressUi?>(null)
     internal val generationProgress = _generationProgress.asStateFlow()

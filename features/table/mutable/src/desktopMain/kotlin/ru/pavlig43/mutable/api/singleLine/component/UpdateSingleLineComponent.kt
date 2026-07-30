@@ -5,25 +5,26 @@ import ru.pavlig43.core.FormTabComponent
 import ru.pavlig43.core.model.ChangeSet
 import ru.pavlig43.core.model.SingleItem
 import ru.pavlig43.mutable.api.singleLine.data.UpdateSingleLineRepository
-import ru.pavlig43.mutable.api.singleLine.model.ISingleLineTableUi
 
+/** Базовый компонент правки одной записи через карточную форму. */
 @Suppress("LongParameterList")
-abstract class UpdateSingleLineComponent<I : SingleItem, T : ISingleLineTableUi, C>(
+abstract class UpdateSingleLineComponent<I : SingleItem, T : Any>(
     componentContext: ComponentContext,
     componentFactory: SingleLineComponentFactory<I, T>,
     id: Int,
     private val updateSingleLineRepository: UpdateSingleLineRepository<I>,
     private val mapperToDTO: T.() -> I,
     observeOnItem: (T) -> Unit = {},
-    onSuccessInitData: (T) -> Unit = {}
-) : SingleLineComponent<I, T, C>(
+    onSuccessInitData: (T) -> Unit = {},
+) : SingleLineComponent<I, T>(
     componentContext = componentContext,
     componentFactory = componentFactory,
     getInitData = { updateSingleLineRepository.getInit(id) },
     observeOnItem = observeOnItem,
-    onSuccessInitData = onSuccessInitData
+    onSuccessInitData = onSuccessInitData,
 ), FormTabComponent {
     override val title: String = "Основная информация"
+
     override suspend fun refreshDataAfterUpsert() {
         initDataComponent.retryLoadInitData()
     }
@@ -33,5 +34,4 @@ abstract class UpdateSingleLineComponent<I : SingleItem, T : ISingleLineTableUi,
         val new = item.value.mapperToDTO()
         return updateSingleLineRepository.update(ChangeSet(old, new))
     }
-
 }

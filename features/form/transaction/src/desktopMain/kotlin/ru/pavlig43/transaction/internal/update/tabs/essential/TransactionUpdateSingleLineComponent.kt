@@ -7,7 +7,6 @@ import com.arkivanov.decompose.router.slot.activate
 import com.arkivanov.decompose.router.slot.childSlot
 import com.arkivanov.decompose.router.slot.dismiss
 import com.arkivanov.decompose.value.Value
-import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.Serializable
 import ru.pavlig43.database.data.transact.Transact
@@ -15,10 +14,8 @@ import ru.pavlig43.datetime.single.datetime.DateTimeComponent
 import ru.pavlig43.mutable.api.singleLine.component.SingleLineComponentFactory
 import ru.pavlig43.mutable.api.singleLine.component.UpdateSingleLineComponent
 import ru.pavlig43.mutable.api.singleLine.data.UpdateSingleLineRepository
-import ru.pavlig43.transaction.internal.TransactionField
 import ru.pavlig43.transaction.internal.model.TransactionEssentialsUi
 import ru.pavlig43.transaction.internal.model.toDto
-import ua.wwind.table.ColumnSpec
 
 internal class TransactionUpdateSingleLineComponent(
     componentContext: ComponentContext,
@@ -27,7 +24,7 @@ internal class TransactionUpdateSingleLineComponent(
     componentFactory: SingleLineComponentFactory<Transact, TransactionEssentialsUi>,
     observeOnItem: (TransactionEssentialsUi) -> Unit,
     onSuccessInitData: (TransactionEssentialsUi) -> Unit,
-) : UpdateSingleLineComponent<Transact, TransactionEssentialsUi, TransactionField>(
+) : UpdateSingleLineComponent<Transact, TransactionEssentialsUi>(
     componentContext = componentContext,
     id = transactionId,
     updateSingleLineRepository = updateRepository,
@@ -67,13 +64,7 @@ internal class TransactionUpdateSingleLineComponent(
         }
     }
 
-    override val columns: ImmutableList<ColumnSpec<TransactionEssentialsUi, TransactionField, Unit>> =
-        createTransactionColumns1(
-            onOpenCreatedAtDialog = ::onOpenCreatedAtDialog,
-            onChangeItem = ::onChangeItem,
-        )
-
-    override val errorMessages: Flow<List<String>> = errorTableMessages
+    override val errorMessages: Flow<List<String>> = validationErrors
 }
 
 @Serializable

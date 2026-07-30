@@ -34,7 +34,7 @@ internal class ProductUpdateSingleLineComponent(
     componentFactory: SingleLineComponentFactory<Product, ProductEssentialsUi>,
     observeOnItem: (ProductEssentialsUi) -> Unit,
     onSuccessInitData: (ProductEssentialsUi) -> Unit,
-) : UpdateSingleLineComponent<Product, ProductEssentialsUi, Unit>(
+) : UpdateSingleLineComponent<Product, ProductEssentialsUi>(
     componentContext = componentContext,
     id = productId,
     updateSingleLineRepository = updateRepository,
@@ -78,7 +78,7 @@ internal class ProductUpdateSingleLineComponent(
         )
     }
 
-    override val errorMessages: Flow<List<String>> = errorTableMessages
+    override val errorMessages: Flow<List<String>> = validationErrors
 
     /**
      * Конфигурация для диалога выбора даты

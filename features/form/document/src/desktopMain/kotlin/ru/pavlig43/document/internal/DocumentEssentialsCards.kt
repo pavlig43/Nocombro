@@ -19,7 +19,7 @@ import ru.pavlig43.mutable.api.singleLine.ui.singleLineFormRow
 /** Показывает общую карточную форму документа для создания и правки. */
 @Composable
 internal fun DocumentEssentialsCards(
-    component: SingleLineComponent<*, DocumentEssentialsUi, *>,
+    component: SingleLineComponent<*, DocumentEssentialsUi>,
     onOpenDateDialog: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -39,7 +39,7 @@ internal fun DocumentEssentialsCards(
 
 /** Строит неизменяемую схему секций и строк документа. */
 private fun documentEssentialsSections(
-    component: SingleLineComponent<*, DocumentEssentialsUi, *>,
+    component: SingleLineComponent<*, DocumentEssentialsUi>,
     onOpenDateDialog: () -> Unit,
 ): ImmutableList<SingleLineFormSection<DocumentEssentialsUi>> = persistentListOf(
     SingleLineFormSection(

@@ -7,12 +7,10 @@ import com.arkivanov.decompose.router.slot.activate
 import com.arkivanov.decompose.router.slot.childSlot
 import com.arkivanov.decompose.router.slot.dismiss
 import com.arkivanov.decompose.value.Value
-import kotlinx.collections.immutable.ImmutableList
 import kotlinx.serialization.Serializable
 import ru.pavlig43.core.tabs.TabOpener
 import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.datetime.single.date.DateComponent
-import ru.pavlig43.declaration.internal.DeclarationField
 import ru.pavlig43.declaration.internal.model.DeclarationEssentialsUi
 import ru.pavlig43.declaration.internal.model.toDto
 import ru.pavlig43.immutable.api.ImmutableTableDependencies
@@ -22,7 +20,6 @@ import ru.pavlig43.immutable.internal.component.items.vendor.VendorTableUi
 import ru.pavlig43.mutable.api.singleLine.component.CreateSingleLineComponent
 import ru.pavlig43.mutable.api.singleLine.component.SingleLineComponentFactory
 import ru.pavlig43.mutable.api.singleLine.data.CreateSingleItemRepository
-import ua.wwind.table.ColumnSpec
 
 @Suppress("LongParameterList")
 internal class CreateDeclarationSingleLineComponent(
@@ -33,7 +30,7 @@ internal class CreateDeclarationSingleLineComponent(
     createDeclarationRepository: CreateSingleItemRepository<Declaration>,
     private val immutableDependencies: ImmutableTableDependencies,
     private val tabOpener: TabOpener,
-) : CreateSingleLineComponent<Declaration, DeclarationEssentialsUi, DeclarationField>(
+) : CreateSingleLineComponent<Declaration, DeclarationEssentialsUi>(
     componentContext = componentContext,
     onSuccessCreate = onSuccessCreate,
     componentFactory = componentFactory,
@@ -116,13 +113,6 @@ internal class CreateDeclarationSingleLineComponent(
         }
     }
 
-    override val columns: ImmutableList<ColumnSpec<DeclarationEssentialsUi, DeclarationField, Unit>> =
-        createDeclarationColumns0(
-            onOpenVendorDialog = ::onOpenVendorDialog,
-            onOpenBornDateDialog = ::onOpenBornDateDialog,
-            onOpenBestBeforeDialog = ::onOpenBestBeforeDialog,
-            onChangeItem = ::onChangeItem,
-        )
 }
 
 @Serializable

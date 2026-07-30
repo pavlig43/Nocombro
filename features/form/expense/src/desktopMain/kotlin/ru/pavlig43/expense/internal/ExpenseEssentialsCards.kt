@@ -20,7 +20,7 @@ import ru.pavlig43.mutable.api.singleLine.ui.singleLineFormRow
 /** Показывает общую карточную форму расхода для создания и правки. */
 @Composable
 internal fun ExpenseEssentialsCards(
-    component: SingleLineComponent<*, ExpenseEssentialsUi, *>,
+    component: SingleLineComponent<*, ExpenseEssentialsUi>,
     onOpenDateTimeDialog: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -40,7 +40,7 @@ internal fun ExpenseEssentialsCards(
 
 /** Строит неизменяемую схему секций и строк расхода. */
 private fun expenseEssentialsSections(
-    component: SingleLineComponent<*, ExpenseEssentialsUi, *>,
+    component: SingleLineComponent<*, ExpenseEssentialsUi>,
     onOpenDateTimeDialog: () -> Unit,
 ): ImmutableList<SingleLineFormSection<ExpenseEssentialsUi>> = persistentListOf(
     SingleLineFormSection(

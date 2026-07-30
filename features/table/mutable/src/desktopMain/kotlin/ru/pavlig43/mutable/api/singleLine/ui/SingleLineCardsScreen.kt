@@ -21,7 +21,7 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import ru.pavlig43.loadinitdata.api.ui.LoadInitDataScreen
 import ru.pavlig43.mutable.api.singleLine.component.SingleLineComponent
-import ru.pavlig43.mutable.api.singleLine.model.ISingleLineTableUi
+
 
 /** Поле карточной формы с подписью и UI-содержимым. */
 data class SingleLineFormField<I : Any>(
@@ -59,8 +59,8 @@ fun <I : Any> singleLineFormRow(
  * @param sections готовая схема секций и строк
  */
 @Composable
-fun <I : ISingleLineTableUi> SingleLineCardsScreen(
-    component: SingleLineComponent<*, I, *>,
+fun <I : Any> SingleLineCardsScreen(
+    component: SingleLineComponent<*, I>,
     sections: ImmutableList<SingleLineFormSection<I>>,
     modifier: Modifier = Modifier,
 ) {

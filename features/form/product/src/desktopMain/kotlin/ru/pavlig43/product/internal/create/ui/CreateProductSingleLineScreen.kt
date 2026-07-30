@@ -14,7 +14,7 @@ import ru.pavlig43.product.internal.ProductEssentialsCards
 import ru.pavlig43.product.internal.create.component.CreateProductSingleLineComponent
 
 /**
- * UI экран для создания продукта через таблицу с одной строкой
+ * Показывает карточную форму создания продукта.
  *
  * @param component Компонент создания продукта
  */

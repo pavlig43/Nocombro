@@ -7,17 +7,14 @@ import com.arkivanov.decompose.router.slot.activate
 import com.arkivanov.decompose.router.slot.childSlot
 import com.arkivanov.decompose.router.slot.dismiss
 import com.arkivanov.decompose.value.Value
-import kotlinx.collections.immutable.ImmutableList
 import kotlinx.serialization.Serializable
 import ru.pavlig43.database.data.transact.Transact
 import ru.pavlig43.datetime.single.datetime.DateTimeComponent
 import ru.pavlig43.mutable.api.singleLine.component.CreateSingleLineComponent
 import ru.pavlig43.mutable.api.singleLine.component.SingleLineComponentFactory
 import ru.pavlig43.mutable.api.singleLine.data.CreateSingleItemRepository
-import ru.pavlig43.transaction.internal.TransactionField
 import ru.pavlig43.transaction.internal.model.TransactionEssentialsUi
 import ru.pavlig43.transaction.internal.model.toDto
-import ua.wwind.table.ColumnSpec
 
 internal class CreateTransactionSingleLineComponent(
     componentContext: ComponentContext,
@@ -25,7 +22,7 @@ internal class CreateTransactionSingleLineComponent(
     observeOnItem: (TransactionEssentialsUi) -> Unit,
     componentFactory: SingleLineComponentFactory<Transact, TransactionEssentialsUi>,
     createRepository: CreateSingleItemRepository<Transact>,
-) : CreateSingleLineComponent<Transact, TransactionEssentialsUi, TransactionField>(
+) : CreateSingleLineComponent<Transact, TransactionEssentialsUi>(
     componentContext = componentContext,
     onSuccessCreate = onSuccessCreate,
     componentFactory = componentFactory,
@@ -64,11 +61,6 @@ internal class CreateTransactionSingleLineComponent(
         }
     }
 
-    override val columns: ImmutableList<ColumnSpec<TransactionEssentialsUi, TransactionField, Unit>> =
-        createTransactionColumns0(
-            onOpenCreatedAtDialog = ::onOpenCreatedAtDialog,
-            onChangeItem = ::onChangeItem,
-        )
 }
 
 @Serializable

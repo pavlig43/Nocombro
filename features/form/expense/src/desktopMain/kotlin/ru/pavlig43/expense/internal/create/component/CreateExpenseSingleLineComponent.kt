@@ -5,17 +5,14 @@ import com.arkivanov.decompose.router.slot.SlotNavigation
 import com.arkivanov.decompose.router.slot.activate
 import com.arkivanov.decompose.router.slot.childSlot
 import com.arkivanov.decompose.router.slot.dismiss
-import kotlinx.collections.immutable.ImmutableList
 import kotlinx.serialization.Serializable
 import ru.pavlig43.database.data.expense.ExpenseBD
 import ru.pavlig43.datetime.single.datetime.DateTimeComponent
-import ru.pavlig43.expense.internal.ExpenseField
 import ru.pavlig43.expense.internal.model.ExpenseEssentialsUi
 import ru.pavlig43.expense.internal.model.toDto
 import ru.pavlig43.mutable.api.singleLine.component.CreateSingleLineComponent
 import ru.pavlig43.mutable.api.singleLine.component.SingleLineComponentFactory
 import ru.pavlig43.mutable.api.singleLine.data.CreateSingleItemRepository
-import ua.wwind.table.ColumnSpec
 
 /**
  * Компонент создания расхода в карточной форме.
@@ -33,7 +30,7 @@ internal class CreateExpenseSingleLineComponent(
     observeOnItem: (ExpenseEssentialsUi) -> Unit,
     componentFactory: SingleLineComponentFactory<ExpenseBD, ExpenseEssentialsUi>,
     createExpenseRepository: CreateSingleItemRepository<ExpenseBD>,
-) : CreateSingleLineComponent<ExpenseBD, ExpenseEssentialsUi, ExpenseField>(
+) : CreateSingleLineComponent<ExpenseBD, ExpenseEssentialsUi>(
     componentContext = componentContext,
     onSuccessCreate = onSuccessCreate,
     componentFactory = componentFactory,
@@ -57,12 +54,6 @@ internal class CreateExpenseSingleLineComponent(
     fun onOpenDateTimeDialog() {
         dialogNavigation.activate(CreateDateTimeDialogConfig)
     }
-
-    override val columns: ImmutableList<ColumnSpec<ExpenseEssentialsUi, ExpenseField, Unit>> =
-        createExpenseColumns(
-            onOpenDateTimeDialog = ::onOpenDateTimeDialog,
-            onChangeItem = ::onChangeItem,
-        )
 
     /**
      * Создаёт компонент диалога выбора даты/времени

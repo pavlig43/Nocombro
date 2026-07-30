@@ -3,7 +3,6 @@ package ru.pavlig43.transaction.internal.update.tabs.component.opzs.pf
 import kotlinx.datetime.LocalDate
 import ru.pavlig43.core.model.DecimalData3
 import ru.pavlig43.database.data.transact.pf.PfBD
-import ru.pavlig43.mutable.api.singleLine.model.ISingleLineTableUi
 
 data class PfUi(
     val transactionId: Int = 0,
@@ -15,7 +14,7 @@ data class PfUi(
     val declarationName: String = "",
     val vendorName: String = "",
     val count: DecimalData3 = DecimalData3(0),
-) : ISingleLineTableUi
+)
 
 internal fun PfUi.toDto(getDateBorn:()-> LocalDate): PfBD = PfBD(
     transactionId = transactionId,

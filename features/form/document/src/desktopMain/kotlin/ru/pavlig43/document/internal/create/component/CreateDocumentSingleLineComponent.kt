@@ -5,24 +5,20 @@ import com.arkivanov.decompose.router.slot.SlotNavigation
 import com.arkivanov.decompose.router.slot.activate
 import com.arkivanov.decompose.router.slot.childSlot
 import com.arkivanov.decompose.router.slot.dismiss
-import kotlinx.collections.immutable.ImmutableList
 import kotlinx.serialization.Serializable
 import ru.pavlig43.database.data.document.Document
 import ru.pavlig43.datetime.single.date.DateComponent
-import ru.pavlig43.document.internal.DocumentField
 import ru.pavlig43.document.internal.model.DocumentEssentialsUi
 import ru.pavlig43.document.internal.model.toDto
 import ru.pavlig43.mutable.api.singleLine.component.CreateSingleLineComponent
 import ru.pavlig43.mutable.api.singleLine.component.SingleLineComponentFactory
 import ru.pavlig43.mutable.api.singleLine.data.CreateSingleItemRepository
-import ua.wwind.table.ColumnSpec
 
 /**
- * Компонент для создания документа через таблицу с одной строкой.
+ * Компонент карточной формы создания документа.
  *
  * Использует [ru.pavlig43.mutable.api.singleLine.component.CreateSingleLineComponent] как базу и добавляет:
  * - Диалог выбора даты через [com.arkivanov.decompose.router.slot.SlotNavigation]
- * - Колонки таблицы для полей документа
  * - Валидацию обязательных полей
  *
  * @param componentContext Decompose контекст компонента
@@ -35,7 +31,7 @@ internal class CreateDocumentSingleLineComponent(
     observeOnItem:(DocumentEssentialsUi)-> Unit,
     componentFactory: SingleLineComponentFactory<Document, DocumentEssentialsUi>,
     createDocumentRepository: CreateSingleItemRepository<Document>,
-) : CreateSingleLineComponent<Document, DocumentEssentialsUi, DocumentField>(
+) : CreateSingleLineComponent<Document, DocumentEssentialsUi>(
     componentContext = componentContext,
     onSuccessCreate = onSuccessCreate,
     componentFactory = componentFactory,
@@ -61,12 +57,6 @@ internal class CreateDocumentSingleLineComponent(
     fun onOpenDateDialog() {
         dialogNavigation.activate(CreateDatePickerDialogConfig)
     }
-
-    override val columns: ImmutableList<ColumnSpec<DocumentEssentialsUi, DocumentField, Unit>> =
-        createDocumentColumns0(
-            onOpenDateDialog = ::onOpenDateDialog,
-            onChangeItem = ::onChangeItem,
-        )
 
     /**
      * Создаёт компонент диалога выбора даты

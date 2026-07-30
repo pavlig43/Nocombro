@@ -4,7 +4,6 @@ import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.database.data.product.ProductSpecification
 import ru.pavlig43.database.data.sync.defaultSyncId
 import ru.pavlig43.database.data.sync.defaultUpdatedAt
-import ru.pavlig43.mutable.api.singleLine.model.ISingleLineTableUi
 
 internal data class ProductSpecificationUi(
     val id: Int,
@@ -25,7 +24,7 @@ internal data class ProductSpecificationUi(
     val syncId: String = defaultSyncId(),
     val updatedAt: LocalDateTime = defaultUpdatedAt(),
     val deletedAt: LocalDateTime? = null,
-) : ISingleLineTableUi
+)
 
 internal fun ProductSpecificationUi.toDto(): ProductSpecification {
     return ProductSpecification(

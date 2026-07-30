@@ -33,7 +33,7 @@ internal class CreateProductSingleLineComponent(
     observeOnItem: (ProductEssentialsUi) -> Unit,
     componentFactory: SingleLineComponentFactory<Product, ProductEssentialsUi>,
     createProductRepository: CreateSingleItemRepository<Product>,
-) : CreateSingleLineComponent<Product, ProductEssentialsUi, Unit>(
+) : CreateSingleLineComponent<Product, ProductEssentialsUi>(
     componentContext = componentContext,
     onSuccessCreate = onSuccessCreate,
     componentFactory = componentFactory,

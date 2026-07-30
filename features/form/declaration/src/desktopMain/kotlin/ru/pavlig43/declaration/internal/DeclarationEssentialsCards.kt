@@ -19,7 +19,7 @@ import ru.pavlig43.mutable.api.singleLine.ui.singleLineFormRow
 /** Показывает общую карточную форму декларации для создания и правки. */
 @Composable
 internal fun DeclarationEssentialsCards(
-    component: SingleLineComponent<*, DeclarationEssentialsUi, *>,
+    component: SingleLineComponent<*, DeclarationEssentialsUi>,
     onOpenVendorDialog: () -> Unit,
     onOpenVendor: () -> Unit,
     onOpenBornDateDialog: () -> Unit,
@@ -46,7 +46,7 @@ internal fun DeclarationEssentialsCards(
 /** Строит неизменяемую схему секций и строк декларации. */
 @Suppress("LongParameterList")
 private fun declarationEssentialsSections(
-    component: SingleLineComponent<*, DeclarationEssentialsUi, *>,
+    component: SingleLineComponent<*, DeclarationEssentialsUi>,
     onOpenVendorDialog: () -> Unit,
     onOpenVendor: () -> Unit,
     onOpenBornDateDialog: () -> Unit,

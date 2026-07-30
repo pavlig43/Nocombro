@@ -21,7 +21,7 @@ import ru.pavlig43.product.internal.model.ProductEssentialsUi
 /** Карточная форма основных полей товара для создания и правки. */
 @Composable
 internal fun ProductEssentialsCards(
-    component: SingleLineComponent<*, ProductEssentialsUi, *>,
+    component: SingleLineComponent<*, ProductEssentialsUi>,
     onOpenDateDialog: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -41,7 +41,7 @@ internal fun ProductEssentialsCards(
 
 /** Строит неизменяемую схему секций и явно заданных строк товара. */
 private fun productEssentialsSections(
-    component: SingleLineComponent<*, ProductEssentialsUi, *>,
+    component: SingleLineComponent<*, ProductEssentialsUi>,
     onOpenDateDialog: () -> Unit,
 ): ImmutableList<SingleLineFormSection<ProductEssentialsUi>> = persistentListOf(
     SingleLineFormSection(

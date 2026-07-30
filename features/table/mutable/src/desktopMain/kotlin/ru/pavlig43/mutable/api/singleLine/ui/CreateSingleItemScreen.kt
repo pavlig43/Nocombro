@@ -20,29 +20,21 @@ import ru.pavlig43.coreui.LoadingUi
 import ru.pavlig43.coreui.ValidationErrorsCard
 import ru.pavlig43.mutable.api.singleLine.component.CreateSingleLineComponent
 import ru.pavlig43.mutable.api.singleLine.component.CreateState
-import ru.pavlig43.mutable.api.singleLine.model.ISingleLineTableUi
 
-
+/** Показывает карточную форму и кнопку создания записи. */
 @Composable
-fun <I : ISingleLineTableUi, C> CreateSingleItemScreen(
-    component: CreateSingleLineComponent<out SingleItem, I, C>,
-    itemContent: (@Composable (Modifier) -> Unit)? = null,
+fun <I : Any> CreateSingleItemScreen(
+    component: CreateSingleLineComponent<out SingleItem, I>,
+    itemContent: @Composable (Modifier) -> Unit,
 ) {
     val createState by component.createState.collectAsState()
-    val errorMessages by component.errorTableMessages.collectAsState()
+    val errorMessages by component.validationErrors.collectAsState()
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         val contentModifier = Modifier.weight(1f)
-        if (itemContent == null) {
-            SingleLineBlockScreen(
-                component = component,
-                modifier = contentModifier,
-            )
-        } else {
-            itemContent(contentModifier)
-        }
+        itemContent(contentModifier)
         CreateButton(
             onCreate = component::create,
             errorMessages = errorMessages,

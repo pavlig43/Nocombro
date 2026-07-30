@@ -16,7 +16,7 @@ import ru.pavlig43.vendor.internal.model.VendorEssentialsUi
 /** Показывает общую карточную форму поставщика для создания и правки. */
 @Composable
 internal fun VendorEssentialsCards(
-    component: SingleLineComponent<*, VendorEssentialsUi, *>,
+    component: SingleLineComponent<*, VendorEssentialsUi>,
     modifier: Modifier = Modifier,
 ) {
     val sections = remember(component) {
@@ -32,7 +32,7 @@ internal fun VendorEssentialsCards(
 
 /** Строит неизменяемую схему секций и строк поставщика. */
 private fun vendorEssentialsSections(
-    component: SingleLineComponent<*, VendorEssentialsUi, *>,
+    component: SingleLineComponent<*, VendorEssentialsUi>,
 ): ImmutableList<SingleLineFormSection<VendorEssentialsUi>> = persistentListOf(
     SingleLineFormSection(
         title = "Карточка поставщика",
