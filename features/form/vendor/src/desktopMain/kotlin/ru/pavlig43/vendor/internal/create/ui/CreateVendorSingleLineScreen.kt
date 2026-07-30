@@ -7,22 +7,31 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import ru.pavlig43.mutable.api.singleLine.ui.CreateSingleItemScreen
+import ru.pavlig43.vendor.internal.VendorEssentialsCards
 import ru.pavlig43.vendor.internal.create.component.CreateVendorSingleLineComponent
 
 /**
- * UI экран для создания поставщика через таблицу с одной строкой
+ * Показывает карточную форму создания поставщика.
  *
- * @param component Компонент создания поставщика
+ * @param component компонент создания поставщика
  */
 @Composable
 internal fun CreateVendorSingleLineScreen(
-    component: CreateVendorSingleLineComponent
+    component: CreateVendorSingleLineComponent,
 ) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp)
+            .padding(vertical = 8.dp),
     ) {
-        CreateSingleItemScreen(component)
+        CreateSingleItemScreen(
+            component = component,
+            itemContent = { modifier ->
+                VendorEssentialsCards(
+                    component = component,
+                    modifier = modifier,
+                )
+            },
+        )
     }
 }
