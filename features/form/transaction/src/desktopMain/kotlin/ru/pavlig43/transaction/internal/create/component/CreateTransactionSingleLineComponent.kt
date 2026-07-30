@@ -31,7 +31,7 @@ internal class CreateTransactionSingleLineComponent(
     componentFactory = componentFactory,
     createSingleItemRepository = createRepository,
     mapperToDTO = { toDto() },
-    observeOnItem = observeOnItem
+    observeOnItem = observeOnItem,
 ) {
     private val dialogNavigation = SlotNavigation<DialogConfig>()
 
@@ -40,8 +40,13 @@ internal class CreateTransactionSingleLineComponent(
         key = "dialog",
         serializer = DialogConfig.serializer(),
         handleBackButton = true,
-        childFactory = ::dialogChild
+        childFactory = ::dialogChild,
     )
+
+    /** Открывает диалог выбора даты и времени транзакции. */
+    fun onOpenCreatedAtDialog() {
+        dialogNavigation.activate(DialogConfig.CreatedAt)
+    }
 
     private fun dialogChild(config: DialogConfig, context: ComponentContext): DialogChild {
         return when (config) {
@@ -52,8 +57,8 @@ internal class CreateTransactionSingleLineComponent(
                         componentContext = context,
                         initDatetime = item.createdAt,
                         onChangeDate = { newDate -> onChangeItem { it.copy(createdAt = newDate) } },
-                        onDismissRequest = { dialogNavigation.dismiss() }
-                    )
+                        onDismissRequest = { dialogNavigation.dismiss() },
+                    ),
                 )
             }
         }
@@ -61,8 +66,8 @@ internal class CreateTransactionSingleLineComponent(
 
     override val columns: ImmutableList<ColumnSpec<TransactionEssentialsUi, TransactionField, Unit>> =
         createTransactionColumns0(
-            onOpenCreatedAtDialog = { dialogNavigation.activate(DialogConfig.CreatedAt) },
-            onChangeItem = ::onChangeItem
+            onOpenCreatedAtDialog = ::onOpenCreatedAtDialog,
+            onChangeItem = ::onChangeItem,
         )
 }
 

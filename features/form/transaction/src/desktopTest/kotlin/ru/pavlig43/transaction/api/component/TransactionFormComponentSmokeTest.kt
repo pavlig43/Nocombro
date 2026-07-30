@@ -21,7 +21,7 @@ import ru.pavlig43.testkit.waitUntil
 import ru.pavlig43.testkit.database.createSeededManagedTestDatabase
 import ru.pavlig43.testkit.scenario
 import ru.pavlig43.transaction.api.TransactionFormDependencies
-import ru.pavlig43.transaction.internal.create.component.creatableTransactionTypes
+import ru.pavlig43.transaction.internal.creatableTransactionTypes
 import ru.pavlig43.transaction.internal.update.TransactionFormTabsComponent
 import ru.pavlig43.transaction.internal.update.TransactionTab
 import ru.pavlig43.transaction.internal.update.TransactionTabChild

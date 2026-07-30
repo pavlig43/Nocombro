@@ -34,7 +34,7 @@ internal class TransactionUpdateSingleLineComponent(
     componentFactory = componentFactory,
     observeOnItem = observeOnItem,
     onSuccessInitData = onSuccessInitData,
-    mapperToDTO = { toDto() }
+    mapperToDTO = { toDto() },
 ) {
     private val dialogNavigation = SlotNavigation<UpdateDialogConfig>()
 
@@ -43,8 +43,13 @@ internal class TransactionUpdateSingleLineComponent(
         key = "dialog",
         serializer = UpdateDialogConfig.serializer(),
         handleBackButton = true,
-        childFactory = ::dialogChild
+        childFactory = ::dialogChild,
     )
+
+    /** Открывает диалог выбора даты и времени транзакции. */
+    fun onOpenCreatedAtDialog() {
+        dialogNavigation.activate(UpdateDialogConfig.CreatedAt)
+    }
 
     private fun dialogChild(config: UpdateDialogConfig, context: ComponentContext): UpdateDialogChild {
         return when (config) {
@@ -55,8 +60,8 @@ internal class TransactionUpdateSingleLineComponent(
                         componentContext = context,
                         initDatetime = item.createdAt,
                         onChangeDate = { newDate -> onChangeItem { it.copy(createdAt = newDate) } },
-                        onDismissRequest = { dialogNavigation.dismiss() }
-                    )
+                        onDismissRequest = { dialogNavigation.dismiss() },
+                    ),
                 )
             }
         }
@@ -64,8 +69,8 @@ internal class TransactionUpdateSingleLineComponent(
 
     override val columns: ImmutableList<ColumnSpec<TransactionEssentialsUi, TransactionField, Unit>> =
         createTransactionColumns1(
-            onOpenCreatedAtDialog = { dialogNavigation.activate(UpdateDialogConfig.CreatedAt) },
-            onChangeItem = ::onChangeItem
+            onOpenCreatedAtDialog = ::onOpenCreatedAtDialog,
+            onChangeItem = ::onChangeItem,
         )
 
     override val errorMessages: Flow<List<String>> = errorTableMessages

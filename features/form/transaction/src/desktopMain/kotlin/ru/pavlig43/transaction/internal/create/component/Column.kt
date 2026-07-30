@@ -2,27 +2,15 @@
 package ru.pavlig43.transaction.internal.create.component
 
 import kotlinx.collections.immutable.ImmutableList
-import ru.pavlig43.database.data.transact.TransactionType
 import ru.pavlig43.mutable.api.column.writeCheckBoxColumn
 import ru.pavlig43.mutable.api.column.writeDateTimeColumn
 import ru.pavlig43.mutable.api.column.writeItemTypeColumn
 import ru.pavlig43.mutable.api.column.writeTextColumn
 import ru.pavlig43.transaction.internal.TransactionField
+import ru.pavlig43.transaction.internal.creatableTransactionTypes
 import ru.pavlig43.transaction.internal.model.TransactionEssentialsUi
 import ua.wwind.table.ColumnSpec
 import ua.wwind.table.editableTableColumns
-
-/**
- * Типы транзакций, для которых реализованы форма создания и рабочие вкладки.
- *
- * Списание и инвентаризация могут существовать в старых данных, но не предлагаются
- * при создании, пока их бизнес-редактор не реализован.
- */
-internal val creatableTransactionTypes = TransactionType.entries.filterNot {
-    it == TransactionType.WRITE_OFF ||
-        it == TransactionType.INVENTORY ||
-        it == TransactionType.STORAGE_TRANSFER
-}
 
 internal fun createTransactionColumns0(
     onOpenCreatedAtDialog: () -> Unit,
