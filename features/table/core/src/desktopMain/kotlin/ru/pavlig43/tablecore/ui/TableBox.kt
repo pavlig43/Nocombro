@@ -21,6 +21,8 @@ import ua.wwind.table.ColumnSpec
 import ua.wwind.table.ExperimentalTableApi
 import ua.wwind.table.config.RowHeightMode
 import ua.wwind.table.config.SelectionMode
+import ua.wwind.table.config.TableDefaults
+import ua.wwind.table.config.TableDimensions
 import ua.wwind.table.config.TableSettings
 import ua.wwind.table.filter.data.TableFilterState
 import ua.wwind.table.state.SortState
@@ -39,6 +41,10 @@ fun <I : IMultiLineTableUi, C, E : TableData<I>> TableBox(
     initialSort: SortState<C>? = null,
     initialFilters: Map<C, TableFilterState<*>> = emptyMap(),
     tableSettingsModify: (TableSettings) -> TableSettings = { it },
+    modifier: Modifier = Modifier,
+    dimensions: TableDimensions = TableDefaults.standardDimensions(),
+    tableModifier: Modifier = Modifier.fillMaxWidth().padding(end = 16.dp, bottom = 16.dp),
+    subtleScrollbars: Boolean = false,
     table: @Composable BoxScope.(
         verticalState: LazyListState,
         horizontalState: ScrollState,
@@ -65,6 +71,7 @@ fun <I : IMultiLineTableUi, C, E : TableData<I>> TableBox(
         columns = columns.map { it.key }.toImmutableList(),
         settings = tableSettingsModify(defaultTableSettings),
         initialSort = initialSort,
+        dimensions = dimensions,
     )
     initialFilters.forEach { (column, filterState) ->
         state.filters[column] = filterState
@@ -79,15 +86,15 @@ fun <I : IMultiLineTableUi, C, E : TableData<I>> TableBox(
 
     val verticalState = rememberLazyListState()
     val horizontalState = rememberScrollState()
-    Box {
+    Box(modifier = modifier) {
         table(
             verticalState,
             horizontalState,
             state,
             RussianStringProvider,
-            Modifier.fillMaxWidth().padding(end = 16.dp, bottom = 16.dp)
+            tableModifier
         )
-        ScrollBar(verticalState, horizontalState)
+        ScrollBar(verticalState, horizontalState, subtle = subtleScrollbars)
 
     }
 

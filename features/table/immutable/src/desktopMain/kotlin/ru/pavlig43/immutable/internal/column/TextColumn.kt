@@ -1,7 +1,7 @@
 package ru.pavlig43.immutable.internal.column
 
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Text
+import ru.pavlig43.immutable.internal.ui.HighlightedTableText
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -36,9 +36,9 @@ private fun <T : Any, C, E> ReadonlyColumnBuilder<T, C, E>.readTextCell(
     valueOf: (T) -> String,
 ) {
     cell { item, _ ->
-        Text(
+        HighlightedTableText(
             text = valueOf(item),
-            modifier = Modifier.padding(horizontal = 12.dp)
+            modifier = Modifier.padding(horizontal = tableCellHorizontalPadding)
         )
     }
 }

@@ -3,7 +3,9 @@ package ru.pavlig43.immutable.internal.component
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -38,6 +40,7 @@ internal abstract class ImmutableTableComponent<BD, UI : IMultiLineTableUi, Colu
     val onItemClick: (UI) -> Unit,
     mapper: BD.() -> UI,
     filterMatcher: FilterMatcher<UI, Column>,
+    searchMatcher: SearchMatcher<UI>,
     sortMatcher: SortMatcher<UI, Column>,
     val repository: ImmutableListRepository<BD>,
 
@@ -46,6 +49,7 @@ internal abstract class ImmutableTableComponent<BD, UI : IMultiLineTableUi, Colu
 
     abstract val columns: ImmutableList<ColumnSpec<UI, Column, TableData<UI>>>
     open val exportConfiguration: TableExportConfiguration<UI, Column>? = null
+    open val showCreateAction: Boolean = true
 
 
     private val coroutineScope = componentCoroutineScope()
@@ -63,6 +67,9 @@ internal abstract class ImmutableTableComponent<BD, UI : IMultiLineTableUi, Colu
     )
     /** Состояние удаления, которое отключает повторный клик и показывает ошибку в UI. */
     val deleteState = deleteManager.deleteState
+
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery = _searchQuery.asStateFlow()
 
 
     val itemListState = repository.observeOnItems(tableBuilder.parentId).map { result ->
@@ -82,8 +89,9 @@ internal abstract class ImmutableTableComponent<BD, UI : IMultiLineTableUi, Colu
         itemListState,
         selectionManager.selectedIdsFlow,
         filterManager.filters,
+        searchQuery,
         sortManager.sort,
-    ) { state, selectedIds, filters, sort ->
+    ) { state, selectedIds, filters, query, sort ->
         when (state) {
             is ItemListState.Error,
             is ItemListState.Loading -> TableData(isSelectionMode = tableBuilder.withCheckbox)
@@ -92,7 +100,8 @@ internal abstract class ImmutableTableComponent<BD, UI : IMultiLineTableUi, Colu
                 val filtered = state.data.filter { ui ->
                     filterMatcher.matchesItem(ui, filters)
                 }
-                val displayed = sortMatcher.sort(filtered, sort)
+                val searched = filtered.filterBySearch(query, searchMatcher)
+                val displayed = sortMatcher.sort(searched, sort)
                 TableData(
                     displayedItems = displayed,
                     selectedIds = selectedIds,
@@ -126,6 +135,10 @@ internal abstract class ImmutableTableComponent<BD, UI : IMultiLineTableUi, Colu
 
     fun updateFilters(filters: Map<Column, TableFilterState<*>>) {
         filterManager.update(filters)
+    }
+
+    fun updateSearchQuery(query: String) {
+        _searchQuery.value = query
     }
 
     val filters: Map<Column, TableFilterState<*>> get() = filterManager.filters.value

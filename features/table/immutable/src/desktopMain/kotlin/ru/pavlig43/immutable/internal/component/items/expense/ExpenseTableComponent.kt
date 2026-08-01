@@ -5,7 +5,9 @@ import kotlinx.collections.immutable.ImmutableList
 import ru.pavlig43.core.model.DecimalData2
 import ru.pavlig43.database.data.expense.MainExpenseBD
 import ru.pavlig43.immutable.api.component.ExpenseImmutableTableBuilder
+import ru.pavlig43.immutable.internal.column.toTableDisplayText
 import ru.pavlig43.immutable.internal.component.ImmutableTableComponent
+import ru.pavlig43.immutable.internal.component.displayedTextSearchMatcher
 import ru.pavlig43.immutable.internal.data.ImmutableListRepository
 import ru.pavlig43.tablecore.export.TableExportConfiguration
 import ru.pavlig43.tablecore.model.TableData
@@ -24,6 +26,15 @@ internal class ExpenseTableComponent(
     onItemClick = onItemClick,
     mapper = MainExpenseBD::toUi,
     filterMatcher = ExpenseFilterMatcher,
+    searchMatcher = displayedTextSearchMatcher { item ->
+        listOf(
+            item.composeId.toString(),
+            item.expenseType.displayName,
+            item.amount.toTableDisplayText(),
+            item.expenseDateTime.toTableDisplayText(),
+            item.comment,
+        )
+    },
     sortMatcher = ExpenseSorter,
     repository = repository,
 ) {

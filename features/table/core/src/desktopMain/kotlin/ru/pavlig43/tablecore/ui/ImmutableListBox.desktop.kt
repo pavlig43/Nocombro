@@ -13,17 +13,23 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 @Composable
 fun BoxScope.ScrollBar(
     verticalState: LazyListState,
-    horizontalState: ScrollState
+    horizontalState: ScrollState,
+    subtle: Boolean = false,
 ) {
-    val lineColor = MaterialTheme.colorScheme.secondary
+    val lineColor = if (subtle) Color.Transparent else MaterialTheme.colorScheme.secondary
     val style = LocalScrollbarStyle.current.copy(
-        unhoverColor = MaterialTheme.colorScheme.onSecondary.copy(alpha = 0.7f),
-        hoverColor = MaterialTheme.colorScheme.onSecondary,
+        unhoverColor = if (subtle) {
+            MaterialTheme.colorScheme.outlineVariant
+        } else {
+            MaterialTheme.colorScheme.onSecondary.copy(alpha = 0.7f)
+        },
+        hoverColor = if (subtle) MaterialTheme.colorScheme.outline else MaterialTheme.colorScheme.onSecondary,
     )
     VerticalScrollbar(
         adapter = rememberScrollbarAdapter(verticalState),

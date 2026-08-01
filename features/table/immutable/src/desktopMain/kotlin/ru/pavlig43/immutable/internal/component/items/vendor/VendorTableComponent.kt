@@ -5,6 +5,7 @@ import kotlinx.collections.immutable.ImmutableList
 import ru.pavlig43.database.data.vendor.Vendor
 import ru.pavlig43.immutable.api.component.VendorImmutableTableBuilder
 import ru.pavlig43.immutable.internal.component.ImmutableTableComponent
+import ru.pavlig43.immutable.internal.component.displayedTextSearchMatcher
 import ru.pavlig43.immutable.internal.data.ImmutableListRepository
 import ru.pavlig43.tablecore.export.TableExportConfiguration
 import ru.pavlig43.tablecore.model.TableData
@@ -24,6 +25,13 @@ internal class VendorTableComponent(
     onItemClick = onItemClick,
     mapper = { this.toUi() },
     filterMatcher = VendorFilterMatcher,
+    searchMatcher = displayedTextSearchMatcher { item ->
+        listOf(
+            item.composeId.toString(),
+            item.displayName,
+            item.comment,
+        )
+    },
     sortMatcher = VendorSorter,
     repository = repository,
 ) {

@@ -5,7 +5,9 @@ import kotlinx.collections.immutable.ImmutableList
 import ru.pavlig43.core.model.DecimalData3
 import ru.pavlig43.database.data.safety.SafetyTableItem
 import ru.pavlig43.immutable.api.component.SafetyImmutableTableBuilder
+import ru.pavlig43.immutable.internal.column.toTableDisplayText
 import ru.pavlig43.immutable.internal.component.ImmutableTableComponent
+import ru.pavlig43.immutable.internal.component.displayedTextSearchMatcher
 import ru.pavlig43.immutable.internal.data.ImmutableListRepository
 import ru.pavlig43.tablecore.export.TableExportConfiguration
 import ru.pavlig43.tablecore.model.TableData
@@ -24,11 +26,23 @@ internal class SafetyTableComponent(
     onItemClick = onItemClick,
     mapper = { this.toUi() },
     filterMatcher = SafetyFilterMatcher,
+    searchMatcher = displayedTextSearchMatcher { item ->
+        listOf(
+            item.composeId.toString(),
+            item.productName,
+            item.vendorName,
+            item.count.toTableDisplayText(),
+            item.reorderPoint.toTableDisplayText(),
+            item.orderQuantity.toTableDisplayText(),
+        )
+    },
     sortMatcher = SafetySorter,
     repository = repository,
 ) {
     override val columns: ImmutableList<ColumnSpec<SafetyTableUi, SafetyField, TableData<SafetyTableUi>>> =
         createSafetyColumn()
+
+    override val showCreateAction: Boolean = false
 
     override val exportConfiguration: TableExportConfiguration<SafetyTableUi, SafetyField> =
         TableExportConfiguration(

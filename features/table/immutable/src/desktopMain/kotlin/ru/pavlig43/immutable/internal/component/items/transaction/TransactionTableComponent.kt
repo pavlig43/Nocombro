@@ -3,7 +3,9 @@ package ru.pavlig43.immutable.internal.component.items.transaction
 import com.arkivanov.decompose.ComponentContext
 import kotlinx.collections.immutable.ImmutableList
 import ru.pavlig43.immutable.api.component.TransactionImmutableTableBuilder
+import ru.pavlig43.immutable.internal.column.toTableDisplayText
 import ru.pavlig43.immutable.internal.component.ImmutableTableComponent
+import ru.pavlig43.immutable.internal.component.displayedTextSearchMatcher
 import ru.pavlig43.immutable.internal.data.ImmutableListRepository
 import ru.pavlig43.tablecore.export.TableExportConfiguration
 import ru.pavlig43.tablecore.model.TableData
@@ -23,6 +25,15 @@ internal class TransactionTableComponent(
     onItemClick = onItemClick,
     mapper = { this.toUi() },
     filterMatcher = TransactionFilterMatcher,
+    searchMatcher = displayedTextSearchMatcher { item ->
+        listOf(
+            item.composeId.toString(),
+            item.transactionType.displayName,
+            item.counterpartyNames,
+            item.createdAt.toTableDisplayText(),
+            item.comment,
+        )
+    },
     sortMatcher = TransactionSorter,
     repository = repository,
 ) {

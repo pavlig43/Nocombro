@@ -47,7 +47,6 @@ internal fun SelectionActionBar(
     deleteState: DeleteState,
     onDeleteClick: () -> Unit,
     onClearSelection: () -> Unit,
-//    liquidState: LiquidState,
     modifier: Modifier = Modifier,
 ) {
     AnimatedVisibility(
@@ -56,12 +55,10 @@ internal fun SelectionActionBar(
         exit = slideOutVertically { it },
         modifier = modifier,
     ) {
-        // Liquid Glass effect: GPU-accelerated shader distortion with semi-transparent background
         Surface(
             modifier = Modifier,
-//                .liquid(liquidState),
-            color = MaterialTheme.colorScheme.surface.copy(alpha = 0.7f),
-            shape = RoundedCornerShape(24.dp),
+            color = MaterialTheme.colorScheme.surfaceContainerHigh,
+            shape = RoundedCornerShape(20.dp),
             border =
                 BorderStroke(
                     width = 1.dp,
@@ -76,12 +73,12 @@ internal fun SelectionActionBar(
                 IconButton(onClick = onClearSelection) {
                     Icon(
                         painter = painterResource(Res.drawable.close) ,
-                        contentDescription = "Clear selection",
+                        contentDescription = "Снять выделение",
                         tint = MaterialTheme.colorScheme.onSurface,
                     )
                 }
                 Text(
-                    text = "$selectedCount selected",
+                    text = "Выбрано: $selectedCount",
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurface,
                 )

@@ -4,7 +4,9 @@ import com.arkivanov.decompose.ComponentContext
 import kotlinx.collections.immutable.ImmutableList
 import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.immutable.api.component.DeclarationImmutableTableBuilder
+import ru.pavlig43.immutable.internal.column.toTableDisplayText
 import ru.pavlig43.immutable.internal.component.ImmutableTableComponent
+import ru.pavlig43.immutable.internal.component.displayedTextSearchMatcher
 import ru.pavlig43.immutable.internal.data.ImmutableListRepository
 import ru.pavlig43.tablecore.export.TableExportConfiguration
 import ru.pavlig43.tablecore.model.TableData
@@ -24,6 +26,14 @@ internal class DeclarationTableComponent(
     onItemClick = onItemClick,
     mapper = { this.toUi() },
     filterMatcher = DeclarationFilterMatcher,
+    searchMatcher = displayedTextSearchMatcher { item ->
+        listOf(
+            item.composeId.toString(),
+            item.displayName,
+            item.vendorName,
+            item.bestBefore.toTableDisplayText(),
+        )
+    },
     sortMatcher = DeclarationSorter,
     repository = repository,
 ) {

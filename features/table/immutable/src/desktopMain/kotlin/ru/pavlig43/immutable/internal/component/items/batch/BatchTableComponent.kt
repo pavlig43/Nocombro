@@ -5,7 +5,9 @@ import kotlinx.collections.immutable.ImmutableList
 import ru.pavlig43.core.model.DecimalData3
 import ru.pavlig43.database.data.batch.BatchWithBalanceOut
 import ru.pavlig43.immutable.api.component.BatchImmutableTableBuilder
+import ru.pavlig43.immutable.internal.column.toTableDisplayText
 import ru.pavlig43.immutable.internal.component.ImmutableTableComponent
+import ru.pavlig43.immutable.internal.component.displayedTextSearchMatcher
 import ru.pavlig43.immutable.internal.data.ImmutableListRepository
 import ru.pavlig43.tablecore.export.TableExportConfiguration
 import ru.pavlig43.tablecore.model.TableData
@@ -24,6 +26,15 @@ internal class BatchTableComponent(
     onItemClick = onItemClick,
     mapper = { this.toUi() },
     filterMatcher = BatchFilterMatcher,
+    searchMatcher = displayedTextSearchMatcher { item ->
+        listOf(
+            item.composeId.toString(),
+            item.productName,
+            item.vendorName,
+            item.balance.toTableDisplayText(),
+            item.dateBorn.toTableDisplayText(),
+        )
+    },
     sortMatcher = BatchSorter,
     repository = repository,
 ) {

@@ -4,7 +4,9 @@ import com.arkivanov.decompose.ComponentContext
 import kotlinx.collections.immutable.ImmutableList
 import ru.pavlig43.database.data.document.Document
 import ru.pavlig43.immutable.api.component.DocumentImmutableTableBuilder
+import ru.pavlig43.immutable.internal.column.toTableDisplayText
 import ru.pavlig43.immutable.internal.component.ImmutableTableComponent
+import ru.pavlig43.immutable.internal.component.displayedTextSearchMatcher
 import ru.pavlig43.immutable.internal.data.ImmutableListRepository
 import ru.pavlig43.tablecore.export.TableExportConfiguration
 import ru.pavlig43.tablecore.model.TableData
@@ -25,6 +27,15 @@ internal class DocumentTableComponent(
     onItemClick = onItemClick,
     mapper = { this.toUi() },
     filterMatcher = DocumentFilterMatcher,
+    searchMatcher = displayedTextSearchMatcher { item ->
+        listOf(
+            item.composeId.toString(),
+            item.displayName,
+            item.type.displayName,
+            item.createdAt.toTableDisplayText(),
+            item.comment,
+        )
+    },
     sortMatcher = DocumentSorter,
     repository = repository
 ) {

@@ -1,13 +1,11 @@
 package ru.pavlig43.immutable.internal.column
 
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Text
+import ru.pavlig43.immutable.internal.ui.HighlightedTableText
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.datetime.LocalDate
-import kotlinx.datetime.format
-import ru.pavlig43.datetime.dateFormat
 import ua.wwind.table.ReadonlyColumnBuilder
 import ua.wwind.table.ReadonlyTableColumnsBuilder
 import ua.wwind.table.filter.data.TableFilterType
@@ -38,9 +36,9 @@ private fun <T : Any, C, E> ReadonlyColumnBuilder<T, C, E>.readDateCell(
     valueOf: (T) -> LocalDate,
 ) {
     cell { item, _ ->
-        Text(
-            text = valueOf(item).format(dateFormat),
-            modifier = Modifier.padding(horizontal = 12.dp)
+        HighlightedTableText(
+            text = valueOf(item).toTableDisplayText(),
+            modifier = Modifier.padding(horizontal = tableCellHorizontalPadding)
         )
     }
 }
