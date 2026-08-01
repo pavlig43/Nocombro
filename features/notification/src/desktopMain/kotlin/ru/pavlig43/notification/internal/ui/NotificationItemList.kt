@@ -1,14 +1,20 @@
 package ru.pavlig43.notification.internal.ui
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -19,27 +25,31 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.painterResource
+import ru.pavlig43.notification.api.model.NotificationLevel
+import ru.pavlig43.notification.api.ui.toColor
 import ru.pavlig43.notification.internal.model.NotificationUi
 import ru.pavlig43.theme.Res
 import ru.pavlig43.theme.notifications
 
-@Suppress("MagicNumber")
 @Composable
 internal fun NotificationItemList(
     listNotificationUi: List<NotificationUi>,
+    level: NotificationLevel,
     onOpenTab: (Int) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Column(
         modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        listNotificationUi.forEachIndexed { index, notification ->
+        listNotificationUi.forEach { notification ->
             NotificationCard(
                 notification = notification,
-                onClick = { onOpenTab(notification.id) }
+                level = level,
+                onClick = { onOpenTab(notification.id) },
             )
         }
     }
@@ -48,79 +58,80 @@ internal fun NotificationItemList(
 @Composable
 private fun NotificationCard(
     notification: NotificationUi,
+    level: NotificationLevel,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
 
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 8.dp, vertical = 4.dp)
             .clickable(
                 interactionSource = interactionSource,
                 indication = null,
-                onClick = onClick
+                onClick = onClick,
             ),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.12f),
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
         ),
         border = BorderStroke(
             width = 1.dp,
-            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
-        )
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.7f),
+        ),
     ) {
-        NotificationCardContent(
-            notification = notification
-        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(IntrinsicSize.Min),
+        ) {
+            Box(
+                modifier = Modifier
+                    .width(4.dp)
+                    .fillMaxHeight()
+                    .background(level.toColor()),
+            )
+            NotificationCardContent(
+                notification = notification,
+                modifier = Modifier.weight(1f),
+            )
+        }
     }
 }
 
 @Composable
 private fun NotificationCardContent(
     notification: NotificationUi,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        NotificationIcon()
-
-        Column(
+        NotificationBellIcon()
+        Text(
+            text = notification.text,
             modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            NotificationText(text = notification.text)
-        }
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurface,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+        )
     }
 }
 
 @Composable
-private fun NotificationIcon(
-    modifier: Modifier = Modifier
+private fun NotificationBellIcon(
+    modifier: Modifier = Modifier,
 ) {
     Icon(
         painter = painterResource(Res.drawable.notifications),
-        contentDescription = "Notification",
+        contentDescription = "Оповещение",
         tint = MaterialTheme.colorScheme.primary,
-        modifier = modifier.size(32.dp)
-    )
-}
-
-@Composable
-private fun NotificationText(
-    text: String,
-    modifier: Modifier = Modifier
-) {
-    Text(
-        text = text,
-        modifier = modifier,
-        style = MaterialTheme.typography.bodyLarge,
-        color = MaterialTheme.colorScheme.onSurface
+        modifier = modifier.size(32.dp),
     )
 }

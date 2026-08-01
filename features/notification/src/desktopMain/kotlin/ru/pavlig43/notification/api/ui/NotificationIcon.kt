@@ -26,41 +26,43 @@ fun NotificationIcon(
     isSelected: Boolean = false,
 ) {
     Box(
-        modifier.fillMaxSize()
+        modifier = modifier
+            .fillMaxSize()
             .border(
                 border = if (isSelected) {
-                    BorderStroke(3.dp, MaterialTheme.colorScheme.onErrorContainer)
+                    BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
                 } else {
                     CardDefaults.outlinedCardBorder()
                 },
-                shape = CardDefaults.shape
+                shape = CardDefaults.shape,
             )
             .background(
-                color = level.toColor().copy(alpha = 0.7f),
-                shape = CardDefaults.shape
-            )
-,
-
-        contentAlignment = Alignment.Center
+                color = level.toColor(),
+                shape = CardDefaults.shape,
+            ),
+        contentAlignment = Alignment.Center,
     ) {
         Text(
             text = countNotification.toString(),
-
             style = MaterialTheme.typography.labelMedium.copy(
                 fontSize = 12.sp,
                 textAlign = TextAlign.Center,
-                color = Color.Black
+                color = level.toContentColor(),
             ),
-
-            )
+        )
     }
-
 }
 
-internal fun NotificationLevel.toColor(): Color {
-    return when (this) {
-        NotificationLevel.HIGH -> Color.Red
-        NotificationLevel.MEDIUM -> Color.Yellow
-        NotificationLevel.LOW -> Color.Green
-    }
+@Composable
+internal fun NotificationLevel.toColor(): Color = when (this) {
+    NotificationLevel.HIGH -> MaterialTheme.colorScheme.errorContainer
+    NotificationLevel.MEDIUM -> MaterialTheme.colorScheme.primary
+    NotificationLevel.LOW -> Color.Green
+}
+
+@Composable
+internal fun NotificationLevel.toContentColor(): Color = when (this) {
+    NotificationLevel.HIGH -> MaterialTheme.colorScheme.onErrorContainer
+    NotificationLevel.MEDIUM -> MaterialTheme.colorScheme.onPrimary
+    NotificationLevel.LOW -> Color.Black
 }

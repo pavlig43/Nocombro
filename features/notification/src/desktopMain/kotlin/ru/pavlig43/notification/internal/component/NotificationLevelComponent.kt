@@ -21,12 +21,12 @@ internal class NotificationLevelComponent(
     componentContext: ComponentContext,
     val level: NotificationLevel,
     private val onOpenTab: (NotificationItem, Int) -> Unit,
-    repositoryList: List<INotificationRepository>
+    repositoryList: List<INotificationRepository>,
 ) : ComponentContext by componentContext {
     private val coroutineScope = componentCoroutineScope()
 
     val notificationFlow = combine(
-        repositoryList.map { it.getNotificationBlock() }
+        repositoryList.map { it.getNotificationBlock() },
     ) { arrayList ->
         require(arrayList.all { it.level == level }) {
             "В списке репозиториев затесался не с тем уровнем важности NotificationLevel"
@@ -35,9 +35,11 @@ internal class NotificationLevelComponent(
     }.stateIn(
         coroutineScope,
         SharingStarted.Lazily,
-        emptyList()
+        emptyList(),
     )
-    val countNotification = notificationFlow.map { it.size }
+    val countNotification = notificationFlow.map { blocks ->
+        blocks.sumOf { it.notificationList.size }
+    }
     fun onClickItem(item: NotificationItem, id: Int) {
         onOpenTab(item, id)
     }
