@@ -178,6 +178,7 @@ data class MobileSyncStatus(
  */
 data class MobileSyncRunResult(
     val status: MobileSyncStatus,
+    val preview: MobileSyncPreview? = null,
     val pushed: Int = 0,
     val pulled: Int = 0,
     val lastPushAt: LocalDateTime? = null,
@@ -186,16 +187,17 @@ data class MobileSyncRunResult(
 )
 
 /**
- * Группы расхождений для экрана предпросмотра.
+ * Группы расхождений для Markdown-отчёта.
  */
 data class MobileSyncPreview(
+    val snapshotAt: LocalDateTime,
     val localChanges: List<MobileExperimentChangeGroup>,
     val remoteChanges: List<MobileExperimentChangeGroup>,
     val error: String? = null,
 )
 
 /**
- * Все изменения одного эксперимента, сгруппированные для интерфейса.
+ * Все изменения одного эксперимента, сгруппированные для отчёта.
  */
 data class MobileExperimentChangeGroup(
     val experimentSyncId: String,

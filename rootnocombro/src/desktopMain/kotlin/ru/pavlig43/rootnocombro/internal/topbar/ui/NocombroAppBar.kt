@@ -157,14 +157,14 @@ private fun SyncStatusButton(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.End,
                     ) {
-                        ToolTipProject(tooltipText = "Сформировать отчёт синхронизации") {
+                        ToolTipProject(tooltipText = "Открыть последний отчёт синхронизации") {
                             IconButton(
-                                enabled = !syncUiState.isSyncRunning,
+                                enabled = !syncUiState.isSyncRunning && syncUiState.reportSnapshotAt != null,
                                 onClick = onCreateReportClick,
                             ) {
                                 Icon(
                                     painter = painterResource(Res.drawable.description),
-                                    contentDescription = "Сформировать отчёт синхронизации",
+                                    contentDescription = "Открыть последний отчёт синхронизации",
                                 )
                             }
                         }
@@ -310,6 +310,13 @@ private fun SyncDropdownContent(syncUiState: SyncUiState) {
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
+        Text(
+            text = syncUiState.reportSnapshotAt?.let { snapshotAt ->
+                "Снимок от ${snapshotAt.format(dateTimeFormat)}. Не обновляется при открытии."
+            } ?: "Отчёт появится после успешной проверки статуса.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
         syncUiState.lastSyncAt?.let {
             Text(
                 text = "Последняя синхронизация: ${it.format(dateTimeFormat)}",
@@ -346,6 +353,7 @@ private fun copySyncSnapshotToClipboard(
         appendLine("sync.last_sync_at=${syncUiState.lastSyncAt}")
         appendLine("sync.last_pull_at=${syncUiState.lastPullAt}")
         appendLine("sync.last_status_check_at=${syncUiState.lastStatusCheckAt}")
+        appendLine("sync.report_snapshot_at=${syncUiState.reportSnapshotAt}")
         appendLine("sync.last_error=${syncUiState.lastError}")
         appendLine("sync.last_files_download_summary=${syncUiState.lastFilesDownloadSummary}")
     }.trimEnd()

@@ -6,6 +6,22 @@ import kotlin.test.assertEquals
 
 class MobileYdbMirrorGatewayTest {
     @Test
+    fun `successful snapshot reads every mobile table once`() {
+        val reads = MobileMirrorTable.entries.associateWith { 0 }.toMutableMap()
+
+        val rows = loadMobileMirrorTables(
+            tables = MobileMirrorTable.entries,
+            delayAction = {},
+        ) { table ->
+            reads[table] = reads.getValue(table) + 1
+            emptyList()
+        }
+
+        assertEquals(MobileMirrorTable.entries.toSet(), rows.keys)
+        assertEquals(setOf(1), reads.values.toSet())
+    }
+
+    @Test
     fun `conditional upsert supplies a row source required by YDB`() {
         val sql = mobileConditionalUpsertSql(
             columns = listOf(

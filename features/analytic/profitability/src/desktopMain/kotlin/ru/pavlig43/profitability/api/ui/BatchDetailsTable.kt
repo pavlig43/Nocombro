@@ -1,14 +1,23 @@
 package ru.pavlig43.profitability.api.ui
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.toImmutableList
@@ -37,7 +46,7 @@ internal fun BatchDetailsTable(
             isDragEnabled = false,
             autoApplyFilters = false,
             showFastFilters = false,
-            stripedRows = false,
+            stripedRows = true,
             showActiveFiltersHeader = false,
             selectionMode = SelectionMode.None,
             rowHeightMode = RowHeightMode.Dynamic,
@@ -52,24 +61,60 @@ internal fun BatchDetailsTable(
         )
     }
 
-    Column(
-        modifier = modifier.padding(top = 8.dp, bottom = 8.dp, start = 16.dp, end = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp)
+    Surface(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(start = 48.dp, top = 8.dp, end = 12.dp, bottom = 8.dp),
+        shape = RoundedCornerShape(14.dp),
+        color = lerp(
+            MaterialTheme.colorScheme.surfaceContainerLow,
+            MaterialTheme.colorScheme.primaryContainer,
+            0.06f,
+        ),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)),
     ) {
-        Text(
-            text = "Детали по партиям",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold
-        )
-
-        Table(
-            itemsCount = product.details.size,
-            itemAt = { index -> product.details.getOrNull(index) },
-            state = tableState,
-            tableData = ProfitabilityTableData(listOf(product)),
-            columns = columns,
-            strings = RussianStringProvider,
-            embedded = true
-        )
+        Column {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = "Партии",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Medium,
+                )
+                Text(
+                    text = "· ${product.details.size}",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            HorizontalDivider()
+            Table(
+                itemsCount = product.details.size,
+                itemAt = { index -> product.details.getOrNull(index) },
+                state = tableState,
+                tableData = ProfitabilityTableData(listOf(product)),
+                columns = columns,
+                strings = RussianStringProvider,
+                embedded = true,
+                modifier = Modifier.fillMaxWidth(),
+                colors = TableDefaults.colors(
+                    headerContainerColor = MaterialTheme.colorScheme.surfaceContainer,
+                    rowContainerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                    stripedRowContainerColor = lerp(
+                        MaterialTheme.colorScheme.surfaceContainerLow,
+                        MaterialTheme.colorScheme.primaryContainer,
+                        0.12f,
+                    ),
+                    footerContainerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                ),
+                shape = RectangleShape,
+                border = TableDefaults.NoBorder,
+            )
+        }
     }
 }

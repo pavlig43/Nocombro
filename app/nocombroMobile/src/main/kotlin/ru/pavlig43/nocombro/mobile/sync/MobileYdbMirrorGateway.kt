@@ -10,51 +10,42 @@ import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.datetime.getCurrentLocalDateTime
 
 /**
- * JDBC-шлюз Android-клиента к типизированным mirror-таблицам в YDB.
+ * JDBC-шлюз клиента Android к типизированным таблицам зеркала в YDB.
  *
  * Шлюз не знает про локальную Room-БД и S3. Его задача узкая: открыть JDBC
- * соединение, убедиться, что нужные mobile-таблицы есть, прочитать строки и
+ * соединение, убедиться, что нужные мобильные таблицы есть, прочитать строки и
  * записать выбранные строки обратно через `UPSERT`.
  */
+interface MobileRemoteMirrorGateway {
+    fun loadSnapshot(): Result<MobileMirrorSnapshot>
+
+    fun push(changes: List<MobileMirrorChange>): Result<MobilePushResult>
+}
+
 class MobileYdbMirrorGateway(
     private val config: MobileYdbConfig,
     private val serviceAccountJson: String?,
-) {
-    /**
-     * Проверяет доступ к уже созданным YDB-таблицам.
-     *
-     * Во время работы схема не меняется: если таблицы нет или схема не та,
-     * пользователь увидит ошибку синхронизации.
-     */
-    fun status(): MobileSyncStatus {
-        return runCatching {
-            withConnection { connection ->
-                mobileCodecs.values.forEach { codec -> checkTableReadable(connection, codec) }
-            }
-            MobileSyncStatus(
-                configured = true,
-                checkedAt = getCurrentLocalDateTime(),
-            )
-        }.getOrElse { throwable ->
-            MobileSyncStatus(
-                configured = true,
-                checkedAt = getCurrentLocalDateTime(),
-                error = throwable.mobileSyncErrorMessage("YDB недоступна"),
-            )
-        }
-    }
-
+    private val connectionFactory: (String, Properties) -> Connection = { jdbcUrl, properties ->
+        DriverManager.getConnection(jdbcUrl, properties)
+    },
+    private val delayAction: (Long) -> Unit = Thread::sleep,
+) : MobileRemoteMirrorGateway {
     /**
      * Загружает полный удалённый снимок таблиц, нужных Android-приложению.
      *
      * Android работает только с экспериментами, записями, напоминаниями и файлами
-     * записей. Остальные desktop-таблицы этот шлюз не читает.
+     * записей. Остальные таблицы настольного приложения этот шлюз не читает.
      */
-    fun loadSnapshot(): Result<MobileMirrorSnapshot> = runCatching {
-        val rows = withConnection { connection ->
-            mobileCodecs.values.associate { codec ->
-                codec.table to loadRows(connection, codec)
-            }
+    override fun loadSnapshot(): Result<MobileMirrorSnapshot> = runCatching {
+        val codecs = mobileCodecs.values.toList()
+        val rows = loadMobileMirrorTables(
+            tables = codecs.map(MobileYdbCodec::table),
+            delayAction = delayAction,
+        ) { table ->
+            val codec = mobileCodecs.getValue(table)
+            retryMobileYdbResourceExhausted(delayAction = delayAction) {
+                    withConnection { connection -> loadRows(connection, codec) }
+                }
         }
         MobileMirrorSnapshot(
             loadedAt = getCurrentLocalDateTime(),
@@ -66,14 +57,14 @@ class MobileYdbMirrorGateway(
      * Условно отправляет выбранные локальные версии в удалённое зеркало.
      *
      * Каждая строка записывается лишь когда в YDB нет версии не старше входящей.
-     * Тот же serializable DML-запрос возвращает итоговую строку, поэтому вызывающий
+     * Тот же DML-запрос с сериализуемой изоляцией возвращает итоговую строку, поэтому вызывающий
      * код точно знает, была запись принята или проиграла конкурентному клиенту.
      * Ошибка одной строки получает безопасный контекст таблицы и `sync_id`.
      *
-     * @param changes строки, выбранные локальным планировщиком для push.
+     * @param changes строки, выбранные локальным планировщиком для отправки.
      * @return принятые и отклонённые строки с фактическими значениями из YDB.
      */
-    fun push(changes: List<MobileMirrorChange>): Result<MobilePushResult> = runCatching {
+    override fun push(changes: List<MobileMirrorChange>): Result<MobilePushResult> = runCatching {
         val accepted = mutableListOf<MobileMirrorChange>()
         val rejected = mutableListOf<MobilePushRejection>()
         withConnection { connection ->
@@ -143,12 +134,6 @@ class MobileYdbMirrorGateway(
         }
     }
 
-    private fun checkTableReadable(connection: Connection, codec: MobileYdbCodec) {
-        connection.createStatement().use { statement ->
-            statement.executeQuery(codec.selectProbeSql(tablePath(codec.table))).use { }
-        }
-    }
-
     private fun loadRows(
         connection: Connection,
         codec: MobileYdbCodec,
@@ -171,17 +156,49 @@ class MobileYdbMirrorGateway(
 
     private fun <T> withConnection(block: (Connection) -> T): T {
         val properties = Properties().apply {
+            setProperty("useStreamResultSets", "false")
             serviceAccountJson?.takeIf(String::isNotBlank)?.let {
                 put("tokenProvider", MobileIamTokenSupplier(it))
             }
                 ?: config.token?.takeIf(String::isNotBlank)?.let { setProperty("token", it) }
         }
-        return DriverManager.getConnection(config.jdbcUrl, properties).use(block)
+        return connectionFactory(config.jdbcUrl, properties).use(block)
     }
 }
 
+/** В обычном успешном проходе читает каждую мобильную mirror-таблицу один раз. */
+internal fun loadMobileMirrorTables(
+    tables: List<MobileMirrorTable>,
+    delayAction: (Long) -> Unit,
+    loadRows: (MobileMirrorTable) -> List<MobileMirrorRow>,
+): Map<MobileMirrorTable, List<MobileMirrorRow>> = buildMap {
+    tables.forEachIndexed { index, table ->
+        put(table, loadRows(table))
+        if (index < tables.lastIndex) {
+            delayAction(MOBILE_YDB_TABLE_READ_PAUSE_MILLIS)
+        }
+    }
+}
+
+/** Повторяет только чтение после временного отказа YDB по ресурсам. */
+internal fun <T> retryMobileYdbResourceExhausted(
+    retryDelaysMillis: List<Long> = MOBILE_YDB_RESOURCE_EXHAUSTED_RETRY_DELAYS_MILLIS,
+    delayAction: (Long) -> Unit = Thread::sleep,
+    block: () -> T,
+): T {
+    retryDelaysMillis.forEach { retryDelayMillis ->
+        try {
+            return block()
+        } catch (throwable: Throwable) {
+            if (!throwable.isMobileYdbResourceExhausted()) throw throwable
+            delayAction(retryDelayMillis)
+        }
+    }
+    return block()
+}
+
 /**
- * Кодек между строкой mobile mirror и строкой YDB.
+ * Кодек между строкой мобильного зеркала и строкой YDB.
  *
  * Каждый кодек знает только одну таблицу: её DDL, список колонок, чтение из
  * `ResultSet` и привязку параметров для `UPSERT`.
@@ -193,7 +210,7 @@ private interface MobileYdbCodec {
     /** Заполняет JDBC-параметры для `UPSERT`. */
     fun bind(statement: PreparedStatement, row: MobileMirrorRow)
 
-    /** Читает одну строку YDB `ResultSet` в mobile-строку. */
+    /** Читает одну строку YDB из `ResultSet` в мобильную строку. */
     fun read(resultSet: ResultSet): MobileMirrorRow
 
     /** Строит `SELECT` всех колонок кодека. */
@@ -216,13 +233,13 @@ private interface MobileYdbCodec {
     }
 
     /**
-     * Строит serializable DML для условной записи и чтения итога.
+     * Строит DML-запрос с сериализуемой изоляцией для условной записи и чтения итога.
      *
      * `UPSERT` блокируется при равной или более новой фактической версии YDB.
      * Следующий `SELECT` возвращает строку-победителя независимо от исхода записи,
      * что позволяет отличить принятую строку от конфликта без окна гонки.
      *
-     * @param tablePath полный путь mirror-таблицы в YDB.
+     * @param tablePath полный путь таблицы зеркала в YDB.
      */
     fun conditionalUpsertSql(tablePath: String): String {
         return mobileConditionalUpsertSql(columns, tablePath)
@@ -230,11 +247,11 @@ private interface MobileYdbCodec {
 }
 
 /**
- * Builds the YDB-specific conditional upsert used by the Android JDBC client.
+ * Строит условный запрос записи для JDBC-клиента Android с учётом требований YDB.
  *
- * YDB requires a row source when a `SELECT` containing JDBC parameters is filtered by
- * `WHERE`. The one-row `AS_TABLE` source keeps the operation conditional without changing
- * the values being written.
+ * YDB требует источник строк, когда `SELECT` с параметрами JDBC содержит условие
+ * `WHERE`. Источник `AS_TABLE` из одной строки сохраняет условность операции и не меняет
+ * записываемые значения.
  */
 internal fun mobileConditionalUpsertSql(
     columns: List<String>,
@@ -402,3 +419,6 @@ private fun ResultSet.nullableDateTime(column: String): LocalDateTime? = getStri
 private fun columnType(columnName: String): String {
     return if (columnName == "is_archived") "Bool" else "Utf8"
 }
+
+private val MOBILE_YDB_RESOURCE_EXHAUSTED_RETRY_DELAYS_MILLIS = listOf(2_000L, 5_000L)
+private const val MOBILE_YDB_TABLE_READ_PAUSE_MILLIS = 500L

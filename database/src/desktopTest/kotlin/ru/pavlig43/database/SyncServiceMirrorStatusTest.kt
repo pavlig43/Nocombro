@@ -41,7 +41,7 @@ import ru.pavlig43.testkit.database.withEmptyTestDatabase
 import java.nio.file.Files
 
 /**
- * Проверяет статус, условный push и ручное разрешение конфликтов SyncService.
+ * Проверяет статус, условную отправку и ручное разрешение конфликтов SyncService.
  *
  * Сценарии моделируют конкурентные правки между чтением снимка и записью: один
  * отказ должен привести к повторной сверке, второй — к ошибке без третьей попытки.
@@ -70,6 +70,20 @@ class SyncServiceMirrorStatusTest : DesktopMainDispatcherFunSpec({
         }
     }
 
+    test("local startup status does not load a YDB snapshot") {
+        withEmptyTestDatabase { db ->
+            val gateway = StatusMirrorGateway(LocalDateTime(2026, 6, 11, 15, 0))
+            val service = createSyncService(db, gateway)
+
+            val status = service.getLocalStatus()
+
+            status.remoteSyncConfigured shouldBe true
+            gateway.configurationStatusCalls shouldBe 1
+            gateway.statusCalls shouldBe 0
+            gateway.snapshotCalls shouldBe 0
+        }
+    }
+
     test("status snapshot failure does not run a separate table probe") {
         withEmptyTestDatabase { db ->
             db.syncStateDao.upsertSyncState(SyncStateEntity())
@@ -86,6 +100,41 @@ class SyncServiceMirrorStatusTest : DesktopMainDispatcherFunSpec({
             gateway.configurationStatusCalls shouldBe 1
             gateway.statusCalls shouldBe 0
             gateway.snapshotCalls shouldBe 1
+        }
+    }
+
+    test("push uses one remote snapshot and does not refresh status afterwards") {
+        withEmptyTestDatabase { db ->
+            db.vendorDao.create(
+                Vendor(
+                    displayName = "Local vendor",
+                    updatedAt = LocalDateTime(2026, 6, 11, 15, 1),
+                )
+            )
+            val gateway = StatusMirrorGateway(
+                checkedAt = LocalDateTime(2026, 6, 11, 15, 0),
+                remoteRowCount = 0,
+            )
+
+            val result = createSyncService(db, gateway).pushOnce()
+
+            result.error shouldBe null
+            gateway.snapshotCalls shouldBe 1
+            gateway.pushCalls shouldBe 1
+            result.status.pendingLocalChangesCount shouldBe 0
+        }
+    }
+
+    test("pull uses one remote snapshot and does not refresh status afterwards") {
+        withEmptyTestDatabase { db ->
+            val gateway = StatusMirrorGateway(LocalDateTime(2026, 6, 11, 15, 0))
+
+            val result = createSyncService(db, gateway).pullOnce()
+
+            result.error shouldBe null
+            gateway.snapshotCalls shouldBe 1
+            db.vendorDao.getAll().size shouldBe 1
+            result.status.remoteChangesCount shouldBe 0
         }
     }
 
@@ -114,7 +163,7 @@ class SyncServiceMirrorStatusTest : DesktopMainDispatcherFunSpec({
         }
     }
 
-    test("sync analysis report does not write mirror state timestamps or files") {
+    test("opening sync report performs no new Room or YDB snapshot") {
         withEmptyTestDatabase { db ->
             val initialState = SyncStateEntity(
                 lastPushAt = LocalDateTime(2026, 6, 10, 10, 0),
@@ -123,18 +172,22 @@ class SyncServiceMirrorStatusTest : DesktopMainDispatcherFunSpec({
             db.syncStateDao.upsertSyncState(initialState)
             val gateway = StatusMirrorGateway(LocalDateTime(2026, 6, 11, 15, 0))
             val fileGateway = ConfiguredFileStorageGateway()
+            val reportDirectory = Files.createTempDirectory("sync-report-service").toFile()
             val service = createSyncService(
                 db = db,
                 gateway = gateway,
                 fileRepository = RemoteFileBatchDownloadRepository(db, fileGateway),
                 reportWriter = SyncAnalysisReportWriter(
-                    reportDirectory = { Files.createTempDirectory("sync-report-service").toFile() },
+                    reportDirectory = { reportDirectory },
                 ),
             )
+            service.getStatus()
+            val snapshotCallsBeforeOpen = gateway.snapshotCalls
 
             val result = service.createSyncAnalysisReport()
 
-            result.isSuccess shouldBe true
+            result.getOrThrow().name shouldBe "latest-sync-analysis.md"
+            gateway.snapshotCalls shouldBe snapshotCallsBeforeOpen
             gateway.pushCalls shouldBe 0
             gateway.pullCalls shouldBe 0
             fileGateway.downloadCalls shouldBe 0
@@ -162,7 +215,7 @@ class SyncServiceMirrorStatusTest : DesktopMainDispatcherFunSpec({
         }
     }
 
-    test("local row created while remote snapshot loads remains pending for push") {
+    test("full sync keeps one frozen Room snapshot per operation") {
         withEmptyTestDatabase { db ->
             db.syncStateDao.upsertSyncState(SyncStateEntity())
             val checkedAt = LocalDateTime(2026, 6, 11, 15, 0)
@@ -179,13 +232,18 @@ class SyncServiceMirrorStatusTest : DesktopMainDispatcherFunSpec({
                 },
             )
 
-            val result = createSyncService(db, gateway).syncOnce()
+            val service = createSyncService(db, gateway)
+            val result = service.syncOnce()
 
             result.error shouldBe null
-            result.status.pendingLocalChangesCount shouldBe 1
+            result.status.pendingLocalChangesCount shouldBe 0
             result.status.remoteChangesCount shouldBe 0
+            db.vendorDao.getAll().size shouldBe 1
             gateway.snapshotCalls shouldBe 1
             gateway.pushCalls shouldBe 0
+
+            service.getStatus().pendingLocalChangesCount shouldBe 1
+            gateway.snapshotCalls shouldBe 2
         }
     }
 
@@ -602,7 +660,7 @@ private fun createSyncService(
     db: NocombroDatabase,
     gateway: MirrorSyncRemoteGateway,
     fileRepository: RemoteFileBatchDownloadRepository? = null,
-    reportWriter: SyncAnalysisReportWriter = SyncAnalysisReportWriter(),
+    reportWriter: SyncAnalysisReportWriter = tempReportWriter(),
     uploadGateway: RemoteFileStorageGateway = NoopRemoteFileStorageGateway(),
 ): SyncService {
     val applyRepository = MirrorLocalApplyRepository(
@@ -621,6 +679,12 @@ private fun createSyncService(
         remoteFileBatchDownloadRepository = fileRepository,
         syncAnalysisReportWriter = reportWriter,
     )
+}
+
+
+private fun tempReportWriter(): SyncAnalysisReportWriter {
+    val directory = Files.createTempDirectory("sync-service-report").toFile()
+    return SyncAnalysisReportWriter(reportDirectory = { directory })
 }
 
 private class ConfiguredFileStorageGateway(
@@ -649,10 +713,10 @@ private class ConfiguredFileStorageGateway(
 }
 
 /**
- * Считает вызовы дешёвой проверки, полной проверки и загрузки snapshot.
+ * Считает вызовы дешёвой проверки, полной проверки и загрузки снимка.
  *
- * Нужен, чтобы статус SyncService не делал лишний probe таблиц перед тем же
- * сетевым чтением и корректно публиковал ошибку snapshot.
+ * Нужен, чтобы статус SyncService не проверял таблицы лишний раз перед тем же
+ * сетевым чтением и корректно публиковал ошибку загрузки снимка.
  */
 private class StatusMirrorGateway(
     private val checkedAt: LocalDateTime,
@@ -737,7 +801,7 @@ private class StatusMirrorGateway(
     }
 }
 
-/** Имитирует первый push, проигравший более новой удалённой строке. */
+/** Имитирует первую отправку, проигравшую более новой удалённой строке. */
 private class RejectingStalePushGateway(
     private val remoteVersion: LocalDateTime,
 ) : MirrorSyncRemoteGateway {
@@ -864,7 +928,7 @@ private class ConcurrentRetryGateway(
     override suspend fun pullMirrorState(request: MirrorPullRequest) =
         Result.success(MirrorPullResult(firstRemoteVersion, emptyList()))
 
-    /** Формирует отказ push с актуальной конкурирующей строкой удалённого зеркала. */
+    /** Формирует отказ отправки с актуальной конкурирующей строкой удалённого зеркала. */
     private fun rejectedResult(
         incoming: MirrorPushEntityChange,
         competing: VendorMirrorRow,
@@ -886,7 +950,7 @@ private class ConcurrentRetryGateway(
 }
 
 /**
- * Тестовый compare-and-set gateway для одной строки поставщика.
+ * Тестовый шлюз условного сравнения и записи для одной строки поставщика.
  *
  * Он принимает лишь более новую версию и умеет изменить Room после первого
  * снимка, чтобы проверить защиту локального условного применения.
@@ -957,7 +1021,7 @@ private class ConditionalVendorGateway(
 /**
  * Имитирует конкурирующую YDB-запись при разрешении конфликта.
  *
- * Первый push всегда отклоняется и вызывает [onFirstRejection], после чего сервис
+ * Первая отправка всегда отклоняется и вызывает [onFirstRejection], после чего сервис
  * должен перечитать обе стороны и вернуть Doctor свежий конфликт.
  */
 private class ConflictResolutionRetryGateway(
@@ -1016,7 +1080,7 @@ private class ConflictResolutionRetryGateway(
     override suspend fun pullMirrorState(request: MirrorPullRequest) =
         Result.success(MirrorPullResult(remoteRow.updatedAt, emptyList()))
 
-    /** Формирует отказ push для устаревшей входящей версии. */
+    /** Формирует отказ отправки для устаревшей входящей версии. */
     private fun rejectedResult(
         incoming: MirrorPushEntityChange,
         competing: VendorMirrorRow,
@@ -1033,7 +1097,7 @@ private class ConflictResolutionRetryGateway(
     )
 }
 
-/** Преобразует локальную тестовую сущность в строку mirror без доступа к codec. */
+/** Преобразует локальную тестовую сущность в строку зеркала без доступа к кодеку. */
 private fun Vendor.toMirrorRowForTest() = VendorMirrorRow(
     syncId = syncId,
     displayName = displayName,

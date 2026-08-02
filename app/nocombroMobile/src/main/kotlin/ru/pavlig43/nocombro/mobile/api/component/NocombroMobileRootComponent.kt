@@ -11,7 +11,7 @@ import ru.pavlig43.nocombro.mobile.experiments.api.component.ExperimentsMobileCo
 import ru.pavlig43.nocombro.mobile.sync.MobileSyncComponent
 
 /**
- * Root component Android-сборки: держит меню, sync-панель и stack-навигацию.
+ * Корневой компонент Android-сборки: управляет меню, панелью синхронизации и стековой навигацией.
  */
 class NocombroMobileRootComponent(
     componentContext: ComponentContext,
@@ -23,15 +23,16 @@ class NocombroMobileRootComponent(
         MobileMenuItem(
             config = MobileConfig.Experiments,
             title = "Эксперименты",
-        )
+        ),
     )
 
-    /**
-     * Общий sync component меню и экрана просмотра расхождений.
-     */
+    /** Общий компонент панели синхронизации. */
     val syncComponent = MobileSyncComponent(
         componentContext = componentContext,
         repository = dependencies.syncRepository,
+        stateStore = dependencies.syncStateStore,
+        reportStore = dependencies.syncReportStore,
+        fileProviderAuthority = dependencies.fileProviderAuthority,
     )
 
     val stack: Value<ChildStack<MobileConfig, MobileChild>> = childStack(
@@ -50,17 +51,10 @@ class NocombroMobileRootComponent(
     }
 
     /**
-     * Возвращает root stack к главному меню.
+     * Возвращает корневой стек к главному меню.
      */
     fun openMenu() {
         navigation.pushToFront(MobileConfig.Menu)
-    }
-
-    /**
-     * Открывает экран preview для локальных и remote sync-правок.
-     */
-    fun openSyncChanges() {
-        navigation.pushToFront(MobileConfig.SyncChanges)
     }
 
     private fun createChild(
@@ -69,7 +63,6 @@ class NocombroMobileRootComponent(
     ): MobileChild {
         return when (config) {
             MobileConfig.Menu -> MobileChild.Menu
-            MobileConfig.SyncChanges -> MobileChild.SyncChanges(syncComponent)
             MobileConfig.Experiments -> MobileChild.Experiments(
                 ExperimentsMobileComponent(
                     componentContext = componentContext,
@@ -89,7 +82,7 @@ data class MobileMenuItem(
 )
 
 /**
- * Serializable routes root stack-навигации.
+ * Сериализуемые маршруты корневой стековой навигации.
  */
 @Serializable
 sealed interface MobileConfig {
@@ -99,19 +92,13 @@ sealed interface MobileConfig {
     @Serializable
     data object Experiments : MobileConfig
 
-    @Serializable
-    data object SyncChanges : MobileConfig
 }
 
 /**
- * Экранные children, которые создаются из [MobileConfig].
+ * Дочерние экраны, которые создаются из [MobileConfig].
  */
 sealed interface MobileChild {
     data object Menu : MobileChild
-
-    class SyncChanges(
-        val component: MobileSyncComponent,
-    ) : MobileChild
 
     class Experiments(
         val component: ExperimentsMobileComponent,

@@ -45,6 +45,7 @@ class RootNocombroComponent(
     val syncComponent = SyncComponent(
         componentContext = childContext("sync"),
         syncService = scope.get(),
+        syncCheckAttemptStore = scope.get(),
     )
 
 

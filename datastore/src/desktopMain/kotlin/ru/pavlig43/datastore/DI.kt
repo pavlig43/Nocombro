@@ -11,6 +11,7 @@ fun getSettingsRepository(): Module {
     return module {
         single<DataStore<Preferences>> { createDataStoreDesktop() }
         single { SettingsRepository(get()) }
+        single<SyncCheckAttemptStore> { DataStoreSyncCheckAttemptStore(get()) }
     }
 }
 

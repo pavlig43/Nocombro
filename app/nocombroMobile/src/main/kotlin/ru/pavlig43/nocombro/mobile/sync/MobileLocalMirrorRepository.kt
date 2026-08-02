@@ -16,17 +16,26 @@ import ru.pavlig43.nocombro.mobile.internal.database.entity.MobileExperimentRemi
  * Для файлов репозиторий работает только с метаданными. Бинарные данные живут
  * в S3 и скачиваются отдельным шагом после применения строк `file`.
  */
+interface MobileLocalMirrorDataSource {
+    suspend fun loadSnapshot(config: MobileS3Config): MobileMirrorSnapshot
+
+    suspend fun applyRemoteChanges(
+        changes: List<MobileMirrorChange>,
+        config: MobileS3Config,
+    )
+}
+
 class MobileLocalMirrorRepository(
     private val db: NocombroMobileDatabase,
     private val filesDirPath: String,
-) {
+) : MobileLocalMirrorDataSource {
     /**
      * Читает локальные эксперименты, записи, напоминания и файлы как mirror rows.
      *
      * `remoteObjectKey` всегда отдаётся без S3-префикса. Префикс добавляет
      * только S3-шлюз, когда реально идёт запрос к bucket.
      */
-    suspend fun loadSnapshot(config: MobileS3Config): MobileMirrorSnapshot {
+    override suspend fun loadSnapshot(config: MobileS3Config): MobileMirrorSnapshot {
         val experiments = db.experimentDao.getAll()
         val experimentById = experiments.associateBy(MobileExperimentEntity::id)
         val entries = db.experimentEntryDao.getAll()
@@ -58,7 +67,7 @@ class MobileLocalMirrorRepository(
      * после активных строк. Это нужно, чтобы локальные foreign key не ломались
      * во время pull.
      */
-    suspend fun applyRemoteChanges(
+    override suspend fun applyRemoteChanges(
         changes: List<MobileMirrorChange>,
         config: MobileS3Config,
     ) {

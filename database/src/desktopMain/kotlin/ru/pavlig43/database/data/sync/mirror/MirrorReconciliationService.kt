@@ -6,15 +6,15 @@ import ru.pavlig43.database.data.sync.defaultUpdatedAt
 import kotlin.time.TimeSource
 
 /**
- * Координирует snapshot-based reconciliation между Room и remote mirror.
+ * Координирует сверку по снимкам между Room и удалённым зеркалом.
  *
- * Сервис отделяет orchestration от транспорта и локального применения: snapshot
+ * Сервис отделяет координацию от транспорта и локального применения: снимок
  * строит [MirrorLocalSnapshotRepository], победителей выбирает
- * [MirrorReconciliationPlanner], remote I/O выполняет [MirrorSyncRemoteGateway],
- * а pull применяет [MirrorLocalApplyRepository].
+ * [MirrorReconciliationPlanner], удалённое чтение и запись выполняет [MirrorSyncRemoteGateway],
+ * а получение применяет [MirrorLocalApplyRepository].
  *
- * Операции push и pull намеренно однонаправленные. Push записывает только локальных
- * победителей и не применяет обнаруженные remote changes; pull делает обратное.
+ * Операции отправки и получения намеренно однонаправленные. Отправка записывает
+ * только локальных победителей, а получение применяет удалённые изменения.
  */
 @Suppress("TooManyFunctions")
 class MirrorReconciliationService(
@@ -24,7 +24,7 @@ class MirrorReconciliationService(
     private val localApplyRepository: MirrorLocalApplyRepository,
     private val remoteFileBatchUploadRepository: RemoteFileBatchUploadRepository,
 ) {
-    /** Возвращает низкоуровневый статус remote gateway без загрузки snapshot. */
+    /** Возвращает низкоуровневый статус удалённого шлюза без загрузки снимка. */
     suspend fun getStatus(): MirrorRemoteStatus = remoteGateway.getStatus()
 
     /** Возвращает локальный статус настроек без подключения и проверки таблиц. */
@@ -53,10 +53,10 @@ class MirrorReconciliationService(
     }
 
     /**
-     * Выполняет подготовленный push, применяет remote winners и считает остаток.
+     * Выполняет подготовленную отправку, применяет удалённых победителей и считает остаток.
      *
-     * Отклонённый push вызывает не более одного повторного чтения YDB. Для pull
-     * берётся план после этой проверки, поэтому конкурентно обновлённая remote
+     * Отклонённая отправка вызывает не более одного повторного чтения YDB. Для получения
+     * берётся план после этой проверки, поэтому конкурентно обновлённая удалённая
      * строка не теряется и может быть применена к Room в том же цикле.
      */
     suspend fun executePreparedSync(context: MirrorPreparedSyncContext): Result<MirrorReconciliationRun> = runCatching {
@@ -71,21 +71,19 @@ class MirrorReconciliationService(
         val applyMark = TimeSource.Monotonic.markNow()
         localApplyRepository.apply(pushOutcome.effectivePlan.pullChanges)
         SyncStageLog.completed("Room apply", applyMark.elapsedNow().inWholeMilliseconds)
-        val refreshedLocal = localSnapshotRepository.loadSnapshot(MirrorSyncTable.mirroredBusinessTables)
-        val remainingPlan = planner.plan(refreshedLocal, pushOutcome.effectiveRemote)
         MirrorReconciliationRun(
             configured = true,
             completedAt = pushOutcome.completedAt,
             pushedChanges = pushOutcome.acceptedChanges.size,
             pulledChanges = pushOutcome.effectivePlan.pullChanges.size,
-            remainingPushChanges = remainingPlan.pushChanges.size,
-            remainingPullChanges = remainingPlan.pullChanges.size,
-            conflicts = remainingPlan.conflicts,
+            remainingPushChanges = pushOutcome.effectivePlan.pushChanges.size,
+            remainingPullChanges = 0,
+            conflicts = pushOutcome.effectivePlan.conflicts,
         )
     }
 
     /**
-     * Загружает локальный и удаленный snapshot и строит план без изменения данных.
+     * Загружает локальный и удалённый снимки и строит план без изменения данных.
      */
     suspend fun buildPreview(): Result<MirrorReconciliationPreview> = runCatching {
         val status = remoteGateway.getConfigurationStatus()
@@ -102,11 +100,11 @@ class MirrorReconciliationService(
     }
 
     /**
-     * Загружает оба snapshot и подсчитывает расхождения без изменения данных.
+     * Загружает оба снимка и подсчитывает расхождения без изменения данных.
      *
-     * Если transport не настроен или cheap configuration check уже содержит
-     * ошибку, тяжелая загрузка snapshot не выполняется. Ошибки сравнения
-     * преобразуются в status.error.
+     * Если транспорт не настроен или быстрая проверка настроек уже содержит
+     * ошибку, тяжёлая загрузка снимка не выполняется. Ошибки сравнения
+     * записываются в `status.error`.
      */
     suspend fun getSyncStatus(): MirrorSyncStatus {
         val configuration = remoteGateway.getConfigurationStatus()
@@ -127,6 +125,11 @@ class MirrorReconciliationService(
                 pushChangesCount = plan.pushChanges.size,
                 pullChangesCount = plan.pullChanges.size,
                 conflicts = plan.conflicts,
+                preview = MirrorReconciliationPreview(
+                    localSnapshot = local,
+                    remoteSnapshot = remote,
+                    plan = plan,
+                ),
             )
         }.getOrElse { throwable ->
             MirrorSyncStatus(
@@ -138,9 +141,9 @@ class MirrorReconciliationService(
     }
 
     /**
-     * Отправляет в remote только локальные строки, победившие по версии.
+     * Отправляет в удалённое зеркало только локальные строки, победившие по версии.
      *
-     * Успешный результат также сообщает число remote winners, замеченных во время
+     * Успешный результат также сообщает число удалённых победителей, замеченных во время
      * сравнения, но не применяет их локально.
      */
     suspend fun pushLocalWinners(): Result<MirrorReconciliationRun> = runCatching {
@@ -170,7 +173,7 @@ class MirrorReconciliationService(
      * запись. Второй отказ завершает операцию ошибкой с таблицей и `sync_id`, но без
      * пользовательского содержимого.
      *
-     * @return принятые строки, фактический remote-снимок и план после push.
+     * @return принятые строки, фактический удалённый снимок и план после отправки.
      */
     @Suppress("ReturnCount", "ThrowsCount")
     private suspend fun pushWithSingleRemoteRefresh(
@@ -232,10 +235,10 @@ class MirrorReconciliationService(
     }
 
     /**
-     * Применяет к Room только удаленные строки, победившие по версии.
+     * Применяет к Room только удалённые строки, победившие по версии.
      *
      * Изменения применяются одной локальной транзакцией с учетом зависимостей и
-     * предварительным сохранением remote tombstone в deletion journal.
+     * предварительным сохранением удалённого маркера удаления в журнале удалений.
      */
     suspend fun pullRemoteWinners(): Result<MirrorReconciliationRun> = runCatching {
         val status = remoteGateway.getConfigurationStatus()
@@ -251,18 +254,20 @@ class MirrorReconciliationService(
             completedAt = remote.loadedAt,
             pushedChanges = 0,
             pulledChanges = plan.pullChanges.size,
+            remainingPushChanges = plan.pushChanges.size,
+            remainingPullChanges = 0,
             conflicts = plan.conflicts,
         )
     }
 
     /**
-     * Делает локальную базу эталоном для disaster recovery remote mirror.
+     * Делает локальную базу эталоном для восстановления удалённого зеркала после сбоя.
      *
-     * Все локальные строки отправляются как есть. Активные remote-строки, которых
-     * нет локально, не удаляются физически, а превращаются в tombstone с единым
+     * Все локальные строки отправляются как есть. Активные удалённые строки, которых
+     * нет локально, не удаляются физически, а превращаются в маркеры удаления с единым
      * временем [MirrorRemoteRebuildResult.rebuiltAt], строго более новым любой
      * удаляемой строки. Любой отказ условной записи останавливает пересборку: более
-     * свежие remote-данные нельзя молча считать заменёнными.
+     * свежие удалённые данные нельзя молча считать заменёнными.
      */
     suspend fun rebuildRemoteFromLocal(): Result<MirrorRemoteRebuildResult> = runCatching {
         val status = remoteGateway.getConfigurationStatus()
@@ -301,7 +306,7 @@ class MirrorReconciliationService(
      * Перечитывает конфликт и сохраняет выбранное пользователем содержимое.
      *
      * Выбор получает версию строго новее обеих сторон. Локальная строка меняется
-     * через compare-and-set; если Room уже изменился, возвращается [MirrorConflictResolutionResult.Stale].
+     * через условное сравнение и запись; если Room уже изменился, возвращается [MirrorConflictResolutionResult.Stale].
      * Затем та же строка условно пишется в YDB. Повторный отказ возвращает свежий
      * конфликт и не выдаётся за успешное разрешение.
      *
@@ -349,7 +354,7 @@ class MirrorReconciliationService(
     }
 
     /**
-     * Не допускает запись file-метаданных в YDB до успешной загрузки локальных файлов.
+     * Не допускает запись метаданных файлов в YDB до успешной загрузки локальных файлов.
      */
     private suspend fun uploadLocalFiles(changes: List<MirrorPushEntityChange>) {
         remoteFileBatchUploadRepository.uploadLocalWinners(changes)
@@ -383,7 +388,7 @@ class MirrorReconciliationService(
 }
 
 /**
- * Неизменяемые входные данные, собранные перед записью полного sync-цикла.
+ * Неизменяемые входные данные, собранные перед записью полного цикла синхронизации.
  */
 data class MirrorPreparedSyncContext(
     val configuration: MirrorRemoteStatus,
@@ -392,7 +397,7 @@ data class MirrorPreparedSyncContext(
     val plan: MirrorReconciliationPlan,
 )
 
-/** Результат push после возможного одного повторного чтения remote. */
+/** Результат отправки после возможного одного повторного чтения удалённых данных. */
 private data class MirrorPushOutcome(
     val acceptedChanges: List<MirrorPushEntityChange>,
     val effectiveRemote: MirrorRemoteSnapshot,
@@ -443,9 +448,9 @@ private fun MirrorVersionConflict.hasSameRows(other: MirrorVersionConflict): Boo
         remoteRow.hasSameSyncContent(other.remoteRow)
 
 /**
- * Итог одной операции сверки Room и remote mirror.
+ * Итог одной операции сверки Room и удалённого зеркала.
  *
- * [conflicts] не входят в счётчики push/pull: равные версии с разным содержимым
+ * [conflicts] не входят в счётчики отправки и получения: равные версии с разным содержимым
  * требуют отдельного выбора пользователя.
  */
 data class MirrorReconciliationRun(
@@ -458,7 +463,7 @@ data class MirrorReconciliationRun(
     val conflicts: List<MirrorVersionConflict> = emptyList(),
 ) {
     companion object {
-        /** Создает успешный no-op результат для установки без remote-конфигурации. */
+        /** Создаёт успешный результат без действий для установки без удалённой конфигурации. */
         fun skipped(at: LocalDateTime) = MirrorReconciliationRun(
             configured = false,
             completedAt = at,
@@ -484,14 +489,14 @@ private fun MirrorRemoteSnapshot.withAppliedChanges(
     )
 }
 
-/** Статистика полной пересборки remote mirror из локального snapshot. */
+/** Статистика полной пересборки удалённого зеркала из локального снимка. */
 data class MirrorRemoteRebuildResult(
     val rebuiltAt: LocalDateTime,
     val pushedRows: Int,
     val tombstonedRows: Int,
 )
 
-/** Read-only результат сравнения Room и remote mirror. */
+/** Результат сравнения Room и удалённого зеркала без изменения данных. */
 data class MirrorReconciliationPreview(
     val localSnapshot: MirrorLocalSnapshot,
     val remoteSnapshot: MirrorRemoteSnapshot,
@@ -499,21 +504,22 @@ data class MirrorReconciliationPreview(
 )
 
 /**
- * Статус gateway, число победителей на каждой стороне и ручные конфликты.
+ * Статус шлюза, число победителей на каждой стороне и ручные конфликты.
  */
 data class MirrorSyncStatus(
     val status: MirrorRemoteStatus,
     val pushChangesCount: Int = 0,
     val pullChangesCount: Int = 0,
     val conflicts: List<MirrorVersionConflict> = emptyList(),
+    val preview: MirrorReconciliationPreview? = null,
 ) {
-    /** Есть ли хотя бы одна remote-версия, которую следует применить локально. */
+    /** Есть ли хотя бы одна удалённая версия, которую следует применить локально. */
     val hasRemoteChanges: Boolean
         get() = pullChangesCount > 0
 }
 
 /**
- * Поддерживает старые тестовые gateway, которые не заполняют списки результата.
+ * Поддерживает старые тестовые шлюзы, которые не заполняют списки результата.
  *
  * Пустые списки при отсутствии отказов трактуются как принятие всего запроса.
  */
@@ -524,7 +530,7 @@ private fun MirrorPushResult.acceptedOrLegacy(
 }
 
 /**
- * Создает typed tombstone, сохраняя исходный payload и меняя только sync metadata.
+ * Создаёт типизированный маркер удаления, сохраняя исходные данные и меняя только метаданные синхронизации.
  */
 @Suppress("CyclomaticComplexMethod")
 internal fun MirrorSyncRow.markDeleted(at: LocalDateTime): MirrorSyncRow = when (this) {
@@ -555,7 +561,7 @@ internal fun MirrorSyncRow.markDeleted(at: LocalDateTime): MirrorSyncRow = when 
 /**
  * Меняет логическую версию, сохраняя содержимое и состояние удаления строки.
  *
- * Активная строка получает новый `updatedAt`. Tombstone сохраняет признак удаления
+ * Активная строка получает новый `updatedAt`. Маркер сохраняет признак удаления
  * и получает одинаковые новые `updatedAt` и `deletedAt` через [markDeleted].
  */
 @Suppress("CyclomaticComplexMethod")

@@ -1,18 +1,18 @@
 package ru.pavlig43.datetime.period.dateTime
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -23,7 +23,6 @@ import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.format
 import org.jetbrains.compose.resources.painterResource
-import ru.pavlig43.coreui.tooltip.ToolTipIconButton
 import ru.pavlig43.datetime.dateTimeFormat
 import ru.pavlig43.datetime.single.datetime.DateTimePickerDialog
 import ru.pavlig43.theme.Res
@@ -43,10 +42,14 @@ fun DateTimeSelectorScreen(
         onEndClick = component::openEndDateTimeDialog,
         updateDateTimePeriod = component::updateDateTimePeriod,
     )
-    Text(
-        "Выбранный период $dateTimePeriodForData",
-        Modifier.padding(start = 24.dp)
-    )
+    if (internalDateTimePeriod != dateTimePeriodForData) {
+        Text(
+            text = "Данные за $dateTimePeriodForData",
+            modifier = Modifier.padding(start = 24.dp, bottom = 4.dp),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
     dialog.child?.instance?.also { dialogChild ->
         when (dialogChild) {
             is DateTimeDialogChild.DateTime -> DateTimePickerDialog(dialogChild.component)
@@ -63,63 +66,48 @@ private fun DateTimeSelectorScreen(
     updateDateTimePeriod: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Card(
-        modifier = modifier.padding(start = 24.dp, top = 12.dp, bottom = 12.dp, end = 24.dp),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    Surface(
+        modifier = modifier.padding(start = 24.dp, top = 6.dp, bottom = 6.dp, end = 24.dp),
+        shape = RoundedCornerShape(14.dp),
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(20.dp),
-            verticalAlignment = Alignment.CenterVertically
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            // Заголовок секции
-            Text(
-                text = "Период",
-                style = MaterialTheme.typography.titleMedium,
-                color = contentColorFor(MaterialTheme.colorScheme.surfaceVariant)
-            )
-
-            Spacer(Modifier.width(8.dp))
-
-            // Дата начала
             DateTimeRow(
-                label = "Начало",
+                label = "С",
                 dateTime = startDateTime,
-                onClick = onStartClick
+                onClick = onStartClick,
             )
-
-            // Разделитель
             Text(
                 text = "—",
-                style = MaterialTheme.typography.titleLarge,
-                color = contentColorFor(MaterialTheme.colorScheme.surfaceVariant).copy(alpha = 0.6f)
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-
-            // Дата конца
             DateTimeRow(
-                label = "Конец",
+                label = "По",
                 dateTime = endDateTime,
-                onClick = onEndClick
+                onClick = onEndClick,
             )
-
-            Spacer(Modifier.width(8.dp))
-
-            // Кнопка поиска
             Button(
                 onClick = updateDateTimePeriod,
-                shape = RoundedCornerShape(12.dp),
-                enabled = startDateTime <= endDateTime
+                modifier = Modifier.height(36.dp),
+                shape = RoundedCornerShape(10.dp),
+                enabled = startDateTime <= endDateTime,
+                contentPadding = PaddingValues(horizontal = 14.dp),
             ) {
                 Icon(
                     painter = painterResource(Res.drawable.clock),
                     contentDescription = null,
-                    modifier = Modifier.padding(end = 6.dp)
+                    modifier = Modifier.size(16.dp),
                 )
-                Text("Поиск")
+                Text(
+                    text = "Показать",
+                    modifier = Modifier.padding(start = 6.dp),
+                )
             }
         }
     }
@@ -132,16 +120,26 @@ fun DateTimeRow(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Row(
+    Surface(
+        onClick = onClick,
         modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
-        verticalAlignment = Alignment.CenterVertically
+        shape = RoundedCornerShape(10.dp),
+        color = MaterialTheme.colorScheme.surfaceContainerHigh,
     ) {
-        ToolTipIconButton(
-            tooltipText = label,
-            onClick = onClick,
-            icon = Res.drawable.clock
-        )
-        Text(dateTime.format(dateTimeFormat))
+        Row(
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 7.dp),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                painter = painterResource(Res.drawable.clock),
+                contentDescription = label,
+                modifier = Modifier.size(16.dp),
+            )
+            Text(
+                text = dateTime.format(dateTimeFormat),
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        }
     }
 }

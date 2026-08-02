@@ -10,7 +10,6 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 import ru.pavlig43.core.MainTabComponent
 import ru.pavlig43.core.componentCoroutineScope
-import ru.pavlig43.database.data.sync.SyncStatusSnapshot
 import ru.pavlig43.database.data.sync.mirror.MirrorConflictWinner
 import ru.pavlig43.database.data.sync.mirror.MirrorVersionConflict
 import ru.pavlig43.doctor.api.DoctorDependencies
@@ -18,17 +17,16 @@ import ru.pavlig43.doctor.internal.component.DoctorOrphanFilesLoadState
 import ru.pavlig43.doctor.internal.component.DoctorRemoteOrphanFilesLoadState
 import ru.pavlig43.doctor.internal.component.DoctorStorageOverviewLoadState
 import ru.pavlig43.doctor.internal.component.DoctorTool
+import ru.pavlig43.files.api.PendingUpload
 import java.awt.Desktop
 import java.io.File
-import java.util.logging.Logger
-import ru.pavlig43.files.api.PendingUpload
 
 /**
  * Координирует диагностические инструменты Doctor и их защитные проверки.
  *
  * Компонент объединяет локальную диагностику файлов, сравнение S3 с активным
- * remote mirror и ручное разрешение конфликтов sync. Удаление объектов S3
- * разрешается лишь при доступном mirror, отсутствии локальных правок и пустом
+ * удалённым зеркалом и ручное разрешение конфликтов синхронизации. Удаление объектов S3
+ * разрешается лишь при доступном зеркале, отсутствии локальных правок и пустом
  * реестре незавершённых загрузок.
  */
 @Suppress("TooManyFunctions")
@@ -36,7 +34,6 @@ class DoctorComponent(
     componentContext: ComponentContext,
     dependencies: DoctorDependencies,
 ) : ComponentContext by componentContext, MainTabComponent {
-    private val logger = Logger.getLogger("DoctorS3Compare")
     private val coroutineScope = componentCoroutineScope()
     private val localFilesMaintenanceRepository = dependencies.localFilesMaintenanceRepository
     private val remoteFilesMaintenanceRepository = dependencies.remoteFilesMaintenanceRepository
@@ -73,7 +70,7 @@ class DoctorComponent(
     val isRemoteCleanupEnabled = _isRemoteCleanupEnabled.asStateFlow()
 
     private val _remoteCleanupStatusMessage = MutableStateFlow(
-        "Перед проверкой сначала синхронизируйте приложение."
+        "Нажмите «Обновить», чтобы сверить Room, YDB, загрузки и S3."
     )
     val remoteCleanupStatusMessage = _remoteCleanupStatusMessage.asStateFlow()
 
@@ -97,33 +94,25 @@ class DoctorComponent(
                 .filterNotNull()
                 .collect { syncStatus ->
                     _syncConflicts.value = syncStatus.conflicts
-                    applyRemoteCleanupAvailability(syncStatus, _pendingUploads.value)
                 }
         }
         coroutineScope.launch(Dispatchers.IO) {
-            refreshRemoteCleanupAvailability()
+            remoteFilesMaintenanceRepository.getPendingUploads()
+                .onSuccess { uploads -> _pendingUploads.value = uploads }
+                .onFailure { throwable ->
+                    _remoteCleanupStatusMessage.value = throwable.message
+                        ?: "Не удалось прочитать список зависших загрузок."
+                }
         }
     }
 
-    /**
-     * Выбирает инструмент и обновляет его удалённые данные при открытии.
-     *
-     * S3-очистка заново проверяет защитные условия, а экран конфликтов запрашивает
-     * свежий sync-статус.
-     */
+    /** Смена инструмента не запускает удалённую проверку. */
     fun selectTool(tool: DoctorTool) {
         _selectedTool.value = tool
-        if (tool == DoctorTool.RemoteFileCleanup) {
-            coroutineScope.launch(Dispatchers.IO) {
-                refreshRemoteCleanupAvailability()
-            }
-        } else if (tool == DoctorTool.SyncConflicts) {
-            coroutineScope.launch(Dispatchers.IO) { syncService.getStatus() }
-        }
     }
 
     /**
-     * Запускает безопасное разрешение конфликта на IO dispatcher.
+     * Запускает безопасное разрешение конфликта в диспетчере ввода-вывода.
      *
      * @param conflict пара строк, показанная пользователю.
      * @param useLocal `true` для локального содержимого, `false` для удалённого.
@@ -177,17 +166,35 @@ class DoctorComponent(
 
     fun refreshRemoteOrphanFiles() {
         coroutineScope.launch(Dispatchers.IO) {
+            _isRemoteCleanupEnabled.value = false
+            _remoteCleanupStatusMessage.value = "Идёт сверка Room, YDB, загрузок и S3."
             _remoteOrphanFilesState.value = DoctorRemoteOrphanFilesLoadState.Loading
-            if (!refreshRemoteCleanupAvailability()) {
+
+            val pending = remoteFilesMaintenanceRepository.getPendingUploads()
+                .getOrElse { throwable ->
+                    val message = throwable.message
+                        ?: "Не удалось прочитать список зависших загрузок."
+                    blockRemoteCleanup(message)
+                    return@launch
+                }
+            _pendingUploads.value = pending
+            if (pending.isNotEmpty()) {
+                blockRemoteCleanup(
+                    "Есть зависшие загрузки. Снимите блокировки и снова нажмите «Обновить».",
+                )
                 return@launch
             }
+
             remoteFilesMaintenanceRepository.getOrphanRemoteFiles()
                 .onSuccess { files ->
                     _remoteOrphanFilesState.value = DoctorRemoteOrphanFilesLoadState.Success(files)
+                    _isRemoteCleanupEnabled.value = true
+                    _remoteCleanupStatusMessage.value =
+                        "Сверка завершена. Перед удалением все источники будут прочитаны ещё раз."
                 }
                 .onFailure { throwable ->
-                    _remoteOrphanFilesState.value = DoctorRemoteOrphanFilesLoadState.Error(
-                        throwable.message ?: "Не удалось загрузить orphan-объекты S3."
+                    blockRemoteCleanup(
+                        throwable.message ?: "Не удалось сверить Room, YDB, загрузки и S3.",
                     )
                 }
         }
@@ -237,36 +244,48 @@ class DoctorComponent(
     }
 
     fun deleteRemoteOrphanFile(objectKey: String) {
+        if (!_isRemoteCleanupEnabled.value) return
         val currentFiles = (remoteOrphanFilesState.value as? DoctorRemoteOrphanFilesLoadState.Success)
             ?.files ?: return
         coroutineScope.launch(Dispatchers.IO) {
+            _isRemoteCleanupEnabled.value = false
             _remoteOrphanFilesState.value = DoctorRemoteOrphanFilesLoadState.Loading
+            _remoteCleanupStatusMessage.value = "Повторная сверка перед удалением."
             remoteFilesMaintenanceRepository.deleteRemoteFile(objectKey)
                 .onSuccess {
                     _remoteOrphanFilesState.value = DoctorRemoteOrphanFilesLoadState.Success(
                         currentFiles.filterNot { it.objectKey == objectKey }
                     )
+                    _remoteCleanupStatusMessage.value =
+                        "Объект удалён. Нажмите «Обновить» перед следующим удалением."
                 }
                 .onFailure { throwable ->
-                    _remoteOrphanFilesActionError.value =
-                        throwable.message ?: "Не удалось удалить объект из S3."
+                    val message = throwable.message ?: "Не удалось удалить объект из S3."
+                    _remoteOrphanFilesActionError.value = message
+                    blockRemoteCleanup(message)
                 }
         }
     }
 
     fun deleteAllRemoteOrphanFiles() {
+        if (!_isRemoteCleanupEnabled.value) return
         val currentState =
             remoteOrphanFilesState.value as? DoctorRemoteOrphanFilesLoadState.Success ?: return
         coroutineScope.launch(Dispatchers.IO) {
+            _isRemoteCleanupEnabled.value = false
             _remoteOrphanFilesState.value = DoctorRemoteOrphanFilesLoadState.Loading
+            _remoteCleanupStatusMessage.value = "Повторная сверка перед удалением."
             remoteFilesMaintenanceRepository
                 .deleteRemoteFiles(currentState.files.mapTo(mutableSetOf()) { it.objectKey })
                 .onFailure { throwable ->
-                    _remoteOrphanFilesActionError.value =
-                        throwable.message ?: "Не удалось удалить orphan-объекты S3."
+                    val message = throwable.message ?: "Не удалось удалить объекты из S3."
+                    _remoteOrphanFilesActionError.value = message
+                    blockRemoteCleanup(message)
                     return@launch
                 }
             _remoteOrphanFilesState.value = DoctorRemoteOrphanFilesLoadState.Success(emptyList())
+            _remoteCleanupStatusMessage.value =
+                "Объекты удалены. Нажмите «Обновить» перед следующим удалением."
         }
     }
 
@@ -274,17 +293,19 @@ class DoctorComponent(
         _remoteOrphanFilesActionError.value = null
     }
 
-    /**
-     * Убирает выбранную запись из pending-реестра, не удаляя объект из S3.
-     *
-     * После этого список S3 перечитывается с обычной защитой Room и mirror:
-     * непривязанный объект станет orphan, но будет удалён лишь отдельным действием.
-     */
+    /** Убирает только локальную запись. YDB и S3 не читаются. */
     fun releasePendingUpload(objectKey: String) {
         coroutineScope.launch(Dispatchers.IO) {
             _remoteOrphanFilesActionError.value = null
             remoteFilesMaintenanceRepository.releasePendingUpload(objectKey)
-                .onSuccess { refreshRemoteOrphanFiles() }
+                .onSuccess {
+                    _pendingUploads.value = _pendingUploads.value
+                        .filterNot { it.objectKey == objectKey }
+                    _isRemoteCleanupEnabled.value = false
+                    _remoteOrphanFilesState.value = DoctorRemoteOrphanFilesLoadState.Idle
+                    _remoteCleanupStatusMessage.value =
+                        "Блокировка снята локально. Объект остался в S3. Нажмите «Обновить» для сверки."
+                }
                 .onFailure { throwable ->
                     _remoteOrphanFilesActionError.value =
                         throwable.message ?: "Не удалось снять блокировку загрузки."
@@ -292,115 +313,9 @@ class DoctorComponent(
         }
     }
 
-    fun logRemoteFileComparison() {
-        coroutineScope.launch(Dispatchers.IO) {
-            runCatching {
-                val localKeys = remoteFilesMaintenanceRepository.getAttachedRemoteObjectKeys().getOrThrow()
-                val remoteKeys = remoteFilesMaintenanceRepository.getActiveMirrorObjectKeys().getOrThrow()
-                val s3Keys = remoteFilesMaintenanceRepository.getS3ObjectKeys().getOrThrow()
-
-                val onlyLocal = localKeys - remoteKeys
-                val onlyRemote = remoteKeys - localKeys
-                val onlyS3 = s3Keys - remoteKeys
-
-                logger.info(
-                    "Doctor S3 compare: " +
-                        "local=${localKeys.size}, " +
-                        "mirror=${remoteKeys.size}, " +
-                        "s3=${s3Keys.size}, " +
-                        "onlyLocal=${onlyLocal.size}, " +
-                        "onlyMirror=${onlyRemote.size}, " +
-                        "onlyS3=${onlyS3.size}"
-                )
-                logger.info("Doctor S3 compare local keys:\n${localKeys.toLogBlock()}")
-                logger.info("Doctor S3 compare mirror keys:\n${remoteKeys.toLogBlock()}")
-                logger.info("Doctor S3 compare S3 keys:\n${s3Keys.toLogBlock()}")
-                logger.info("Doctor S3 compare only local:\n${onlyLocal.toLogBlock()}")
-                logger.info("Doctor S3 compare only mirror:\n${onlyRemote.toLogBlock()}")
-                logger.info("Doctor S3 compare only S3:\n${onlyS3.toLogBlock()}")
-            }.onFailure { throwable ->
-                _remoteOrphanFilesActionError.value =
-                    throwable.message ?: "Не удалось сравнить локальную и удаленную базы по файлам."
-                logger.warning("Doctor S3 compare failed: ${throwable.message}")
-            }
-        }
-    }
-
-    /**
-     * Перечитывает реестр загрузок и статус mirror перед любой S3-операцией.
-     *
-     * Ошибка чтения реестра блокирует очистку: неизвестное состояние нельзя
-     * трактовать как отсутствие незавершённых файлов.
-     */
-    private suspend fun refreshRemoteCleanupAvailability(): Boolean {
-        val pending = remoteFilesMaintenanceRepository.getPendingUploads().getOrElse { throwable ->
-            val message = throwable.message ?: "Не удалось прочитать реестр pending uploads."
-            _remoteCleanupStatusMessage.value = message
-            _isRemoteCleanupEnabled.value = false
-            _remoteOrphanFilesState.value = DoctorRemoteOrphanFilesLoadState.Error(message)
-            return false
-        }
-        _pendingUploads.value = pending
-        val syncStatus = syncService.getStatus()
-        applyRemoteCleanupAvailability(syncStatus, pending)
-        return remoteCleanupUnavailableMessage(syncStatus, pending) == null
-    }
-
-    /** Публикует единое состояние доступности кнопок удалённой очистки. */
-    private fun applyRemoteCleanupAvailability(
-        syncStatus: SyncStatusSnapshot,
-        pendingUploads: List<PendingUpload>,
-    ) {
-        val unavailableMessage = remoteCleanupUnavailableMessage(syncStatus, pendingUploads)
-
-        _isRemoteCleanupEnabled.value = unavailableMessage == null
-        _remoteCleanupStatusMessage.value = unavailableMessage
-            ?: "Синхронизация выполнена, можно запускать проверку S3."
-
-        if (unavailableMessage != null) {
-            _remoteOrphanFilesState.value = DoctorRemoteOrphanFilesLoadState.Error(unavailableMessage)
-        } else if (_remoteOrphanFilesState.value is DoctorRemoteOrphanFilesLoadState.Error) {
-            _remoteOrphanFilesState.value = DoctorRemoteOrphanFilesLoadState.Idle
-        }
-    }
-
-    /**
-     * Возвращает первую причину, по которой S3-очистка должна быть заблокирована.
-     *
-     * Ошибка sync, локальные победители и незавершённые загрузки проверяются до
-     * отметки последнего pull, чтобы UI показывал наиболее опасную причину.
-     */
-    @Suppress("ReturnCount")
-    private fun remoteCleanupUnavailableMessage(
-        syncStatus: SyncStatusSnapshot,
-        pendingUploads: List<PendingUpload>,
-    ): String? {
-        if (syncStatus.remoteError != null) {
-            return "Sync завершился с ошибкой: ${syncStatus.remoteError}"
-        }
-        if (!syncStatus.remoteSyncConfigured) {
-            return "Remote sync не настроен."
-        }
-        if (syncStatus.pendingLocalChangesCount > 0) {
-            return "Есть локальные изменения для отправки. Сначала выполните sync/push."
-        }
-        if (pendingUploads.isNotEmpty()) {
-            return "Есть старые незавершённые загрузки файлов. Чистка S3 заблокирована."
-        }
-        if (syncStatus.lastPullAt == null) {
-            return "Проверка S3 недоступна, пока приложение не синхронизировано."
-        }
-        if (syncStatus.hasRemoteChanges) {
-            return "Есть неподтянутые remote-изменения. Сначала выполните sync/pull."
-        }
-        return null
-    }
-
-    private fun Collection<String>.toLogBlock(): String {
-        return if (isEmpty()) {
-            "<empty>"
-        } else {
-            sorted().joinToString(separator = "\n")
-        }
+    private fun blockRemoteCleanup(message: String) {
+        _isRemoteCleanupEnabled.value = false
+        _remoteCleanupStatusMessage.value = message
+        _remoteOrphanFilesState.value = DoctorRemoteOrphanFilesLoadState.Error(message)
     }
 }

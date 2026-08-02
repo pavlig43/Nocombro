@@ -11,12 +11,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.datetime.format
 import org.jetbrains.compose.resources.painterResource
 import ru.pavlig43.core.model.DecimalData2
 import ru.pavlig43.core.model.sumOfDecimal2
 import ru.pavlig43.core.model.sumOfDecimal3
 import ru.pavlig43.core.model.toStartDoubleFormat
-import ru.pavlig43.immutable.internal.column.readDateColumn
+import ru.pavlig43.datetime.dateFormat
 import ru.pavlig43.immutable.internal.column.readDecimalColumn
 import ru.pavlig43.immutable.internal.column.readTextColumn
 import ru.pavlig43.profitability.internal.model.ProfitabilityBatchDetails
@@ -84,6 +85,7 @@ internal fun createProfitabilityColumns(
             column = ProfitabilityField.PRODUCT_NAME,
             valueOf = { it.productName },
             filterType = TableFilterType.TextTableFilter(),
+            align = Alignment.Center,
         )
 
         readTextColumn(
@@ -91,6 +93,7 @@ internal fun createProfitabilityColumns(
             column = ProfitabilityField.VENDOR_NAME,
             valueOf = { it.vendorNames },
             filterType = TableFilterType.TextTableFilter(),
+            align = Alignment.Center,
         )
 
         readDecimalColumn(
@@ -156,6 +159,7 @@ internal fun createProfitabilityColumns(
             valueOf = { it.margin }
         ) {
             title { "Маржа" }
+            align(Alignment.Center)
             cell { item, tableData ->
                 Text("%,.2f".format(item.margin))
             }
@@ -179,6 +183,7 @@ internal fun createProfitabilityColumns(
             valueOf = { it.profitability }
         ) {
             title { "Рентабельность" }
+            align(Alignment.Center)
             cell { item, tableData ->
                 Text("%,.2f".format(item.profitability))
             }
@@ -218,17 +223,17 @@ internal fun createBatchDetailsColumns(): ImmutableList<ColumnSpec<Profitability
             headerText = "Контрагент",
             column = BatchDetailsField.CONTRAGENT_NAME,
             valueOf = { it.contrAgentName },
+            align = Alignment.Center,
 //            filterType = TableFilterType.TextTableFilter(),
             isSortable = false
         )
 
-        readDateColumn(
-            headerText = "Дата",
-            column = BatchDetailsField.DATE,
-            valueOf = { it.date },
-//            filterType = TableFilterType.DateTableFilter(),
-            isSortable = false
-        )
+        column(BatchDetailsField.DATE, valueOf = { it.date }) {
+            autoWidth(300.dp)
+            header("Дата")
+            align(Alignment.Center)
+            cell { item, _ -> Text(item.date.format(dateFormat)) }
+        }
 
         readDecimalColumn(
             headerText = "Кол-во",
@@ -276,6 +281,7 @@ internal fun createBatchDetailsColumns(): ImmutableList<ColumnSpec<Profitability
             valueOf = { it.margin }
         ) {
             title { "Маржа" }
+            align(Alignment.Center)
             cell { item, tableData ->
                 Text("%,.2f".format(item.margin))
             }
@@ -288,6 +294,7 @@ internal fun createBatchDetailsColumns(): ImmutableList<ColumnSpec<Profitability
             valueOf = { it.profitability }
         ) {
             title { "Рентабельность" }
+            align(Alignment.Center)
             cell { item, tableData ->
                 Text("%,.2f".format(item.profitability))
             }

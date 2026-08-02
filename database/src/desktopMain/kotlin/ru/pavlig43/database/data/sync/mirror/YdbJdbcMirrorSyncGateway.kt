@@ -11,14 +11,17 @@ import kotlin.time.TimeSource
 import kotlin.time.Duration.Companion.milliseconds
 
 /**
- * JDBC-реализация typed mirror gateway для YDB.
+ * JDBC-реализация шлюза типизированного зеркала для YDB.
  *
- * Gateway работает с уже созданными typed tables, загружает полные snapshots и
+ * Шлюз работает с уже созданными типизированными таблицами, загружает полные снимки и
  * выполняет условную запись по версии. Схему YDB нужно создавать и менять отдельным SQL.
  */
 @Suppress("TooManyFunctions")
 class YdbJdbcMirrorSyncGateway(
     private val config: YdbMirrorJdbcConfig,
+    private val connectionFactory: (String, Properties) -> Connection = { jdbcUrl, properties ->
+        DriverManager.getConnection(jdbcUrl, properties)
+    },
 ) : MirrorSyncRemoteGateway {
     private val operationMutex = Mutex()
     private var connection: Connection? = null
@@ -30,20 +33,22 @@ class YdbJdbcMirrorSyncGateway(
     )
 
     /**
-     * Проверяет соединение и доступность всех поддерживаемых typed tables.
+     * Проверяет соединение и доступность всех поддерживаемых типизированных таблиц.
      *
-     * Ожидаемые JDBC-ошибки возвращаются в [MirrorRemoteStatus.error], чтобы UI
+     * Ожидаемые JDBC-ошибки возвращаются в [MirrorRemoteStatus.error], чтобы интерфейс
      * мог показать диагностику без исключения.
      */
     override suspend fun getStatus(): MirrorRemoteStatus = operationMutex.withLock {
         runCatching {
-            val availableTables = withConnection { connection ->
-                buildSet {
-                    supportedYdbMirrorCodecs.values.forEach { codec ->
-                        retryYdbResourceExhausted { checkTableReadable(connection, codec) }
-                        add(codec.table.tableName)
-                        delay(YDB_TABLE_READ_PAUSE_MILLIS.milliseconds)
+            val availableTables = buildSet {
+                supportedYdbMirrorCodecs.values.forEach { codec ->
+                    retryYdbResourceExhausted {
+                        withConnection { activeConnection ->
+                            checkTableReadable(activeConnection, codec)
+                        }
                     }
+                    add(codec.table.tableName)
+                    delay(YDB_TABLE_READ_PAUSE_MILLIS.milliseconds)
                 }
             }
             MirrorRemoteStatus(
@@ -61,19 +66,21 @@ class YdbJdbcMirrorSyncGateway(
         }
     }
 
-    /** Загружает полный snapshot запрошенных таблиц через их typed codecs. */
+    /** Загружает полный снимок запрошенных таблиц через их типизированные кодеки. */
     override suspend fun loadRemoteSnapshot(
         tables: List<MirrorSyncTable>,
     ): Result<MirrorRemoteSnapshot> = operationMutex.withLock {
         runCatching {
             val codecs = requireSupportedCodecs(tables)
-            val rows = withConnection { connection ->
-                buildMap {
-                    codecs.forEach { codec ->
-                        val tableRows = retryYdbResourceExhausted { loadRows(connection, codec) }
-                        put(codec.table, tableRows)
-                        delay(YDB_TABLE_READ_PAUSE_MILLIS.milliseconds)
+            val rows = buildMap {
+                codecs.forEach { codec ->
+                    val tableRows = retryYdbResourceExhausted {
+                        withConnection { activeConnection ->
+                            loadRows(activeConnection, codec)
+                        }
                     }
+                    put(codec.table, tableRows)
+                    delay(YDB_TABLE_READ_PAUSE_MILLIS.milliseconds)
                 }
             }
             MirrorRemoteSnapshot(
@@ -84,7 +91,7 @@ class YdbJdbcMirrorSyncGateway(
     }
 
     /**
-     * Условно записывает каждую typed строку и читает фактического победителя.
+     * Условно записывает каждую типизированную строку и читает фактического победителя.
      *
      * Равная или более новая версия YDB не перезаписывается. Результат делит
      * входной список на принятые и отклонённые строки; ошибка содержит таблицу,
@@ -135,9 +142,9 @@ class YdbJdbcMirrorSyncGateway(
     }
 
     /**
-     * Представляет удаленный snapshot как плоский список изменений.
+     * Представляет удалённый снимок как плоский список изменений.
      *
-     * Метод не применяет данные к Room и не выполняет reconciliation.
+     * Метод не применяет данные к Room и не выполняет сверку.
      */
     override suspend fun pullMirrorState(
         request: MirrorPullRequest,
@@ -155,9 +162,9 @@ class YdbJdbcMirrorSyncGateway(
     }
 
     /**
-     * Физически удаляет строки remote mirror; предназначен для smoke cleanup.
+     * Физически удаляет строки удалённого зеркала; предназначен для очистки после дымового теста.
      *
-     * Основной sync-протокол использует tombstone и не должен вызывать этот метод.
+     * Основной протокол синхронизации использует маркер удаления и не должен вызывать этот метод.
      */
     internal suspend fun deleteRows(
         syncIdsByTable: Map<MirrorSyncTable, List<String>>,
@@ -224,6 +231,7 @@ class YdbJdbcMirrorSyncGateway(
         block: suspend (Connection) -> T,
     ): T {
         val properties = Properties().apply {
+            setProperty("useStreamResultSets", "false")
             val serviceAccountFile = config.serviceAccountFile?.takeIf(String::isNotBlank)
             if (serviceAccountFile != null) {
                 setProperty("saKeyFile", serviceAccountFile)
@@ -236,19 +244,34 @@ class YdbJdbcMirrorSyncGateway(
         val activeConnection = connection?.takeIf { current ->
             runCatching { !current.isClosed }.getOrDefault(false)
         } ?: openConnection(properties).also { connection = it }
-        return block(activeConnection)
+        return try {
+            block(activeConnection)
+        } catch (throwable: Throwable) {
+            if (throwable.isYdbResourceExhausted()) {
+                discardConnection(activeConnection)
+            }
+            throw throwable
+        }
+    }
+
+    /** Закрывает соединение после ресурсной ошибки: повтор чтения откроет новое. */
+    private fun discardConnection(expected: Connection) {
+        if (connection === expected) {
+            connection = null
+        }
+        runCatching { expected.close() }
     }
 
     private fun openConnection(properties: Properties): Connection {
         val connectionMark = TimeSource.Monotonic.markNow()
-        return DriverManager.getConnection(config.jdbcUrl, properties).also {
+        return connectionFactory(config.jdbcUrl, properties).also {
             LOGGER.fine("Mirror sync stage=connection durationMs=${connectionMark.elapsedNow().inWholeMilliseconds}")
         }
     }
 
 
     /**
-     * Условно записывает строку и читает победителя из того же serializable DML.
+     * Условно записывает строку и читает победителя из того же DML-запроса с сериализуемой изоляцией.
      *
      * @return входная строка после принятия либо более новая строка YDB.
      * @throws IllegalStateException если запрос не вернул итоговую строку.

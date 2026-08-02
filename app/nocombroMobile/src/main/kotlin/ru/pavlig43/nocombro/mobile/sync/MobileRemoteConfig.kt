@@ -119,14 +119,20 @@ internal fun normalizeMobileLogicalFileKey(objectKey: String): String {
  * Загружает настройки синхронизации из Android assets и декодирует секреты
  * для времени работы приложения.
  */
+interface MobileRemoteConfigSource {
+    fun load(): Result<MobileRemoteConfig>
+
+    fun decodeServiceAccountJson(config: MobileYdbConfig): String?
+}
+
 class MobileRemoteConfigRepository(
     private val context: Context,
     private val json: Json = Json { ignoreUnknownKeys = true },
-) {
+) : MobileRemoteConfigSource {
     /**
      * Читает `mobile_sync_config.json` из assets.
      */
-    fun load(): Result<MobileRemoteConfig> = runCatching {
+    override fun load(): Result<MobileRemoteConfig> = runCatching {
         context.assets.open(CONFIG_ASSET_NAME).use { input ->
             json.decodeFromString<MobileRemoteConfig>(
                 input.bufferedReader().use { it.readText() },
@@ -137,7 +143,7 @@ class MobileRemoteConfigRepository(
     /**
      * Декодирует Base64 service account JSON для поставщика IAM-токена.
      */
-    fun decodeServiceAccountJson(config: MobileYdbConfig): String? {
+    override fun decodeServiceAccountJson(config: MobileYdbConfig): String? {
         val encoded = config.saJsonBase64?.takeIf(String::isNotBlank) ?: return null
         return Base64.getDecoder().decode(encoded).toString(Charsets.UTF_8)
     }

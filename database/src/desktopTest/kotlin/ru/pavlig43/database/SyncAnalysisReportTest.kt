@@ -18,9 +18,6 @@ import ru.pavlig43.database.data.expense.ExpenseType
 import ru.pavlig43.testkit.DesktopMainDispatcherFunSpec
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
-import java.time.Clock
-import java.time.Instant
-import java.time.ZoneOffset
 
 class SyncAnalysisReportTest : DesktopMainDispatcherFunSpec({
 
@@ -75,7 +72,6 @@ class SyncAnalysisReportTest : DesktopMainDispatcherFunSpec({
         val directory = Files.createTempDirectory("nocombro-report-test").toFile()
         val writer = SyncAnalysisReportWriter(
             reportDirectory = { directory },
-            clock = fixedClock(),
         )
 
         val report = writer.write(preview).readText(StandardCharsets.UTF_8)
@@ -98,11 +94,13 @@ class SyncAnalysisReportTest : DesktopMainDispatcherFunSpec({
         report shouldNotContain "| syncId | expense"
     }
 
-    test("writer keeps existing reports and creates UTF-8 unique names") {
+    test("writer atomically replaces latest report and keeps old files") {
         val directory = Files.createTempDirectory("nocombro-report-files").toFile()
+        val oldReport = directory.resolve("sync-analysis-20260612-123456-789.md").apply {
+            writeText("старый отчёт", StandardCharsets.UTF_8)
+        }
         val writer = SyncAnalysisReportWriter(
             reportDirectory = { directory },
-            clock = fixedClock(),
         )
         val preview = MirrorReconciliationPreview(
             localSnapshot = snapshotLocal(),
@@ -113,10 +111,16 @@ class SyncAnalysisReportTest : DesktopMainDispatcherFunSpec({
         val first = writer.write(preview)
         val second = writer.write(preview)
 
-        first.name shouldBe "sync-analysis-20260612-123456-789.md"
-        second.name shouldBe "sync-analysis-20260612-123456-790.md"
+        first shouldBe second
+        first.name shouldBe "latest-sync-analysis.md"
         first.exists().shouldBeTrue()
+        oldReport.exists().shouldBeTrue()
+        directory.listFiles().orEmpty().none { it.extension == "tmp" }.shouldBeTrue()
+        writer.latestReport().getOrThrow() shouldBe first
+        writer.latestSnapshotAt() shouldBe LocalDateTime(2026, 6, 12, 12, 31)
         first.readText(StandardCharsets.UTF_8) shouldContain "Расхождений нет."
+        first.readText(StandardCharsets.UTF_8) shouldContain
+            "Снимок от 12.06.2026 12:31. Не обновляется при открытии."
         first.readBytes().toString(StandardCharsets.UTF_8) shouldContain "Отчёт синхронизации"
     }
 })
@@ -142,6 +146,3 @@ private fun snapshotRemote(vararg rows: ru.pavlig43.database.data.sync.mirror.Mi
             }
         },
     )
-
-private fun fixedClock(): Clock =
-    Clock.fixed(Instant.parse("2026-06-12T12:34:56.789Z"), ZoneOffset.UTC)

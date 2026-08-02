@@ -157,7 +157,7 @@ private fun DoctorOrphanFileRow(
  * Показывает результат сверки S3 и блокирует удаление при небезопасном состоянии.
  *
  * [pendingUploads] выводятся явно: объект в процессе загрузки нельзя считать
- * orphan-файлом даже при отсутствии активной строки в текущем remote snapshot.
+ * бесхозным даже при отсутствии активной строки в текущем удалённом снимке.
  */
 @Composable
 @Suppress("CyclomaticComplexMethod", "LongMethod", "LongParameterList")
@@ -169,7 +169,6 @@ internal fun DoctorRemoteFileCleanupTool(
     pendingUploads: List<PendingUpload>,
     onDismissActionError: () -> Unit,
     onReleasePendingUpload: (String) -> Unit,
-    onLogCompare: () -> Unit,
     onRefresh: () -> Unit,
     onDelete: (String) -> Unit,
     onDeleteAll: () -> Unit,
@@ -181,17 +180,12 @@ internal fun DoctorRemoteFileCleanupTool(
             DoctorRemoteOrphanFilesLoadState.Loading -> "Чистка S3"
             is DoctorRemoteOrphanFilesLoadState.Error -> "Чистка S3"
         },
-        subtitle = "Поиск remote-объектов в bucket, которых больше нет в таблице file. Запускать после sync/pull.",
+        subtitle = "Сверка Room, YDB, зависших загрузок и S3 перед удалением.",
         headerActions = {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedButton(
-                    onClick = onLogCompare,
-                ) {
-                    Text("Сравнить БД")
-                }
-                OutlinedButton(
                     onClick = onRefresh,
-                    enabled = isActionsEnabled,
+                    enabled = state !is DoctorRemoteOrphanFilesLoadState.Loading,
                 ) {
                     Text("Обновить")
                 }

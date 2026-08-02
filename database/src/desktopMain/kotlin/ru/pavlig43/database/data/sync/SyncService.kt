@@ -6,25 +6,26 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.database.data.files.remote.RemoteFileBatchDownloadRepository
 import ru.pavlig43.database.data.files.remote.RemoteFileBatchDownloadSummary
-import ru.pavlig43.database.data.sync.mirror.MirrorReconciliationService
 import ru.pavlig43.database.data.sync.mirror.MirrorConflictResolutionResult
 import ru.pavlig43.database.data.sync.mirror.MirrorConflictWinner
+import ru.pavlig43.database.data.sync.mirror.MirrorReconciliationRun
+import ru.pavlig43.database.data.sync.mirror.MirrorReconciliationService
 import ru.pavlig43.database.data.sync.mirror.MirrorRemoteStatus
 import ru.pavlig43.database.data.sync.mirror.MirrorVersionConflict
-import ru.pavlig43.datetime.getCurrentLocalDateTime
+import ru.pavlig43.database.data.sync.mirror.isYdbResourceExhausted
 import java.io.File
 import kotlin.time.TimeSource
 
 /**
- * Прикладной facade синхронизации для UI и root-компонентов.
+ * Прикладной слой синхронизации для интерфейса и корневых компонентов.
  *
- * Сервис последовательно координирует mirror reconciliation, сохраняет даты
- * успешных push/pull и после pull восстанавливает отсутствующие локальные файлы.
+ * Сервис последовательно координирует сверку зеркал, сохраняет даты успешной
+ * отправки и получения, а после получения восстанавливает отсутствующие локальные файлы.
  * Он не содержит алгоритма сравнения строк: это ответственность
  * [MirrorReconciliationService].
  *
- * [status] публикует последний явно рассчитанный snapshot. Он изначально равен
- * `null` и обновляется каждым успешным вызовом [getStatus].
+ * [status] публикует последний явно рассчитанный снимок. Он изначально равен
+ * `null` и обновляется локальной загрузкой, проверкой или ручной операцией.
  */
 class SyncService(
     private val syncStateRepository: SyncStateRepository,
@@ -35,16 +36,50 @@ class SyncService(
     private val _status = MutableStateFlow<SyncStatusSnapshot?>(null)
     val status: StateFlow<SyncStatusSnapshot?> = _status.asStateFlow()
 
+    /** Читает только локальное состояние и последний отчёт, не обращаясь к YDB. */
+    suspend fun getLocalStatus(): SyncStatusSnapshot {
+        val syncState = syncStateRepository.getSyncState()
+        val configuration = runCatching {
+            mirrorReconciliationService.getConfigurationStatus()
+        }.getOrNull()
+        val current = _status.value
+        val reportSnapshotAt = syncAnalysisReportWriter.latestSnapshotAt()
+        return SyncStatusSnapshot(
+            pendingLocalChangesCount = current?.pendingLocalChangesCount ?: 0,
+            remoteChangesCount = current?.remoteChangesCount ?: 0,
+            hasRemoteChanges = current?.hasRemoteChanges ?: false,
+            remoteSyncConfigured = configuration?.configured
+                ?: current?.remoteSyncConfigured
+                ?: false,
+            lastStatusCheckAt = reportSnapshotAt ?: current?.lastStatusCheckAt,
+            lastSyncAt = syncState?.lastPushAt,
+            lastPullAt = syncState?.lastPullAt,
+            conflicts = current?.conflicts.orEmpty(),
+            reportSnapshotAt = reportSnapshotAt,
+        ).also { snapshot ->
+            _status.value = snapshot
+        }
+    }
+
     /**
-     * Пересчитывает расхождения Room/YDB и публикует актуальный UI status.
+     * Пересчитывает расхождения Room/YDB и публикует актуальное состояние интерфейса.
      *
-     * `pendingLocalChangesCount` означает число local winners для следующего push,
-     * а `remoteChangesCount` — число remote winners для следующего pull. Равные
+     * `pendingLocalChangesCount` означает число локальных победителей для следующей отправки,
+     * а `remoteChangesCount` — число удалённых победителей для следующего получения. Равные
      * версии с разным содержимым публикуются отдельно в [SyncStatusSnapshot.conflicts].
      */
     suspend fun getStatus(): SyncStatusSnapshot {
         val syncState = syncStateRepository.getSyncState()
         val mirrorStatus = mirrorReconciliationService.getSyncStatus()
+        var reportSnapshotAt = syncAnalysisReportWriter.latestSnapshotAt()
+        val reportError = mirrorStatus.preview
+            ?.takeIf { mirrorStatus.status.error == null }
+            ?.let { preview ->
+                runCatching {
+                    syncAnalysisReportWriter.write(preview)
+                    reportSnapshotAt = preview.remoteSnapshot.loadedAt
+                }.exceptionOrNull()
+            }
 
         return SyncStatusSnapshot(
             pendingLocalChangesCount = mirrorStatus.pushChangesCount,
@@ -54,26 +89,27 @@ class SyncService(
             lastStatusCheckAt = mirrorStatus.status.checkedAt,
             lastSyncAt = syncState?.lastPushAt,
             lastPullAt = syncState?.lastPullAt,
-            remoteError = mirrorStatus.status.error,
+            remoteError = mirrorStatus.status.error?.toSyncUserMessage()
+                ?: reportError?.syncUserMessage("Не удалось сохранить отчёт синхронизации."),
             conflicts = mirrorStatus.conflicts,
+            reportSnapshotAt = reportSnapshotAt,
         ).also { snapshot ->
             _status.value = snapshot
         }
     }
 
     /**
-     * Сравнивает Room/YDB и сохраняет Markdown-отчёт, не изменяя sync state.
+     * Возвращает последний отчёт с диска. Room и YDB не читаются.
      */
-    suspend fun createSyncAnalysisReport(): Result<File> {
-        return mirrorReconciliationService.buildPreview()
-            .mapCatching(syncAnalysisReportWriter::write)
+    fun createSyncAnalysisReport(): Result<File> {
+        return syncAnalysisReportWriter.latestReport()
     }
 
     /**
-     * Выполняет полный пользовательский цикл: сначала push, затем pull.
+     * Выполняет полный пользовательский цикл: сначала отправку, затем получение.
      *
-     * Pull не запускается после ошибки push, чтобы не маскировать первичную причину.
-     * Итог включает результат восстановления файлов, выполненного после pull.
+     * Получение не запускается после ошибки отправки, чтобы не маскировать первичную причину.
+     * Итог включает результат восстановления файлов, выполненного после получения.
      */
     @Suppress("ReturnCount")
     suspend fun syncOnce(): SyncRunResult {
@@ -82,13 +118,13 @@ class SyncService(
                 mirrorReconciliationService.getConfigurationStatus()
             }.getOrNull()
             return failureWithoutRefresh(
-                message = throwable.message ?: "Mirror sync preparation failed",
+                message = throwable.syncUserMessage("Не удалось подготовить синхронизацию с YDB."),
                 configuration = configuration,
             )
         }
         val mirrorRun = mirrorReconciliationService.executePreparedSync(context).getOrElse { throwable ->
             return failureWithoutRefresh(
-                message = throwable.message ?: "Mirror sync failed",
+                message = throwable.syncUserMessage("Не удалось синхронизировать данные с YDB."),
                 configuration = context.configuration,
             )
         }
@@ -104,13 +140,14 @@ class SyncService(
             lastSyncAt = mirrorRun.completedAt,
             lastPullAt = mirrorRun.completedAt,
             conflicts = mirrorRun.conflicts,
+            reportSnapshotAt = syncAnalysisReportWriter.latestSnapshotAt(),
         ).also { _status.value = it }
 
         val recoveryMark = TimeSource.Monotonic.markNow()
         val filesDownloadSummary = downloadMissingFilesAfterMirrorPull().getOrElse { throwable ->
             SyncFacadeStageLog.completed("S3 recovery", recoveryMark.elapsedNow().inWholeMilliseconds)
             return SyncRunResult.failure(
-                message = throwable.message ?: "File recovery after mirror pull failed",
+                message = throwable.syncUserMessage("Не удалось восстановить файлы из S3."),
                 status = status,
             )
         }
@@ -127,29 +164,34 @@ class SyncService(
     /**
      * Отправляет локальных победителей и сохраняет `lastPushAt`.
      *
-     * Отсутствующая remote-конфигурация считается явной ошибкой операции, а не
-     * успешным no-op.
+     * Отсутствующая удалённая конфигурация считается явной ошибкой операции, а не
+     * успешным завершением без действий.
      */
     @Suppress("ReturnCount")
     suspend fun pushOnce(): SyncRunResult {
         val mirrorPush = mirrorReconciliationService.pushLocalWinners().fold(
             onSuccess = { it },
             onFailure = { throwable ->
-                return SyncRunResult.failure(
-                    message = throwable.message ?: "Mirror push failed",
-                    status = getStatus(),
+                return failureWithoutRefresh(
+                    message = throwable.syncUserMessage("Не удалось отправить данные в YDB."),
+                    configuration = null,
                 )
             }
         )
         if (!mirrorPush.configured) {
-            return SyncRunResult.failure(
-                message = "Mirror sync is not configured",
-                status = getStatus(),
+            return failureWithoutRefresh(
+                message = "Синхронизация с YDB не настроена.",
+                configuration = null,
             )
         }
         syncStateRepository.updateLastPushAt(mirrorPush.completedAt)
+        val syncState = syncStateRepository.getSyncState()
 
-        val status = getStatus()
+        val status = statusFromRun(
+            run = mirrorPush,
+            lastPushAt = mirrorPush.completedAt,
+            lastPullAt = syncState?.lastPullAt,
+        )
         return SyncRunResult(
             status = status,
             lastSyncAt = mirrorPush.completedAt,
@@ -159,45 +201,70 @@ class SyncService(
     }
 
     /**
-     * Применяет remote winners, сохраняет `lastPullAt` и восстанавливает файлы.
+     * Применяет удалённых победителей, сохраняет `lastPullAt` и восстанавливает файлы.
      *
-     * Ошибка S3-восстановления возвращается после успешного mirror pull: данные
-     * Room уже применены, но UI получает точную информацию о неполном file recovery.
+     * Ошибка восстановления из S3 возвращается после успешного получения из зеркала: данные
+     * Room уже применены, но интерфейс получает точную информацию о неполном восстановлении файлов.
      */
     @Suppress("ReturnCount")
     suspend fun pullOnce(): SyncRunResult {
         val mirrorPull = mirrorReconciliationService.pullRemoteWinners().fold(
             onSuccess = { it },
             onFailure = { throwable ->
-                return SyncRunResult.failure(
-                    message = throwable.message ?: "Mirror pull failed",
-                    status = getStatus(),
+                return failureWithoutRefresh(
+                    message = throwable.syncUserMessage("Не удалось получить данные из YDB."),
+                    configuration = null,
                 )
             }
         )
         if (!mirrorPull.configured) {
-            return SyncRunResult.failure(
-                message = "Mirror sync is not configured",
-                status = getStatus(),
+            return failureWithoutRefresh(
+                message = "Синхронизация с YDB не настроена.",
+                configuration = null,
             )
         }
         syncStateRepository.updateLastPullAt(
             pulledAt = mirrorPull.completedAt,
         )
-        val status = getStatus()
+        val syncState = syncStateRepository.getSyncState()
+        val status = statusFromRun(
+            run = mirrorPull,
+            lastPushAt = syncState?.lastPushAt,
+            lastPullAt = mirrorPull.completedAt,
+        )
         val filesDownloadSummary = downloadMissingFilesAfterMirrorPull().getOrElse { throwable ->
             return SyncRunResult.failure(
-                message = throwable.message ?: "File recovery after mirror pull failed",
+                message = throwable.syncUserMessage("Не удалось восстановить файлы из S3."),
                 status = status,
             )
         }
         return SyncRunResult(
             status = status,
-            lastSyncAt = status.lastSyncAt,
-            lastPushAt = status.lastSyncAt,
+            lastSyncAt = syncState?.lastPushAt,
+            lastPushAt = syncState?.lastPushAt,
             lastPullAt = mirrorPull.completedAt,
             filesDownloadSummary = filesDownloadSummary,
         )
+    }
+
+    private fun statusFromRun(
+        run: MirrorReconciliationRun,
+        lastPushAt: LocalDateTime?,
+        lastPullAt: LocalDateTime?,
+    ): SyncStatusSnapshot {
+        val snapshot = SyncStatusSnapshot(
+            pendingLocalChangesCount = run.remainingPushChanges,
+            remoteChangesCount = run.remainingPullChanges,
+            hasRemoteChanges = run.remainingPullChanges > 0,
+            remoteSyncConfigured = run.configured,
+            lastStatusCheckAt = run.completedAt,
+            lastSyncAt = lastPushAt,
+            lastPullAt = lastPullAt,
+            conflicts = run.conflicts,
+            reportSnapshotAt = syncAnalysisReportWriter.latestSnapshotAt(),
+        )
+        _status.value = snapshot
+        return snapshot
     }
 
     @Suppress("ReturnCount")
@@ -222,12 +289,13 @@ class SyncService(
             remoteChangesCount = 0,
             hasRemoteChanges = false,
             remoteSyncConfigured = configuration?.configured ?: false,
-            lastStatusCheckAt = configuration?.checkedAt ?: getCurrentLocalDateTime(),
+            lastStatusCheckAt = configuration?.checkedAt ?: syncAnalysisReportWriter.latestSnapshotAt(),
             lastSyncAt = syncState?.lastPushAt,
             lastPullAt = syncState?.lastPullAt,
+            reportSnapshotAt = syncAnalysisReportWriter.latestSnapshotAt(),
         )).copy(
             remoteSyncConfigured = configuration?.configured ?: current?.remoteSyncConfigured ?: false,
-            lastStatusCheckAt = configuration?.checkedAt ?: current?.lastStatusCheckAt ?: getCurrentLocalDateTime(),
+            lastStatusCheckAt = configuration?.checkedAt ?: current?.lastStatusCheckAt,
             remoteError = message,
         )
         _status.value = status
@@ -242,7 +310,7 @@ class SyncService(
      *
      * Низкоуровневый сервис перечитывает обе стороны перед записью. Устаревший
      * выбор и повторный отказ YDB возвращаются как ошибка, а список конфликтов
-     * обновляется фактическими строками, чтобы UI не показывал старые данные.
+     * обновляется фактическими строками, чтобы интерфейс не показывал старые данные.
      *
      * @param conflict снимок конфликта, который видел пользователь.
      * @param winner сторона, чьё содержимое нужно сохранить.
@@ -286,6 +354,21 @@ class SyncService(
     }
 }
 
+private fun Throwable.syncUserMessage(fallback: String): String {
+    if (isYdbResourceExhausted()) {
+        return "YDB временно отклонила запрос из-за нехватки ресурсов. Повторите позже."
+    }
+    return message?.takeIf(String::isNotBlank) ?: fallback
+}
+
+private fun String.toSyncUserMessage(): String {
+    return if (contains("RESOURCE_EXHAUSTED", ignoreCase = true) || contains("401020")) {
+        "YDB временно отклонила запрос из-за нехватки ресурсов. Повторите позже."
+    } else {
+        this
+    }
+}
+
 private object SyncFacadeStageLog {
     private val logger = java.util.logging.Logger.getLogger("MirrorSync")
     fun completed(stage: String, milliseconds: Long) {
@@ -294,25 +377,26 @@ private object SyncFacadeStageLog {
 }
 
 /**
- * Неизменяемый снимок состояния синхронизации для UI и Doctor.
+ * Неизменяемый снимок состояния синхронизации для интерфейса и Doctor.
  *
  * [conflicts] содержит только пары с равной версией и разным переносимым
- * содержимым; такие строки не входят в счётчики push и pull.
+ * содержимым; такие строки не входят в счётчики отправки и получения.
  */
 data class SyncStatusSnapshot(
     val pendingLocalChangesCount: Int,
     val remoteChangesCount: Int,
     val hasRemoteChanges: Boolean,
     val remoteSyncConfigured: Boolean,
-    val lastStatusCheckAt: LocalDateTime,
+    val lastStatusCheckAt: LocalDateTime?,
     val lastSyncAt: LocalDateTime?,
     val lastPullAt: LocalDateTime?,
     val remoteError: String? = null,
     val conflicts: List<MirrorVersionConflict> = emptyList(),
+    val reportSnapshotAt: LocalDateTime? = null,
 )
 
 /**
- * Итог одной sync-команды.
+ * Итог одной команды синхронизации.
  *
  * Поля времени заполняются только для реально завершенных стадий. [error] не равен
  * `null`, если команда завершилась неуспешно, даже когда часть предыдущих стадий уже
@@ -327,7 +411,7 @@ data class SyncRunResult(
     val error: String? = null,
 ) {
     companion object {
-        /** Создает единообразный failure result с переданным или безопасным status. */
+        /** Создаёт единообразный результат ошибки с переданным или безопасным статусом. */
         fun failure(
             message: String,
             status: SyncStatusSnapshot? = null,
@@ -337,7 +421,7 @@ data class SyncRunResult(
                 remoteChangesCount = 0,
                 hasRemoteChanges = false,
                 remoteSyncConfigured = false,
-                lastStatusCheckAt = getCurrentLocalDateTime(),
+                lastStatusCheckAt = null,
                 lastSyncAt = null,
                 lastPullAt = null,
                 remoteError = null,

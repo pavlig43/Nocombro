@@ -4,25 +4,24 @@ import com.arkivanov.decompose.ComponentContext
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.dialogs.openFileWithDefaultApplication
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.LocalDateTime
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import ru.pavlig43.core.componentCoroutineScope
 import ru.pavlig43.database.data.files.remote.RemoteFileBatchDownloadSummary
 import ru.pavlig43.database.data.sync.SyncService
 import ru.pavlig43.database.data.sync.SyncStatusSnapshot
+import ru.pavlig43.datastore.SyncCheckAttemptStore
 
 /**
- * Компонент шапки, который держит локальное состояние синхронизации для UI.
+ * Компонент шапки, который хранит локальное состояние синхронизации для интерфейса.
  *
  * Компонент не знает деталей конкретного удаленного источника и работает через
  * `SyncService` и вспомогательные репозитории.
@@ -30,174 +29,129 @@ import ru.pavlig43.database.data.sync.SyncStatusSnapshot
 class SyncComponent(
     componentContext: ComponentContext,
     private val syncService: SyncService,
+    private val syncCheckAttemptStore: SyncCheckAttemptStore,
 ) : ComponentContext by componentContext {
 
     private val coroutineScope = componentCoroutineScope()
-    // В этом компоненте есть несколько конкурирующих действий:
-    // ручной pull/push/sync и периодический refreshStatus().
-    // Без общей блокировки они могут выполняться параллельно и перетирать друг другу
-    // uiState: например, refresh завершится посередине pull и вернет старый статус в UI.
+    // Одна блокировка не даёт ручным действиям и стартовой проверке
+    // выполняться параллельно и перетирать состояние UI.
     private val syncActionMutex = Mutex()
 
     private val _uiState = MutableStateFlow(SyncUiState())
     val uiState: StateFlow<SyncUiState> = _uiState.asStateFlow()
 
     init {
-        refreshStatus()
-        startPeriodicStatusCheck()
+        loadInitialStatus()
     }
 
-    /**
-     * Обновляет локальный статус синхронизации.
-     */
-    fun refreshStatus() {
-        coroutineScope.launch {
-            // Mutex здесь нужен не для потокобезопасности StateFlow как такового,
-            // а чтобы логически сериализовать sync-операции для UI.
-            syncActionMutex.withLock {
-                _uiState.update {
-                    it.copy(
-                        isSyncRunning = true,
-                        runningActionLabel = "Проверка",
-                        lastError = null,
-                    )
-                }
-                val status = withContext(Dispatchers.IO) {
-                    syncService.getStatus()
-                }
-                updateUiState(status, isSyncRunning = false, lastError = null)
-            }
+    /** Сначала читает локальный `sync_state`, затем при нужде один раз проверяет YDB. */
+    private fun loadInitialStatus() = launchExclusive {
+        beginAction("Загрузка состояния")
+        val localStatus = withContext(Dispatchers.IO) { syncService.getLocalStatus() }
+        updateUiState(localStatus, isSyncRunning = true, lastError = null)
+
+        val shouldCheckRemote = withContext(Dispatchers.IO) {
+            syncCheckAttemptStore.tryRecordBackgroundAttempt(
+                attemptAtEpochMillis = System.currentTimeMillis(),
+                minIntervalMillis = BACKGROUND_STATUS_CHECK_INTERVAL_MILLIS,
+            )
         }
+        if (!shouldCheckRemote) {
+            _uiState.update { current ->
+                current.copy(isSyncRunning = false, runningActionLabel = null)
+            }
+            return@launchExclusive
+        }
+
+        beginAction("Проверка")
+        val remoteStatus = withContext(Dispatchers.IO) { syncService.getStatus() }
+        updateUiState(remoteStatus, isSyncRunning = false, lastError = null)
+    }
+
+    /** Ручная проверка обходит часовой лимит. */
+    fun refreshStatus() = launchExclusive {
+        beginAction("Проверка")
+        val status = withContext(Dispatchers.IO) {
+            syncCheckAttemptStore.recordManualAttempt(System.currentTimeMillis())
+            syncService.getStatus()
+        }
+        updateUiState(status, isSyncRunning = false, lastError = null)
     }
 
     /**
      * Действие по иконке синхронизации в шапке.
      */
-    fun onSyncClick() {
-        coroutineScope.launch {
-            syncActionMutex.withLock {
-                _uiState.update {
-                    it.copy(
-                        isSyncRunning = true,
-                        runningActionLabel = "Синхронизация",
-                        lastError = null,
-                    )
-                }
-                val result = withContext(Dispatchers.IO) {
-                    syncService.syncOnce()
-                }
-                updateUiState(
-                    status = result.status,
-                    isSyncRunning = false,
-                    lastError = result.error,
-                    lastSyncAt = result.lastSyncAt,
-                    lastPullAt = result.lastPullAt,
-                )
-            }
+    fun onSyncClick() = launchExclusive {
+        beginAction("Синхронизация")
+        val result = withContext(Dispatchers.IO) {
+            syncCheckAttemptStore.recordManualAttempt(System.currentTimeMillis())
+            syncService.syncOnce()
         }
+        updateUiState(
+            status = result.status,
+            isSyncRunning = false,
+            lastError = result.error,
+            lastSyncAt = result.lastSyncAt,
+            lastPullAt = result.lastPullAt,
+        )
     }
 
-    fun onPushClick() {
-        coroutineScope.launch {
-            syncActionMutex.withLock {
-                _uiState.update {
-                    it.copy(
-                        isSyncRunning = true,
-                        runningActionLabel = "Отправка",
-                        lastError = null,
-                    )
-                }
-                val result = withContext(Dispatchers.IO) {
-                    syncService.pushOnce()
-                }
-                updateUiState(
-                    status = result.status,
-                    isSyncRunning = false,
-                    lastError = result.error,
-                    lastSyncAt = result.lastSyncAt,
-                    lastPullAt = result.lastPullAt,
-                )
-            }
+    fun onPushClick() = launchExclusive {
+        beginAction("Отправка")
+        val result = withContext(Dispatchers.IO) {
+            syncCheckAttemptStore.recordManualAttempt(System.currentTimeMillis())
+            syncService.pushOnce()
         }
+        updateUiState(
+            status = result.status,
+            isSyncRunning = false,
+            lastError = result.error,
+            lastSyncAt = result.lastSyncAt,
+            lastPullAt = result.lastPullAt,
+        )
     }
 
-    /**
-     * Формирует read-only Markdown-анализ Room/YDB и открывает его системным приложением.
-     */
-    fun onCreateReportClick() {
-        coroutineScope.launch {
-            syncActionMutex.withLock {
-                _uiState.update {
-                    it.copy(
-                        isSyncRunning = true,
-                        runningActionLabel = "Формирование отчёта",
-                        lastError = null,
-                    )
-                }
-                val result = withContext(Dispatchers.IO) {
-                    syncService.createSyncAnalysisReport().mapCatching { file ->
-                        FileKit.openFileWithDefaultApplication(PlatformFile(file))
-                        file
-                    }
-                }
-                _uiState.update {
-                    it.copy(
-                        isSyncRunning = false,
-                        runningActionLabel = null,
-                        lastError = result.exceptionOrNull()?.message,
-                    )
-                }
+    /** Открывает готовый отчёт с диска и не читает Room или YDB. */
+    fun onCreateReportClick() = launchExclusive {
+        beginAction("Открытие отчёта")
+        val result = withContext(Dispatchers.IO) {
+            syncService.createSyncAnalysisReport().mapCatching { file ->
+                FileKit.openFileWithDefaultApplication(PlatformFile(file))
+                file
             }
+        }
+        _uiState.update {
+            it.copy(
+                isSyncRunning = false,
+                runningActionLabel = null,
+                lastError = result.exceptionOrNull()?.message,
+            )
         }
     }
 
     /**
      * Выполняет безопасный сценарий "получить и файлы":
      *
-     * 1. Сначала подтягивает метаданные из удаленной БД через обычный `pull`.
-     * 2. Если `pull` прошел успешно, догружает отсутствующие локальные копии файлов из S3.
+     * 1. Сначала получает метаданные из удалённой БД.
+     * 2. После успешного получения догружает отсутствующие локальные копии файлов из S3.
      *
      * Такой порядок нужен, чтобы скачивание файлов шло только по тем записям `file`,
      * которые уже появились в локальной БД после синхронизации метаданных.
      */
-    fun onPullClick() {
-        coroutineScope.launch {
-            // Весь сценарий pull -> download files должен быть для UI одной операцией.
-            // Если в середине вклинится periodic refresh, пользователь увидит
-            // скачущий статус, старые timestamps или потерю текста текущего шага.
-            syncActionMutex.withLock {
-                _uiState.update {
-                    it.copy(
-                        isSyncRunning = true,
-                        runningActionLabel = "Получение",
-                        lastError = null,
-                        lastFilesDownloadSummary = null,
-                    )
-                }
-                val result = withContext(Dispatchers.IO) {
-                    syncService.pullOnce()
-                }
-                if (result.error != null) {
-                    updateUiState(
-                        status = result.status,
-                        isSyncRunning = false,
-                        lastError = result.error,
-                        lastSyncAt = result.lastSyncAt,
-                        lastPullAt = result.lastPullAt,
-                    )
-                    return@withLock
-                }
-
-                updateUiState(
-                    status = result.status,
-                    isSyncRunning = false,
-                    lastError = null,
-                    lastSyncAt = result.lastSyncAt,
-                    lastPullAt = result.lastPullAt,
-                    lastFilesDownloadSummary = result.filesDownloadSummary?.toUiSummary(),
-                )
-            }
+    fun onPullClick() = launchExclusive {
+        beginAction("Получение", clearFilesSummary = true)
+        val result = withContext(Dispatchers.IO) {
+            syncCheckAttemptStore.recordManualAttempt(System.currentTimeMillis())
+            syncService.pullOnce()
         }
+        updateUiState(
+            status = result.status,
+            isSyncRunning = false,
+            lastError = result.error,
+            lastSyncAt = result.lastSyncAt,
+            lastPullAt = result.lastPullAt,
+            lastFilesDownloadSummary = result.filesDownloadSummary?.toUiSummary(),
+        )
     }
 
     @Suppress("LongParameterList")
@@ -217,6 +171,7 @@ class SyncComponent(
                 isSyncRunning = isSyncRunning,
                 remoteSyncConfigured = status.remoteSyncConfigured,
                 lastStatusCheckAt = status.lastStatusCheckAt,
+                reportSnapshotAt = status.reportSnapshotAt,
                 lastSyncAt = lastSyncAt ?: status.lastSyncAt,
                 lastPullAt = lastPullAt ?: status.lastPullAt,
                 lastError = lastError ?: status.remoteError,
@@ -226,14 +181,48 @@ class SyncComponent(
         }
     }
 
-    /**
-     * Периодически обновляет локальный статус синхронизации, пока жив компонент.
-     */
-    private fun startPeriodicStatusCheck() {
+    private fun beginAction(
+        label: String,
+        clearFilesSummary: Boolean = false,
+    ) {
+        _uiState.update { current ->
+            current.copy(
+                isSyncRunning = true,
+                runningActionLabel = label,
+                lastError = null,
+                lastFilesDownloadSummary = if (clearFilesSummary) {
+                    null
+                } else {
+                    current.lastFilesDownloadSummary
+                },
+            )
+        }
+    }
+
+    /** Не ставит повторное нажатие в очередь, пока текущая операция не завершилась. */
+    private fun launchExclusive(block: suspend () -> Unit) {
         coroutineScope.launch {
-            while (isActive) {
-                delay(STATUS_CHECK_INTERVAL_MILLIS)
-                refreshStatus()
+            if (!syncActionMutex.tryLock()) return@launch
+            try {
+                block()
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (throwable: Throwable) {
+                _uiState.update { current ->
+                    current.copy(
+                        isSyncRunning = false,
+                        runningActionLabel = null,
+                        lastError = throwable.message
+                            ?: "Операция синхронизации завершилась с ошибкой.",
+                    )
+                }
+            } finally {
+                _uiState.update { current ->
+                    if (!current.isSyncRunning) current else {
+                        current.copy(isSyncRunning = false, runningActionLabel = null)
+                    }
+                }
+                syncActionMutex.unlock()
             }
         }
     }
@@ -246,6 +235,7 @@ data class SyncUiState(
     val isSyncRunning: Boolean = false,
     val remoteSyncConfigured: Boolean = false,
     val lastStatusCheckAt: LocalDateTime? = null,
+    val reportSnapshotAt: LocalDateTime? = null,
     val lastSyncAt: LocalDateTime? = null,
     val lastPullAt: LocalDateTime? = null,
     val lastError: String? = null,
@@ -253,11 +243,11 @@ data class SyncUiState(
     val runningActionLabel: String? = null,
 )
 
-// Полный статус читает все mirror-таблицы, поэтому частый опрос расходует квоту YDB.
-private const val STATUS_CHECK_INTERVAL_MILLIS = 15 * 60 * 1000L
+// Фоновая проверка бывает только при запуске и не чаще одного раза в час.
+private const val BACKGROUND_STATUS_CHECK_INTERVAL_MILLIS = 60 * 60 * 1000L
 
 /**
- * Сводит технический результат массовой догрузки файлов к короткой строке для UI.
+ * Сводит технический результат массовой догрузки файлов к короткой строке для интерфейса.
  */
 private fun RemoteFileBatchDownloadSummary.toUiSummary(): String {
     return when {

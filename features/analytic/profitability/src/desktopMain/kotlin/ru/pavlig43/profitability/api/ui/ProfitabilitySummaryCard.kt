@@ -1,180 +1,197 @@
 package ru.pavlig43.profitability.api.ui
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import ru.pavlig43.core.model.DecimalData2
 import ru.pavlig43.core.model.toStartDoubleFormat
 import ru.pavlig43.profitability.internal.model.ProfitabilitySummary
 
-@Suppress("LongMethod")
 @Composable
 internal fun ProfitabilitySummaryCard(
     summary: ProfitabilitySummary,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
-    Card(
-        modifier = modifier.padding(start = 24.dp).widthIn(max = 500.dp),
-        shape = RoundedCornerShape(28.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
-        ),
-        border = BorderStroke(
-            width = 1.5.dp,
-            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
-        )
+    var expensesExpanded by remember { mutableStateOf(false) }
+    val expenseDetails = buildList {
+        if (summary.materialWriteOffExpenses.value != 0L) {
+            add("Списания материалов" to summary.materialWriteOffExpenses.toStartDoubleFormat())
+        }
+        summary.mainExpensesByType.forEach { expenseByType ->
+            add(expenseByType.type.displayName to expenseByType.amount.toStartDoubleFormat())
+        }
+    }
+
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(18.dp),
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
     ) {
-        Column {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(60.dp)
-                    .background(
-                        brush = Brush.linearGradient(
-                            colors = listOf(
-                                MaterialTheme.colorScheme.primaryContainer,
-                                MaterialTheme.colorScheme.secondaryContainer
-                            )
-                        )
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                ProvideTextStyle(
-                    value = MaterialTheme.typography.titleMedium
-                ) {
-                    Surface(
-                        color = androidx.compose.ui.graphics.Color.Transparent,
-                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                    ) {
-                        Text("Сводка за период")
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Column(
-                modifier = Modifier.padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                SummaryRow(
-                    label = "Выручка за период",
-                    value = summary.totalRevenue
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+                SummaryMetric(
+                    label = "Выручка",
+                    value = summary.totalRevenue.toStartDoubleFormat(),
+                    modifier = Modifier.weight(1f),
                 )
-                SummaryRow(
+                SummaryDivider()
+                SummaryMetric(
                     label = "Расходы по партиям",
-                    value = summary.batchExpenses
+                    value = summary.batchExpenses.toStartDoubleFormat(),
+                    modifier = Modifier.weight(1f),
                 )
-                SummaryRow(
-                    label = "Общие расходы",
-                    value = summary.mainExpenses
-                )
-
-                if (summary.materialWriteOffExpenses.value != 0L) {
-                    Row(
-                        modifier = Modifier.padding(start = 16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    ) {
-                        Text(
-                            text = "Списания материалов",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        Text(
-                            text = summary.materialWriteOffExpenses.toStartDoubleFormat(),
-                            style = MaterialTheme.typography.bodySmall,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                }
-
-                summary.mainExpensesByType.forEach { expenseByType ->
-                    Row(
-                        modifier = Modifier.padding(start = 16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Text(
-                            text = expenseByType.type.displayName,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Text(
-                            text = expenseByType.amount.toStartDoubleFormat(),
-                            style = MaterialTheme.typography.bodySmall,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-
-                HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        text = "Прибыль за период",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.primary
+                SummaryDivider()
+                Box(modifier = Modifier.weight(1f)) {
+                    SummaryMetric(
+                        label = "Общие расходы",
+                        value = summary.mainExpenses.toStartDoubleFormat(),
+                        detailsLabel = expenseDetails.takeIf { it.isNotEmpty() }
+                            ?.let { "Состав · ${it.size}" },
+                        onDetailsClick = { expensesExpanded = true },
                     )
-                    Text(
-                        text = summary.profit.toStartDoubleFormat(),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
+                    ExpenseDetailsMenu(
+                        expanded = expensesExpanded,
+                        items = expenseDetails,
+                        onDismissRequest = { expensesExpanded = false },
                     )
                 }
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
+                SummaryDivider()
+                SummaryMetric(
+                    label = "Прибыль",
+                    value = summary.profit.toStartDoubleFormat(),
+                    valueColor = if (summary.profit.value < 0L) {
+                        MaterialTheme.colorScheme.error
+                    } else {
+                        MaterialTheme.colorScheme.onSurface
+                    },
+                    modifier = Modifier.weight(1f),
+                )
         }
     }
 }
 
 @Composable
-private fun SummaryRow(
+private fun SummaryMetric(
     label: String,
-    value: DecimalData2,
-    modifier: Modifier = Modifier
+    value: String,
+    modifier: Modifier = Modifier,
+    valueColor: Color = MaterialTheme.colorScheme.onSurface,
+    detailsLabel: String? = null,
+    onDetailsClick: () -> Unit = {},
 ) {
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween
+    Column(
+        modifier = modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         Text(
             text = label,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurface
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = value,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = valueColor,
+            )
+            detailsLabel?.let { label ->
+                Text(
+                    text = label,
+                    modifier = Modifier.clickable(onClick = onDetailsClick),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun SummaryDivider() {
+    VerticalDivider(modifier = Modifier.height(52.dp))
+}
+
+@Composable
+private fun ExpenseDetailsMenu(
+    expanded: Boolean,
+    items: List<Pair<String, String>>,
+    onDismissRequest: () -> Unit,
+) {
+    DropdownMenu(
+        expanded = expanded,
+        onDismissRequest = onDismissRequest,
+        modifier = Modifier.width(360.dp),
+    ) {
+        Text(
+            text = "Состав общих расходов · ${items.size}",
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+            style = MaterialTheme.typography.titleSmall,
+            fontWeight = FontWeight.Medium,
+        )
+        HorizontalDivider()
+        items.forEachIndexed { index, (label, value) ->
+            ExpenseDetail(
+                label = label,
+                value = value,
+                modifier = Modifier.fillMaxWidth(),
+            )
+            if (index < items.lastIndex) {
+                HorizontalDivider(modifier = Modifier.padding(horizontal = 12.dp))
+            }
+        }
+    }
+}
+
+@Composable
+private fun ExpenseDetail(
+    label: String,
+    value: String,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(2.dp),
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Text(
-            text = value.toStartDoubleFormat(),
+            text = value,
             style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurface
+            fontWeight = FontWeight.Medium,
+            color = MaterialTheme.colorScheme.onSurface,
         )
     }
 }

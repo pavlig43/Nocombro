@@ -31,7 +31,7 @@ import ru.pavlig43.doctor.internal.ui.tool.syncconflicts.DoctorSyncConflictsTool
 /**
  * Рисует выбранный инструмент Doctor и связывает его с потоками компонента.
  *
- * Экран отдельно показывает pending-загрузки, блокировку S3-очистки и действия
+ * Экран отдельно показывает незавершённые загрузки, блокировку очистки S3 и действия
  * выбора стороны для конфликтов синхронизации.
  */
 @Composable
@@ -114,7 +114,6 @@ fun DoctorScreen(
                         pendingUploads = pendingUploads,
                         onDismissActionError = component::dismissRemoteOrphanFilesActionError,
                         onReleasePendingUpload = component::releasePendingUpload,
-                        onLogCompare = component::logRemoteFileComparison,
                         onRefresh = component::refreshRemoteOrphanFiles,
                         onDelete = component::deleteRemoteOrphanFile,
                         onDeleteAll = component::deleteAllRemoteOrphanFiles,

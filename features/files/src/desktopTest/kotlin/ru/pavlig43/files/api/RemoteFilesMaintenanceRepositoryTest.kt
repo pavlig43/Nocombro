@@ -22,7 +22,7 @@ import ru.pavlig43.testkit.database.withEmptyTestDatabase
 import java.nio.file.Files
 
 /**
- * Проверяет, что S3-очистка защищает ключи mirror, Room и pending-реестра.
+ * Проверяет, что очистка S3 защищает ключи зеркала, Room и реестра незавершённых загрузок.
  */
 class RemoteFilesMaintenanceRepositoryTest : DesktopMainDispatcherFunSpec({
 
@@ -56,6 +56,20 @@ class RemoteFilesMaintenanceRepositoryTest : DesktopMainDispatcherFunSpec({
             mirror.rows = listOf(fileRow("candidate", "candidate"))
 
             repository.deleteRemoteFile("candidate").getOrThrow()
+            storage.deletedKeys shouldBe emptyList()
+        }
+    }
+
+    test("YDB snapshot failure blocks S3 deletion") {
+        withEmptyTestDatabase { db ->
+            val storage = FakeStorage(setOf("candidate"))
+            val mirror = FakeMirrorGateway(
+                rows = emptyList(),
+                snapshotError = "YDB unavailable",
+            )
+            val repository = RemoteFilesMaintenanceRepository(db, storage, mirror, testRegistry())
+
+            repository.deleteRemoteFile("candidate").isFailure shouldBe true
             storage.deletedKeys shouldBe emptyList()
         }
     }
@@ -169,6 +183,7 @@ private class FakeStorage(
 
 private class FakeMirrorGateway(
     var rows: List<FileMirrorRow>,
+    private val snapshotError: String? = null,
 ) : MirrorSyncRemoteGateway {
     override suspend fun getStatus() = MirrorRemoteStatus(
         configured = true,
@@ -176,13 +191,17 @@ private class FakeMirrorGateway(
         checkedAt = testTime,
     )
 
-    override suspend fun loadRemoteSnapshot(tables: List<MirrorSyncTable>) =
-        Result.success(
+    override suspend fun loadRemoteSnapshot(tables: List<MirrorSyncTable>): Result<MirrorRemoteSnapshot> {
+        snapshotError?.let { message ->
+            return Result.failure(IllegalStateException(message))
+        }
+        return Result.success(
             MirrorRemoteSnapshot(
                 loadedAt = testTime,
                 rowsByTable = mapOf(MirrorSyncTable.FILE to rows),
             )
         )
+    }
 
     override suspend fun pushMirrorState(changes: List<MirrorPushEntityChange>) =
         Result.success(MirrorPushResult(testTime, emptySet()))

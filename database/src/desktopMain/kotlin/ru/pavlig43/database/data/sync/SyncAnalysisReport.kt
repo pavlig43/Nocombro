@@ -13,45 +13,69 @@ import ru.pavlig43.database.data.sync.mirror.MirrorPushEntityChange
 import ru.pavlig43.database.data.sync.mirror.MirrorReconciliationPreview
 import ru.pavlig43.database.data.sync.mirror.MirrorSyncRow
 import ru.pavlig43.database.data.sync.mirror.MirrorSyncTable
+import ru.pavlig43.database.data.sync.mirror.MirrorVersionConflict
 import ru.pavlig43.datetime.dateFormat
 import ru.pavlig43.datetime.dateTimeFormat
 import java.io.File
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
-import java.time.Clock
-import java.time.format.DateTimeFormatter
+import java.nio.file.StandardCopyOption.ATOMIC_MOVE
+import java.nio.file.StandardCopyOption.REPLACE_EXISTING
 
 /**
- * Создает и сохраняет read-only Markdown-анализ расхождений Room/YDB.
+ * Создаёт и сохраняет анализ расхождений Room/YDB в Markdown без изменения данных.
  */
 class SyncAnalysisReportWriter(
     private val reportDirectory: () -> File = ::defaultSyncReportDirectory,
-    private val clock: Clock = Clock.systemDefaultZone(),
     private val json: Json = Json { classDiscriminator = "_mirrorType" },
 ) {
+    /**
+     * Атомарно заменяет один актуальный отчёт. Старые отчёты с датой в имени
+     * остаются в каталоге без изменений.
+     */
     fun write(preview: MirrorReconciliationPreview): File {
         val directory = reportDirectory()
         Files.createDirectories(directory.toPath())
-        val file = uniqueReportFile(directory)
-        Files.writeString(
-            file.toPath(),
-            SyncAnalysisReportFormatter(json).format(preview),
-            StandardCharsets.UTF_8,
+        val target = directory.toPath().resolve(LATEST_REPORT_FILE_NAME)
+        val temporary = Files.createTempFile(
+            directory.toPath(),
+            ".latest-sync-analysis-",
+            ".tmp",
         )
-        return file
+        try {
+            Files.writeString(
+                temporary,
+                SyncAnalysisReportFormatter(json).format(preview),
+                StandardCharsets.UTF_8,
+            )
+            Files.move(temporary, target, ATOMIC_MOVE, REPLACE_EXISTING)
+        } finally {
+            Files.deleteIfExists(temporary)
+        }
+        return target.toFile()
     }
 
-    @Suppress("MagicNumber")
-    private fun uniqueReportFile(directory: File): File {
-        var timestamp = java.time.LocalDateTime.now(clock)
-        while (true) {
-            val candidate = File(
-                directory,
-                "sync-analysis-${timestamp.format(FILE_TIMESTAMP_FORMAT)}.md",
-            )
-            if (!candidate.exists()) return candidate
-            timestamp = timestamp.plusNanos(1_000_000)
+    /** Возвращает уже записанный отчёт без чтения Room или YDB. */
+    fun latestReport(): Result<File> = runCatching {
+        val file = File(reportDirectory(), LATEST_REPORT_FILE_NAME)
+        require(file.isFile) {
+            "Отчёт ещё не создан. Сначала обновите статус синхронизации."
         }
+        file
+    }
+
+    /** Читает время снимка из актуального файла без сетевых запросов. */
+    @Suppress("ReturnCount")
+    fun latestSnapshotAt(): LocalDateTime? {
+        val report = latestReport().getOrNull() ?: return null
+        val marker = report.useLines { lines ->
+            lines.firstOrNull { it.startsWith(SNAPSHOT_MARKER_PREFIX) }
+        } ?: return null
+        return runCatching {
+            LocalDateTime.parse(
+                marker.removePrefix(SNAPSHOT_MARKER_PREFIX).removeSuffix(SNAPSHOT_MARKER_SUFFIX)
+            )
+        }.getOrNull()
     }
 }
 
@@ -59,12 +83,17 @@ internal class SyncAnalysisReportFormatter(
     private val json: Json = Json { classDiscriminator = "_mirrorType" },
 ) {
     fun format(preview: MirrorReconciliationPreview): String = buildString {
+        appendLine("$SNAPSHOT_MARKER_PREFIX${preview.remoteSnapshot.loadedAt}$SNAPSHOT_MARKER_SUFFIX")
         appendLine("# Отчёт синхронизации")
         appendLine()
         appendLine("- Snapshot Room: `${preview.localSnapshot.loadedAt.format(dateTimeFormat)}`")
         appendLine("- Snapshot YDB: `${preview.remoteSnapshot.loadedAt.format(dateTimeFormat)}`")
         appendLine()
         appendLine("> Состояние Room и YDB могло измениться после формирования этого отчёта.")
+        appendLine(
+            "> Снимок от ${preview.remoteSnapshot.loadedAt.format(dateTimeFormat)}. " +
+                "Не обновляется при открытии."
+        )
         appendLine()
         appendSection(
             title = "Будет отправлено",
@@ -77,7 +106,31 @@ internal class SyncAnalysisReportFormatter(
             changes = preview.plan.pullChanges,
             targetRows = preview.localSnapshot.rowsByTable,
         )
+        appendLine()
+        appendConflicts(preview.plan.conflicts)
     }.trimEnd() + "\n"
+
+    private fun StringBuilder.appendConflicts(
+        conflicts: List<MirrorVersionConflict>,
+    ) {
+        appendLine("## Конфликты")
+        appendLine()
+        if (conflicts.isEmpty()) {
+            appendLine("Конфликтов нет.")
+            return
+        }
+
+        appendLine("| Таблица | syncId | Локальная версия | Удалённая версия |")
+        appendLine("|---|---|---|---|")
+        conflicts.forEach { conflict ->
+            appendLine(
+                "| " + escapeCell(conflict.table.tableName) +
+                    " | " + escapeCell(conflict.localRow.syncId) +
+                    " | " + escapeCell(conflict.localRow.versionText()) +
+                    " | " + escapeCell(conflict.remoteRow.versionText()) + " |"
+            )
+        }
+    }
 
     private fun StringBuilder.appendSection(
         title: String,
@@ -198,5 +251,7 @@ private fun defaultSyncReportDirectory(): File {
     return File(appData, "Nocombro/sync-reports")
 }
 
-private val FILE_TIMESTAMP_FORMAT = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss-SSS")
+private const val LATEST_REPORT_FILE_NAME = "latest-sync-analysis.md"
+private const val SNAPSHOT_MARKER_PREFIX = "<!-- sync-snapshot-at="
+private const val SNAPSHOT_MARKER_SUFFIX = " -->"
 private val EXCLUDED_PAYLOAD_FIELDS = setOf("syncId", "updatedAt", "deletedAt", "_mirrorType")

@@ -9,7 +9,7 @@ import ru.pavlig43.datetime.dateFormat
 import ru.pavlig43.datetime.dateTimeFormat
 
 /**
- * Группирует сырые sync-правки по экспериментам для экрана предпросмотра.
+ * Группирует сырые sync-правки по экспериментам для Markdown-отчёта.
  */
 @Suppress("CyclomaticComplexMethod")
 internal fun buildExperimentChangeGroups(
@@ -138,7 +138,7 @@ private data class EntryAccumulator(
     val files: MutableList<MobileEntityChange> = mutableListOf(),
 ) {
     /**
-     * Собирает итоговую UI-модель изменения записи.
+     * Собирает итоговую модель изменения записи для отчёта.
      */
     fun toChange(): MobileEntryChange {
         val row = after ?: before

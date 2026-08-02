@@ -15,7 +15,7 @@ import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
 
-val mobileVersionName = "1.0.1"
+val mobileVersionName = "1.0.3"
 
 abstract class CurrentBuildDateValueSource : ValueSource<String, ValueSourceParameters.None> {
     override fun obtain(): String = LocalDate.now().toString()
@@ -104,7 +104,7 @@ android {
 
     defaultConfig {
         applicationId = "ru.pavlig43.nocombro.mobile"
-        versionCode = 2
+        versionCode = 4
         versionName = mobileVersionName
     }
 
@@ -158,6 +158,7 @@ dependencies {
     implementation(projects.theme)
     implementation(libs.filekit.dialogs.compose)
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.datastore.preferences)
     implementation(libs.ydb.jdbc)
     implementation(libs.aws.kotlin.s3)
     implementation(libs.conscrypt.android)
