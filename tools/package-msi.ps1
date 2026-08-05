@@ -83,7 +83,7 @@ $env:JAVA_HOME = $jpackageJdkHome
 $env:Path = "$(Join-Path $jpackageJdkHome "bin");$env:Path"
 Write-Host "Using JDK: $jpackageJdkHome"
 
-& $gradleWrapper "-Dorg.gradle.java.home=$jpackageJdkHome" :app:desktopApp:packageReleaseMsi
+& $gradleWrapper "-Dorg.gradle.java.home=$jpackageJdkHome" --project-dir $projectRoot :app:desktopApp:packageReleaseMsi
 if ($LASTEXITCODE -ne 0) {
     throw "packageReleaseMsi failed with code $LASTEXITCODE"
 }
