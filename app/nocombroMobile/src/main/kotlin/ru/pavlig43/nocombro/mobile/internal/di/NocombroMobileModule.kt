@@ -16,6 +16,7 @@ import ru.pavlig43.nocombro.mobile.sync.MobileRemoteConfigRepository
 import ru.pavlig43.nocombro.mobile.sync.MobileSyncRepository
 import ru.pavlig43.nocombro.mobile.sync.MobileSyncReportStore
 import ru.pavlig43.nocombro.mobile.sync.MobileSyncStateStore
+import ru.pavlig43.nocombro.mobile.warehouse.MobileWarehouseSnapshotStore
 
 /**
  * Модуль Koin для Android-сборки: локальная БД, журнал экспериментов и мобильная синхронизация.
@@ -47,12 +48,14 @@ val nocombroMobileModule = module {
     single<MobileRemoteConfigSource> {
         MobileRemoteConfigRepository(androidContext())
     }
-    single<MobileLocalMirrorDataSource> {
+    single {
         MobileLocalMirrorRepository(
             db = get(),
             filesDirPath = androidContext().filesDir.absolutePath,
         )
     }
+    single<MobileLocalMirrorDataSource> { get<MobileLocalMirrorRepository>() }
+    single<MobileWarehouseSnapshotStore> { get<MobileLocalMirrorRepository>() }
     single {
         MobileSyncRepository(
             configRepository = get(),
@@ -69,6 +72,7 @@ val nocombroMobileModule = module {
             syncRepository = get(),
             syncStateStore = get(),
             syncReportStore = get(),
+            warehouseSnapshotStore = get(),
             fileProviderAuthority = "${context.packageName}.fileprovider",
         )
     }

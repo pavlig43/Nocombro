@@ -9,6 +9,7 @@ import com.arkivanov.decompose.value.Value
 import kotlinx.serialization.Serializable
 import ru.pavlig43.nocombro.mobile.experiments.api.component.ExperimentsMobileComponent
 import ru.pavlig43.nocombro.mobile.sync.MobileSyncComponent
+import ru.pavlig43.nocombro.mobile.warehouse.MobileWarehouseComponent
 
 /**
  * Корневой компонент Android-сборки: управляет меню, панелью синхронизации и стековой навигацией.
@@ -23,6 +24,10 @@ class NocombroMobileRootComponent(
         MobileMenuItem(
             config = MobileConfig.Experiments,
             title = "Эксперименты",
+        ),
+        MobileMenuItem(
+            config = MobileConfig.Storage,
+            title = "Склад",
         ),
     )
 
@@ -69,6 +74,12 @@ class NocombroMobileRootComponent(
                     dependencies = dependencies.experimentsDependencies,
                 )
             )
+            MobileConfig.Storage -> MobileChild.Storage(
+                MobileWarehouseComponent(
+                    componentContext = componentContext,
+                    snapshotStore = dependencies.warehouseSnapshotStore,
+                )
+            )
         }
     }
 }
@@ -92,6 +103,9 @@ sealed interface MobileConfig {
     @Serializable
     data object Experiments : MobileConfig
 
+    @Serializable
+    data object Storage : MobileConfig
+
 }
 
 /**
@@ -102,5 +116,9 @@ sealed interface MobileChild {
 
     class Experiments(
         val component: ExperimentsMobileComponent,
+    ) : MobileChild
+
+    class Storage(
+        val component: MobileWarehouseComponent,
     ) : MobileChild
 }

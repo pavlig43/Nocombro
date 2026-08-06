@@ -3,6 +3,8 @@ package ru.pavlig43.nocombro.mobile.sync
 import java.io.File
 import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.datetime.getCurrentLocalDateTime
+import ru.pavlig43.nocombro.mobile.warehouse.MobileWarehouseRemoteDataSource
+import ru.pavlig43.nocombro.mobile.warehouse.YdbMobileWarehouseRemoteDataSource
 
 /**
  * Оркестрирует Android-синхронизацию: YDB, локальную Room-БД и S3.
@@ -20,6 +22,8 @@ class MobileSyncRepository(
     private val planner: MobileReconciliationPlanner = MobileReconciliationPlanner(),
     private val remoteGatewayFactory: (MobileYdbConfig, String?) -> MobileRemoteMirrorGateway =
         ::MobileYdbMirrorGateway,
+    private val warehouseRemoteDataSourceFactory: (MobileYdbConfig, String?) ->
+        MobileWarehouseRemoteDataSource = ::YdbMobileWarehouseRemoteDataSource,
     private val storageGatewayFactory: (MobileS3Config) -> MobileObjectStorageGateway =
         ::AwsKotlinMobileS3Gateway,
 ) {
@@ -129,7 +133,24 @@ class MobileSyncRepository(
         }
         lastPushAt = getCurrentLocalDateTime()
         val pulledChanges = if (pullAfterPush) {
-            localRepository.applyRemoteChanges(postPushPlan.pullChanges, context.config.s3)
+            val warehouseSnapshot = context.warehouse.loadSnapshot().getOrElse { throwable ->
+                return failure(throwable.mobileSyncErrorMessage("Не удалось получить снимок склада")).copy(
+                    pushed = acceptedChanges.size,
+                    lastPushAt = lastPushAt,
+                )
+            }
+            runCatching {
+                localRepository.applyRemoteChangesAndWarehouseSnapshot(
+                    changes = postPushPlan.pullChanges,
+                    config = context.config.s3,
+                    warehouseSnapshot = warehouseSnapshot,
+                )
+            }.getOrElse { throwable ->
+                return failure(throwable.mobileSyncErrorMessage("Не удалось сохранить полученные данные")).copy(
+                    pushed = acceptedChanges.size,
+                    lastPushAt = lastPushAt,
+                )
+            }
             lastPullAt = getCurrentLocalDateTime()
             downloadMissingFiles(context.storage).getOrElse { throwable ->
                 return failure(throwable.mobileSyncErrorMessage("Не удалось скачать файлы из S3")).copy(
@@ -179,7 +200,18 @@ class MobileSyncRepository(
             return failure(throwable.mobileSyncErrorMessage("Не удалось получить снимок YDB"))
         }
         val plan = planner.plan(local, remote)
-        localRepository.applyRemoteChanges(plan.pullChanges, context.config.s3)
+        val warehouseSnapshot = context.warehouse.loadSnapshot().getOrElse { throwable ->
+            return failure(throwable.mobileSyncErrorMessage("Не удалось получить снимок склада"))
+        }
+        runCatching {
+            localRepository.applyRemoteChangesAndWarehouseSnapshot(
+                changes = plan.pullChanges,
+                config = context.config.s3,
+                warehouseSnapshot = warehouseSnapshot,
+            )
+        }.getOrElse { throwable ->
+            return failure(throwable.mobileSyncErrorMessage("Не удалось сохранить полученные данные"))
+        }
         lastPullAt = remote.loadedAt
         downloadMissingFiles(context.storage).getOrElse { throwable ->
             return failure(throwable.mobileSyncErrorMessage("Не удалось скачать файлы из S3"))
@@ -212,6 +244,7 @@ class MobileSyncRepository(
         MobileSyncContext(
             config = config,
             remote = remoteGatewayFactory(config.ydb, serviceAccountJson),
+            warehouse = warehouseRemoteDataSourceFactory(config.ydb, serviceAccountJson),
             storage = storageGatewayFactory(config.s3),
         )
     }
@@ -273,6 +306,7 @@ class MobileSyncRepository(
 private data class MobileSyncContext(
     val config: MobileRemoteConfig,
     val remote: MobileRemoteMirrorGateway,
+    val warehouse: MobileWarehouseRemoteDataSource,
     val storage: MobileObjectStorageGateway,
 )
 

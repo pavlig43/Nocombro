@@ -46,6 +46,7 @@ import ru.pavlig43.nocombro.mobile.api.component.NocombroMobileRootComponent
 import ru.pavlig43.nocombro.mobile.experiments.api.ui.ExperimentsRoute
 import ru.pavlig43.nocombro.mobile.sync.MobileSyncComponent
 import ru.pavlig43.nocombro.mobile.sync.MobileSyncUiState
+import ru.pavlig43.nocombro.mobile.warehouse.MobileWarehouseRoute
 import ru.pavlig43.datetime.dateTimeFormat
 import ru.pavlig43.theme.NocombroTheme
 import ru.pavlig43.theme.Res
@@ -85,6 +86,10 @@ private fun NocombroMobileContent(
         when (val instance = child.instance) {
             MobileChild.Menu -> MainMenuScreen(component)
             is MobileChild.Experiments -> ExperimentsRoute(
+                component = instance.component,
+                onOpenMenu = component::openMenu,
+            )
+            is MobileChild.Storage -> MobileWarehouseRoute(
                 component = instance.component,
                 onOpenMenu = component::openMenu,
             )

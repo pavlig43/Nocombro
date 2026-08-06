@@ -129,21 +129,17 @@ private fun ExpandedCell(
     item: StorageProductUi,
     onToggleExpand: (productId: Int) -> Unit,
 ) {
-    if (item.isProduct && !item.isExpanded) {
+    if (item.isProduct) {
         ToolTipIconButton(
-            tooltipText = "Развернуть",
+            tooltipText = if (item.isExpanded) "Свернуть" else "Развернуть",
             onClick = { onToggleExpand(item.productId) },
-            icon = Res.drawable.arrow_downward,
+            icon = if (item.isExpanded) {
+                Res.drawable.arrow_upward
+            } else {
+                Res.drawable.arrow_downward
+            },
         )
-    }
-    if (item.isProduct && item.isExpanded) {
-        ToolTipIconButton(
-            tooltipText = "Свернуть",
-            onClick = { onToggleExpand(item.productId) },
-            icon = Res.drawable.arrow_upward,
-        )
-    }
-    if (!item.isProduct) {
+    } else {
         Text("")
     }
 }

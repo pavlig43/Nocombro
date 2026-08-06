@@ -2,6 +2,8 @@ package ru.pavlig43.nocombro.mobile.sync
 
 import androidx.room.withTransaction
 import java.nio.file.Paths
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.datetime.getCurrentLocalDateTime
 import ru.pavlig43.nocombro.mobile.internal.database.NocombroMobileDatabase
@@ -9,6 +11,11 @@ import ru.pavlig43.nocombro.mobile.internal.database.entity.MobileExperimentEnti
 import ru.pavlig43.nocombro.mobile.internal.database.entity.MobileExperimentEntryEntity
 import ru.pavlig43.nocombro.mobile.internal.database.entity.MobileExperimentEntryFileEntity
 import ru.pavlig43.nocombro.mobile.internal.database.entity.MobileExperimentReminderEntity
+import ru.pavlig43.nocombro.mobile.internal.database.entity.MobileWarehouseProductEntity
+import ru.pavlig43.nocombro.mobile.internal.database.entity.MobileWarehouseSnapshotEntity
+import ru.pavlig43.nocombro.mobile.warehouse.MobileWarehouseProduct
+import ru.pavlig43.nocombro.mobile.warehouse.MobileWarehouseSnapshot
+import ru.pavlig43.nocombro.mobile.warehouse.MobileWarehouseSnapshotStore
 
 /**
  * Строит снимок локальной Room-БД и применяет удалённые версии обратно.
@@ -23,12 +30,20 @@ interface MobileLocalMirrorDataSource {
         changes: List<MobileMirrorChange>,
         config: MobileS3Config,
     )
+
+    suspend fun applyRemoteChangesAndWarehouseSnapshot(
+        changes: List<MobileMirrorChange>,
+        config: MobileS3Config,
+        warehouseSnapshot: MobileWarehouseSnapshot,
+    ) {
+        applyRemoteChanges(changes, config)
+    }
 }
 
 class MobileLocalMirrorRepository(
     private val db: NocombroMobileDatabase,
     private val filesDirPath: String,
-) : MobileLocalMirrorDataSource {
+) : MobileLocalMirrorDataSource, MobileWarehouseSnapshotStore {
     /**
      * Читает локальные эксперименты, записи, напоминания и файлы как mirror rows.
      *
@@ -72,20 +87,64 @@ class MobileLocalMirrorRepository(
         config: MobileS3Config,
     ) {
         db.withTransaction {
-            val ordered = changes.sortedWith(
-                compareBy<MobileMirrorChange> { tombstoneOrder(it) }
-                    .thenBy { if (it.row.deletedAt == null) it.table.order else -it.table.order }
-                    .thenBy { it.row.syncId },
+            applyRemoteChangesInCurrentTransaction(changes, config)
+        }
+    }
+
+    /** Применяет mirror-изменения и складской снимок одной Room-транзакцией. */
+    override suspend fun applyRemoteChangesAndWarehouseSnapshot(
+        changes: List<MobileMirrorChange>,
+        config: MobileS3Config,
+        warehouseSnapshot: MobileWarehouseSnapshot,
+    ) {
+        db.withTransaction {
+            applyRemoteChangesInCurrentTransaction(changes, config)
+            replaceWarehouseSnapshotInCurrentTransaction(warehouseSnapshot)
+        }
+    }
+
+    override fun observeSnapshot(): Flow<MobileWarehouseSnapshot?> = combine(
+        db.warehouseDao.observeProducts(),
+        db.warehouseDao.observeSnapshotMetadata(),
+    ) { products, metadata ->
+        metadata?.let {
+            MobileWarehouseSnapshot(
+                updatedAt = it.updatedAt,
+                products = products.map(MobileWarehouseProductEntity::toWarehouseProduct),
             )
-            ordered.forEach { change ->
-                when (val row = change.row) {
-                    is MobileExperimentMirrorRow -> applyExperiment(row)
-                    is MobileExperimentEntryMirrorRow -> applyEntry(row)
-                    is MobileExperimentReminderMirrorRow -> applyReminder(row)
-                    is MobileFileMirrorRow -> applyFile(row, config)
-                }
+        }
+    }
+
+    override suspend fun replaceSnapshot(snapshot: MobileWarehouseSnapshot) {
+        db.withTransaction {
+            replaceWarehouseSnapshotInCurrentTransaction(snapshot)
+        }
+    }
+
+    private suspend fun applyRemoteChangesInCurrentTransaction(
+        changes: List<MobileMirrorChange>,
+        config: MobileS3Config,
+    ) {
+        val ordered = changes.sortedWith(
+            compareBy<MobileMirrorChange> { tombstoneOrder(it) }
+                .thenBy { if (it.row.deletedAt == null) it.table.order else -it.table.order }
+                .thenBy { it.row.syncId },
+        )
+        ordered.forEach { change ->
+            when (val row = change.row) {
+                is MobileExperimentMirrorRow -> applyExperiment(row)
+                is MobileExperimentEntryMirrorRow -> applyEntry(row)
+                is MobileExperimentReminderMirrorRow -> applyReminder(row)
+                is MobileFileMirrorRow -> applyFile(row, config)
             }
         }
+    }
+
+    private suspend fun replaceWarehouseSnapshotInCurrentTransaction(snapshot: MobileWarehouseSnapshot) {
+        db.warehouseDao.replaceSnapshot(
+            products = snapshot.products.map(MobileWarehouseProduct::toEntity),
+            snapshot = MobileWarehouseSnapshotEntity(updatedAt = snapshot.updatedAt),
+        )
     }
 
     /**
@@ -277,6 +336,20 @@ private fun MobileExperimentEntryFileEntity.toMirrorRow(
     remoteStorageProvider = "S3",
     updatedAt = updatedAt,
     deletedAt = deletedAt,
+)
+
+private fun MobileWarehouseProductEntity.toWarehouseProduct() = MobileWarehouseProduct(
+    productSyncId = productSyncId,
+    displayName = displayName,
+    mainBalance = mainBalance,
+    experimentalBalance = experimentalBalance,
+)
+
+private fun MobileWarehouseProduct.toEntity() = MobileWarehouseProductEntity(
+    productSyncId = productSyncId,
+    displayName = displayName,
+    mainBalance = mainBalance,
+    experimentalBalance = experimentalBalance,
 )
 
 private fun tombstoneOrder(change: MobileMirrorChange): Int {

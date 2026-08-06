@@ -126,6 +126,10 @@ android {
     packaging {
         resources.excludes += "META-INF/native/**"
     }
+
+    testOptions {
+        unitTests.isReturnDefaultValues = true
+    }
 }
 
 androidComponents {

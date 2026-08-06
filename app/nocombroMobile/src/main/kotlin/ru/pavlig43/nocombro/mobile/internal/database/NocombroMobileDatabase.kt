@@ -12,10 +12,13 @@ import ru.pavlig43.nocombro.mobile.internal.database.dao.MobileExperimentDao
 import ru.pavlig43.nocombro.mobile.internal.database.dao.MobileExperimentEntryDao
 import ru.pavlig43.nocombro.mobile.internal.database.dao.MobileExperimentEntryFileDao
 import ru.pavlig43.nocombro.mobile.internal.database.dao.MobileExperimentReminderDao
+import ru.pavlig43.nocombro.mobile.internal.database.dao.MobileWarehouseDao
 import ru.pavlig43.nocombro.mobile.internal.database.entity.MobileExperimentEntity
 import ru.pavlig43.nocombro.mobile.internal.database.entity.MobileExperimentEntryEntity
 import ru.pavlig43.nocombro.mobile.internal.database.entity.MobileExperimentEntryFileEntity
 import ru.pavlig43.nocombro.mobile.internal.database.entity.MobileExperimentReminderEntity
+import ru.pavlig43.nocombro.mobile.internal.database.entity.MobileWarehouseProductEntity
+import ru.pavlig43.nocombro.mobile.internal.database.entity.MobileWarehouseSnapshotEntity
 
 @Database(
     entities = [
@@ -23,8 +26,10 @@ import ru.pavlig43.nocombro.mobile.internal.database.entity.MobileExperimentRemi
         MobileExperimentEntryEntity::class,
         MobileExperimentEntryFileEntity::class,
         MobileExperimentReminderEntity::class,
+        MobileWarehouseProductEntity::class,
+        MobileWarehouseSnapshotEntity::class,
     ],
-    version = 1,
+    version = 2,
 )
 @TypeConverters(NocombroMobileConverters::class)
 abstract class NocombroMobileDatabase : RoomDatabase() {
@@ -36,13 +41,17 @@ abstract class NocombroMobileDatabase : RoomDatabase() {
 
     abstract val experimentReminderDao: MobileExperimentReminderDao
 
+    abstract val warehouseDao: MobileWarehouseDao
+
     companion object {
         fun create(context: Context): NocombroMobileDatabase {
             return Room.databaseBuilder(
                 context.applicationContext,
                 NocombroMobileDatabase::class.java,
                 "nocombro-mobile.db",
-            ).build()
+            )
+                .addMigrations(MOBILE_MIGRATION_1_2)
+                .build()
         }
     }
 }
