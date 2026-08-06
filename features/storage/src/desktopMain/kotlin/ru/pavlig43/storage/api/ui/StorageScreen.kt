@@ -328,14 +328,24 @@ private class StorageTableCustomization :
     TableCustomization<StorageProductUi, StorageProductField> {
     @Composable
     override fun resolveRowStyle(ctx: TableRowContext<StorageProductUi, StorageProductField>): TableRowStyle {
-        return if (!ctx.item.isProduct) {
-            TableRowStyle(
+        return when {
+            !ctx.item.isProduct && ctx.item.hasNegativeBalanceHistory -> TableRowStyle(
+                containerColor = MaterialTheme.colorScheme.errorContainer,
+                contentColor = MaterialTheme.colorScheme.onErrorContainer,
+                elevation = 2.dp,
+                shape = RoundedCornerShape(4.dp),
+                border = BorderStroke(2.dp, MaterialTheme.colorScheme.error)
+            )
+
+            !ctx.item.isProduct -> TableRowStyle(
                 contentColor = MaterialTheme.colorScheme.primaryContainer,
                 elevation = 2.dp,
                 shape = RoundedCornerShape(4.dp),
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
             )
-        } else TableRowStyle()
+
+            else -> TableRowStyle()
+        }
     }
 
     @Composable
@@ -370,7 +380,7 @@ private fun getNegativeBatches(tableData: StorageTableData): List<NegativeBatchI
             if (item.isProduct) return@mapNotNull null
 
             if (item.hasNegativeBalanceHistory) {
-                val displayName = "${item.productName} — ${item.itemName}"
+                val displayName = "${item.itemName} — ${item.productName}"
                 NegativeBatchItem(item.productId, item.itemId, displayName)
             } else null
         }

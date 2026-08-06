@@ -91,11 +91,11 @@ class YdbJdbcMirrorSyncGateway(
     }
 
     /**
-     * Условно записывает каждую типизированную строку и читает фактического победителя.
+     * Группирует строки по таблице и записывает каждую группу одним условным batch-DML.
      *
      * Равная или более новая версия YDB не перезаписывается. Результат делит
      * входной список на принятые и отклонённые строки; ошибка содержит таблицу,
-     * `sync_id` и исходный текст YDB. Пустой список допустим.
+     * размер пакета и исходный текст YDB. Пустой список допустим.
      */
     override suspend fun pushMirrorState(
         changes: List<MirrorPushEntityChange>,
@@ -105,18 +105,26 @@ class YdbJdbcMirrorSyncGateway(
             val codecs = requireSupportedCodecs(tables).associateBy(YdbMirrorRowCodec::table)
             val accepted = mutableListOf<MirrorPushEntityChange>()
             val rejected = mutableListOf<MirrorPushRejection>()
-            withConnection { connection ->
-                changes.forEach { change ->
-                    val codec = codecs.getValue(change.table)
-                    val remoteRow = runCatching {
-                        conditionalUpsertRow(connection, codec, change.row)
-                    }.getOrElse { throwable ->
-                        throw IllegalStateException(
-                            "Mirror push failed: table=${change.table.tableName}, " +
-                                "sync_id=${change.row.syncId}: ${throwable.message ?: throwable}",
-                            throwable,
-                        )
+            changes.groupBy(MirrorPushEntityChange::table).forEach { (table, tableChanges) ->
+                val codec = codecs.getValue(table)
+                val remoteRows = runCatching {
+                    retryYdbResourceExhausted(YDB_IDEMPOTENT_WRITE_RETRY_DELAYS_MILLIS) {
+                        withConnection { activeConnection ->
+                            conditionalUpsertRows(
+                                connection = activeConnection,
+                                codec = codec,
+                                rows = tableChanges.map(MirrorPushEntityChange::row),
+                            )
+                        }
                     }
+                }.getOrElse { throwable ->
+                    throw IllegalStateException(
+                        "Mirror batch push failed: table=${table.tableName}, " +
+                            "rows=${tableChanges.size}: ${throwable.message ?: throwable}",
+                        throwable,
+                    )
+                }
+                tableChanges.zip(remoteRows).forEach { (change, remoteRow) ->
                     if (remoteRow.hasSameSyncContent(change.row)) {
                         accepted += change
                     } else {
@@ -270,38 +278,44 @@ class YdbJdbcMirrorSyncGateway(
     }
 
 
-    /**
-     * Условно записывает строку и читает победителя из того же DML-запроса с сериализуемой изоляцией.
-     *
-     * @return входная строка после принятия либо более новая строка YDB.
-     * @throws IllegalStateException если запрос не вернул итоговую строку.
-     */
-    private fun conditionalUpsertRow(
+    /** Условно записывает пакет одной таблицы и возвращает победителей в порядке входных строк. */
+    private fun conditionalUpsertRows(
         connection: Connection,
         codec: YdbMirrorRowCodec,
-        row: MirrorSyncRow,
-    ): MirrorSyncRow {
-        connection.prepareStatement(codec.conditionalUpsertSql(config.tablePath(codec.table))).use { statement ->
-            codec.bind(statement, row)
-            var parameterIndex = codec.columnNames.size + 1
-            statement.setString(parameterIndex++, row.syncId)
-            statement.setString(parameterIndex++, row.versionAt().toString())
-            statement.setString(parameterIndex, row.syncId)
-
-            var hasResultSet = statement.execute()
+        rows: List<MirrorSyncRow>,
+    ): List<MirrorSyncRow> {
+        require(rows.isNotEmpty()) { "Mirror batch must not be empty" }
+        connection.prepareStatement(codec.conditionalBatchUpsertSql(config.tablePath(codec.table))).use { statement ->
+            rows.forEach { row ->
+                codec.bind(statement, row)
+                statement.addBatch()
+            }
+            statement.executeBatch()
+            var hasResultSet = statement.resultSet != null
             while (!hasResultSet && statement.updateCount != -1) {
                 hasResultSet = statement.moreResults
             }
             check(hasResultSet) {
-                "Conditional mirror upsert returned no row: " +
-                    "table=${codec.table.tableName}, sync_id=${row.syncId}"
+                "Conditional mirror batch returned no result set: " +
+                    "table=${codec.table.tableName}, rows=${rows.size}"
             }
-            statement.resultSet.use { resultSet ->
-                check(resultSet.next()) {
-                    "Conditional mirror upsert lost row: " +
-                        "table=${codec.table.tableName}, sync_id=${row.syncId}"
+            val winnersBySyncId = buildMap {
+                checkNotNull(statement.resultSet).use { resultSet ->
+                    while (resultSet.next()) {
+                        val row = codec.read(resultSet)
+                        check(put(row.syncId, row) == null) {
+                            "Conditional mirror batch returned duplicate sync_id: " +
+                                "table=${codec.table.tableName}, sync_id=${row.syncId}"
+                        }
+                    }
                 }
-                return codec.read(resultSet)
+            }
+            return rows.map { requestedRow ->
+                winnersBySyncId[requestedRow.syncId]
+                    ?: error(
+                        "Conditional mirror batch lost row: " +
+                            "table=${codec.table.tableName}, sync_id=${requestedRow.syncId}"
+                    )
             }
         }
     }
@@ -311,7 +325,7 @@ class YdbJdbcMirrorSyncGateway(
     }
 }
 
-/** Повторяет только безопасное чтение после временного отказа YDB по ресурсам. */
+/** Повторяет безопасное чтение или идемпотентную условную запись после временного отказа YDB. */
 internal suspend fun <T> retryYdbResourceExhausted(
     retryDelaysMillis: List<Long> = YDB_RESOURCE_EXHAUSTED_RETRY_DELAYS_MILLIS,
     delayAction: suspend (Long) -> Unit = { delay(it.milliseconds) },
@@ -340,4 +354,5 @@ internal fun Throwable.isYdbResourceExhausted(): Boolean {
 }
 
 private val YDB_RESOURCE_EXHAUSTED_RETRY_DELAYS_MILLIS = listOf(2_000L, 5_000L)
+private val YDB_IDEMPOTENT_WRITE_RETRY_DELAYS_MILLIS = listOf(2_000L, 5_000L, 10_000L)
 private const val YDB_TABLE_READ_PAUSE_MILLIS = 500L

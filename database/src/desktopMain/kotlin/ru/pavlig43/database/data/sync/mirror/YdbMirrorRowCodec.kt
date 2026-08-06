@@ -49,31 +49,50 @@ internal interface YdbMirrorRowCodec {
     }
 
     /**
-     * Строит serializable DML для условной записи и чтения строки-победителя.
+     * Строит один serializable DML для условной записи списка строк одной таблицы.
      *
-     * `UPSERT` выполняется лишь при отсутствии равной или более новой логической
-     * версии. Следующий `SELECT` возвращает фактическую строку независимо от исхода,
-     * что закрывает окно гонки между записью и проверкой результата.
+     * JDBC `addBatch` собирает значения полей в единственный параметр `$batch` типа
+     * `List<Struct<...>>`, поэтому сотни строк уходят одним запросом, а не сотнями
+     * отдельных транзакций. Поля `p1..pN` сохраняют индексный порядок `bind`, который
+     * JDBC-драйвер иначе заменил бы алфавитным. `UPSERT` не заменяет равную или более новую версию.
+     * Финальный `SELECT` возвращает фактических победителей для всего пакета.
      *
      * @param tablePath полный путь typed mirror-таблицы.
      */
-    fun conditionalUpsertSql(tablePath: String): String {
-        val values = columnNames.joinToString { "CAST(? AS ${columnType(it)})" }
+    fun conditionalBatchUpsertSql(tablePath: String): String {
+        val batchFields = columnNames.mapIndexed { index, columnName ->
+            val optionalSuffix = if (columnName == "sync_id") "" else "?"
+            "p${index + 1}: ${columnType(columnName)}$optionalSuffix"
+        }.joinToString(",\n    ")
+        val incomingColumns = columnNames.mapIndexed { index, columnName ->
+            "incoming.p${index + 1} AS $columnName"
+        }.joinToString()
+        val syncIdParameter = "p${columnNames.indexOf("sync_id") + 1}"
+        val updatedAtParameter = "p${columnNames.indexOf("updated_at") + 1}"
+        val deletedAtParameter = "p${columnNames.indexOf("deleted_at") + 1}"
         return """
+            DECLARE ${'$'}batch AS List<Struct<
+                $batchFields
+            >>;
             UPSERT INTO `$tablePath` (${columnNames.joinToString()})
-            SELECT $values
-            FROM AS_TABLE(AsList(AsStruct(1 AS _source)))
-            WHERE NOT EXISTS (
-                SELECT sync_id FROM `$tablePath`
-                WHERE sync_id = CAST(? AS Utf8)
-                  AND IF(
-                      deleted_at IS NOT NULL AND deleted_at > updated_at,
-                      deleted_at,
-                      updated_at
-                  ) >= CAST(? AS Utf8)
-            );
+            SELECT $incomingColumns
+            FROM AS_TABLE(${'$'}batch) AS incoming
+            LEFT JOIN `$tablePath` AS existing ON existing.sync_id = incoming.$syncIdParameter
+            WHERE existing.sync_id IS NULL OR
+                IF(
+                    existing.deleted_at IS NOT NULL AND existing.deleted_at > existing.updated_at,
+                    existing.deleted_at,
+                    existing.updated_at
+                ) < IF(
+                    incoming.$deletedAtParameter IS NOT NULL AND
+                        incoming.$deletedAtParameter > incoming.$updatedAtParameter,
+                    incoming.$deletedAtParameter,
+                    incoming.$updatedAtParameter
+                );
             SELECT ${columnNames.joinToString()} FROM `$tablePath`
-            WHERE sync_id = CAST(? AS Utf8);
+            WHERE sync_id IN (
+                SELECT $syncIdParameter AS sync_id FROM AS_TABLE(${'$'}batch)
+            );
         """.trimIndent()
     }
 }

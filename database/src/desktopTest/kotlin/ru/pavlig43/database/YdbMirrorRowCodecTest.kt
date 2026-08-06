@@ -42,11 +42,16 @@ class YdbMirrorRowCodecTest : DesktopMainDispatcherFunSpec({
         VendorYdbMirrorCodec.upsertSql("vendor") shouldContain "CAST(? AS Utf8)"
     }
 
-    test("conditional upsert compares version and returns the final row in one request") {
-        val sql = VendorYdbMirrorCodec.conditionalUpsertSql("vendor")
+    test("conditional batch upsert compares versions and returns all final rows in one request") {
+        val sql = VendorYdbMirrorCodec.conditionalBatchUpsertSql("vendor")
 
-        sql shouldContain "WHERE NOT EXISTS"
-        sql shouldContain ">= CAST(? AS Utf8)"
+        sql shouldContain "DECLARE ${'$'}batch AS List<Struct<"
+        sql shouldContain "p1: Utf8"
+        sql shouldContain "p2: Utf8?"
+        sql shouldContain "FROM AS_TABLE(${'$'}batch) AS incoming"
+        sql shouldContain "LEFT JOIN `vendor` AS existing"
+        sql shouldContain "existing.updated_at"
+        sql shouldContain "incoming.p4"
         sql shouldContain "SELECT sync_id, display_name, comment, updated_at, deleted_at"
     }
 
