@@ -93,9 +93,15 @@ internal fun applySearchKey(
     }
 }
 
+/**
+ * Перенаправляет обычный ввод с клавиатуры активного табличного экрана в поиск.
+ *
+ * Первый печатный символ дописывается к запросу и переводит фокус в поисковое
+ * поле. `Escape` очищает запрос и возвращает фокус корневому контейнеру.
+ */
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-internal fun TableSearchKeyboardHandler(
+fun TableSearchKeyboardHandler(
     owner: Any,
     query: String,
     rootFocused: Boolean,

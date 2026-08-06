@@ -10,6 +10,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -33,20 +34,30 @@ import ru.pavlig43.storage.api.component.storage.StorageBatchActionsState
 import ru.pavlig43.storage.api.component.storage.StorageOperationDialogState
 import ru.pavlig43.storage.api.component.storage.StorageOperationKind
 
+/**
+ * Показывает вертикальный переключатель склада, рассчитанный на боковую панель.
+ *
+ * @param selected текущий выбранный склад.
+ * @param onSelect обработчик выбора склада.
+ * @param modifier модификатор корневого контейнера.
+ */
 @Composable
 internal fun StorageLocationSelector(
     selected: StorageLocation,
     onSelect: (StorageLocation) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
-    Row(
-        modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
+        Text("Склад", style = MaterialTheme.typography.titleSmall)
         StorageLocation.entries.forEach { location ->
             FilterChip(
                 selected = selected == location,
                 onClick = { onSelect(location) },
                 label = { Text(location.displayName) },
+                modifier = Modifier.fillMaxWidth(),
             )
         }
     }

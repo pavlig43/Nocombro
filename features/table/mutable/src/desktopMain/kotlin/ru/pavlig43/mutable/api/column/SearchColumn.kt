@@ -4,12 +4,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import ru.pavlig43.coreui.tooltip.ToolTipIconButton
+import ru.pavlig43.tablecore.ui.SearchHighlightedText
 import ru.pavlig43.theme.Res
 import ru.pavlig43.theme.search
 import ua.wwind.table.EditableColumnBuilder
@@ -65,11 +65,17 @@ private fun <T : Any, C, E> EditableColumnBuilder<T, C, E>.textWithSearchIconCel
         )
     }
 }
+/**
+ * Показывает название и штатную кнопку открытия связанной записи.
+ *
+ * @param searchQuery запрос для подсветки совпавшей части названия.
+ */
 @Composable
 fun NameRowWithSearchIcon(
     text: String,
     onClick: () -> Unit,
     tooltipText: String = "Выбрать",
+    searchQuery: String = "",
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -77,7 +83,11 @@ fun NameRowWithSearchIcon(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        Text(text, Modifier.weight(1f).padding(horizontal = 4.dp))
+        SearchHighlightedText(
+            text = text,
+            query = searchQuery,
+            modifier = Modifier.weight(1f).padding(horizontal = 4.dp),
+        )
         ToolTipIconButton(
             tooltipText = tooltipText,
             onClick = onClick,

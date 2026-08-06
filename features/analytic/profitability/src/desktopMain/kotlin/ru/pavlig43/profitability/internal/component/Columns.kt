@@ -159,6 +159,7 @@ internal fun createProfitabilityColumns(
             valueOf = { it.margin }
         ) {
             title { "Маржа" }
+            autoWidth()
             align(Alignment.Center)
             cell { item, tableData ->
                 Text("%,.2f".format(item.margin))
@@ -183,6 +184,7 @@ internal fun createProfitabilityColumns(
             valueOf = { it.profitability }
         ) {
             title { "Рентабельность" }
+            autoWidth()
             align(Alignment.Center)
             cell { item, tableData ->
                 Text("%,.2f".format(item.profitability))

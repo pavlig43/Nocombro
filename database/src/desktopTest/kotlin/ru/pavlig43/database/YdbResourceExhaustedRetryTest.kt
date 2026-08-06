@@ -166,6 +166,12 @@ private fun fakeConnection(executeQuery: () -> ResultSet): FakeConnection {
     return FakeConnection(connection = connection, isClosed = { closed })
 }
 
+/**
+ * Создаёт JDBC-заглушку пакетной записи и сообщает тесту размер выполненного пакета.
+ *
+ * Заглушка воспроизводит последовательность `executeBatch`/`moreResults`, которую
+ * использует YDB JDBC-драйвер для возврата результирующего набора после DML.
+ */
 private fun fakeBatchPushConnection(executeBatch: (Int) -> ResultSet): FakeConnection {
     var closed = false
     var batchSize = 0
@@ -215,6 +221,7 @@ private fun fakeBatchPushConnection(executeBatch: (Int) -> ResultSet): FakeConne
     return FakeConnection(connection = connection, isClosed = { closed })
 }
 
+/** Создаёт тестовую строку поставщика с фиксированной версией синхронизации. */
 private fun vendorRow(syncId: String) = VendorMirrorRow(
     syncId = syncId,
     displayName = "Vendor $syncId",
@@ -223,6 +230,7 @@ private fun vendorRow(syncId: String) = VendorMirrorRow(
     deletedAt = null,
 )
 
+/** Создаёт результирующий набор JDBC из строк поставщиков в заданном порядке. */
 private fun vendorResultSet(rows: List<VendorMirrorRow>): ResultSet {
     var index = -1
     return Proxy.newProxyInstance(

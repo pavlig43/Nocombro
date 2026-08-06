@@ -278,7 +278,18 @@ class YdbJdbcMirrorSyncGateway(
     }
 
 
-    /** Условно записывает пакет одной таблицы и возвращает победителей в порядке входных строк. */
+    /**
+     * Условно записывает пакет строк одной таблицы и читает фактических победителей.
+     *
+     * Результат возвращается в порядке [rows], хотя YDB не гарантирует порядок
+     * строк итогового `SELECT`. Отсутствующий или повторный `sync_id` считается
+     * нарушением протокола условной пакетной записи.
+     *
+     * @param connection активное JDBC-соединение с YDB.
+     * @param codec кодек и описание typed mirror-таблицы.
+     * @param rows непустой пакет строк одной таблицы.
+     * @return строки-победители в порядке исходного пакета.
+     */
     private fun conditionalUpsertRows(
         connection: Connection,
         codec: YdbMirrorRowCodec,
@@ -353,6 +364,11 @@ internal fun Throwable.isYdbResourceExhausted(): Boolean {
     }
 }
 
+/** Задержки повторов безопасных операций чтения после нехватки ресурсов YDB. */
 private val YDB_RESOURCE_EXHAUSTED_RETRY_DELAYS_MILLIS = listOf(2_000L, 5_000L)
+
+/** Задержки повторов идемпотентной условной записи после нехватки ресурсов YDB. */
 private val YDB_IDEMPOTENT_WRITE_RETRY_DELAYS_MILLIS = listOf(2_000L, 5_000L, 10_000L)
+
+/** Пауза между чтением соседних mirror-таблиц, снижающая пиковую нагрузку на YDB. */
 private const val YDB_TABLE_READ_PAUSE_MILLIS = 500L

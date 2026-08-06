@@ -15,6 +15,8 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.serialization.Serializable
+import ru.pavlig43.core.model.DecimalData3
+import ru.pavlig43.core.model.toStartDoubleFormat
 import ru.pavlig43.core.MainTabComponent
 import ru.pavlig43.core.componentCoroutineScope
 import ru.pavlig43.core.tabs.TabOpener
@@ -64,6 +66,26 @@ class StorageComponent(
 
     private val _products = MutableStateFlow<List<StorageProductUi>>(emptyList())
 
+    /** Изменяемая строка поиска, которой владеет компонент экрана склада. */
+    private val _searchQuery = MutableStateFlow("")
+
+    /** Текущий запрос поиска по сводным строкам товаров. */
+    internal val searchQuery = _searchQuery.asStateFlow()
+
+    /**
+     * Все партии с историей отрицательного остатка независимо от поиска,
+     * табличных фильтров и состояния раскрытия товара.
+     */
+    internal val negativeBatches: StateFlow<List<StorageProductUi>> = _products
+        .map { products ->
+            products.filter { item -> !item.isProduct && item.hasNegativeBalanceHistory }
+        }
+        .stateIn(
+            coroutineScope,
+            SharingStarted.Lazily,
+            emptyList(),
+        )
+
     private val _storageLocation = MutableStateFlow(StorageLocation.MAIN)
     internal val storageLocation = _storageLocation.asStateFlow()
 
@@ -104,7 +126,16 @@ class StorageComponent(
     internal val tableData: StateFlow<StorageTableData> = combine(
         _products,
         filterManager.filters,
-    ) { products, filters ->
+        _searchQuery,
+    ) { products, filters, searchQuery ->
+        val normalizedQuery = searchQuery.trim()
+        val matchingProductIds = if (normalizedQuery.isEmpty()) {
+            emptySet()
+        } else {
+            products
+                .filter { item -> item.matchesProductSearch(normalizedQuery) }
+                .mapTo(mutableSetOf()) { item -> item.productId }
+        }
         val expandedProductIds = products
             .filter { it.isProduct && it.isExpanded }
             .map { it.productId }
@@ -117,13 +148,14 @@ class StorageComponent(
                                     item.incoming < 0 ||
                                     item.outgoing < 0 ||
                                     item.balanceOnEnd < 0
-            val isVisible = when {
+            val matchesSearch = normalizedQuery.isEmpty() || item.productId in matchingProductIds
+            val matchesExpansion = when {
                 item.isProduct -> true
                 item.hasNegativeBalanceHistory -> true
                 hasNegativeValues -> true  // Показывать партии с отрицательными значениями
                 else -> item.productId in expandedProductIds
             }
-            matchesFilter && isVisible
+            matchesFilter && matchesSearch && matchesExpansion
         }
         StorageTableData(
             displayedProducts = filtered,
@@ -172,6 +204,11 @@ class StorageComponent(
 
     fun updateFilters(filters: Map<StorageProductField, TableFilterState<*>>) {
         filterManager.update(filters)
+    }
+
+    /** Обновляет запрос поиска по данным товаров, не включая названия партий. */
+    internal fun updateSearchQuery(query: String) {
+        _searchQuery.value = query
     }
 
     internal fun openProduct(productId: Int) {
@@ -403,6 +440,24 @@ private fun StorageProduct.toUi(): List<StorageProductUi> {
     }
 
     return listOf(productItem) + batchItems
+}
+
+/**
+ * Проверяет совпадение запроса с видимыми полями сводной строки товара.
+ *
+ * Строки партий намеренно всегда возвращают `false`: совпавший товар выводится
+ * вместе со своими партиями по обычным правилам раскрытия и отображения ошибок.
+ */
+private fun StorageProductUi.matchesProductSearch(normalizedQuery: String): Boolean {
+    if (!isProduct) return false
+    return sequenceOf(
+        productName,
+        vendorNames,
+        DecimalData3(balanceBeforeStart).toStartDoubleFormat(),
+        DecimalData3(incoming).toStartDoubleFormat(),
+        DecimalData3(outgoing).toStartDoubleFormat(),
+        DecimalData3(balanceOnEnd).toStartDoubleFormat(),
+    ).any { value -> value.contains(normalizedQuery, ignoreCase = true) }
 }
 
 

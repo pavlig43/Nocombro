@@ -153,9 +153,12 @@ internal class SaleComponent(
         )
 
     override fun createNewItem(composeId: Int): SaleUi {
+        val firstRowClient = itemList.value.firstOrNull()?.takeIf { it.clientId != 0 }
         return SaleUi(
             composeId = composeId,
-            id = 0
+            id = 0,
+            clientName = firstRowClient?.clientName.orEmpty(),
+            clientId = firstRowClient?.clientId ?: 0,
         )
     }
 

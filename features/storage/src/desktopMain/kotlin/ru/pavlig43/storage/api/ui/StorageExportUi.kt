@@ -1,26 +1,39 @@
 package ru.pavlig43.storage.api.ui
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.ImmutableList
+import org.jetbrains.compose.resources.painterResource
 import ru.pavlig43.tablecore.export.ExcelColumn
 import ru.pavlig43.tablecore.export.TableExportConfiguration
 import ru.pavlig43.tablecore.export.TableExportFormat
 import ru.pavlig43.tablecore.export.exportExcelFile
 import ru.pavlig43.tablecore.export.formatValue
+import ru.pavlig43.theme.Res
+import ru.pavlig43.theme.close
+import ru.pavlig43.theme.search
 import ua.wwind.table.ColumnSpec
 import ua.wwind.table.state.TableState
 
@@ -60,10 +73,17 @@ internal fun <T : Any, C, E> buildStorageExportColumns(
 }
 
 /**
- * Рисует верхнюю панель действий таблицы с выпадающим меню форматов экспорта.
+ * Рисует верхнюю панель действий таблицы с поиском и меню форматов экспорта.
  *
  * Панель вынесена отдельно, чтобы `StorageScreen` и `BatchMovementTableScreen`
  * использовали одинаковый UI и не дублировали одну и ту же compose-разметку.
+ * Поле поиска отображается только тогда, когда передан [searchQuery], поэтому
+ * экран движения партий сохраняет прежний компактный вид панели.
+ *
+ * @param searchQuery текущий запрос или `null`, если поиск на экране не нужен.
+ * @param onSearchQueryChange обработчик изменения и очистки поискового запроса.
+ * @param searchFocusRequester запросчик фокуса для ввода сразу после печати символа.
+ * @param onSearchFocusChanged обработчик состояния фокуса поискового поля.
  */
 @Composable
 @Suppress("LongParameterList")
@@ -73,6 +93,10 @@ internal fun BoxScope.StorageExportActionBar(
     onExpandExportMenu: () -> Unit,
     onDismissExportMenu: () -> Unit,
     onExportClick: (TableExportFormat) -> Unit,
+    searchQuery: String? = null,
+    onSearchQueryChange: (String) -> Unit = {},
+    searchFocusRequester: FocusRequester? = null,
+    onSearchFocusChanged: (Boolean) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     Surface(
@@ -83,9 +107,47 @@ internal fun BoxScope.StorageExportActionBar(
         shadowElevation = 2.dp,
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
+            searchQuery?.let { query ->
+                OutlinedTextField(
+                    value = query,
+                    onValueChange = onSearchQueryChange,
+                    leadingIcon = {
+                        Icon(
+                            painter = painterResource(Res.drawable.search),
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp),
+                        )
+                    },
+                    trailingIcon = if (query.isNotEmpty()) {
+                        {
+                            IconButton(onClick = { onSearchQueryChange("") }) {
+                                Icon(
+                                    painter = painterResource(Res.drawable.close),
+                                    contentDescription = "Очистить поиск",
+                                    modifier = Modifier.size(18.dp),
+                                )
+                            }
+                        }
+                    } else {
+                        null
+                    },
+                    singleLine = true,
+                    shape = RoundedCornerShape(14.dp),
+                    modifier = Modifier
+                        .weight(1f)
+                        .then(
+                            searchFocusRequester?.let { focusRequester ->
+                                Modifier
+                                    .focusRequester(focusRequester)
+                                    .onFocusChanged { onSearchFocusChanged(it.isFocused) }
+                            } ?: Modifier
+                        ),
+                )
+            }
             Box {
                 FilledTonalButton(
                     onClick = onExpandExportMenu,

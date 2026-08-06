@@ -222,6 +222,9 @@ internal class DeclarationProductPdfParser {
         val WINDOWS_OCR_SCRIPT = """
 param([string]${'$'}ImagePath)
 
+[Console]::OutputEncoding = [System.Text.UTF8Encoding]::new(${'$'}false)
+${'$'}OutputEncoding = [Console]::OutputEncoding
+
 Add-Type -Path 'C:\Windows\Microsoft.NET\Framework64\v4.0.30319\System.Runtime.WindowsRuntime.dll'
 ${'$'}null = [Windows.Storage.StorageFile, Windows.Storage, ContentType = WindowsRuntime]
 ${'$'}null = [Windows.Storage.Streams.IRandomAccessStream, Windows.Storage, ContentType = WindowsRuntime]

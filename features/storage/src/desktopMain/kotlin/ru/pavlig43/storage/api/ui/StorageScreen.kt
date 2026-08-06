@@ -1,15 +1,19 @@
 package ru.pavlig43.storage.api.ui
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.VerticalScrollbar
+import androidx.compose.foundation.background
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -17,15 +21,15 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -33,11 +37,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.ImmutableList
@@ -49,7 +57,9 @@ import ru.pavlig43.core.model.DecimalData3
 import ru.pavlig43.coreui.ErrorScreen
 import ru.pavlig43.coreui.LoadingUi
 import ru.pavlig43.coreui.ValidationErrorsCard
-import ru.pavlig43.datetime.period.dateTime.DateTimeSelectorScreen
+import ru.pavlig43.database.data.batch.StorageLocation
+import ru.pavlig43.datetime.period.dateTime.VerticalDateTimeSelectorScreen
+import ru.pavlig43.immutable.internal.ui.TableSearchKeyboardHandler
 import ru.pavlig43.storage.api.component.storage.LoadState
 import ru.pavlig43.storage.api.component.storage.StorageComponent
 import ru.pavlig43.storage.api.component.storage.StorageProductField
@@ -62,7 +72,6 @@ import ru.pavlig43.tablecore.export.defaultExportValue
 import ru.pavlig43.tablecore.export.formatValue
 import ru.pavlig43.tablecore.state.rememberSaveableTableState
 import ru.pavlig43.tablecore.ui.RussianStringProvider
-import ru.pavlig43.tablecore.ui.ScrollBar
 import ru.pavlig43.theme.Res
 import ru.pavlig43.theme.warning
 import ua.wwind.table.ColumnSpec
@@ -77,25 +86,24 @@ import ua.wwind.table.config.TableRowStyle
 import ua.wwind.table.config.TableSettings
 import ua.wwind.table.state.TableState
 
-private val StorageWideLayoutMinWidth = 1440.dp
-private val NegativeBatchesPanelWidth = 440.dp
+/** Минимальная ширина, при которой элементы боковой панели не сжимаются. */
+private val StorageSidePanelMinWidth = 360.dp
 
+/** Максимальная ширина боковой панели на широком окне приложения. */
+private val StorageSidePanelMaxWidth = 420.dp
+
+/**
+ * Показывает экран склада и обслуживает диалоги операций над партиями.
+ *
+ * Основная область содержит таблицу с поиском, а правая панель постоянно
+ * занимает одно место: сверху настройки, снизу прокручиваемый список ошибок.
+ */
 @Suppress("LongMethod")
 @Composable
 fun StorageScreen(
     component: StorageComponent
 ) {
-
-    DateTimeSelectorScreen(
-        component.dTPeriodComponent
-    )
-
     val storageLocation by component.storageLocation.collectAsState()
-    StorageLocationSelector(
-        selected = storageLocation,
-        onSelect = component::onSelectStorageLocation,
-    )
-
     val batchActions by component.batchActions.collectAsState()
     batchActions?.let { state ->
         StorageBatchActionsDialog(
@@ -121,110 +129,150 @@ fun StorageScreen(
     }
 
     val loadState by component.loadState.collectAsState()
-    when (val state = loadState) {
-        is LoadState.Error -> ErrorScreen(state.message)
-        is LoadState.Loading -> LoadingUi()
-        is LoadState.Success -> {
-            val tableData by component.tableData.collectAsState()
-            val columns = remember {
-                createStorageColumns(
-                    onToggleExpand = component::toggleExpand,
-                    onToggleExpandAll = component::toggleExpandAll,
-                    onOpenProduct = component::openProduct,
-                )
-            }
-            val tableSettings = remember {
-                TableSettings(
-                    showActiveFiltersHeader = true,
-                    enableTextSelection = true,
-                    enableDragToScroll = true,
-                )
-            }
-            val tableState = rememberSaveableTableState(
-                columns = StorageProductField.entries.toImmutableList(),
-                settings = tableSettings,
-            )
-            LaunchedEffect(tableState) {
-                snapshotFlow { tableState.filters.toMap() }.collect { filters ->
-                    component.updateFilters(
-                        filters
-                    )
+    val tableData by component.tableData.collectAsState()
+    val negativeBatchRows by component.negativeBatches.collectAsState()
+    val searchQuery by component.searchQuery.collectAsState()
+
+    StorageContent(
+        component = component,
+        storageLocation = storageLocation,
+        loadState = loadState,
+        tableData = tableData,
+        negativeBatches = remember(negativeBatchRows) {
+            getNegativeBatches(negativeBatchRows).toImmutableList()
+        },
+        searchQuery = searchQuery,
+    )
+}
+
+/**
+ * Связывает состояние таблицы, поиск и переход из ошибки к нужной партии.
+ *
+ * При выборе ошибки запрос поиска очищается, товар раскрывается, после чего
+ * таблица прокручивается до соответствующей строки партии.
+ */
+@Composable
+@Suppress("LongMethod")
+private fun StorageContent(
+    component: StorageComponent,
+    storageLocation: StorageLocation,
+    loadState: LoadState,
+    tableData: StorageTableData,
+    negativeBatches: ImmutableList<NegativeBatchItem>,
+    searchQuery: String,
+) {
+    val currentSearchQuery = rememberUpdatedState(searchQuery)
+    val columns = remember {
+        createStorageColumns(
+            onToggleExpand = component::toggleExpand,
+            onToggleExpandAll = component::toggleExpandAll,
+            onOpenProduct = component::openProduct,
+            searchQuery = { currentSearchQuery.value },
+        )
+    }
+    val tableSettings = remember {
+        TableSettings(
+            showActiveFiltersHeader = true,
+            enableTextSelection = true,
+            enableDragToScroll = true,
+        )
+    }
+    val tableState = rememberSaveableTableState(
+        columns = StorageProductField.entries.toImmutableList(),
+        settings = tableSettings,
+    )
+    LaunchedEffect(tableState) {
+        snapshotFlow { tableState.filters.toMap() }.collect(component::updateFilters)
+    }
+    val verticalState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
+    val rootFocusRequester = remember { FocusRequester() }
+    val searchFocusRequester = remember { FocusRequester() }
+    var rootFocused by remember { mutableStateOf(false) }
+    var searchFocused by remember { mutableStateOf(false) }
+
+    TableSearchKeyboardHandler(
+        owner = component,
+        query = searchQuery,
+        rootFocused = rootFocused,
+        searchFocused = searchFocused,
+        rootFocusRequester = rootFocusRequester,
+        searchFocusRequester = searchFocusRequester,
+        onQueryChange = component::updateSearchQuery,
+    )
+
+    val onNegativeBatchClick: (Int, Int) -> Unit = { productId, itemId ->
+        coroutineScope.launch {
+            component.updateSearchQuery("")
+            component.expandProduct(productId)
+            val currentData = component.tableData.first { data ->
+                data.displayedProducts.any { item ->
+                    item.isProduct && item.productId == productId && item.isExpanded
                 }
             }
-            val verticalState = rememberLazyListState()
-            val coroutineScope = rememberCoroutineScope()
-
-            val negativeBatches = remember(tableData) {
-                getNegativeBatches(tableData).toImmutableList()
+            val newIndex = currentData.displayedProducts.indexOfFirst { item ->
+                !item.isProduct && item.productId == productId && item.itemId == itemId
             }
-
-            val onNegativeBatchClick: (Int, Int) -> Unit = { productId, itemId ->
-                coroutineScope.launch {
-                    // Сначала раскрываем продукт
-                    component.expandProduct(productId)
-
-                    // Получаем актуальные данные
-                    val currentData = component.tableData.first { data ->
-                        data.displayedProducts.any { item ->
-                            item.isProduct && item.productId == productId && item.isExpanded
-                        }
-                    }
-                    val newIndex = currentData.displayedProducts
-                        .indexOfFirst { item ->
-                            !item.isProduct &&
-                                item.productId == productId &&
-                                item.itemId == itemId
-                        }
-
-                    if (newIndex >= 0) {
-                        verticalState.animateScrollToItem(
-                            index = newIndex,
-                            scrollOffset = -80
-                        )
-                    }
-                }
+            if (newIndex >= 0) {
+                verticalState.animateScrollToItem(index = newIndex, scrollOffset = -80)
             }
+        }
+    }
 
-            BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
-                if (negativeBatches.isNotEmpty() && (maxWidth >= StorageWideLayoutMinWidth)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.Top,
-                    ) {
-                        StorageTable(
-                            state = tableState,
-                            tableData = tableData,
-                            columns = columns,
-                            verticalState = verticalState,
-                            onRowClick = component::onRowClick,
-                            modifier = Modifier.weight(1f),
-                        )
-                        NegativeBatchesCard(
-                            negativeBatches = negativeBatches,
-                            onBatchClick = onNegativeBatchClick,
-                            modifier = Modifier.width(NegativeBatchesPanelWidth),
-                        )
-                    }
-                } else {
-                    if (negativeBatches.isNotEmpty()) {
-                        NegativeBatchesCard(
-                            negativeBatches = negativeBatches,
-                            onBatchClick = onNegativeBatchClick,
-                        )
-                    }
-                    StorageTable(
+    BoxWithConstraints(
+        modifier = Modifier
+            .fillMaxSize()
+            .focusRequester(rootFocusRequester)
+            .onFocusChanged { rootFocused = it.isFocused }
+            .focusable(),
+    ) {
+        val sidePanelWidth = (maxWidth * 0.24f).coerceIn(
+            StorageSidePanelMinWidth,
+            StorageSidePanelMaxWidth,
+        )
+        Row(
+            modifier = Modifier.fillMaxSize(),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalAlignment = Alignment.Top,
+        ) {
+            Box(modifier = Modifier.weight(1f).fillMaxHeight()) {
+                when (loadState) {
+                    is LoadState.Error -> ErrorScreen(loadState.message)
+                    is LoadState.Loading -> LoadingUi()
+                    is LoadState.Success -> StorageTable(
                         state = tableState,
                         tableData = tableData,
                         columns = columns,
                         verticalState = verticalState,
                         onRowClick = component::onRowClick,
+                        searchQuery = searchQuery,
+                        onSearchQueryChange = component::updateSearchQuery,
+                        searchFocusRequester = searchFocusRequester,
+                        onSearchFocusChanged = { searchFocused = it },
+                        modifier = Modifier.fillMaxSize(),
                     )
                 }
             }
+            StorageSidePanel(
+                component = component,
+                storageLocation = storageLocation,
+                negativeBatches = negativeBatches,
+                onBatchClick = onNegativeBatchClick,
+                modifier = Modifier
+                    .width(sidePanelWidth)
+                    .fillMaxHeight()
+                    .padding(top = 12.dp, end = 24.dp, bottom = 24.dp),
+            )
         }
     }
 }
 
+/**
+ * Отображает таблицу склада с общей панелью поиска и экспорта.
+ *
+ * Поиск передаётся снаружи, чтобы его состояние оставалось в [StorageComponent]
+ * и могло быть сброшено при переходе к партии из списка ошибок.
+ */
 @OptIn(ExperimentalTableApi::class)
 @Suppress("LongMethod", "LongParameterList", "MagicNumber")
 @Composable
@@ -234,6 +282,10 @@ private fun StorageTable(
     columns: ImmutableList<ColumnSpec<StorageProductUi, StorageProductField, StorageTableData>>,
     verticalState: LazyListState,
     onRowClick: (StorageProductUi) -> Unit,
+    searchQuery: String,
+    onSearchQueryChange: (String) -> Unit,
+    searchFocusRequester: FocusRequester,
+    onSearchFocusChanged: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val horizontalState = rememberScrollState()
@@ -266,10 +318,10 @@ private fun StorageTable(
         items = tableData.displayedProducts,
         exportConfiguration = exportConfiguration,
     )
-    val actionBarTopPadding = 132.dp
+    val actionBarTopPadding = if (exportErrorMessage == null) 96.dp else 168.dp
 
     Box(
-        modifier = modifier.padding(start = 24.dp),
+        modifier = modifier.padding(start = 24.dp, bottom = 24.dp),
     ) {
         Table(
             itemsCount = tableData.displayedProducts.size,
@@ -286,7 +338,7 @@ private fun StorageTable(
                 headerContainerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
             ),
             border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary),
-            modifier = Modifier.padding(top = actionBarTopPadding),
+            modifier = Modifier.fillMaxSize().padding(top = actionBarTopPadding),
 
         )
         StorageExportActionBar(
@@ -303,6 +355,10 @@ private fun StorageTable(
                     )
                 }
             },
+            searchQuery = searchQuery,
+            onSearchQueryChange = onSearchQueryChange,
+            searchFocusRequester = searchFocusRequester,
+            onSearchFocusChanged = onSearchFocusChanged,
             modifier = Modifier
                 .align(Alignment.TopStart)
                 .fillMaxWidth()
@@ -313,17 +369,13 @@ private fun StorageTable(
                 errorMessages = listOf(message),
                 modifier = Modifier
                     .align(Alignment.TopStart)
-                    .padding(top = 138.dp, end = 24.dp),
+                    .padding(top = 96.dp, end = 24.dp),
             )
         }
-        ScrollBar(
-            verticalState = verticalState,
-            horizontalState = horizontalState,
-        )
-
     }
 }
 
+/** Выделяет партии и отрицательные значения средствами оформления таблицы. */
 private class StorageTableCustomization :
     TableCustomization<StorageProductUi, StorageProductField> {
     @Composable
@@ -367,14 +419,16 @@ private class StorageTableCustomization :
     }
 }
 
+/** Краткие данные ошибки остатка, необходимые правой панели для навигации. */
 private data class NegativeBatchItem(
     val productId: Int,
     val itemId: Int,
     val displayName: String
 )
 
-private fun getNegativeBatches(tableData: StorageTableData): List<NegativeBatchItem> {
-    return tableData.displayedProducts
+/** Преобразует строки партий с отрицательным остатком в элементы панели ошибок. */
+private fun getNegativeBatches(items: List<StorageProductUi>): List<NegativeBatchItem> {
+    return items
         .mapNotNull { item ->
             // Только партии (isProduct = false)
             if (item.isProduct) return@mapNotNull null
@@ -386,24 +440,76 @@ private fun getNegativeBatches(tableData: StorageTableData): List<NegativeBatchI
         }
 }
 
+/**
+ * Рисует постоянную правую панель экрана склада.
+ *
+ * Блок настроек имеет собственную естественную высоту, а карточка ошибок
+ * занимает всё оставшееся место и прокручивает только своё содержимое.
+ */
+@Composable
+private fun StorageSidePanel(
+    component: StorageComponent,
+    storageLocation: StorageLocation,
+    negativeBatches: ImmutableList<NegativeBatchItem>,
+    onBatchClick: (productId: Int, itemId: Int) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+            ),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        ) {
+            Column(
+                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(14.dp),
+            ) {
+                VerticalDateTimeSelectorScreen(
+                    component = component.dTPeriodComponent,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                StorageLocationSelector(
+                    selected = storageLocation,
+                    onSelect = component::onSelectStorageLocation,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+        }
+        NegativeBatchesCard(
+            negativeBatches = negativeBatches,
+            onBatchClick = onBatchClick,
+            modifier = Modifier.weight(1f).fillMaxWidth(),
+        )
+    }
+}
+
+/** Показывает количество ошибок остатков и независимо прокручиваемый список партий. */
 @Composable
 private fun NegativeBatchesCard(
     negativeBatches: ImmutableList<NegativeBatchItem>,
     onBatchClick: (productId: Int, itemId: Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val listState = rememberLazyListState()
     Card(
-        modifier = modifier.padding(horizontal = 24.dp, vertical = 8.dp),
-        shape = RoundedCornerShape(8.dp),
+        modifier = modifier,
+        shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.15f)
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
         ),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.3f)),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
-        Column(modifier = Modifier.padding(12.dp)) {
+        Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
             Row(
-                modifier = Modifier.padding(bottom = 8.dp),
+                modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
@@ -414,23 +520,54 @@ private fun NegativeBatchesCard(
                     modifier = Modifier.size(16.dp)
                 )
                 Text(
-                    "Отрицательные остатки: ${negativeBatches.size}",
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.error
+                    "Ошибки остатков",
+                    modifier = Modifier.weight(1f),
+                    style = MaterialTheme.typography.titleMedium,
                 )
+                Surface(
+                    shape = RoundedCornerShape(10.dp),
+                    color = MaterialTheme.colorScheme.errorContainer,
+                ) {
+                    Text(
+                        text = negativeBatches.size.toString(),
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onErrorContainer,
+                    )
+                }
             }
 
-            LazyColumn(
-                modifier = Modifier.heightIn(max = 120.dp),
-                verticalArrangement = Arrangement.spacedBy(2.dp)
-            ) {
-                items(
-                    items = negativeBatches,
-                    key = { it.itemId }
-                ) { batch ->
-                    NegativeBatchItemRow(
-                        item = batch,
-                        onClick = { onBatchClick(batch.productId, batch.itemId) }
+            if (negativeBatches.isEmpty()) {
+                Box(
+                    modifier = Modifier.weight(1f).fillMaxWidth(),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = "Ошибок остатков нет",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            } else {
+                Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
+                    LazyColumn(
+                        state = listState,
+                        modifier = Modifier.fillMaxSize().padding(end = 10.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        items(
+                            items = negativeBatches,
+                            key = { it.itemId },
+                        ) { batch ->
+                            NegativeBatchItemRow(
+                                item = batch,
+                                onClick = { onBatchClick(batch.productId, batch.itemId) },
+                            )
+                        }
+                    }
+                    VerticalScrollbar(
+                        adapter = rememberScrollbarAdapter(listState),
+                        modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight(),
                     )
                 }
             }
@@ -438,28 +575,36 @@ private fun NegativeBatchesCard(
     }
 }
 
+/** Показывает одну кликабельную ошибку и передаёт навигацию вызывающему коду. */
 @Composable
 private fun NegativeBatchItemRow(
     item: NegativeBatchItem,
     onClick: () -> Unit
 ) {
-    TextButton(
+    Card(
         onClick = onClick,
-        modifier = Modifier.fillMaxWidth().height(32.dp),
-        shape = RoundedCornerShape(4.dp),
-        colors = ButtonDefaults.textButtonColors(
-            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(10.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
         ),
-        contentPadding = PaddingValues(
-            horizontal = 8.dp,
-            vertical = 4.dp
-        )
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
     ) {
-        Text(
-            text = item.displayName,
-            style = MaterialTheme.typography.bodySmall,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Box(
+                modifier = Modifier.width(4.dp).fillMaxHeight()
+                    .background(MaterialTheme.colorScheme.error),
+            )
+            Text(
+                text = item.displayName,
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+                style = MaterialTheme.typography.bodySmall,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
     }
 }

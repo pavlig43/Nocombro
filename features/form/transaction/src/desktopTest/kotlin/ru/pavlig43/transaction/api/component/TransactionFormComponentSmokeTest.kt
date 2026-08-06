@@ -14,6 +14,7 @@ import ru.pavlig43.database.data.transact.Transact
 import ru.pavlig43.database.data.transact.TransactionType
 import ru.pavlig43.files.api.FilesDependencies
 import ru.pavlig43.immutable.api.ImmutableTableDependencies
+import ru.pavlig43.mutable.api.multiLine.component.MutableUiEvent
 import ru.pavlig43.testkit.DesktopMainDispatcherFunSpec
 import ru.pavlig43.testkit.NoopTabOpener
 import ru.pavlig43.testkit.runOnUiThread
@@ -141,6 +142,27 @@ class TransactionFormComponentSmokeTest : DesktopMainDispatcherFunSpec({
             }
             selected.shouldBeInstanceOf<TransactionTabChild.Sale>()
             component.model.value.title shouldBe "*Транзакция Продажа"
+        }
+    }
+
+    test("a new sale row inherits the client from the first row") {
+        withTransactionComponent(transactionId = 11) { component ->
+            val updateChild = waitForUpdateChild(component)
+            val saleChild = waitForTabTypes(
+                component = updateChild.component,
+                expectedTypes = setOf(TransactionTabChild.Sale::class.java),
+            ).filterIsInstance<TransactionTabChild.Sale>().single()
+
+            waitUntil { saleChild.component.itemList.value.isNotEmpty() }
+            val firstRow = saleChild.component.itemList.value.first()
+
+            runOnUiThread {
+                saleChild.component.onEvent(MutableUiEvent.CreateNewItem)
+            }
+
+            val newRow = saleChild.component.itemList.value.last()
+            newRow.clientId shouldBe firstRow.clientId
+            newRow.clientName shouldBe firstRow.clientName
         }
     }
 
