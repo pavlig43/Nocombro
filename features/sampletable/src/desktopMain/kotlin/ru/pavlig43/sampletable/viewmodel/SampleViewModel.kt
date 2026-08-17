@@ -24,13 +24,11 @@ import ru.pavlig43.sampletable.util.PersonFilterMatcher
 import ru.pavlig43.sampletable.util.PersonFilterStateFactory
 import ru.pavlig43.sampletable.util.PersonSorter
 import ru.pavlig43.sampletable.util.PersonValidator
-import ua.wwind.table.ExperimentalTableApi
 import ua.wwind.table.filter.data.TableFilterState
 import ua.wwind.table.format.FormatFilterData
 import ua.wwind.table.format.data.TableFormatRule
 import ua.wwind.table.state.SortState
 
-@OptIn(ExperimentalTableApi::class)
 class SampleViewModel(
     componentContext: ComponentContext
 ) : ComponentContext by componentContext {

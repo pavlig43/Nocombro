@@ -40,7 +40,7 @@ fun ConditionalFormattingDialog(
     FormatDialog(
         showDialog = showDialog,
         rules = rules,
-        onRulesChanged = onRulesChanged,
+        onRulesChange = onRulesChanged,
         getNewRule = { id ->
             TableFormatRule.new<PersonColumn, Map<PersonColumn, TableFilterState<*>>>(
                 id,

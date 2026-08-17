@@ -42,7 +42,6 @@ import ru.pavlig43.tablecore.state.rememberSaveableTableState
 import ru.pavlig43.tablecore.ui.RussianStringProvider
 import ru.pavlig43.tablecore.ui.ScrollBar
 import ua.wwind.table.ColumnSpec
-import ua.wwind.table.ExperimentalTableApi
 import ua.wwind.table.Table
 import ua.wwind.table.config.TableCellContext
 import ua.wwind.table.config.TableCellStyle
@@ -52,7 +51,6 @@ import ua.wwind.table.config.TableRowContext
 import ua.wwind.table.config.TableRowStyle
 import ua.wwind.table.state.TableState
 
-@OptIn(ExperimentalTableApi::class)
 @Composable
 fun BatchMovementTableScreen(
     component: BatchMovementComponent,
@@ -94,7 +92,6 @@ fun BatchMovementTableScreen(
     }
 }
 
-@OptIn(ExperimentalTableApi::class)
 @Suppress("LongMethod", "LongParameterList")
 @Composable
 private fun BatchMovementTable(

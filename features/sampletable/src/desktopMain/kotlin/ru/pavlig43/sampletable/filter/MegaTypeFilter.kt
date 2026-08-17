@@ -34,6 +34,7 @@ import ru.pavlig43.sampletable.model.PersonTableData
 import ru.pavlig43.theme.Res
 import ru.pavlig43.theme.arrow_downward
 import ru.pavlig43.theme.arrow_upward
+import ua.wwind.table.filter.data.CustomFilterPanelActions
 import ua.wwind.table.filter.data.CustomFilterRenderer
 import ua.wwind.table.filter.data.CustomFilterStateProvider
 import ua.wwind.table.filter.data.FilterConstraint
@@ -66,9 +67,10 @@ private class MegaTypeFilterRenderer : CustomFilterRenderer<MegaTypeFilterState,
     override fun RenderPanel(
         currentState: TableFilterState<MegaTypeFilterState>?,
         tableData: PersonTableData,
+        panelActions: CustomFilterPanelActions,
         onDismiss: () -> Unit,
         onChange: (TableFilterState<MegaTypeFilterState>?) -> Unit,
-    ): TableFilterType.CustomFilterActions {
+    ) {
         val current = currentState?.values?.firstOrNull() ?: MegaTypeFilterState()
 
         var selectedTypes by remember { mutableStateOf(current.selectedTypes) }
@@ -160,7 +162,7 @@ private class MegaTypeFilterRenderer : CustomFilterRenderer<MegaTypeFilterState,
             )
         }
 
-        return remember {
+        panelActions.set(
             object : TableFilterType.CustomFilterActions {
                 override fun applyFilter() {
                     val newState = MegaTypeFilterState(selectedTypes = selectedTypes)
@@ -177,8 +179,8 @@ private class MegaTypeFilterRenderer : CustomFilterRenderer<MegaTypeFilterState,
                     onChange(null)
                     onDismiss()
                 }
-            }
-        }
+            },
+        )
     }
 
     @Composable

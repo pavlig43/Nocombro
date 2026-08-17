@@ -47,7 +47,6 @@ import ru.pavlig43.tablecore.state.rememberSaveableTableState
 import ru.pavlig43.tablecore.ui.RussianStringProvider
 import ru.pavlig43.tablecore.ui.ScrollBar
 import ua.wwind.table.ColumnSpec
-import ua.wwind.table.ExperimentalTableApi
 import ua.wwind.table.Table
 import ua.wwind.table.config.TableDefaults
 import ua.wwind.table.config.TableSettings
@@ -158,7 +157,6 @@ private fun ProfitabilityStateSurface(
     }
 }
 
-@OptIn(ExperimentalTableApi::class)
 @Composable
 private fun ProfitabilityTable(
     state: TableState<ProfitabilityField>,

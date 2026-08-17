@@ -75,7 +75,6 @@ import ru.pavlig43.tablecore.ui.RussianStringProvider
 import ru.pavlig43.theme.Res
 import ru.pavlig43.theme.warning
 import ua.wwind.table.ColumnSpec
-import ua.wwind.table.ExperimentalTableApi
 import ua.wwind.table.Table
 import ua.wwind.table.config.TableCellContext
 import ua.wwind.table.config.TableCellStyle
@@ -273,7 +272,6 @@ private fun StorageContent(
  * Поиск передаётся снаружи, чтобы его состояние оставалось в [StorageComponent]
  * и могло быть сброшено при переходе к партии из списка ошибок.
  */
-@OptIn(ExperimentalTableApi::class)
 @Suppress("LongMethod", "LongParameterList", "MagicNumber")
 @Composable
 private fun StorageTable(

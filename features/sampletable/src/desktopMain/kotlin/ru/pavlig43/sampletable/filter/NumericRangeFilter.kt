@@ -36,6 +36,7 @@ import org.jetbrains.compose.resources.painterResource
 import ru.pavlig43.sampletable.model.PersonTableData
 import ru.pavlig43.theme.Res
 import ru.pavlig43.theme.menu
+import ua.wwind.table.filter.data.CustomFilterPanelActions
 import ua.wwind.table.filter.data.CustomFilterRenderer
 import ua.wwind.table.filter.data.CustomFilterStateProvider
 import ua.wwind.table.filter.data.FilterConstraint
@@ -59,9 +60,10 @@ private class NumericRangeFilterRenderer : CustomFilterRenderer<NumericRangeFilt
     override fun RenderPanel(
         currentState: TableFilterState<NumericRangeFilterState>?,
         tableData: PersonTableData,
+        panelActions: CustomFilterPanelActions,
         onDismiss: () -> Unit,
         onChange: (TableFilterState<NumericRangeFilterState>?) -> Unit,
-    ): TableFilterType.CustomFilterActions {
+    ) {
         // Use people filtered by all filters EXCEPT salary filter for range calculation
         val allData = tableData.peopleExcludingSalaryFilter
         val dataMin = allData.minOfOrNull { it.salary } ?: 0
@@ -216,7 +218,7 @@ private class NumericRangeFilterRenderer : CustomFilterRenderer<NumericRangeFilt
         }
 
         // Return actions for FilterPanelActions
-        return remember {
+        panelActions.set(
             object : TableFilterType.CustomFilterActions {
                 override fun applyFilter() {
                     // In auto-apply mode, already applied
@@ -240,8 +242,8 @@ private class NumericRangeFilterRenderer : CustomFilterRenderer<NumericRangeFilt
                     onChange(null)
                     onDismiss()
                 }
-            }
-        }
+            },
+        )
     }
 
     @Composable

@@ -20,6 +20,9 @@ captures
 **/xcshareddata/WorkspaceSettings.xcsettings
 local.gradle.kts
 *mobile-sync-secrets*
+*mobile-signing.properties*
+*.jks
+*.keystore
 *ydb-sa-key*
 *s3*.properties
 **/__pycache__/

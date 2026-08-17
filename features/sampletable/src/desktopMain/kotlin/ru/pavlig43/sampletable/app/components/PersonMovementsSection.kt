@@ -16,7 +16,6 @@ import ru.pavlig43.sampletable.column.createMovementColumns
 import ru.pavlig43.sampletable.model.Person
 import ru.pavlig43.sampletable.model.PersonMovementColumn
 import ru.pavlig43.tablecore.state.rememberSaveableTableState
-import ua.wwind.table.ExperimentalTableApi
 import ua.wwind.table.Table
 import ua.wwind.table.config.RowHeightMode
 import ua.wwind.table.config.SelectionMode
@@ -24,7 +23,6 @@ import ua.wwind.table.config.TableDefaults
 import ua.wwind.table.config.TableSettings
 import ua.wwind.table.strings.DefaultStrings
 
-@OptIn(ExperimentalTableApi::class)
 @Composable
 fun PersonMovementsSection(
     person: Person,
@@ -38,7 +36,7 @@ fun PersonMovementsSection(
     val movementSettings =
         remember {
             TableSettings(
-                isDragEnabled = false,
+                rowReorderEnabled = false,
                 autoApplyFilters = false,
                 showFastFilters = false,
                 autoFilterDebounce = 0,

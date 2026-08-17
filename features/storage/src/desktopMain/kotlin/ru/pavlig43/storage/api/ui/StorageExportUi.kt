@@ -53,7 +53,7 @@ internal fun <T : Any, C, E> buildStorageExportColumns(
 ): List<ExcelColumn> {
     val visibleByKey = columns.filter { it.visible }.associateBy { it.key }
     return buildList {
-        for (key in tableState.columnOrder) {
+        for (key in tableState.columns.order) {
             val spec = visibleByKey[key] ?: continue
             val title = spec.title?.invoke()?.takeIf { it.isNotBlank() } ?: continue
             add(

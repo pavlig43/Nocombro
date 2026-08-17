@@ -21,7 +21,54 @@ abstract class CurrentBuildDateValueSource : ValueSource<String, ValueSourcePara
     override fun obtain(): String = LocalDate.now().toString()
 }
 
+abstract class ValidateMobileReleaseSigningTask : DefaultTask() {
+    @get:Input
+    abstract val signingPropertiesFilePath: Property<String>
+
+    @TaskAction
+    fun validate() {
+        val propertiesFile = File(signingPropertiesFilePath.get())
+        if (!propertiesFile.isFile) {
+            throw GradleException(
+                "Mobile signing properties file not found. Run tools/setup-mobile-signing.ps1 first."
+            )
+        }
+
+        val properties = Properties().apply {
+            propertiesFile.inputStream().use(::load)
+        }
+        val required = listOf("storeFile", "storePassword", "keyAlias", "keyPassword")
+        val missing = required.filter { name -> properties.getProperty(name).isNullOrBlank() }
+        if (missing.isNotEmpty()) {
+            throw GradleException(
+                "Mobile signing properties file is missing: ${missing.joinToString()}."
+            )
+        }
+
+        val storeFile = File(properties.getProperty("storeFile"))
+        if (!storeFile.isFile) {
+            throw GradleException("Mobile signing key not found: ${storeFile.absolutePath}")
+        }
+    }
+}
+
 val releaseBuildDate = providers.of(CurrentBuildDateValueSource::class) {}
+
+val mobileSigningPropertiesFile = providers
+    .gradleProperty("nocombro.mobileSigningPropertiesFile")
+    .orElse(providers.environmentVariable("NOCOMBRO_MOBILE_SIGNING_PROPERTIES_FILE"))
+    .orElse("${System.getenv("APPDATA") ?: ""}/Nocombro/mobile-signing.properties")
+    .map(::File)
+
+val mobileSigningProperties = Properties()
+val hasMobileSigningProperties = mobileSigningPropertiesFile.get().isFile
+if (hasMobileSigningProperties) {
+    mobileSigningPropertiesFile.get().inputStream().use(mobileSigningProperties::load)
+}
+
+fun mobileSigningProperty(name: String): String =
+    mobileSigningProperties.getProperty(name)?.takeIf(String::isNotBlank)
+        ?: throw GradleException("Mobile signing properties file is missing '$name'.")
 
 /**
  * Генерирует Android asset с YDB/S3-настройками из локального secrets-файла.
@@ -108,9 +155,20 @@ android {
         versionName = mobileVersionName
     }
 
+    signingConfigs {
+        if (hasMobileSigningProperties) {
+            create("mobileRelease") {
+                storeFile = file(mobileSigningProperty("storeFile"))
+                storePassword = mobileSigningProperty("storePassword")
+                keyAlias = mobileSigningProperty("keyAlias")
+                keyPassword = mobileSigningProperty("keyPassword")
+            }
+        }
+    }
+
     buildTypes {
         getByName("release") {
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.findByName("mobileRelease")
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(
@@ -132,6 +190,22 @@ android {
     }
 }
 
+val validateMobileReleaseSigning = tasks.register<ValidateMobileReleaseSigningTask>(
+    "validateMobileReleaseSigning"
+) {
+    group = "verification"
+    description = "Checks that the stable mobile release signing key is configured."
+    signingPropertiesFilePath.set(mobileSigningPropertiesFile.map(File::getAbsolutePath))
+}
+
+tasks.matching { task ->
+    task.name == "assembleRelease" ||
+        task.name == "bundleRelease" ||
+        task.name == "packageRelease"
+}.configureEach {
+    dependsOn(validateMobileReleaseSigning)
+}
+
 androidComponents {
     onVariants { variant ->
         variant.sources.assets?.addGeneratedSourceDirectory(
@@ -150,8 +224,8 @@ androidComponents {
 }
 
 tasks.register("assembleReleaseWithSecrets") {
-    group = "build"
-    description = "Builds the release APK with mobile sync secrets and debug signing."
+    group = "custom"
+    description = "Builds the release APK with mobile sync secrets and stable release signing."
     dependsOn("assembleRelease")
 }
 

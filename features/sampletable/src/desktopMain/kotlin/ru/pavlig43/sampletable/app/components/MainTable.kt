@@ -17,14 +17,12 @@ import ru.pavlig43.sampletable.model.Person
 import ru.pavlig43.sampletable.model.PersonTableData
 import ua.wwind.table.ColumnSpec
 import ua.wwind.table.EditableTable
-import ua.wwind.table.ExperimentalTableApi
 import ua.wwind.table.config.TableCustomization
 import ua.wwind.table.filter.data.TableFilterState
 import ua.wwind.table.state.SortState
 import ua.wwind.table.state.TableState
 import ua.wwind.table.strings.DefaultStrings
 
-@OptIn(ExperimentalTableApi::class)
 @Composable
 fun MainTable(
     state: TableState<PersonColumn>,
@@ -76,7 +74,7 @@ fun MainTable(
         },
         onRowEditStart = onRowEditStart,
         onRowEditComplete = onRowEditComplete,
-        onEditCancelled = onEditCancelled,
+        onEditCancel = onEditCancelled,
         modifier = modifier,
     )
 }

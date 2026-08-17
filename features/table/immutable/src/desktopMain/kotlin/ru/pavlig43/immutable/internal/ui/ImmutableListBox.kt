@@ -51,7 +51,6 @@ import ru.pavlig43.tablecore.model.IMultiLineTableUi
 import ru.pavlig43.tablecore.model.TableData
 import ru.pavlig43.tablecore.ui.TableBox
 import ua.wwind.table.ColumnSpec
-import ua.wwind.table.ExperimentalTableApi
 import ua.wwind.table.Table
 import ua.wwind.table.config.TableCustomization
 import ua.wwind.table.config.TableDefaults
@@ -63,7 +62,6 @@ import ua.wwind.table.state.SortState
 import ua.wwind.table.state.TableState
 import ua.wwind.table.strings.StringProvider
 
-@OptIn(ExperimentalTableApi::class)
 @Composable
 internal fun <I : IMultiLineTableUi, C> ImmutableTableBox(
     component: ImmutableTableComponent<*, I, C>,
@@ -168,7 +166,6 @@ private fun BoxScope.TableEmptyState(message: String) {
 
 @Composable
 @Suppress("LongParameterList", "LongMethod")
-@OptIn(ExperimentalTableApi::class)
 private fun <I : IMultiLineTableUi, C, E : TableData<I>> BoxScope.ImmutableTable(
     columns: ImmutableList<ColumnSpec<I, C, E>>,
     items: List<I>,
@@ -299,7 +296,7 @@ private fun <I : IMultiLineTableUi, C, E : TableData<I>> FillTableWidthEffect(
 ) {
     LaunchedEffect(tableState, availableWidth) {
         repeat(3) { withFrameNanos { } }
-        val visibleColumns = tableState.columnOrder.mapNotNull { key ->
+        val visibleColumns = tableState.columns.order.mapNotNull { key ->
             columns.firstOrNull { it.key == key && it.visible }
         }
         if (visibleColumns.isEmpty()) return@LaunchedEffect
@@ -312,10 +309,10 @@ private fun <I : IMultiLineTableUi, C, E : TableData<I>> FillTableWidthEffect(
         }.ifEmpty { visibleColumns }
         val widthPerColumn = extraWidth / expandableColumns.size
         expandableColumns.forEach { column ->
-            tableState.resizeColumn(
+            tableState.columns.resize(
                 column = column.key,
                 action = ColumnWidthAction.Set(
-                    tableState.resolveColumnWidth(column.key, column) + widthPerColumn,
+                    tableState.columns.resolveWidth(column.key, column) + widthPerColumn,
                 ),
             )
         }
@@ -323,7 +320,6 @@ private fun <I : IMultiLineTableUi, C, E : TableData<I>> FillTableWidthEffect(
 }
 
 @Composable
-@OptIn(ExperimentalTableApi::class)
 private fun <I : IMultiLineTableUi, C, E : TableData<I>> ImmutableTableContent(
     columns: ImmutableList<ColumnSpec<I, C, E>>,
     tableState: TableState<C>,
@@ -390,7 +386,7 @@ private fun <I : IMultiLineTableUi, C, E : TableData<I>> buildExportColumns(
 ): List<ExcelColumn> {
     val visibleByKey = columns.filter { it.visible }.associateBy { it.key }
     return buildList {
-        for (key in tableState.columnOrder) {
+        for (key in tableState.columns.order) {
             val spec = visibleByKey[key] ?: continue
             val title = spec.title?.invoke()?.takeIf { it.isNotBlank() } ?: continue
             add(

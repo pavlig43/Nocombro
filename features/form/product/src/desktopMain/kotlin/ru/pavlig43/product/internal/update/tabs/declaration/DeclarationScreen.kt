@@ -52,7 +52,6 @@ import ru.pavlig43.tablecore.ui.ScrollBar
 import ru.pavlig43.theme.Res
 import ru.pavlig43.theme.close
 import ua.wwind.table.ColumnSpec
-import ua.wwind.table.ExperimentalTableApi
 import ua.wwind.table.Table
 import ua.wwind.table.config.RowHeightMode
 import ua.wwind.table.config.SelectionMode
@@ -93,7 +92,6 @@ internal fun DeclarationScreen(
         )
     }
 }
-@OptIn(ExperimentalTableApi::class)
 @Composable
 private fun ProductDeclarationScreen(
     component: ProductDeclarationComponent,
@@ -115,7 +113,6 @@ private fun ProductDeclarationScreen(
 }
 
 @Suppress("LongParameterList", "LongMethod","MagicNumber")
-@OptIn(ExperimentalTableApi::class)
 @Composable
 private fun ProductDeclarationTable(
     columns: ImmutableList<ColumnSpec<ProductDeclarationTableUi, ProductDeclarationField, TableData<ProductDeclarationTableUi>>>,

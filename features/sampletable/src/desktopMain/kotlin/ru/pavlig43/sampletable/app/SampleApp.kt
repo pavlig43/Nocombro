@@ -43,7 +43,6 @@ import ru.pavlig43.sampletable.column.createTableColumns
 import ru.pavlig43.sampletable.model.Person
 import ru.pavlig43.sampletable.viewmodel.SampleUiEvent
 import ru.pavlig43.tablecore.state.rememberSaveableTableState
-import ua.wwind.table.ExperimentalTableApi
 import ua.wwind.table.config.PinnedSide
 import ua.wwind.table.config.RowHeightMode
 import ua.wwind.table.config.SelectionMode
@@ -53,7 +52,6 @@ import ua.wwind.table.filter.data.TableFilterState
 import ua.wwind.table.format.rememberCustomization
 
 @Suppress("ViewModelConstructorInComposable")
-@OptIn(ExperimentalTableApi::class)
 @Composable
 fun SampleApp(component: SampleTableComponentMain,modifier: Modifier = Modifier,) {
     var isDarkTheme by rememberSaveable { mutableStateOf(false) }
@@ -82,7 +80,7 @@ fun SampleApp(component: SampleTableComponentMain,modifier: Modifier = Modifier,
             footerPinned,
         ) {
             TableSettings(
-                isDragEnabled = false,
+                rowReorderEnabled = false,
                 autoApplyFilters = true,
                 showFastFilters = showFastFilters,
                 autoFilterDebounce = 200,
@@ -147,7 +145,7 @@ fun SampleApp(component: SampleTableComponentMain,modifier: Modifier = Modifier,
             0.dp
         }
     LaunchedEffect(selectionColumnWidth) {
-        state.setColumnWidths(mapOf(PersonColumn.SELECTION to selectionColumnWidth))
+        state.columns.setWidths(mapOf(PersonColumn.SELECTION to selectionColumnWidth))
     }
 
     SampleTheme(darkTheme = isDarkTheme) {
@@ -195,7 +193,7 @@ fun SampleApp(component: SampleTableComponentMain,modifier: Modifier = Modifier,
                                     scope.launch { drawerState.close() }
                                 },
                                 onRecalculateAutoWidthsClick = {
-                                    state.recalculateAutoWidths()
+                                    state.columns.recalculateAutoWidths()
                                     scope.launch { drawerState.close() }
                                 },
                                 onClose = { scope.launch { drawerState.close() } },

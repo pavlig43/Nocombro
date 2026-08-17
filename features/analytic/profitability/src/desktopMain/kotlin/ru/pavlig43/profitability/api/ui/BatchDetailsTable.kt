@@ -27,14 +27,12 @@ import ru.pavlig43.profitability.internal.model.ProfitabilityProduct
 import ru.pavlig43.profitability.internal.model.ProfitabilityTableData
 import ru.pavlig43.tablecore.state.rememberSaveableTableState
 import ru.pavlig43.tablecore.ui.RussianStringProvider
-import ua.wwind.table.ExperimentalTableApi
 import ua.wwind.table.Table
 import ua.wwind.table.config.RowHeightMode
 import ua.wwind.table.config.SelectionMode
 import ua.wwind.table.config.TableDefaults
 import ua.wwind.table.config.TableSettings
 
-@OptIn(ExperimentalTableApi::class)
 @Composable
 internal fun BatchDetailsTable(
     product: ProfitabilityProduct,
@@ -43,7 +41,7 @@ internal fun BatchDetailsTable(
     val columns = remember { createBatchDetailsColumns() }
     val tableSettings = remember {
         TableSettings(
-            isDragEnabled = false,
+            rowReorderEnabled = false,
             autoApplyFilters = false,
             showFastFilters = false,
             stripedRows = true,

@@ -42,7 +42,6 @@ import ru.pavlig43.tablecore.ui.TableBox
 import ru.pavlig43.coreui.ValidationErrorsCard
 import ua.wwind.table.ColumnSpec
 import ua.wwind.table.EditableTable
-import ua.wwind.table.ExperimentalTableApi
 import ua.wwind.table.config.DefaultTableCustomization
 import ua.wwind.table.config.SelectionMode
 import ua.wwind.table.config.TableCustomization
@@ -51,7 +50,6 @@ import ua.wwind.table.config.TableSettings
 import ua.wwind.table.state.TableState
 import ua.wwind.table.strings.StringProvider
 
-@OptIn(ExperimentalTableApi::class)
 @Composable
 fun <I : IMultiLineTableUi, C> MutableTableBox(
     component: MutableTableComponent<*, *, I, C>,
@@ -104,7 +102,6 @@ fun <I : IMultiLineTableUi, C> MutableTableBox(
 
 
 @Suppress("LongParameterList", "LongMethod","MagicNumber")
-@OptIn(ExperimentalTableApi::class)
 @Composable
 private fun <I : IMultiLineTableUi, C, E : TableData<I>> BoxScope.MutableTable(
     columns: ImmutableList<ColumnSpec<I, C, E>>,
@@ -205,7 +202,7 @@ private fun <I : IMultiLineTableUi, C, E : TableData<I>> buildExportColumns(
 ): List<ExcelColumn> {
     val visibleByKey = columns.filter { it.visible }.associateBy { it.key }
     return buildList {
-        for (key in tableState.columnOrder) {
+        for (key in tableState.columns.order) {
             val spec = visibleByKey[key] ?: continue
             val title = spec.title?.invoke()?.takeIf { it.isNotBlank() } ?: continue
             add(
