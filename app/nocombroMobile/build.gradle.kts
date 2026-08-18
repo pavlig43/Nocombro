@@ -229,6 +229,12 @@ tasks.register("assembleReleaseWithSecrets") {
     dependsOn("assembleRelease")
 }
 
+tasks.register("installReleaseWithSecrets") {
+    group = "custom"
+    description = "Builds and installs the release APK with mobile sync secrets and stable release signing."
+    dependsOn("installRelease")
+}
+
 dependencies {
     implementation(projects.core)
     implementation(projects.corekoin)

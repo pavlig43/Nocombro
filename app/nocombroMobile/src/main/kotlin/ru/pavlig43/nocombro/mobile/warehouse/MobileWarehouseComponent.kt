@@ -60,8 +60,9 @@ internal fun buildMobileWarehouseUiState(
 ): MobileWarehouseUiState {
     val normalizedQuery = searchQuery.trim()
     val products = snapshot?.products.orEmpty()
-        .map { product ->
+        .mapNotNull { product ->
             val balance = product.balanceAt(selectedLocation)
+            if (balance == 0L) return@mapNotNull null
             MobileWarehouseUiProduct(
                 productSyncId = product.productSyncId,
                 displayName = product.displayName,

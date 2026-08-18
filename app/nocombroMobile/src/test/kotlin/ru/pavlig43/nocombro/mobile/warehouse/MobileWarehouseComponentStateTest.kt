@@ -18,7 +18,7 @@ class MobileWarehouseComponentStateTest {
     )
 
     @Test
-    fun `switches balances and sorts names with Russian collation`() {
+    fun `shows only non-zero balances for selected location and sorts names`() {
         val main = buildMobileWarehouseUiState(snapshot, MobileWarehouseLocation.MAIN, "")
         val experimental = buildMobileWarehouseUiState(
             snapshot,
@@ -26,10 +26,13 @@ class MobileWarehouseComponentStateTest {
             "",
         )
 
-        assertEquals(listOf("абрикос", "Банан банан", "Яблоко"), main.products.map { it.displayName })
+        assertEquals(listOf("Банан банан", "Яблоко"), main.products.map { it.displayName })
+        assertEquals(listOf("абрикос", "Яблоко"), experimental.products.map { it.displayName })
         assertEquals("1,500", main.products.single { it.productSyncId == "3" }.formattedBalance)
         assertEquals("-0,120", formatMobileWarehouseBalance(-120))
         assertEquals(-120, experimental.products.single { it.productSyncId == "1" }.balance)
+        assertTrue(main.products.none { it.productSyncId == "1" })
+        assertTrue(experimental.products.none { it.productSyncId == "2" })
     }
 
     @Test
