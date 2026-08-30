@@ -33,6 +33,7 @@ import ru.pavlig43.product.internal.update.tabs.specification.createDefaultProdu
 import ru.pavlig43.product.internal.update.tabs.specification.ProductSpecificationCompositionGenerator
 import ru.pavlig43.product.internal.update.tabs.specification.ProductSpecificationPdfGenerator
 import ru.pavlig43.product.internal.update.tabs.specification.ProductSpecificationPdfRepository
+import ru.pavlig43.thermallabel.api.data.ThermalLabelTemplateService
 
 internal fun createProductFormModule(dependencies: ProductFormDependencies) = listOf(
     module {
@@ -40,6 +41,7 @@ internal fun createProductFormModule(dependencies: ProductFormDependencies) = li
         single<TransactionExecutor> { dependencies.transaction }
         single<FilesDependencies> { dependencies.filesDependencies }
         single<ImmutableTableDependencies> { dependencies.immutableTableDependencies }
+        single { ThermalLabelTemplateService(get()) }
         single { ProductSpecificationPdfGenerator() }
         single { ProductSpecificationCompositionGenerator(get<NocombroDatabase>().compositionDao) }
         single {
