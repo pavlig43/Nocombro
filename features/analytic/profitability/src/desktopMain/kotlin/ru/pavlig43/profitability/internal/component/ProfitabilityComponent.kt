@@ -19,7 +19,7 @@ import ru.pavlig43.datetime.period.dateTime.DateTimePeriodComponent
 import ru.pavlig43.profitability.api.ProfitabilityDependencies
 import ru.pavlig43.profitability.internal.di.ProfitabilityRepository
 import ru.pavlig43.profitability.internal.di.createModule
-import ru.pavlig43.profitability.internal.model.AllProfitability
+import ru.pavlig43.profitability.internal.model.ProfitabilityProduct
 import ru.pavlig43.profitability.internal.model.ProfitabilityTableData
 import ru.pavlig43.tablecore.manger.FilterManager
 import ru.pavlig43.tablecore.manger.SortManager
@@ -77,7 +77,7 @@ class ProfitabilityComponent(
         when (state) {
             is LoadState.Loading, is LoadState.Error -> ProfitabilityTableData()
             is LoadState.Success -> {
-                val filtered = state.data.products.filter { item ->
+                val filtered = state.data.filter { item ->
                     ProfitabilityFilterMatcher.matchesItem(item, filters)
                 }
                 val displayedProducts = ProfitabilitySorter.sort(filtered, sort).map { product ->
@@ -113,7 +113,7 @@ class ProfitabilityComponent(
 internal sealed interface LoadState {
     data object Loading : LoadState
     data class Error(val message: String) : LoadState
-    data class Success(val data: AllProfitability) : LoadState
+    data class Success(val data: List<ProfitabilityProduct>) : LoadState
 }
 
 private class MutableSetFlow<T>(

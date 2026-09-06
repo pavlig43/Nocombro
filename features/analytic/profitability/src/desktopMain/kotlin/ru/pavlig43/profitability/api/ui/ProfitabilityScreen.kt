@@ -111,15 +111,6 @@ fun ProfitabilityScreen(component: ProfitabilityComponent) {
                         .weight(1f)
                         .fillMaxWidth(),
                 ) {
-                    ProfitabilitySummaryCard(
-                        summary = state.data.summary,
-                        modifier = Modifier.padding(
-                            start = 24.dp,
-                            top = 4.dp,
-                            end = 24.dp,
-                            bottom = 8.dp,
-                        ),
-                    )
                     ProfitabilityTable(
                         state = tableState,
                         tableData = tableData,
@@ -127,7 +118,7 @@ fun ProfitabilityScreen(component: ProfitabilityComponent) {
                         modifier = Modifier
                             .weight(1f)
                             .fillMaxWidth()
-                            .padding(start = 24.dp, end = 24.dp, bottom = 16.dp),
+                            .padding(start = 24.dp, top = 4.dp, end = 24.dp, bottom = 16.dp),
                     )
                 }
             }

@@ -25,31 +25,34 @@ class RealDataProfitabilitySmokeTest : DesktopMainDispatcherFunSpec({
         scenario(
             given = "a real copied database dump",
             whenAction = "profitability is calculated on a wide period",
-            thenResult = "summary and product rows remain internally consistent",
+            thenResult = "product rows match their batch details",
         )
     ).config(enabled = realDataDatabasePath != null) {
         withCopiedTestDatabase(sourceDatabasePath = realDataDatabasePath.shouldNotBeNull()) { db ->
-            val result = ProfitabilityRepository(db)
+            val products = ProfitabilityRepository(db)
                 .observeOnProducts(wideStart, wideEnd)
                 .first()
                 .getOrThrow()
 
-            result.products.shouldNotBeEmpty()
+            products.shouldNotBeEmpty()
 
-            result.summary.totalRevenue.value shouldBe result.products.sumOf { it.revenue.value }
-            result.summary.batchExpenses.value shouldBe result.products.sumOf { it.totalExpenses.value }
-            result.summary.mainExpenses.value shouldBe result.summary.mainExpensesByType.sumOf { it.amount.value }
-            result.summary.profit.value shouldBe (
-                result.summary.totalRevenue.value -
-                    result.summary.batchExpenses.value -
-                    result.summary.mainExpenses.value
-                )
-
-            result.products.take(10).forEach { product ->
+            products.forEach { product ->
                 product.revenue.value shouldBe product.details.sumOf { it.revenue.value }
                 product.totalExpenses.value shouldBe product.details.sumOf { it.expenses.value }
                 product.profit.value shouldBe product.details.sumOf { it.profit.value }
                 product.quantity.value shouldBe product.details.sumOf { it.quantity.value }
+                val expectedMargin = if (product.totalExpenses.value != 0L) {
+                    product.profit.value.toDouble() / product.totalExpenses.value * 100
+                } else {
+                    0.0
+                }
+                product.margin.toBits() shouldBe expectedMargin.toBits()
+
+                product.details.forEach { detail ->
+                    detail.profit.value shouldBe detail.revenue.value - detail.expenses.value
+                    val expectedDetailMargin = detail.profit.value.toDouble() / detail.expenses.value * 100
+                    detail.margin.toBits() shouldBe expectedDetailMargin.toBits()
+                }
             }
         }
     }

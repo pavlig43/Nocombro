@@ -11,7 +11,7 @@
 - ключевые связи seeded-набора не развалены;
 - seeded storage считается с ожидаемыми остатками и накопительными балансами;
 - отчёт денег проверяется по внесённым продажам, закупкам и тратам;
-- seeded profitability считается с ожидаемыми итогами;
+- seeded profitability даёт ожидаемые строки товаров и партий;
 - root bootstrap и открытие ключевых экранов проходят без падений;
 - transaction form для seeded `BUY` и `SALE` собирает ожидаемые вкладки, включая files;
 - product form для seeded `FOOD_PF` продукта собирает expected tabs, включая composition;
@@ -223,8 +223,9 @@
 
 `ProfitabilitySmokeTest`
 
-- seeded profitability по марту 2026 даёт ожидаемые summary totals;
-- продуктовые строки и детали согласованы с seeded sale-данными.
+- seeded profitability по марту 2026 даёт ожидаемые строки товаров и партий;
+- суммы товаров сходятся с партиями;
+- общие расходы и списания материалов не меняют строки товаров.
 
 `MoneyReportComponentSmokeTest` и `MoneyReportCalculatorTest`
 
@@ -237,10 +238,8 @@
 
 `RealDataProfitabilitySmokeTest`
 
-- `summary.totalRevenue` сходится с суммой product revenue;
-- `summary.batchExpenses` сходится с суммой product expenses;
-- `summary.profit` считается консистентно;
-- у выборочных продуктов детали сходятся с агрегатами.
+- у выборочных товаров суммы и маржа сходятся с партиями;
+- прибыль партий равна разнице выручки и расходов.
 
 `RootNocombroFlowSmokeTest`
 
@@ -342,8 +341,8 @@
 
 Если падает `ProfitabilitySmokeTest` или `RealDataProfitabilitySmokeTest`:
 
-- сначала смотреть, ломается ли summary, product row или batch detail;
-- потом сверять, это ошибка распределения расходов, batch cost, sale-данных или сама бизнес-формула profitability.
+- сначала смотреть, ломается ли строка товара или партии;
+- потом сверять распределение расходов, себестоимость партии и данные продажи.
 
 Если падает `RootNocombroFlowSmokeTest`:
 

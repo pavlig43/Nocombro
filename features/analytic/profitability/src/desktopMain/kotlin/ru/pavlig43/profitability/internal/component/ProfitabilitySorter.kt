@@ -22,7 +22,6 @@ internal object ProfitabilitySorter : SortMatcher<ProfitabilityProduct, Profitab
             ProfitabilityField.EXPENSES_ON_ONE_KG -> items.sortedBy { it.expensesOnOneKg }
             ProfitabilityField.PROFIT -> items.sortedBy { it.profit }
             ProfitabilityField.MARGIN -> items.sortedBy { it.margin }
-            ProfitabilityField.PROFITABILITY -> items.sortedBy { it.profitability }
             else -> items
         }
         return if (sort.order == SortOrder.DESCENDING) sorted.asReversed() else sorted
@@ -44,7 +43,6 @@ internal object ProfitabilityDetailSorter : SortMatcher<ProfitabilityBatchDetail
             BatchDetailsField.EXPENSES_ON_ONE_KG -> items.sortedBy { it.expensesOnOneKg }
             BatchDetailsField.PROFIT -> items.sortedBy { it.profit }
             BatchDetailsField.MARGIN -> items.sortedBy { it.margin }
-            BatchDetailsField.PROFITABILITY -> items.sortedBy { it.profitability }
         }
         return if (sort.order == SortOrder.DESCENDING) sorted.asReversed() else sorted
     }

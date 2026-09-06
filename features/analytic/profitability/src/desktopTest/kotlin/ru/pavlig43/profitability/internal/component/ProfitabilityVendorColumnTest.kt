@@ -25,10 +25,10 @@ class ProfitabilityVendorColumnTest : DesktopMainDispatcherFunSpec({
                 LocalDateTime(2026, 3, 1, 0, 0),
                 LocalDateTime(2026, 3, 31, 23, 59, 59),
             ).first().getOrThrow()
-            val product = result.products.single()
+            val product = result.single()
 
             product.vendorNames shouldBe "ИП Гармаш"
-            result.summary.totalRevenue.value shouldBe 7_920_000L
+            product.revenue.value shouldBe 7_920_000L
             ProfitabilityFilterMatcher.matchesItem(
                 product,
                 mapOf(

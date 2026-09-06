@@ -42,8 +42,7 @@ enum class ProfitabilityField {
     EXPENSES,
     EXPENSES_ON_ONE_KG,
     PROFIT,
-    MARGIN,
-    PROFITABILITY
+    MARGIN
 }
 @Suppress("LongMethod")
 internal fun createProfitabilityColumns(
@@ -161,7 +160,7 @@ internal fun createProfitabilityColumns(
             title { "Маржа" }
             autoWidth()
             align(Alignment.Center)
-            cell { item, tableData ->
+            cell { item, _ ->
                 Text("%,.2f".format(item.margin))
             }
             sortable()
@@ -171,31 +170,6 @@ internal fun createProfitabilityColumns(
                 val totalExpenses = tableData.displayedProducts.sumOfDecimal2 { it.totalExpenses }
                 val text = if (totalExpenses != DecimalData2(0)) {
                     val value = (totalProfit.toDouble() / totalExpenses.toDouble()) * 100
-                    "%,.2f".format(value)
-                } else {
-                    ""
-                }
-                Text(text)
-            }
-        }
-
-        column(
-            ProfitabilityField.PROFITABILITY,
-            valueOf = { it.profitability }
-        ) {
-            title { "Рентабельность" }
-            autoWidth()
-            align(Alignment.Center)
-            cell { item, tableData ->
-                Text("%,.2f".format(item.profitability))
-            }
-            sortable()
-            filter(TableFilterType.NumberTableFilter(delegate = TableFilterType.NumberTableFilter.DoubleDelegate))
-            footer { tableData ->
-                val totalProfit = tableData.displayedProducts.sumOfDecimal2 { it.profit }
-                val totalRevenue = tableData.displayedProducts.sumOfDecimal2 { it.revenue }
-                val text = if (totalRevenue != DecimalData2(0)) {
-                    val value = (totalProfit.toDouble() / totalRevenue.toDouble()) * 100
                     "%,.2f".format(value)
                 } else {
                     ""
@@ -214,8 +188,7 @@ enum class BatchDetailsField {
     EXPENSES,
     EXPENSES_ON_ONE_KG,
     PROFIT,
-    MARGIN,
-    PROFITABILITY
+    MARGIN
 }
 
 @Suppress("LongMethod")
@@ -291,16 +264,4 @@ internal fun createBatchDetailsColumns(): ImmutableList<ColumnSpec<Profitability
 
         }
 
-        column(
-            BatchDetailsField.PROFITABILITY,
-            valueOf = { it.profitability }
-        ) {
-            title { "Рентабельность" }
-            align(Alignment.Center)
-            cell { item, tableData ->
-                Text("%,.2f".format(item.profitability))
-            }
-//            filter(TableFilterType.NumberTableFilter(delegate = TableFilterType.NumberTableFilter.DoubleDelegate))
-
-        }
     }

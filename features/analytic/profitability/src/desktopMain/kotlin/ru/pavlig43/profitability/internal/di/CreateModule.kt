@@ -3,7 +3,7 @@ package ru.pavlig43.profitability.internal.di
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.datetime.LocalDateTime
 import org.koin.dsl.module
 import ru.pavlig43.core.mapParallel
@@ -12,11 +12,8 @@ import ru.pavlig43.core.model.DecimalData3
 import ru.pavlig43.core.model.toVendorNamesText
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.profitability.api.ProfitabilityDependencies
-import ru.pavlig43.profitability.internal.model.AllProfitability
-import ru.pavlig43.profitability.internal.model.ExpenseByType
 import ru.pavlig43.profitability.internal.model.ProfitabilityBatchDetails
 import ru.pavlig43.profitability.internal.model.ProfitabilityProduct
-import ru.pavlig43.profitability.internal.model.ProfitabilitySummary
 import kotlin.math.roundToLong
 
 internal fun createModule(dependencies: ProfitabilityDependencies) = listOf(
@@ -26,21 +23,16 @@ internal fun createModule(dependencies: ProfitabilityDependencies) = listOf(
     })
 
 internal class ProfitabilityRepository(
-    db: NocombroDatabase
+    db: NocombroDatabase,
 ) {
     private val dao = db.profitabilityDao
-    private val expenseDao = db.expenseDao
 
-@Suppress("LongMethod")
+    @Suppress("LongMethod")
     fun observeOnProducts(
         start: LocalDateTime,
-        end: LocalDateTime
-    ): Flow<Result<AllProfitability>> {
-        return combine(
-            expenseDao.observeMainExpense(start, end),
-            dao.observeOnSale(start, end),
-            dao.observeMaterialWriteOffCost(start, end),
-        ) { expenses, sales, materialWriteOffCost ->
+        end: LocalDateTime,
+    ): Flow<Result<List<ProfitabilityProduct>>> {
+        return dao.observeOnSale(start, end).map { sales ->
             runCatching {
                 // Группируем продажи по транзакциям для распределения расходов транзакции
                 val quantityFromTransaction =
@@ -82,7 +74,6 @@ internal class ProfitabilityRepository(
                             val expensesOnOneKg =
                                 (itemExpenses * 1000 / saleQuantity.toDouble()).roundToLong()
                             val margin = profit.toDouble() / itemExpenses * 100
-                            val profitability = profit.toDouble() / revenue * 100
 
                             ProfitabilityBatchDetails(
                                 contrAgentId = sale.client.id,
@@ -103,7 +94,6 @@ internal class ProfitabilityRepository(
                                 expensesOnOneKg = DecimalData2(expensesOnOneKg),
                                 profit = profit.let { DecimalData2(it) },
                                 margin = margin,
-                                profitability = profitability
                             )
                         }
                         val profit = allRevenue - productExpenses
@@ -112,9 +102,6 @@ internal class ProfitabilityRepository(
                         } else 0L
                         val margin = if (productExpenses != 0L) {
                             profit.toDouble() / productExpenses * 100
-                        } else 0.0
-                        val profitability = if (allRevenue != 0L) {
-                            profit.toDouble() / allRevenue * 100
                         } else 0.0
 
                         ProfitabilityProduct(
@@ -129,33 +116,11 @@ internal class ProfitabilityRepository(
                             expensesOnOneKg = DecimalData2(expensesOnOneKg),
                             profit = DecimalData2(profit),
                             margin = margin,
-                            profitability = profitability,
-                            details = details
+                            details = details,
                         )
                     }
-
-                val totalRevenue = products.sumOf { it.revenue.value }
-                val batchExpenses = products.sumOf { it.totalExpenses.value }
-                val totalMainExpenses = expenses.sumOf { it.amount } + materialWriteOffCost
-                val profit = totalRevenue - batchExpenses - totalMainExpenses
-                val mainExpensesByType = expenses
-                    .groupBy { it.expenseType }
-                    .map { (type, list) ->
-                        ExpenseByType(type, DecimalData2(list.sumOf { it.amount }))
-                    }
-
-                val summary = ProfitabilitySummary(
-                    totalRevenue = DecimalData2(totalRevenue),
-                    batchExpenses = DecimalData2(batchExpenses),
-                    materialWriteOffExpenses = DecimalData2(materialWriteOffCost),
-                    mainExpenses = DecimalData2(totalMainExpenses),
-                    profit = DecimalData2(profit),
-                    mainExpensesByType = mainExpensesByType
-                )
-                AllProfitability(summary = summary, products = products)
+                products
             }
-
-
         }
     }
 }

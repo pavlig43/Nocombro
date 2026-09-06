@@ -6,6 +6,8 @@ import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.flow.first
 import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.database.data.batch.StorageLocation
+import ru.pavlig43.database.data.expense.ExpenseBD
+import ru.pavlig43.database.data.expense.ExpenseType
 import ru.pavlig43.database.data.storage.StorageOperationsRepository
 import ru.pavlig43.database.data.storage.StorageWriteOffRequest
 import ru.pavlig43.database.data.transact.StockOperationReason
@@ -22,24 +24,18 @@ class ProfitabilitySmokeTest : DesktopMainDispatcherFunSpec({
         scenario(
             given = "the seeded database",
             whenAction = "profitability is calculated for March 2026",
-            thenResult = "summary and product rows stay stable",
+            thenResult = "product and batch totals stay stable",
         )
     ) {
         withSeededTestDatabase { db ->
-            val result = ProfitabilityRepository(db)
+            val products = ProfitabilityRepository(db)
                 .observeOnProducts(marchStart, marchEnd)
                 .first()
                 .getOrThrow()
 
-            result.products.shouldHaveSize(1)
+            products.shouldHaveSize(1)
 
-            result.summary.totalRevenue.value shouldBe 7_920_000L
-            result.summary.batchExpenses.value shouldBe 1_253_170L
-            result.summary.mainExpenses.value shouldBe 0L
-            result.summary.profit.value shouldBe 6_666_830L
-            result.summary.mainExpensesByType.shouldHaveSize(0)
-
-            result.products.single().apply {
+            products.single().apply {
                 productName shouldBe "Колбаски Баварские"
                 quantity.value shouldBe 66_000L
                 revenue.value shouldBe 7_920_000L
@@ -47,20 +43,40 @@ class ProfitabilitySmokeTest : DesktopMainDispatcherFunSpec({
                 expensesOnOneKg.value shouldBe 18_987L
                 profit.value shouldBe 6_666_830L
                 margin shouldBe (531.9972549614179 plusOrMinus 0.000001)
-                profitability shouldBe (84.17714646464647 plusOrMinus 0.000001)
                 details.shouldHaveSize(4)
+                quantity.value shouldBe details.sumOf { it.quantity.value }
+                revenue.value shouldBe details.sumOf { it.revenue.value }
+                totalExpenses.value shouldBe details.sumOf { it.expenses.value }
+                profit.value shouldBe details.sumOf { it.profit.value }
+                details.forEach { detail ->
+                    detail.margin shouldBe (
+                        (detail.profit.value.toDouble() / detail.expenses.value * 100) plusOrMinus 0.000001
+                    )
+                }
             }
         }
     }
 
-    test("material write off reduces profit once without changing sales cost") {
+    test("general expenses and material write offs do not change product rows") {
         withSeededTestDatabase { db ->
-            val operations = StorageOperationsRepository(db)
-            val preview = operations.preview(
-                batchId = 1,
-                source = StorageLocation.MAIN,
-                count = 1_000,
+            val repository = ProfitabilityRepository(db)
+            val before = repository.observeOnProducts(marchStart, marchEnd).first().getOrThrow()
+
+            db.expenseDao.insertExpense(
+                ExpenseBD(
+                    transactionId = null,
+                    expenseType = ExpenseType.OTHER,
+                    amount = 999_999L,
+                    expenseDateTime = LocalDateTime(2026, 3, 15, 12, 0),
+                    comment = "profitability test",
+                )
             )
+            val afterGeneralExpense = repository
+                .observeOnProducts(marchStart, marchEnd)
+                .first()
+                .getOrThrow()
+
+            val operations = StorageOperationsRepository(db)
             operations.writeOff(
                 StorageWriteOffRequest(
                     batchId = 1,
@@ -71,16 +87,13 @@ class ProfitabilitySmokeTest : DesktopMainDispatcherFunSpec({
                     comment = "profitability test",
                 )
             ).getOrThrow()
-
-            val result = ProfitabilityRepository(db)
+            val afterMaterialWriteOff = repository
                 .observeOnProducts(marchStart, marchEnd)
                 .first()
                 .getOrThrow()
 
-            result.summary.materialWriteOffExpenses.value shouldBe preview.selectedCost
-            result.summary.mainExpenses.value shouldBe preview.selectedCost
-            result.summary.batchExpenses.value shouldBe 1_253_170L
-            result.summary.profit.value shouldBe 6_666_830L - preview.selectedCost
+            afterGeneralExpense shouldBe before
+            afterMaterialWriteOff shouldBe before
         }
     }
 })
