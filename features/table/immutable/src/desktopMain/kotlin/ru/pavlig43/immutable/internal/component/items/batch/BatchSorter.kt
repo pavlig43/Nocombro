@@ -11,7 +11,7 @@ internal object BatchSorter :
         sort: SortState<BatchField>?,
     ): List<BatchTableUi> {
         if (sort == null) {
-            return items
+            return items.sortedBy { it.dateBorn }
         }
 
         val sortedList =
