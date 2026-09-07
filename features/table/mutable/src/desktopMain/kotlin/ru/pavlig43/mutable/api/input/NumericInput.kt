@@ -43,6 +43,15 @@ internal fun DecimalData.toDecimalInputText(): String {
     return if (fraction.isEmpty()) whole.toString() else "$whole.$fraction"
 }
 
+/**
+ * Обновляет текст редактора, только если модель изменилась не из этого поля.
+ * Незавершённый ввод вроде `1.` не затирается, пока он равен значению модели.
+ */
+internal fun String.syncWithDecimalModel(data: DecimalData): String {
+    val displayedValue = toDecimalInputOrNull(data.countDecimal)?.value
+    return if (displayedValue == data.value) this else data.toDecimalInputText()
+}
+
 /** Оставляет цифры, одну точку и допустимое число знаков после неё. */
 internal fun String.normalizeDecimalInput(decimalPlaces: Int): String {
     require(decimalPlaces >= 0) { "decimalPlaces must not be negative" }

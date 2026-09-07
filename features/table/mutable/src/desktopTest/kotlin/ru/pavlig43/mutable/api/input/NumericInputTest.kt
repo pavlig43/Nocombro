@@ -3,6 +3,7 @@ package ru.pavlig43.mutable.api.input
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import ru.pavlig43.core.model.DecimalData2
+import ru.pavlig43.core.model.DecimalData3
 
 class NumericInputTest : FunSpec({
     context("decimal input") {
@@ -33,6 +34,14 @@ class NumericInputTest : FunSpec({
             DecimalData2(1150L).toDecimalInputText() shouldBe "11.5"
             DecimalData2(115000L).toDecimalInputText() shouldBe "1150"
             DecimalData2(115050L).toDecimalInputText() shouldBe "1150.5"
+        }
+
+        test("external model update replaces stale editor text") {
+            "24".syncWithDecimalModel(DecimalData3(15_000)) shouldBe "15"
+        }
+
+        test("equivalent unfinished editor text is preserved") {
+            "1.".syncWithDecimalModel(DecimalData3(1_000)) shouldBe "1."
         }
     }
 

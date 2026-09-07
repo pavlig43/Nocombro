@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -16,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import ru.pavlig43.core.model.DecimalData
 import ru.pavlig43.core.model.toStartDoubleFormat
 import ru.pavlig43.mutable.api.input.normalizeDecimalInput
+import ru.pavlig43.mutable.api.input.syncWithDecimalModel
 import ru.pavlig43.mutable.api.input.toDecimalInputText
 import ru.pavlig43.mutable.api.input.toDecimalInputOrNull
 import ua.wwind.table.EditableColumnBuilder
@@ -145,6 +147,10 @@ private fun<DECIMAL: DecimalData> TableCellTextFieldNumber(
     // Отображаемое значение, должно быть всегда, хоть изменение и реактивное, но если введенное
     // значение нельзя привести к числовому формату то функция обновления не сработает
     var displayValue by remember { mutableStateOf(data.toDecimalInputText()) }
+
+    LaunchedEffect(data.value) {
+        displayValue = displayValue.syncWithDecimalModel(data)
+    }
 
     TableCellTextFieldWithTooltipError(
         value = displayValue,

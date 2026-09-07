@@ -14,7 +14,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
-import ru.pavlig43.coreui.ValidationErrorsCard
 import ru.pavlig43.immutable.api.ui.MBSImmutableTable
 import ru.pavlig43.mutable.api.multiLine.ui.MutableTableBox
 
@@ -24,7 +23,6 @@ internal fun SaleScreen(
 ) {
     val dialog by component.dialog.subscribeAsState()
     val enabledFillButton by component.enabledFillButton.collectAsState()
-    val fillBatchesState by component.fillBatchesState.collectAsState()
 
     Column {
         Row(
@@ -47,13 +45,6 @@ internal fun SaleScreen(
             modifier = Modifier.weight(1f),
             tableSettingsModify = { settings -> settings.copy(showFooter = true) },
         )
-
-        if (fillBatchesState is FillSaleBatchesState.Deficit) {
-            ValidationErrorsCard(
-                errorMessages = (fillBatchesState as FillSaleBatchesState.Deficit).messages,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-            )
-        }
     }
 
     dialog.child?.instance?.also { dialogChild ->
