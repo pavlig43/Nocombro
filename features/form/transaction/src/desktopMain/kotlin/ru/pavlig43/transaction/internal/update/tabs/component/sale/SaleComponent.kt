@@ -34,6 +34,8 @@ import ru.pavlig43.mutable.api.multiLine.component.MutableUiEvent
 import ru.pavlig43.mutable.api.multiLine.component.MutableUiEvent.UpdateItem
 import ru.pavlig43.mutable.api.multiLine.data.UpdateCollectionRepository
 import ru.pavlig43.tablecore.model.TableData
+import ru.pavlig43.transaction.internal.update.tabs.component.batchBalanceAdjustments
+import ru.pavlig43.transaction.internal.update.tabs.component.duplicateBatchIds
 import ua.wwind.table.ColumnSpec
 
 internal class SaleComponent(
@@ -174,7 +176,13 @@ internal class SaleComponent(
                     onDismissed = dialogNavigation::dismiss,
                     dependencies = immutableTableDependencies,
                     immutableTableBuilderData = BatchImmutableTableBuilder(
-                        parentId = dialogConfig.productId
+                        parentId = dialogConfig.productId,
+                        balanceAdjustments = batchBalanceAdjustments(
+                            initialItems = initDataComponent.firstData.value.orEmpty(),
+                            currentItems = itemList.value,
+                            batchIdOf = SaleUi::batchId,
+                            countOf = { it.count.value },
+                        ),
                     ),
                     tabOpener = tabOpener,
                     onItemClick = { batch ->
@@ -298,6 +306,7 @@ internal class SaleComponent(
             if (lst.map { it.clientId }.toSet().size != 1) {
                 add("Клиенты должны быть одинаковы")
             }
+            val duplicateBatches = lst.duplicateBatchIds(SaleUi::batchId)
             lst.forEach { saleUi ->
                 val place = "В строке ${saleUi.composeId + 1}"
                 if (saleUi.productId == 0) add("$place не указан продукт")
@@ -305,6 +314,9 @@ internal class SaleComponent(
                 if (saleUi.count.value == 0L) add("$place количество равно 0")
                 if (saleUi.clientId == 0) add("$place не выбран клиент")
                 if (saleUi.price.value == 0L) add("$place не выбрана цена")
+                if (saleUi.batchId in duplicateBatches) {
+                    add("$place партия уже указана")
+                }
             }
         }
     }

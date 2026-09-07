@@ -284,6 +284,41 @@ class FillIngredientsRepositoryTest : DesktopMainDispatcherFunSpec({
                 component.itemList.value.map { Triple(it.productId, it.batchId, it.balance.value) }
         }
     }
+
+    test("duplicate batches in saved OPZS rows mark every duplicate row invalid") {
+        withSeededTestDatabase { db ->
+            val rows = listOf(
+                requiredIngredient(1, "Мука", 1_000).copy(id = 1, batchId = 7),
+                requiredIngredient(1, "Мука", 2_000).copy(id = 2, batchId = 7),
+            )
+            val component = runOnUiThread {
+                IngredientComponent(
+                    componentComponent = DefaultComponentContext(LifecycleRegistry()),
+                    transactionId = 10,
+                    tabOpener = NoopTabOpener,
+                    pfFlow = MutableStateFlow(PfUi()),
+                    immutableTableDependencies = ImmutableTableDependencies(db),
+                    repository = object : UpdateCollectionRepository<IngredientBD, IngredientBD> {
+                        override suspend fun getInit(id: Int): Result<List<IngredientBD>> =
+                            Result.success(rows)
+
+                        override suspend fun update(
+                            changeSet: ChangeSet<List<IngredientBD>>,
+                        ): Result<Unit> = Result.success(Unit)
+                    },
+                    fillIngredientsRepository = FillIngredientsRepository(db),
+                )
+            }
+            waitUntil { component.itemList.value.size == 2 }
+
+            component.errorMessages.first { errors ->
+                errors.count { it.endsWith("партия уже указана") } == 2
+            }.filter { it.endsWith("партия уже указана") } shouldContainExactly listOf(
+                "В строке 1 партия уже указана",
+                "В строке 2 партия уже указана",
+            )
+        }
+    }
 })
 
 private fun requiredIngredient(

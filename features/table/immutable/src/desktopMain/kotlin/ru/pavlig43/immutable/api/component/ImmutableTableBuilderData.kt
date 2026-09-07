@@ -70,7 +70,9 @@ data class TransactionImmutableTableBuilder(
 }
 
 data class BatchImmutableTableBuilder(
-    override val parentId: Int
+    override val parentId: Int,
+    val excludedBatchIds: Set<Int> = emptySet(),
+    val balanceAdjustments: Map<Int, Long> = emptyMap(),
 ): ImmutableTableBuilderData<ru.pavlig43.immutable.internal.component.items.batch.BatchTableUi> {
     override val tabTitle: String = "Партии"
     override val withCheckbox: Boolean = false

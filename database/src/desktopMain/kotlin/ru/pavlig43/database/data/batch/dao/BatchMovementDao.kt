@@ -128,18 +128,15 @@ abstract class BatchMovementDao {
                         MovementType.OUTGOING -> acc - count
                     }
                 }
-                if (balance > 0) {
-                    val first = movements.first()
-                    BatchWithBalanceOut(
-                        batchId = first.movement.batchId,
-                        balance = balance,
-                        productName = first.batchOut.product.displayName,
-                        vendorName = first.batchOut.declaration.vendorName,
-                        dateBorn = first.batchOut.batch.dateBorn
-                    )
-                } else null
-
-            }.filterNotNull()
+                val first = movements.first()
+                BatchWithBalanceOut(
+                    batchId = first.movement.batchId,
+                    balance = balance,
+                    productName = first.batchOut.product.displayName,
+                    vendorName = first.batchOut.declaration.vendorName,
+                    dateBorn = first.batchOut.batch.dateBorn
+                )
+            }
         }
     }
 

@@ -43,6 +43,7 @@ internal abstract class ImmutableTableComponent<BD, UI : IMultiLineTableUi, Colu
     searchMatcher: SearchMatcher<UI>,
     sortMatcher: SortMatcher<UI, Column>,
     val repository: ImmutableListRepository<BD>,
+    itemListPreprocessor: (List<UI>) -> List<UI> = { it },
 
     ) : ComponentContext by componentContext {
 
@@ -97,7 +98,7 @@ internal abstract class ImmutableTableComponent<BD, UI : IMultiLineTableUi, Colu
             is ItemListState.Loading -> TableData(isSelectionMode = tableBuilder.withCheckbox)
 
             is ItemListState.Success -> {
-                val filtered = state.data.filter { ui ->
+                val filtered = itemListPreprocessor(state.data).filter { ui ->
                     filterMatcher.matchesItem(ui, filters)
                 }
                 val searched = filtered.filterBySearch(query, searchMatcher)

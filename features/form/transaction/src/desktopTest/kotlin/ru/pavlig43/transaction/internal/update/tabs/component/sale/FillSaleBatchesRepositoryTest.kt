@@ -335,6 +335,40 @@ class FillSaleBatchesRepositoryTest : DesktopMainDispatcherFunSpec({
             component.enabledFillButton.value.shouldBeTrue()
         }
     }
+
+    test("duplicate batches in saved sale rows mark every duplicate row invalid") {
+        withSeededTestDatabase { db ->
+            val rows = listOf(
+                sale(count = 1_000, id = 1, syncId = "sale-1", batchId = 7),
+                sale(count = 2_000, id = 2, syncId = "sale-2", batchId = 7),
+            )
+            val component = runOnUiThread {
+                SaleComponent(
+                    componentComponent = DefaultComponentContext(LifecycleRegistry()),
+                    transactionId = 10,
+                    tabOpener = NoopTabOpener,
+                    immutableTableDependencies = ImmutableTableDependencies(db),
+                    repository = object : UpdateCollectionRepository<SaleBDOut, SaleBDOut> {
+                        override suspend fun getInit(id: Int): Result<List<SaleBDOut>> =
+                            Result.success(rows)
+
+                        override suspend fun update(
+                            changeSet: ChangeSet<List<SaleBDOut>>,
+                        ): Result<Unit> = Result.success(Unit)
+                    },
+                    fillSaleBatchesRepository = DefaultFillSaleBatchesRepository(db),
+                )
+            }
+            waitUntil { component.itemList.value.size == 2 }
+
+            component.errorMessages.first { errors ->
+                errors.count { it.endsWith("партия уже указана") } == 2
+            }.filter { it.endsWith("партия уже указана") } shouldContainExactly listOf(
+                "В строке 1 партия уже указана",
+                "В строке 2 партия уже указана",
+            )
+        }
+    }
 })
 
 private fun sale(

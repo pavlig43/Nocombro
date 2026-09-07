@@ -24,7 +24,11 @@ internal class BatchTableComponent(
     tableBuilder = tableBuilder,
     onCreate = onCreate,
     onItemClick = onItemClick,
-    mapper = { this.toUi() },
+    mapper = {
+        toUi(
+            balanceAdjustment = tableBuilder.balanceAdjustments[batchId] ?: 0L,
+        )
+    },
     filterMatcher = BatchFilterMatcher,
     searchMatcher = displayedTextSearchMatcher { item ->
         listOf(
@@ -37,6 +41,11 @@ internal class BatchTableComponent(
     },
     sortMatcher = BatchSorter,
     repository = repository,
+    itemListPreprocessor = { items ->
+        items.filter { item ->
+            (item.balance.value > 0L) && (item.batchId !in tableBuilder.excludedBatchIds)
+        }
+    },
 ) {
     @Suppress("MaxLineLength")
     override val columns: ImmutableList<ColumnSpec<BatchTableUi, BatchField, TableData<BatchTableUi>>> =
@@ -50,11 +59,11 @@ internal class BatchTableComponent(
         )
 }
 
-private fun BatchWithBalanceOut.toUi(): BatchTableUi {
+private fun BatchWithBalanceOut.toUi(balanceAdjustment: Long): BatchTableUi {
     return BatchTableUi(
         composeId = batchId,
         batchId = batchId,
-        balance = DecimalData3(balance),
+        balance = DecimalData3(balance + balanceAdjustment),
         productName = productName,
         vendorName = vendorName,
         dateBorn = dateBorn

@@ -31,6 +31,8 @@ import ru.pavlig43.mutable.api.multiLine.component.MutableTableComponent
 import ru.pavlig43.mutable.api.multiLine.component.MutableUiEvent.UpdateItem
 import ru.pavlig43.mutable.api.multiLine.data.UpdateCollectionRepository
 import ru.pavlig43.tablecore.model.TableData
+import ru.pavlig43.transaction.internal.update.tabs.component.batchBalanceAdjustments
+import ru.pavlig43.transaction.internal.update.tabs.component.duplicateBatchIds
 import ru.pavlig43.transaction.internal.update.tabs.component.opzs.ingredients.DialogChild.ImmutableMBS
 import ru.pavlig43.transaction.internal.update.tabs.component.opzs.pf.PfUi
 import ua.wwind.table.ColumnSpec
@@ -173,7 +175,13 @@ internal class IngredientComponent(
                         onDismissed = dialogNavigation::dismiss,
                         dependencies = immutableTableDependencies,
                         immutableTableBuilderData = BatchImmutableTableBuilder(
-                            parentId = dialogConfig.productId
+                            parentId = dialogConfig.productId,
+                            balanceAdjustments = batchBalanceAdjustments(
+                                initialItems = initDataComponent.firstData.value.orEmpty(),
+                                currentItems = itemList.value,
+                                batchIdOf = IngredientUi::batchId,
+                                countOf = { it.balance.value },
+                            ),
                         ),
                         tabOpener = tabOpener,
                         onItemClick = { batch ->
@@ -263,10 +271,7 @@ internal class IngredientComponent(
                 addAll(fillState.messages)
             }
             if (lst.isEmpty()) add("Не указаны ингредиенты")
-            val duplicateBatches = lst
-                .groupBy { it.batchId }
-                .filter { it.key != 0 && it.value.size > 1 }
-                .keys
+            val duplicateBatches = lst.duplicateBatchIds(IngredientUi::batchId)
             lst.forEach { ingredientUi ->
                 val place = "В строке ${ingredientUi.composeId + 1}"
                 if (ingredientUi.productId == 0) add("$place не указан продукт")
