@@ -20,6 +20,7 @@ import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import kotlinx.collections.immutable.toImmutableList
 import ru.pavlig43.coreui.ErrorScreen
 import ru.pavlig43.coreui.LoadingUi
+import ru.pavlig43.coreui.ValidationErrorsCard
 import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.immutable.api.ui.MBSImmutableTable
 import ru.pavlig43.mutable.api.multiLine.ui.MutableTableBox
@@ -29,7 +30,7 @@ import ua.wwind.table.format.rememberCustomization
 
 @Composable
 internal fun IngredientScreen(
-    component: IngredientComponent
+    component: IngredientComponent,
 ) {
 
     val rules = remember {
@@ -70,16 +71,26 @@ internal fun IngredientScreen(
             is LoadCompositionState.Error -> ErrorScreen(
                 message = (loadCompositionState as LoadCompositionState.Error).message
             )
+            is LoadCompositionState.Deficit -> Unit
             is LoadCompositionState.Success -> Unit
         }
 
         MutableTableBox(
             component = component,
+            modifier = Modifier.weight(1f),
             tableSettingsModify = { ts -> ts.copy(
                 stripedRows = false,
-                showFooter = true) },
-            tableCustomization = customization
+                showFooter = true,
+            ) },
+            tableCustomization = customization,
         )
+
+        if (loadCompositionState is LoadCompositionState.Deficit) {
+            ValidationErrorsCard(
+                errorMessages = (loadCompositionState as LoadCompositionState.Deficit).messages,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+            )
+        }
     }
 
     dialog.child?.instance?.also { dialogChild ->
@@ -92,7 +103,8 @@ internal fun IngredientScreen(
 @Composable
 private fun FillButton(
     enabled: Boolean,
-    onClick: () -> Unit) {
+    onClick: () -> Unit,
+) {
     Row(
         modifier = Modifier.padding(16.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp)

@@ -85,6 +85,34 @@ abstract class BatchMovementDao {
     @Query("SELECT * FROM batch_movement WHERE storage_location = 'MAIN' AND deleted_at IS NULL")
     abstract fun observeAllMovementsWithBatch(): Flow<List<MovementOut>>
 
+    /**
+     * Читает активные движения партий нужных продуктов на основном складе.
+     *
+     * Движения правимой ОПЗС не входят в выборку, поэтому её старое списание
+     * не занижает доступный остаток при новом подборе.
+     *
+     * @param productIds продукты из состава ПФ
+     * @param excludedTransactionId ID правимой ОПЗС
+     */
+    @Transaction
+    @Query(
+        """
+        SELECT movement.*
+        FROM batch_movement AS movement
+        INNER JOIN batch AS source_batch ON source_batch.id = movement.batch_id
+        WHERE source_batch.product_id IN (:productIds)
+          AND source_batch.deleted_at IS NULL
+          AND movement.deleted_at IS NULL
+          AND movement.storage_location = 'MAIN'
+          AND movement.transaction_id != :excludedTransactionId
+        ORDER BY source_batch.product_id, source_batch.date_born, source_batch.id, movement.id
+        """
+    )
+    abstract suspend fun getActiveMainMovementsForProducts(
+        productIds: List<Int>,
+        excludedTransactionId: Int,
+    ): List<MovementOut>
+
 
 
 

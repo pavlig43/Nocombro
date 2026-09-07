@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted.Companion.Eagerly
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -50,45 +50,72 @@ internal class IngredientComponent(
     title = "Ингредиенты",
     sortMatcher = IngredientSorter,
     filterMatcher = IngredientFilterMatcher,
-    repository = repository
+    repository = repository,
 ) {
     private val _loadCompositionState =
         MutableStateFlow<LoadCompositionState>(LoadCompositionState.Success)
     val loadCompositionState = _loadCompositionState.asStateFlow()
     private val dialogNavigation = SlotNavigation<IngredientDialog>()
 
+    /** Сбрасывает лишь дефицит; ошибки чтения БД остаются до нового запроса. */
+    fun onPfProductOrCountChanged() {
+        if (_loadCompositionState.value is LoadCompositionState.Deficit) {
+            _loadCompositionState.value = LoadCompositionState.Success
+        }
+    }
 
+    /**
+     * Считает строки сырья по текущему ПФ.
+     * При дефиците оставляет таблицу без правок и публикует ошибки для формы.
+     */
     @Suppress("MagicNumber")
     fun fillFromPf() {
         val pf = pfFlow.value
         if (pf.productId == 0) return
         _loadCompositionState.update { LoadCompositionState.Loading }
         coroutineScope.launch(Dispatchers.IO) {
-            loadItemsOutside(
-                getData = {
-                    fillIngredientsRepository.getIngredientsFromComposition(
-                        productId = pf.productId,
-                        transactionId = transactionId,
+            val fillResult = fillIngredientsRepository.fillIngredientsFromComposition(
+                productId = pf.productId,
+                transactionId = transactionId,
+                countPf = pf.count.value,
+            )
+            if (
+                (pfFlow.value.productId != pf.productId) ||
+                (pfFlow.value.count.value != pf.count.value)
+            ) {
+                _loadCompositionState.value = LoadCompositionState.Success
+                return@launch
+            }
 
-                        countPf = pf.count.value
+            fillResult.fold(
+                onSuccess = { result ->
+                    when (result) {
+                        is FillIngredientsResult.Ready -> loadItemsOutside(
+                            getData = { Result.success(result.ingredients) },
+                            handleSuccess = {
+                                _loadCompositionState.value = LoadCompositionState.Success
+                            },
+                            handleError = { throwable ->
+                                _loadCompositionState.value = LoadCompositionState.Error(
+                                    throwable.message ?: "unknown"
+                                )
+                            },
+                        )
+
+                        is FillIngredientsResult.Deficit -> {
+                            _loadCompositionState.value = LoadCompositionState.Deficit(
+                                result.deficits.map(IngredientDeficit::toMessage)
+                            )
+                        }
+                    }
+                },
+                onFailure = { throwable ->
+                    _loadCompositionState.value = LoadCompositionState.Error(
+                        throwable.message ?: "unknown",
                     )
                 },
-                handleSuccess = {
-                    _loadCompositionState.update {
-                        LoadCompositionState.Success
-                    }
-                },
-                handleError = { t ->
-                    _loadCompositionState.update {
-                        LoadCompositionState.Error(
-                            t.message ?: "unknown"
-                        )
-                    }
-                }
             )
         }
-
-
     }
 
     internal val dialog = childSlot(
@@ -96,15 +123,15 @@ internal class IngredientComponent(
         key = "ingredient_dialog",
         serializer = IngredientDialog.serializer(),
         handleBackButton = true,
-        childFactory = ::createDialogChild
+        childFactory = ::createDialogChild,
     )
 
-    val enabledFillButton: StateFlow<Boolean> = pfFlow.map {
-        it.productId != 0 && loadCompositionState.value !is LoadCompositionState.Loading
+    val enabledFillButton: StateFlow<Boolean> = combine(pfFlow, loadCompositionState) { pf, state ->
+        pf.productId != 0 && state !is LoadCompositionState.Loading
     }.stateIn(
         coroutineScope,
         started = Eagerly,
-        initialValue = false
+        initialValue = false,
     )
 
     private fun createDialogChild(
@@ -227,8 +254,14 @@ internal class IngredientComponent(
         initDataComponent.retryLoadInitData()
     }
 
-    override val errorMessages: Flow<List<String>> = itemList.map { lst ->
+    override val errorMessages: Flow<List<String>> = combine(
+        itemList,
+        loadCompositionState,
+    ) { lst, fillState ->
         buildList {
+            if (fillState is LoadCompositionState.Deficit) {
+                addAll(fillState.messages)
+            }
             if (lst.isEmpty()) add("Не указаны ингредиенты")
             val duplicateBatches = lst
                 .groupBy { it.batchId }
@@ -264,4 +297,13 @@ internal sealed interface LoadCompositionState {
     data object Loading : LoadCompositionState
     data object Success : LoadCompositionState
     data class Error(val message: String) : LoadCompositionState
+
+    /** Ошибки нехватки сырья, которые блокируют сохранение формы. */
+    data class Deficit(val messages: List<String>) : LoadCompositionState
 }
+
+private fun IngredientDeficit.toMessage(): String =
+    "Сырьё «$productName»: не хватает ${missingCount.toKilograms()} кг"
+
+private fun Long.toKilograms(): String =
+    "${this / 1000},${(this % 1000).toString().padStart(3, '0')}"

@@ -54,12 +54,24 @@ internal class TransactionFormTabsComponent(
     /** Тип старой транзакции, для которой открыты лишь безопасные общие вкладки. */
     val unsupportedTransactionType = _unsupportedTransactionType.asStateFlow()
     private var tabNavigationComponentRef: TabNavigationComponent<TransactionTab, TransactionTabChild>? = null
+    private var ingredientComponentRef: IngredientComponent? = null
     private var pendingInitialTransaction: TransactionEssentialsUi? = null
 
 
     private fun observeOnTransaction(transaction: TransactionEssentialsUi) {
         observeOnItem(transaction)
         essentialsFields.update { transaction }
+    }
+
+    /** Передаёт новый ПФ вкладке сырья и сбрасывает её дефицит при смене продукта или веса. */
+    private fun observeOnPf(newPf: PfUi) {
+        val oldPf = pfFlow.value
+        pfFlow.value = newPf
+        val productOrCountChanged =
+            oldPf.productId != newPf.productId || oldPf.count.value != newPf.count.value
+        if (productOrCountChanged) {
+            ingredientComponentRef?.onPfProductOrCountChanged()
+        }
     }
 
     private fun onSuccessInitTransaction(transaction: TransactionEssentialsUi) {
@@ -149,10 +161,8 @@ internal class TransactionFormTabsComponent(
                                 ),
                                 tabOpener = tabOpener,
                                 getDateBorn = { essentialsFields.value.createdAt.date },
-                                observeOnItem = { newPf -> pfFlow.update { newPf } },
-                                onSuccessInitData = { newPf: PfUi ->
-                                    pfFlow.update { newPf }
-                                },
+                                observeOnItem = ::observeOnPf,
+                                onSuccessInitData = ::observeOnPf,
                                 immutableTableDependencies = scope.get(),
                                 thermalLabelTemplateService = scope.get<ThermalLabelTemplateService>(),
                             )
@@ -169,7 +179,7 @@ internal class TransactionFormTabsComponent(
                                 pfFlow = pfFlow,
                                 immutableTableDependencies = scope.get(),
                                 fillIngredientsRepository = scope.get()
-                            )
+                            ).also { ingredientComponentRef = it }
                         )
                     }
                 }
