@@ -6,8 +6,15 @@ import com.arkivanov.decompose.router.slot.activate
 import com.arkivanov.decompose.router.slot.childSlot
 import com.arkivanov.decompose.router.slot.dismiss
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted.Companion.Eagerly
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import ru.pavlig43.core.model.DecimalData2
 import ru.pavlig43.core.model.DecimalData3
@@ -23,6 +30,7 @@ import ru.pavlig43.immutable.internal.component.items.batch.BatchTableUi
 import ru.pavlig43.immutable.internal.component.items.product.ProductTableUi
 import ru.pavlig43.immutable.internal.component.items.vendor.VendorTableUi
 import ru.pavlig43.mutable.api.multiLine.component.MutableTableComponent
+import ru.pavlig43.mutable.api.multiLine.component.MutableUiEvent
 import ru.pavlig43.mutable.api.multiLine.component.MutableUiEvent.UpdateItem
 import ru.pavlig43.mutable.api.multiLine.data.UpdateCollectionRepository
 import ru.pavlig43.tablecore.model.TableData
@@ -34,6 +42,7 @@ internal class SaleComponent(
     private val tabOpener: TabOpener,
     private val immutableTableDependencies: ImmutableTableDependencies,
     repository: UpdateCollectionRepository<SaleBDOut, SaleBDOut>,
+    private val fillSaleBatchesRepository: FillSaleBatchesRepository,
 
     ) : MutableTableComponent<SaleBDOut, SaleBDOut, SaleUi, SaleField>(
     componentContext = componentComponent,
@@ -41,10 +50,82 @@ internal class SaleComponent(
     title = "Продажа",
     sortMatcher = SaleSorter,
     filterMatcher = SaleFilterMatcher,
-    repository = repository
+    repository = repository,
 ) {
+    private val _fillBatchesState =
+        MutableStateFlow<FillSaleBatchesState>(FillSaleBatchesState.Ready)
+    val fillBatchesState = _fillBatchesState.asStateFlow()
 
     private val dialogNavigation = SlotNavigation<SaleDialog>()
+
+    val enabledFillButton: StateFlow<Boolean> = combine(itemList, fillBatchesState) { sales, state ->
+        (sales.isNotEmpty() &&
+                sales.all { it.productId != 0 && it.count.value > 0L } &&
+                state !is FillSaleBatchesState.Loading)
+    }.stateIn(
+        coroutineScope,
+        started = Eagerly,
+        initialValue = false,
+    )
+
+    /** Полностью пересчитывает партии для текущих строк продажи. */
+    fun fillByBatches() {
+        val sourceSales = itemList.value.map { it.toBDIn() }
+        if (sourceSales.isEmpty() || sourceSales.any { it.productId == 0 || it.count <= 0L }) return
+
+        _fillBatchesState.value = FillSaleBatchesState.Loading
+        coroutineScope.launch(Dispatchers.IO) {
+            val result = fillSaleBatchesRepository.fill(
+                transactionId = transactionId,
+                sales = sourceSales,
+            )
+            if (itemList.value.map { it.toBDIn() } != sourceSales) {
+                _fillBatchesState.value = FillSaleBatchesState.Ready
+                return@launch
+            }
+
+            result.fold(
+                onSuccess = { fillResult ->
+                    when (fillResult) {
+                        is FillSaleBatchesResult.Ready -> loadItemsOutside(
+                            getData = { Result.success(fillResult.sales) },
+                            handleSuccess = {
+                                _fillBatchesState.value = FillSaleBatchesState.Ready
+                            },
+                            handleError = { error ->
+                                _fillBatchesState.value = FillSaleBatchesState.Error(
+                                    error.message ?: "Не удалось заполнить партии",
+                                )
+                            },
+                        )
+
+                        is FillSaleBatchesResult.Deficit -> {
+                            _fillBatchesState.value = FillSaleBatchesState.Deficit(
+                                fillResult.deficits.map(SaleBatchDeficit::toMessage),
+                            )
+                        }
+                    }
+                },
+                onFailure = { error ->
+                    _fillBatchesState.value = FillSaleBatchesState.Error(
+                        error.message ?: "Не удалось прочитать остатки партий",
+                    )
+                },
+            )
+        }
+    }
+
+    /** Сбрасывает дефицит при смене товара, веса или набора строк. */
+    override fun onEvent(event: MutableUiEvent) {
+        val oldInputs = itemList.value.toAllocationInputs()
+        super.onEvent(event)
+        if (
+            _fillBatchesState.value is FillSaleBatchesState.Deficit &&
+            itemList.value.toAllocationInputs() != oldInputs
+        ) {
+            _fillBatchesState.value = FillSaleBatchesState.Ready
+        }
+    }
 
     internal val dialog = childSlot(
         source = dialogNavigation,
@@ -206,8 +287,14 @@ internal class SaleComponent(
         )
     }
 
-    override val errorMessages: Flow<List<String>> = itemList.map { lst ->
+    override val errorMessages: Flow<List<String>> = combine(itemList, fillBatchesState) { lst, state ->
         buildList {
+            if (state is FillSaleBatchesState.Deficit) {
+                addAll(state.messages)
+            }
+            if (state is FillSaleBatchesState.Error) {
+                add(state.message)
+            }
             if (lst.map { it.clientId }.toSet().size != 1) {
                 add("Клиенты должны быть одинаковы")
             }
@@ -223,6 +310,33 @@ internal class SaleComponent(
     }
 
 }
+
+internal sealed interface FillSaleBatchesState {
+    data object Loading : FillSaleBatchesState
+    data object Ready : FillSaleBatchesState
+    data class Error(val message: String) : FillSaleBatchesState
+    data class Deficit(val messages: List<String>) : FillSaleBatchesState
+}
+
+private data class SaleAllocationInput(
+    val composeId: Int,
+    val productId: Int,
+    val count: Long,
+)
+
+private fun List<SaleUi>.toAllocationInputs(): List<SaleAllocationInput> = map { sale ->
+    SaleAllocationInput(
+        composeId = sale.composeId,
+        productId = sale.productId,
+        count = sale.count.value,
+    )
+}
+
+private fun SaleBatchDeficit.toMessage(): String =
+    "Товар «$productName»: не хватает ${missingCount.toKilograms()} кг"
+
+private fun Long.toKilograms(): String =
+    "${this / 1000},${(this % 1000).toString().padStart(3, '0')}"
 
 @Serializable
 internal sealed interface SaleDialog {

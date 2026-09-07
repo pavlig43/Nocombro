@@ -132,7 +132,7 @@ abstract class MutableTableComponent<BDOut : CollectionObject, BDIn : Collection
     }
 
     @Suppress("UNCHECKED_CAST")
-    fun onEvent(event: MutableUiEvent) {
+    open fun onEvent(event: MutableUiEvent) {
         when (event) {
             is MutableUiEvent.DeleteSelected -> {
                 _itemList.update { lst ->

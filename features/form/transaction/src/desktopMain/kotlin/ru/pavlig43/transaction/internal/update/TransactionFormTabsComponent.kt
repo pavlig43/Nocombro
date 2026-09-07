@@ -122,7 +122,8 @@ internal class TransactionFormTabsComponent(
                             transactionId = transactionId,
                             repository = scope.get(UpdateCollectionRepositoryType.SALE.qualifier),
                             tabOpener = tabOpener,
-                            immutableTableDependencies = scope.get()
+                            immutableTableDependencies = scope.get(),
+                            fillSaleBatchesRepository = scope.get(),
                         )
                     )
 
