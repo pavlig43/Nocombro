@@ -1,6 +1,9 @@
 package ru.pavlig43.product.internal.update.tabs.specification
 
 import io.kotest.matchers.shouldBe
+import org.apache.pdfbox.Loader
+import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject
+import org.apache.pdfbox.text.PDFTextStripper
 import ru.pavlig43.database.data.files.OwnerType
 import ru.pavlig43.database.data.files.PRODUCT_SPECIFICATION_FILE_NAME
 import ru.pavlig43.database.data.files.remote.RemoteFileRef
@@ -37,6 +40,7 @@ class ProductSpecificationPdfRepositoryTest : DesktopMainDispatcherFunSpec({
 
                 result.isSuccess shouldBe true
                 outputFile.isFile shouldBe true
+                assertPdfHasNoImages(outputFile)
                 gateway.uploadCalls shouldBe 0
                 val saved = db.fileDao.getFileByOwnerAndDisplayName(
                     ownerId = 77,
@@ -51,7 +55,51 @@ class ProductSpecificationPdfRepositoryTest : DesktopMainDispatcherFunSpec({
             }
         }
     }
+
+    test("generates multi-page PDF without images or blank trailing page") {
+        val outputDirectory = Files.createTempDirectory("nocombro-product-pdf-multipage").toFile()
+        val outputFile = outputDirectory.resolve(PRODUCT_SPECIFICATION_FILE_NAME)
+        try {
+            ProductSpecificationPdfGenerator().generate(
+                outputPath = outputFile.absolutePath,
+                productName = "Многостраничный тестовый продукт",
+                specification = ProductSpecification(
+                    productId = 78,
+                    composition = List(180) { "Подробное описание состава продукта" }.joinToString(" "),
+                ),
+            )
+
+            Loader.loadPDF(outputFile).use { document ->
+                (document.numberOfPages > 1) shouldBe true
+                document.pages.forEachIndexed { index, _ ->
+                    val pageNumber = index + 1
+                    val pageText = PDFTextStripper().apply {
+                        startPage = pageNumber
+                        endPage = pageNumber
+                    }.getText(document)
+                    pageText.isNotBlank() shouldBe true
+                }
+            }
+            assertPdfHasNoImages(outputFile)
+        } finally {
+            outputDirectory.deleteRecursively()
+        }
+    }
 })
+
+private fun assertPdfHasNoImages(outputFile: java.io.File) {
+    Loader.loadPDF(outputFile).use { document ->
+        var imageCount = 0
+        document.pages.forEach { page ->
+            page.resources.xObjectNames.forEach { name ->
+                if (page.resources.getXObject(name) is PDImageXObject) {
+                    imageCount++
+                }
+            }
+        }
+        imageCount shouldBe 0
+    }
+}
 
 private class FailingUploadGateway : RemoteFileStorageGateway {
     var uploadCalls = 0

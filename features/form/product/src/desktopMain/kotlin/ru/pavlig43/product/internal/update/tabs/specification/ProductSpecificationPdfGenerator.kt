@@ -1,23 +1,15 @@
 package ru.pavlig43.product.internal.update.tabs.specification
 
 import java.io.File
-import java.awt.Color
-import java.awt.image.BufferedImage
-import javax.imageio.ImageIO
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.pdmodel.PDPage
 import org.apache.pdfbox.pdmodel.PDPageContentStream
 import org.apache.pdfbox.pdmodel.common.PDRectangle
 import org.apache.pdfbox.pdmodel.font.PDFont
 import org.apache.pdfbox.pdmodel.font.PDType0Font
-import org.apache.pdfbox.pdmodel.graphics.image.JPEGFactory
-import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject
 import ru.pavlig43.database.data.product.ProductSpecification
 
 private const val THEME_FONT_RESOURCE_ROOT = "composeResources/ru.pavlig43.theme/font"
-private const val THEME_DRAWABLE_RESOURCE_ROOT = "composeResources/ru.pavlig43.theme/drawable"
-private const val SIGNATURE_STAMP_RESOURCE_PATH = "$THEME_DRAWABLE_RESOURCE_ROOT/signature_stamp.png"
-private const val SIGNATURE_STAMP_JPEG_QUALITY = 0.7f
 
 /**
  * Генерирует печатную PDF-версию спецификации продукта.
@@ -25,9 +17,6 @@ private const val SIGNATURE_STAMP_JPEG_QUALITY = 0.7f
  * Генератор работает вне Compose и напрямую через PDFBox, поэтому для кириллицы
  * ему нужен доступ к TTF-шрифту, который можно встроить в PDF. Шрифт берется
  * из ресурсов проекта, а не из системной папки Windows.
- *
- * Изображения подписи и печати тоже хранятся в theme-resources, чтобы их можно
- * было переиспользовать не только в спецификации, но и в других печатных PDF.
  */
 internal class ProductSpecificationPdfGenerator {
 
@@ -55,16 +44,11 @@ internal class ProductSpecificationPdfGenerator {
                     "$THEME_FONT_RESOURCE_ROOT/MontserratAlternates-Bold.ttf",
                 ),
             ) ?: regularFont
-            val signatureStampImage = loadImage(
-                document = document,
-                resourcePath = SIGNATURE_STAMP_RESOURCE_PATH,
-            )
 
             ProductSpecificationPdfWriter(
                 document = document,
                 regularFont = regularFont,
                 boldFont = boldFont,
-                signatureStampImage = signatureStampImage,
             ).write(
                 productName = productName,
                 specification = specification,
@@ -92,44 +76,6 @@ internal class ProductSpecificationPdfGenerator {
         }
         return null
     }
-
-    /**
-     * Загружает изображение из ресурсов проекта для последующей вставки в PDF.
-     */
-    @Suppress("ReturnCount")
-    private fun loadImage(
-        document: PDDocument,
-        resourcePath: String,
-    ): PDImageXObject? {
-        val classLoader = javaClass.classLoader
-        classLoader.getResourceAsStream(resourcePath)?.use { inputStream ->
-            val bufferedImage = ImageIO.read(inputStream) ?: return null
-            // Для печати на белом листе прозрачность не нужна, а JPEG заметно
-            // уменьшает вес PDF по сравнению с lossless PNG.
-            return JPEGFactory.createFromImage(
-                document,
-                flattenOnWhite(bufferedImage),
-                SIGNATURE_STAMP_JPEG_QUALITY,
-            )
-        }
-        return null
-    }
-
-    private fun flattenOnWhite(source: BufferedImage): BufferedImage {
-        if (!source.colorModel.hasAlpha()) return source
-
-        val flattened = BufferedImage(
-            source.width,
-            source.height,
-            BufferedImage.TYPE_INT_RGB,
-        )
-        val graphics = flattened.createGraphics()
-        graphics.color = Color.WHITE
-        graphics.fillRect(0, 0, flattened.width, flattened.height)
-        graphics.drawImage(source, 0, 0, null)
-        graphics.dispose()
-        return flattened
-    }
 }
 
 /**
@@ -141,7 +87,6 @@ private class ProductSpecificationPdfWriter(
     private val document: PDDocument,
     private val regularFont: PDFont,
     private val boldFont: PDFont,
-    private val signatureStampImage: PDImageXObject?,
 ) {
     private val pageWidth = PDRectangle.A4.width
     private val pageHeight = PDRectangle.A4.height
@@ -204,7 +149,6 @@ private class ProductSpecificationPdfWriter(
         drawSection("Содержание токсичных элементов", specification.toxicElements)
         drawAllergensSection(specification.allergens)
         drawSection("Информация о ГМО", specification.gmoInfo)
-        drawSignatureAndStamp()
 
         stream.close()
     }
@@ -338,25 +282,6 @@ private class ProductSpecificationPdfWriter(
     private fun spacer(height: Float) {
         ensureSpace(height)
         y -= height
-    }
-
-    /**
-     * Рисует подпись и печать единым ресурсом, чтобы сохранить нужное наложение.
-     */
-    @Suppress("MagicNumber")
-    private fun drawSignatureAndStamp() {
-        val signatureStamp = signatureStampImage ?: return
-
-        val blockHeight = 82f
-        val blockWidth = signatureStamp.width / signatureStamp.height.toFloat() * blockHeight
-
-        ensureSpace(blockHeight + 12f)
-
-        val imageX = pageWidth - margin - blockWidth
-        val imageBottom = y - blockHeight
-
-        stream.drawImage(signatureStamp, imageX, imageBottom, blockWidth, blockHeight)
-        y -= blockHeight
     }
 
     /**
