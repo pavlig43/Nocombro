@@ -36,12 +36,15 @@ import ru.pavlig43.theme.close
  * @param modifier Modifier for the composable
  */
 @Composable
- internal fun SelectionActionBar(
+fun SelectionActionBar(
     selectedCount: Int,
     onDeleteClick: () -> Unit,
     onClearSelection: () -> Unit,
 //    liquidState: LiquidState,
     modifier: Modifier = Modifier,
+    selectedLabel: String = "$selectedCount selected",
+    deleteLabel: String = "Delete",
+    clearSelectionDescription: String = "Clear selection",
 ) {
     AnimatedVisibility(
         visible = selectedCount > 0,
@@ -69,12 +72,12 @@ import ru.pavlig43.theme.close
                 IconButton(onClick = onClearSelection) {
                     Icon(
                         painter = painterResource(Res.drawable.close),
-                        contentDescription = "Clear selection",
+                        contentDescription = clearSelectionDescription,
                         tint = MaterialTheme.colorScheme.onSurface,
                     )
                 }
                 Text(
-                    text = "$selectedCount selected",
+                    text = selectedLabel,
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
@@ -93,7 +96,7 @@ import ru.pavlig43.theme.close
                         contentDescription = null,
                         modifier = Modifier.padding(end = 8.dp),
                     )
-                    Text("Delete")
+                    Text(deleteLabel)
                 }
             }
         }

@@ -38,6 +38,7 @@ import ru.pavlig43.coreui.ErrorScreen
 import ru.pavlig43.coreui.LoadingUi
 import ru.pavlig43.coreui.ValidationErrorsCard
 import ru.pavlig43.immutable.internal.component.ImmutableTableComponent
+import ru.pavlig43.immutable.api.component.ImmutableTableAction
 import ru.pavlig43.immutable.internal.component.ImmutableTableUiEvent
 import ru.pavlig43.immutable.internal.component.ItemListState
 import ru.pavlig43.immutable.internal.component.manager.DeleteState
@@ -66,6 +67,7 @@ import ua.wwind.table.strings.StringProvider
 internal fun <I : IMultiLineTableUi, C> ImmutableTableBox(
     component: ImmutableTableComponent<*, I, C>,
     modifier: Modifier = Modifier,
+    additionalActions: List<ImmutableTableAction> = emptyList(),
 ) {
     val itemListState by component.itemListState.collectAsState()
     val deleteState by component.deleteState.collectAsState()
@@ -107,6 +109,7 @@ internal fun <I : IMultiLineTableUi, C> ImmutableTableBox(
             onExportClick = { pendingExportFormat = it },
             searchFocusRequester = searchFocusRequester,
             onSearchFocusChanged = { searchFocused = it },
+            additionalActions = additionalActions,
         )
 
         Surface(

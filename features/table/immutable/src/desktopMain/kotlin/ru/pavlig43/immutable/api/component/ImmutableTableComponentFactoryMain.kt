@@ -35,12 +35,15 @@ import ru.pavlig43.immutable.internal.di.ImmutableTableRepositoryType
 import ru.pavlig43.immutable.internal.di.moduleFactory
 import ru.pavlig43.tablecore.model.IMultiLineTableUi
 
+data class ImmutableTableAction(val label: String, val onClick: () -> Unit)
+
 class ImmutableTableComponentFactoryMain(
     componentContext: ComponentContext,
     dependencies: ImmutableTableDependencies,
     private val immutableTableBuilderData: ImmutableTableBuilderData<out IMultiLineTableUi>,
     private val tabOpener: TabOpener,
     private val onItemClick: (IMultiLineTableUi) -> Unit,
+    val additionalActions: List<ImmutableTableAction> = emptyList(),
 ) : ComponentContext by componentContext, MainTabComponent {
     private val koinComponent = instanceKeeper.getOrCreate { ComponentKoinContext() }
     private val scope = koinComponent.getOrCreateKoinScope(

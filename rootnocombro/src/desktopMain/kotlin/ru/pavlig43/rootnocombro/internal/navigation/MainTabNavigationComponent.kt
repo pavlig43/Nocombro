@@ -17,6 +17,7 @@ import ru.pavlig43.immutable.api.component.DocumentImmutableTableBuilder
 import ru.pavlig43.immutable.api.component.ExpenseImmutableTableBuilder
 import ru.pavlig43.immutable.api.component.ImmutableTableBuilderData
 import ru.pavlig43.immutable.api.component.ImmutableTableComponentFactoryMain
+import ru.pavlig43.immutable.api.component.ImmutableTableAction
 import ru.pavlig43.immutable.api.component.ProductImmutableTableBuilder
 import ru.pavlig43.immutable.api.component.SafetyImmutableTableBuilder
 import ru.pavlig43.immutable.api.component.TransactionImmutableTableBuilder
@@ -269,9 +270,19 @@ internal class MainTabNavigationComponent(
                 dependencies = scope.get(),
                 onItemClick = { onItemClick(it) },
                 immutableTableBuilderData = immutableTableBuilderData,
-                tabOpener = tabOpener
+                tabOpener = tabOpener,
+                additionalActions = if (tabConfig is TransactionListConfig) {
+                    listOf(ImmutableTableAction("МультиОПЗС", ::openMultiOpzsForm))
+                } else emptyList(),
             )
         )
+    }
+
+    private fun openMultiOpzsForm() {
+        val config = TransactionFormConfig(0)
+        tabNavigationComponent.addTab(config)
+        val child = tabNavigationComponent.tabChildren.value.items.single { it.configuration === config }
+        (child.instance as TransactionFormChild).component.openMultiOpzs()
     }
 
 

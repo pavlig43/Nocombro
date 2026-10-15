@@ -39,6 +39,7 @@ import ru.pavlig43.theme.Res
 import ru.pavlig43.theme.add_circle
 import ru.pavlig43.theme.close
 import ru.pavlig43.theme.search
+import ru.pavlig43.immutable.api.component.ImmutableTableAction
 
 @Composable
 @Suppress("LongParameterList")
@@ -53,6 +54,7 @@ internal fun ImmutableTableToolbar(
     searchFocusRequester: FocusRequester,
     onSearchFocusChanged: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
+    additionalActions: List<ImmutableTableAction> = emptyList(),
 ) {
     var exportMenuExpanded by rememberSaveable { mutableStateOf(false) }
 
@@ -114,6 +116,14 @@ internal fun ImmutableTableToolbar(
                     Spacer(modifier = Modifier.width(8.dp))
                     Text("Создать")
                 }
+            }
+
+            additionalActions.forEach { action ->
+                OutlinedButton(
+                    onClick = action.onClick,
+                    shape = RoundedCornerShape(14.dp),
+                    modifier = Modifier.height(48.dp),
+                ) { Text(action.label) }
             }
 
             if (exportConfiguration != null) {

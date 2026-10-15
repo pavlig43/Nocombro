@@ -9,5 +9,5 @@ import ru.pavlig43.immutable.internal.ui.ImmutableTableBox
 fun ImmutableTableScreen(
     slotComponent: ImmutableTableComponentFactoryMain
 ){
-    ImmutableTableBox(slotComponent.tableComponent)
+    ImmutableTableBox(slotComponent.tableComponent, additionalActions = slotComponent.additionalActions)
 }

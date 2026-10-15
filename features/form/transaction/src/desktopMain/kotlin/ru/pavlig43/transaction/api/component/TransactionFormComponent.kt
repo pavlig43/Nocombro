@@ -5,6 +5,8 @@ import com.arkivanov.decompose.router.stack.ChildStack
 import com.arkivanov.decompose.router.stack.StackNavigation
 import com.arkivanov.decompose.router.stack.childStack
 import com.arkivanov.decompose.router.stack.replaceAll
+import com.arkivanov.decompose.router.stack.push
+import com.arkivanov.decompose.router.stack.pop
 import com.arkivanov.decompose.value.Value
 import com.arkivanov.essenty.instancekeeper.getOrCreate
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,6 +26,7 @@ import ru.pavlig43.transaction.internal.di.createTransactionFormModule
 import ru.pavlig43.transaction.internal.model.TransactionEssentialsUi
 import ru.pavlig43.transaction.internal.model.toUi
 import ru.pavlig43.transaction.internal.update.TransactionFormTabsComponent
+import ru.pavlig43.transaction.internal.multiopzs.MultiOpzsComponent
 
 class TransactionFormComponent(
     transactionId: Int,
@@ -43,6 +46,12 @@ class TransactionFormComponent(
     override val model = _model.asStateFlow()
 
     private val stackNavigation = StackNavigation<Config>()
+
+    fun openMultiOpzs() {
+        if (stack.value.active.configuration != Config.Create) return
+        _model.value = MainTabComponent.NavTabState("*МультиОПЗС")
+        stackNavigation.push(Config.MultiOpzs)
+    }
 
     private val componentFactory = SingleLineComponentFactory<Transact, TransactionEssentialsUi>(
         initItem = TransactionEssentialsUi(),
@@ -65,6 +74,19 @@ class TransactionFormComponent(
         componentContext: ComponentContext
     ): Child {
         return when (config) {
+            Config.MultiOpzs -> Child.MultiOpzs(
+                MultiOpzsComponent(
+                    componentContext = componentContext,
+                    service = scope.get(),
+                    tableDependencies = scope.get(),
+                    tabOpener = tabOpener,
+                    onBack = {
+                        stackNavigation.pop()
+                        (stack.value.active.instance as? Child.Create)?.component?.item?.value
+                            ?.let(::onChangeValueForMainTab)
+                    },
+                )
+            )
             is Config.Create -> Child.Create(
                 CreateTransactionSingleLineComponent(
                     componentContext = componentContext,
@@ -104,10 +126,14 @@ class TransactionFormComponent(
         data object Create : Config
 
         @Serializable
+        data object MultiOpzs : Config
+
+        @Serializable
         data class Update(val id: Int) : Config
     }
 
     internal sealed class Child {
+        class MultiOpzs(val component: MultiOpzsComponent) : Child()
         class Create(val component: CreateTransactionSingleLineComponent) : Child()
         class Update(val component: TransactionFormTabsComponent) : Child()
     }

@@ -36,6 +36,7 @@ import ru.pavlig43.mutable.api.singleLine.data.TransactionalUpdateSingleLineRepo
 import ru.pavlig43.mutable.api.singleLine.data.UpdateSingleLineRepository
 import ru.pavlig43.thermallabel.api.data.ThermalLabelTemplateService
 import ru.pavlig43.transaction.api.TransactionFormDependencies
+import ru.pavlig43.transaction.internal.multiopzs.CreateOpzsService
 import ru.pavlig43.transaction.internal.update.tabs.component.opzs.ingredients.FillIngredientsRepository
 import ru.pavlig43.transaction.internal.update.tabs.component.sale.DefaultFillSaleBatchesRepository
 import ru.pavlig43.transaction.internal.update.tabs.component.sale.FillSaleBatchesRepository
@@ -79,6 +80,15 @@ internal fun createTransactionFormModule(dependencies: TransactionFormDependenci
         singleOf(::FillIngredientsRepository)
         single<FillSaleBatchesRepository> { DefaultFillSaleBatchesRepository(get()) }
         singleOf(::BatchCostRepository)
+        single {
+            CreateOpzsService(
+                db = get(),
+                fillIngredients = get(),
+                pfRepository = get(UpdateSingleLineRepositoryType.PF.qualifier),
+                ingredientsRepository = get(UpdateCollectionRepositoryType.INGREDIENTS.qualifier),
+                batchCostRepository = get(),
+            )
+        }
     }
 )
 

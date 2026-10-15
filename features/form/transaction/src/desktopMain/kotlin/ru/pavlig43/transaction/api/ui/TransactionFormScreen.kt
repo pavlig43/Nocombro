@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -18,6 +19,7 @@ import ru.pavlig43.files.api.ui.FilesScreen
 import ru.pavlig43.transaction.api.component.TransactionFormComponent
 import ru.pavlig43.transaction.internal.create.ui.CreateTransactionSingleLineScreen
 import ru.pavlig43.transaction.internal.update.TransactionTabChild
+import ru.pavlig43.transaction.internal.multiopzs.MultiOpzsScreen
 import ru.pavlig43.transaction.internal.update.tabs.component.buy.BuyScreen
 import ru.pavlig43.transaction.internal.update.tabs.component.expenses.ExpensesScreen
 import ru.pavlig43.transaction.internal.update.tabs.component.opzs.ingredients.IngredientScreen
@@ -51,7 +53,11 @@ fun TransactionFormScreen(
             stack = stack,
         ) { child ->
             when (val instance = child.instance) {
-                is TransactionFormComponent.Child.Create -> CreateTransactionSingleLineScreen(instance.component)
+                is TransactionFormComponent.Child.Create -> Column {
+                    TextButton(onClick = component::openMultiOpzs) { Text("МультиОПЗС") }
+                    CreateTransactionSingleLineScreen(instance.component)
+                }
+                is TransactionFormComponent.Child.MultiOpzs -> MultiOpzsScreen(instance.component)
                 is TransactionFormComponent.Child.Update -> {
                     val unsupportedType by instance.component.unsupportedTransactionType.collectAsState()
                     unsupportedType?.let { type ->
