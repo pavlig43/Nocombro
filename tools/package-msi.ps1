@@ -1,4 +1,4 @@
-param()
+﻿param()
 
 $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
@@ -69,6 +69,36 @@ function Resolve-JpackageJdkHome {
 
     return $validCandidates | Select-Object -First 1
 }
+
+Write-Host "[1/2] GitHub: проверка и получение изменений..."
+try {
+    $gitCommand = Get-Command git -CommandType Application -ErrorAction Stop | Select-Object -First 1
+    $headBefore = & $gitCommand.Source -C $projectRoot rev-parse HEAD
+    if ($LASTEXITCODE -ne 0) {
+        throw "git rev-parse HEAD failed with code $LASTEXITCODE"
+    }
+
+    & $gitCommand.Source -C $projectRoot pull --ff-only --no-rebase --no-autostash
+    if ($LASTEXITCODE -ne 0) {
+        throw "git pull failed with code $LASTEXITCODE"
+    }
+
+    $headAfter = & $gitCommand.Source -C $projectRoot rev-parse HEAD
+    if ($LASTEXITCODE -ne 0) {
+        throw "git rev-parse HEAD failed with code $LASTEXITCODE"
+    }
+
+    if ($headBefore -eq $headAfter) {
+        Write-Host "GitHub: новых изменений нет."
+    } else {
+        Write-Host "GitHub: изменения подтянуты."
+    }
+} catch {
+    Write-Host "GitHub: не удалось подтянуть изменения. Сборка MSI остановлена."
+    throw
+}
+
+Write-Host "[2/2] MSI: сборка установщика..."
 
 if (!(Test-Path -LiteralPath $gradleWrapper -PathType Leaf)) {
     throw "Gradle wrapper not found: $gradleWrapper"
