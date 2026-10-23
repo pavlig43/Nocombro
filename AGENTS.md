@@ -380,6 +380,16 @@ Feature-модуль обычно не достаточно просто доб�
 
 Для локальной проверки лучше по возможности запускать только затронутый модуль.
 
+### Проверка обновлений зависимостей
+
+В корневом `build.gradle.kts` подключён Gradle Versions Plugin (`io.github.ben-manes.versions`, alias `libs.plugins.versions`). Его задача только формирует отчёт и не меняет версии зависимостей:
+
+```powershell
+.\gradlew.bat dependencyUpdates --no-configuration-cache --console=plain "-Drevision=release" "-DgradleReleaseChannel=current" "-DoutputFormatter=plain,json"
+```
+
+Отчёты: `build/dependencyUpdates/report.txt` и `build/dependencyUpdates/report.json`. Параметр `revision=release` сам по себе не гарантирует исключение alpha, beta, RC, milestone и snapshot: для списка стабильных обновлений нужен фильтр `rejectVersionIf` либо дополнительная проверка доступных версий. Изменения между текущей и предлагаемой версиями сверять с release notes/changelog на GitHub или официальном сайте библиотеки. Проверка обновлений не является разрешением менять зависимости.
+
 Если пользователь просит код-ревью, тесты не запускать без отдельной просьбы.
 
 Пока запущена desktop-версия Nocombro, не собирать Android-версию: сборка не пройдёт. Сначала закрыть desktop-приложение.
