@@ -43,3 +43,16 @@ roomSchemaDocs {
     outputDirectory("$projectDir/schemas-docs")
 }
 
+// Служебный запуск на согласованной копии SQLite; не запускает приложение.
+val reportDesktopCompilation = kotlin.targets.getByName("desktop").compilations.getByName("main")
+tasks.register<JavaExec>("syncAnalysisReport") {
+    group = "verification"
+    description = "Create Markdown and HTML from a SQLite backup and one read-only YDB snapshot"
+    dependsOn(reportDesktopCompilation.compileTaskProvider)
+    classpath(reportDesktopCompilation.output.allOutputs, reportDesktopCompilation.runtimeDependencyFiles)
+    mainClass.set("ru.pavlig43.database.data.sync.SyncAnalysisReportMainKt")
+    doFirst {
+        args(providers.gradleProperty("syncReportDb").get(), providers.gradleProperty("syncReportDirectory").get())
+    }
+}
+

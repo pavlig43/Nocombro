@@ -23,6 +23,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -30,6 +31,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import kotlinx.datetime.format
 import org.jetbrains.compose.resources.painterResource
@@ -38,11 +41,11 @@ import ru.pavlig43.datetime.dateTimeFormat
 import ru.pavlig43.rootnocombro.api.component.SettingsComponent
 import ru.pavlig43.rootnocombro.api.component.SyncComponent
 import ru.pavlig43.rootnocombro.api.component.SyncUiState
+import ru.pavlig43.rootnocombro.api.component.statusSummary
 import ru.pavlig43.theme.Res
 import ru.pavlig43.theme.check
 import ru.pavlig43.theme.cloud_download
 import ru.pavlig43.theme.dark_mode
-import ru.pavlig43.theme.description
 import ru.pavlig43.theme.light_mode
 import ru.pavlig43.theme.menu
 import ru.pavlig43.theme.refresh
@@ -60,6 +63,7 @@ internal fun NocombroAppBar(
 ) {
     val darkMode by settingsComponent.darkMode.collectAsState()
     val syncUiState by syncComponent.uiState.collectAsState()
+    LaunchedEffect(syncComponent) { syncComponent.loadInitialStatus() }
 
     CenterAlignedTopAppBar(
         title = { Text(text = "Nocombro") },
@@ -78,6 +82,7 @@ internal fun NocombroAppBar(
                 onPushClick = syncComponent::onPushClick,
                 onPullClick = syncComponent::onPullClick,
                 onCreateReportClick = syncComponent::onCreateReportClick,
+                onOpenHtmlReportClick = syncComponent::onOpenHtmlReportClick,
                 onRefreshClick = syncComponent::refreshStatus,
             )
             IconButton(onClick = settingsComponent::openSettings) {
@@ -107,6 +112,7 @@ private fun SyncStatusButton(
     onPushClick: () -> Unit,
     onPullClick: () -> Unit,
     onCreateReportClick: () -> Unit,
+    onOpenHtmlReportClick: () -> Unit,
     onRefreshClick: () -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -157,16 +163,19 @@ private fun SyncStatusButton(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.End,
                     ) {
-                        ToolTipProject(tooltipText = "Открыть последний отчёт синхронизации") {
-                            IconButton(
-                                enabled = !syncUiState.isSyncRunning && syncUiState.reportSnapshotAt != null,
+                        ToolTipProject(tooltipText = "Открыть Markdown-отчёт") {
+                            TextButton(
+                                modifier = Modifier.semantics { contentDescription = "Открыть Markdown-отчёт" },
+                                enabled = !syncUiState.isSyncRunning && syncUiState.reportAvailable,
                                 onClick = onCreateReportClick,
-                            ) {
-                                Icon(
-                                    painter = painterResource(Res.drawable.description),
-                                    contentDescription = "Открыть последний отчёт синхронизации",
-                                )
-                            }
+                            ) { Text("MD") }
+                        }
+                        ToolTipProject(tooltipText = "Открыть HTML-отчёт") {
+                            TextButton(
+                                modifier = Modifier.semantics { contentDescription = "Открыть HTML-отчёт" },
+                                enabled = !syncUiState.isSyncRunning && syncUiState.htmlReportAvailable,
+                                onClick = onOpenHtmlReportClick,
+                            ) { Text("HTML") }
                         }
                     }
                     FlowRow(
@@ -227,12 +236,14 @@ private fun SyncStatusButton(
 }
 
 private fun syncIcon(syncUiState: SyncUiState) = when {
+    syncUiState.lastError != null || !syncUiState.hasCheckedStatus || syncUiState.conflictsCount > 0 -> Res.drawable.warning
     syncUiState.hasRemoteChanges -> Res.drawable.cloud_download
     else -> Res.drawable.check
 }
 
 @Composable
 private fun syncTint(syncUiState: SyncUiState): Color = when {
+    syncUiState.lastError != null -> MaterialTheme.colorScheme.error
     syncUiState.hasRemoteChanges -> MaterialTheme.colorScheme.tertiary
     else -> MaterialTheme.colorScheme.onSurfaceVariant
 }
@@ -240,11 +251,7 @@ private fun syncTint(syncUiState: SyncUiState): Color = when {
 private fun buildSyncTooltip(syncUiState: SyncUiState): String {
     return buildList {
         add(
-            when {
-                syncUiState.isSyncRunning -> syncUiState.runningActionLabel?.let { "$it..." } ?: "Синхронизация..."
-                syncUiState.hasRemoteChanges -> "На сервере есть новые изменения"
-                else -> "Локальная база синхронизирована"
-            }
+            syncUiState.statusSummary()
         )
         add(
             if (syncUiState.remoteSyncConfigured) {
@@ -266,11 +273,7 @@ private fun buildSyncTooltip(syncUiState: SyncUiState): String {
 }
 
 private fun buildSyncSummary(syncUiState: SyncUiState): String {
-    return when {
-        syncUiState.isSyncRunning -> syncUiState.runningActionLabel?.let { "$it..." } ?: "Синхронизация..."
-        syncUiState.hasRemoteChanges -> "На сервере есть новые изменения"
-        else -> "Синхронизация"
-    }
+    return syncUiState.statusSummary()
 }
 
 @Composable
@@ -301,19 +304,25 @@ private fun SyncDropdownContent(syncUiState: SyncUiState) {
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Text(
-            text = "Локальных изменений: ${syncUiState.pendingLocalChangesCount}",
+            text = "Локальных изменений: ${if (syncUiState.hasCheckedStatus) syncUiState.pendingLocalChangesCount.toString() else "не проверено"}",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Text(
-            text = "Удалённых изменений: ${syncUiState.remoteChangesCount}",
+            text = "Удалённых изменений: ${if (syncUiState.hasCheckedStatus) syncUiState.remoteChangesCount.toString() else "не проверено"}",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Text(
             text = syncUiState.reportSnapshotAt?.let { snapshotAt ->
-                "Снимок от ${snapshotAt.format(dateTimeFormat)}. Не обновляется при открытии."
-            } ?: "Отчёт появится после успешной проверки статуса.",
+                "Markdown: снимок от ${snapshotAt.format(dateTimeFormat)}."
+            } ?: if (syncUiState.reportAvailable) "Markdown: время снимка неизвестно." else "Markdown-отчёт ещё не создан.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Text(
+            text = syncUiState.htmlReportSnapshotAt?.let { "HTML: снимок от ${it.format(dateTimeFormat)}." }
+                ?: if (syncUiState.htmlReportAvailable) "HTML: время снимка неизвестно." else "HTML-отчёт появится после успешной проверки статуса.",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -350,10 +359,15 @@ private fun copySyncSnapshotToClipboard(
         appendLine("sync.pending_local_changes=${syncUiState.pendingLocalChangesCount}")
         appendLine("sync.remote_changes=${syncUiState.remoteChangesCount}")
         appendLine("sync.has_remote_changes=${syncUiState.hasRemoteChanges}")
+        appendLine("sync.status_checked=${syncUiState.hasCheckedStatus}")
+        appendLine("sync.conflicts=${syncUiState.conflictsCount}")
         appendLine("sync.last_sync_at=${syncUiState.lastSyncAt}")
         appendLine("sync.last_pull_at=${syncUiState.lastPullAt}")
         appendLine("sync.last_status_check_at=${syncUiState.lastStatusCheckAt}")
         appendLine("sync.report_snapshot_at=${syncUiState.reportSnapshotAt}")
+        appendLine("sync.report_available=${syncUiState.reportAvailable}")
+        appendLine("sync.html_report_snapshot_at=${syncUiState.htmlReportSnapshotAt}")
+        appendLine("sync.html_report_available=${syncUiState.htmlReportAvailable}")
         appendLine("sync.last_error=${syncUiState.lastError}")
         appendLine("sync.last_files_download_summary=${syncUiState.lastFilesDownloadSummary}")
     }.trimEnd()

@@ -11,6 +11,8 @@ data class MirrorReconciliationPlan(
     val pushChanges: List<MirrorPushEntityChange>,
     val pullChanges: List<MirrorPushEntityChange>,
     val conflicts: List<MirrorVersionConflict> = emptyList(),
+    /** Удалённые кандидаты с недоступными зависимостями; не являются действиями плана. */
+    val excludedPullChanges: List<MirrorPushEntityChange> = emptyList(),
 )
 
 /**
@@ -76,10 +78,12 @@ class MirrorReconciliationPlanner {
             }
         }
 
+        val allowedPullChanges = pullChanges.filterBlockedActiveRows(localSnapshot, remoteSnapshot)
         return MirrorReconciliationPlan(
             pushChanges = pushChanges,
-            pullChanges = pullChanges.filterBlockedActiveRows(localSnapshot, remoteSnapshot),
+            pullChanges = allowedPullChanges,
             conflicts = conflicts,
+            excludedPullChanges = pullChanges - allowedPullChanges.toSet(),
         )
     }
 }

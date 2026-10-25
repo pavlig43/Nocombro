@@ -18,6 +18,8 @@ import ru.pavlig43.database.data.expense.ExpenseType
 import ru.pavlig43.testkit.DesktopMainDispatcherFunSpec
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
+import java.nio.file.StandardCopyOption.ATOMIC_MOVE
+import java.nio.file.StandardCopyOption.REPLACE_EXISTING
 
 class SyncAnalysisReportTest : DesktopMainDispatcherFunSpec({
 
@@ -118,10 +120,58 @@ class SyncAnalysisReportTest : DesktopMainDispatcherFunSpec({
         directory.listFiles().orEmpty().none { it.extension == "tmp" }.shouldBeTrue()
         writer.latestReport().getOrThrow() shouldBe first
         writer.latestSnapshotAt() shouldBe LocalDateTime(2026, 6, 12, 12, 31)
+        writer.latestHtmlSnapshotAt() shouldBe LocalDateTime(2026, 6, 12, 12, 31)
+        writer.latestHtmlReport().getOrThrow().readText() shouldContain "<meta charset=\"utf-8\">"
         first.readText(StandardCharsets.UTF_8) shouldContain "Расхождений нет."
         first.readText(StandardCharsets.UTF_8) shouldContain
             "Снимок от 12.06.2026 12:31. Не обновляется при открытии."
         first.readBytes().toString(StandardCharsets.UTF_8) shouldContain "Отчёт синхронизации"
+    }
+
+    test("partial replacement keeps each files actual timestamp and cleans temporary files") {
+        val directory = Files.createTempDirectory("sync-partial-report").toFile()
+        try {
+            val old = MirrorReconciliationPreview(snapshotLocal(), snapshotRemote(), MirrorReconciliationPlan(emptyList(), emptyList()))
+            val writer = SyncAnalysisReportWriter(reportDirectory = { directory })
+            writer.write(old)
+            val fresh = old.copy(remoteSnapshot = old.remoteSnapshot.copy(loadedAt = LocalDateTime(2026, 6, 13, 9, 0)))
+            val failingWriter = SyncAnalysisReportWriter(reportDirectory = { directory }, replaceReport = { source, target ->
+                // Оба файла должны быть готовы ещё до первой замены.
+                if (target.fileName.toString().endsWith(".md")) {
+                    directory.listFiles().orEmpty().count { it.extension == "tmp" } shouldBe 2
+                    directory.listFiles().orEmpty().filter { it.extension == "tmp" }.all { it.length() > 0 } shouldBe true
+                    Files.move(source, target, ATOMIC_MOVE, REPLACE_EXISTING)
+                } else error("html replacement failed")
+            })
+            runCatching { failingWriter.write(fresh) }.exceptionOrNull()?.message shouldBe "html replacement failed"
+            writer.latestSnapshotAt() shouldBe fresh.remoteSnapshot.loadedAt
+            writer.latestHtmlSnapshotAt() shouldBe old.remoteSnapshot.loadedAt
+            directory.listFiles().orEmpty().count { it.extension == "tmp" } shouldBe 0
+        } finally {
+            directory.listFiles().orEmpty().forEach { Files.delete(it.toPath()) }
+            Files.delete(directory.toPath())
+        }
+    }
+
+    test("Markdown alone never fabricates HTML and preparation failure preserves old reports") {
+        val directory = Files.createTempDirectory("sync-old-markdown").toFile()
+        try {
+            directory.resolve("latest-sync-analysis.md").writeText("legacy markdown")
+            val writer = SyncAnalysisReportWriter(reportDirectory = { directory })
+            writer.latestReport().isSuccess shouldBe true
+            writer.latestSnapshotAt() shouldBe null
+            writer.latestHtmlReport().isFailure shouldBe true
+            writer.latestHtmlSnapshotAt() shouldBe null
+            val preview = MirrorReconciliationPreview(snapshotLocal(), snapshotRemote(), MirrorReconciliationPlan(emptyList(), emptyList()))
+            val failing = SyncAnalysisReportWriter(reportDirectory = { directory }, replaceReport = { _, _ -> error("disk failure") })
+            runCatching { failing.write(preview) }.isFailure shouldBe true
+            directory.resolve("latest-sync-analysis.md").readText() shouldBe "legacy markdown"
+            writer.latestHtmlReport().isFailure shouldBe true
+            directory.listFiles().orEmpty().count { it.extension == "tmp" } shouldBe 0
+        } finally {
+            directory.listFiles().orEmpty().forEach { Files.delete(it.toPath()) }
+            Files.delete(directory.toPath())
+        }
     }
 })
 

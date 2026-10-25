@@ -19,45 +19,53 @@ import ru.pavlig43.datetime.dateTimeFormat
 import java.io.File
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
+import java.nio.file.Path
 import java.nio.file.StandardCopyOption.ATOMIC_MOVE
 import java.nio.file.StandardCopyOption.REPLACE_EXISTING
 
 /**
- * Создаёт и сохраняет анализ расхождений Room/YDB в Markdown без изменения данных.
+ * Сохраняет Markdown и HTML из общей пары снимков без изменения данных.
  */
 class SyncAnalysisReportWriter(
     private val reportDirectory: () -> File = ::defaultSyncReportDirectory,
     private val json: Json = Json { classDiscriminator = "_mirrorType" },
+    private val replaceReport: (Path, Path) -> Unit = { source, target ->
+        Files.move(source, target, ATOMIC_MOVE, REPLACE_EXISTING)
+    },
 ) {
     /**
-     * Атомарно заменяет один актуальный отчёт. Старые отчёты с датой в имени
-     * остаются в каталоге без изменений.
+     * Готовит оба файла перед заменой и атомарно заменяет каждый из них.
+     * При частичном сбое у каждого сохранённого файла остаётся свой маркер времени.
+     * Старые отчёты с датой в имени не удаляются.
      */
     fun write(preview: MirrorReconciliationPreview): File {
         val directory = reportDirectory()
         Files.createDirectories(directory.toPath())
         val target = directory.toPath().resolve(LATEST_REPORT_FILE_NAME)
-        val temporary = Files.createTempFile(
-            directory.toPath(),
-            ".latest-sync-analysis-",
-            ".tmp",
-        )
+        val temporaries = mutableListOf<Path>()
         try {
-            Files.writeString(
-                temporary,
-                SyncAnalysisReportFormatter(json).format(preview),
-                StandardCharsets.UTF_8,
-            )
-            Files.move(temporary, target, ATOMIC_MOVE, REPLACE_EXISTING)
+            val markdown = Files.createTempFile(directory.toPath(), ".latest-sync-analysis-md-", ".tmp")
+                .also(temporaries::add)
+            val html = Files.createTempFile(directory.toPath(), ".latest-sync-analysis-html-", ".tmp")
+                .also(temporaries::add)
+            Files.writeString(markdown, SyncAnalysisReportFormatter(json).format(preview), StandardCharsets.UTF_8)
+            Files.writeString(html, SyncAnalysisHtmlReportFormatter().format(preview), StandardCharsets.UTF_8)
+            replaceReport(markdown, target)
+            replaceReport(html, directory.toPath().resolve(LATEST_HTML_REPORT_FILE_NAME))
         } finally {
-            Files.deleteIfExists(temporary)
+            temporaries.forEach(Files::deleteIfExists)
         }
         return target.toFile()
     }
 
     /** Возвращает уже записанный отчёт без чтения Room или YDB. */
-    fun latestReport(): Result<File> = runCatching {
-        val file = File(reportDirectory(), LATEST_REPORT_FILE_NAME)
+    fun latestReport(): Result<File> = savedReport(LATEST_REPORT_FILE_NAME)
+
+    /** Возвращает готовый HTML без создания отчёта и чтения снимков. */
+    fun latestHtmlReport(): Result<File> = savedReport(LATEST_HTML_REPORT_FILE_NAME)
+
+    private fun savedReport(name: String): Result<File> = runCatching {
+        val file = File(reportDirectory(), name)
         require(file.isFile) {
             "Отчёт ещё не создан. Сначала обновите статус синхронизации."
         }
@@ -65,18 +73,21 @@ class SyncAnalysisReportWriter(
     }
 
     /** Читает время снимка из актуального файла без сетевых запросов. */
+    fun latestSnapshotAt(): LocalDateTime? = savedSnapshotAt(latestReport())
+
+    /** Время снимка именно сохранённого HTML, даже если Markdown уже заменён. */
+    fun latestHtmlSnapshotAt(): LocalDateTime? = savedSnapshotAt(latestHtmlReport())
+
     @Suppress("ReturnCount")
-    fun latestSnapshotAt(): LocalDateTime? {
-        val report = latestReport().getOrNull() ?: return null
+    private fun savedSnapshotAt(savedReport: Result<File>): LocalDateTime? = runCatching {
+        val report = savedReport.getOrNull() ?: return null
         val marker = report.useLines { lines ->
             lines.firstOrNull { it.startsWith(SNAPSHOT_MARKER_PREFIX) }
         } ?: return null
-        return runCatching {
-            LocalDateTime.parse(
-                marker.removePrefix(SNAPSHOT_MARKER_PREFIX).removeSuffix(SNAPSHOT_MARKER_SUFFIX)
-            )
-        }.getOrNull()
-    }
+        LocalDateTime.parse(
+            marker.removePrefix(SNAPSHOT_MARKER_PREFIX).removeSuffix(SNAPSHOT_MARKER_SUFFIX)
+        )
+    }.getOrNull()
 }
 
 internal class SyncAnalysisReportFormatter(
@@ -252,6 +263,7 @@ private fun defaultSyncReportDirectory(): File {
 }
 
 private const val LATEST_REPORT_FILE_NAME = "latest-sync-analysis.md"
+private const val LATEST_HTML_REPORT_FILE_NAME = "latest-sync-analysis.html"
 private const val SNAPSHOT_MARKER_PREFIX = "<!-- sync-snapshot-at="
 private const val SNAPSHOT_MARKER_SUFFIX = " -->"
 private val EXCLUDED_PAYLOAD_FIELDS = setOf("syncId", "updatedAt", "deletedAt", "_mirrorType")

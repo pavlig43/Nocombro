@@ -63,6 +63,7 @@ class SyncServiceMirrorStatusTest : DesktopMainDispatcherFunSpec({
             status.remoteChangesCount shouldBe 1
             status.lastStatusCheckAt shouldBe checkedAt
             status.remoteError shouldBe null
+            status.hasCheckedStatus shouldBe true
             service.status.value shouldBe status
             gateway.configurationStatusCalls shouldBe 1
             gateway.statusCalls shouldBe 0
@@ -81,6 +82,8 @@ class SyncServiceMirrorStatusTest : DesktopMainDispatcherFunSpec({
             gateway.configurationStatusCalls shouldBe 1
             gateway.statusCalls shouldBe 0
             gateway.snapshotCalls shouldBe 0
+            status.hasCheckedStatus shouldBe false
+            status.lastStatusCheckAt shouldBe null
         }
     }
 
@@ -97,6 +100,7 @@ class SyncServiceMirrorStatusTest : DesktopMainDispatcherFunSpec({
 
             status.remoteSyncConfigured shouldBe true
             status.remoteError shouldBe "snapshot unavailable"
+            status.hasCheckedStatus shouldBe false
             gateway.configurationStatusCalls shouldBe 1
             gateway.statusCalls shouldBe 0
             gateway.snapshotCalls shouldBe 1
@@ -187,11 +191,73 @@ class SyncServiceMirrorStatusTest : DesktopMainDispatcherFunSpec({
             val result = service.createSyncAnalysisReport()
 
             result.getOrThrow().name shouldBe "latest-sync-analysis.md"
+            service.createSyncAnalysisHtmlReport().getOrThrow().name shouldBe "latest-sync-analysis.html"
+            service.status.value?.htmlReportAvailable shouldBe true
+            service.status.value?.htmlReportSnapshotAt shouldBe LocalDateTime(2026, 6, 11, 15, 0)
             gateway.snapshotCalls shouldBe snapshotCallsBeforeOpen
             gateway.pushCalls shouldBe 0
             gateway.pullCalls shouldBe 0
             fileGateway.downloadCalls shouldBe 0
             db.syncStateDao.getSyncState() shouldBe initialState
+            // После закрытия Room открытие обоих файлов всё ещё должно работать.
+            db.close()
+            service.createSyncAnalysisReport().isSuccess shouldBe true
+            service.createSyncAnalysisHtmlReport().isSuccess shouldBe true
+            gateway.snapshotCalls shouldBe 1
+            fileGateway.downloadCalls shouldBe 0
+        }
+    }
+
+    test("Markdown availability does not imply HTML availability even without a timestamp") {
+        withEmptyTestDatabase { db ->
+            val directory = Files.createTempDirectory("sync-markdown-only").toFile()
+            try {
+                directory.resolve("latest-sync-analysis.md").writeText("old markdown")
+                val gateway = StatusMirrorGateway(LocalDateTime(2026, 6, 11, 15, 0))
+                val service = createSyncService(db, gateway, reportWriter = SyncAnalysisReportWriter({ directory }))
+                val status = service.getLocalStatus()
+                status.reportAvailable shouldBe true
+                status.reportSnapshotAt shouldBe null
+                status.htmlReportAvailable shouldBe false
+                status.htmlReportSnapshotAt shouldBe null
+                service.createSyncAnalysisHtmlReport().isFailure shouldBe true
+                gateway.snapshotCalls shouldBe 0
+            } finally {
+                directory.listFiles().orEmpty().forEach { Files.delete(it.toPath()) }
+                Files.delete(directory.toPath())
+            }
+        }
+    }
+
+    test("partial report save exposes error and each actual file timestamp without another snapshot") {
+        withEmptyTestDatabase { db ->
+            val directory = Files.createTempDirectory("sync-partial-status").toFile()
+            try {
+                val previousAt = LocalDateTime(2026, 6, 10, 12, 0)
+                val checkedAt = LocalDateTime(2026, 6, 11, 15, 0)
+                SyncAnalysisReportWriter({ directory }).write(ru.pavlig43.database.data.sync.mirror.MirrorReconciliationPreview(
+                    ru.pavlig43.database.data.sync.mirror.MirrorLocalSnapshot(previousAt, emptyMap()),
+                    MirrorRemoteSnapshot(previousAt, emptyMap()),
+                    ru.pavlig43.database.data.sync.mirror.MirrorReconciliationPlan(emptyList(), emptyList()),
+                ))
+                val gateway = StatusMirrorGateway(checkedAt)
+                val writer = SyncAnalysisReportWriter(reportDirectory = { directory }, replaceReport = { source, target ->
+                    if (target.fileName.toString().endsWith(".html")) error("html replacement failed")
+                    Files.move(source, target, java.nio.file.StandardCopyOption.ATOMIC_MOVE, java.nio.file.StandardCopyOption.REPLACE_EXISTING)
+                })
+                val service = createSyncService(db, gateway, reportWriter = writer)
+                val status = service.getStatus()
+                status.remoteError shouldBe "html replacement failed"
+                status.reportSnapshotAt shouldBe checkedAt
+                status.htmlReportSnapshotAt shouldBe previousAt
+                status.reportAvailable shouldBe true
+                status.htmlReportAvailable shouldBe true
+                gateway.snapshotCalls shouldBe 1
+                directory.listFiles().orEmpty().count { it.extension == "tmp" } shouldBe 0
+            } finally {
+                directory.listFiles().orEmpty().forEach { Files.delete(it.toPath()) }
+                Files.delete(directory.toPath())
+            }
         }
     }
 

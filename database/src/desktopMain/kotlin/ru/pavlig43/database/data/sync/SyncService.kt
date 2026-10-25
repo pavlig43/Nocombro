@@ -51,11 +51,15 @@ class SyncService(
             remoteSyncConfigured = configuration?.configured
                 ?: current?.remoteSyncConfigured
                 ?: false,
-            lastStatusCheckAt = reportSnapshotAt ?: current?.lastStatusCheckAt,
+            lastStatusCheckAt = current?.lastStatusCheckAt,
             lastSyncAt = syncState?.lastPushAt,
             lastPullAt = syncState?.lastPullAt,
             conflicts = current?.conflicts.orEmpty(),
+            hasCheckedStatus = current?.hasCheckedStatus ?: false,
             reportSnapshotAt = reportSnapshotAt,
+            reportAvailable = syncAnalysisReportWriter.latestReport().isSuccess,
+            htmlReportAvailable = syncAnalysisReportWriter.latestHtmlReport().isSuccess,
+            htmlReportSnapshotAt = syncAnalysisReportWriter.latestHtmlSnapshotAt(),
         ).also { snapshot ->
             _status.value = snapshot
         }
@@ -71,13 +75,11 @@ class SyncService(
     suspend fun getStatus(): SyncStatusSnapshot {
         val syncState = syncStateRepository.getSyncState()
         val mirrorStatus = mirrorReconciliationService.getSyncStatus()
-        var reportSnapshotAt = syncAnalysisReportWriter.latestSnapshotAt()
         val reportError = mirrorStatus.preview
             ?.takeIf { mirrorStatus.status.error == null }
             ?.let { preview ->
                 runCatching {
                     syncAnalysisReportWriter.write(preview)
-                    reportSnapshotAt = preview.remoteSnapshot.loadedAt
                 }.exceptionOrNull()
             }
 
@@ -92,7 +94,11 @@ class SyncService(
             remoteError = mirrorStatus.status.error?.toSyncUserMessage()
                 ?: reportError?.syncUserMessage("Не удалось сохранить отчёт синхронизации."),
             conflicts = mirrorStatus.conflicts,
-            reportSnapshotAt = reportSnapshotAt,
+            hasCheckedStatus = mirrorStatus.preview != null && mirrorStatus.status.error == null,
+            reportSnapshotAt = syncAnalysisReportWriter.latestSnapshotAt(),
+            reportAvailable = syncAnalysisReportWriter.latestReport().isSuccess,
+            htmlReportAvailable = syncAnalysisReportWriter.latestHtmlReport().isSuccess,
+            htmlReportSnapshotAt = syncAnalysisReportWriter.latestHtmlSnapshotAt(),
         ).also { snapshot ->
             _status.value = snapshot
         }
@@ -104,6 +110,9 @@ class SyncService(
     fun createSyncAnalysisReport(): Result<File> {
         return syncAnalysisReportWriter.latestReport()
     }
+
+    /** Возвращает готовый HTML; не запускает сверку, загрузку файлов или сохранение. */
+    fun createSyncAnalysisHtmlReport(): Result<File> = syncAnalysisReportWriter.latestHtmlReport()
 
     /**
      * Выполняет полный пользовательский цикл: сначала отправку, затем получение.
@@ -140,7 +149,11 @@ class SyncService(
             lastSyncAt = mirrorRun.completedAt,
             lastPullAt = mirrorRun.completedAt,
             conflicts = mirrorRun.conflicts,
+            hasCheckedStatus = true,
             reportSnapshotAt = syncAnalysisReportWriter.latestSnapshotAt(),
+            reportAvailable = syncAnalysisReportWriter.latestReport().isSuccess,
+            htmlReportAvailable = syncAnalysisReportWriter.latestHtmlReport().isSuccess,
+            htmlReportSnapshotAt = syncAnalysisReportWriter.latestHtmlSnapshotAt(),
         ).also { _status.value = it }
 
         val recoveryMark = TimeSource.Monotonic.markNow()
@@ -261,7 +274,11 @@ class SyncService(
             lastSyncAt = lastPushAt,
             lastPullAt = lastPullAt,
             conflicts = run.conflicts,
+            hasCheckedStatus = true,
             reportSnapshotAt = syncAnalysisReportWriter.latestSnapshotAt(),
+            reportAvailable = syncAnalysisReportWriter.latestReport().isSuccess,
+            htmlReportAvailable = syncAnalysisReportWriter.latestHtmlReport().isSuccess,
+            htmlReportSnapshotAt = syncAnalysisReportWriter.latestHtmlSnapshotAt(),
         )
         _status.value = snapshot
         return snapshot
@@ -297,6 +314,10 @@ class SyncService(
             remoteSyncConfigured = configuration?.configured ?: current?.remoteSyncConfigured ?: false,
             lastStatusCheckAt = configuration?.checkedAt ?: current?.lastStatusCheckAt,
             remoteError = message,
+            reportSnapshotAt = syncAnalysisReportWriter.latestSnapshotAt(),
+            reportAvailable = syncAnalysisReportWriter.latestReport().isSuccess,
+            htmlReportAvailable = syncAnalysisReportWriter.latestHtmlReport().isSuccess,
+            htmlReportSnapshotAt = syncAnalysisReportWriter.latestHtmlSnapshotAt(),
         )
         _status.value = status
         return SyncRunResult.failure(
@@ -393,6 +414,10 @@ data class SyncStatusSnapshot(
     val remoteError: String? = null,
     val conflicts: List<MirrorVersionConflict> = emptyList(),
     val reportSnapshotAt: LocalDateTime? = null,
+    val hasCheckedStatus: Boolean = false,
+    val reportAvailable: Boolean = false,
+    val htmlReportAvailable: Boolean = false,
+    val htmlReportSnapshotAt: LocalDateTime? = null,
 )
 
 /**

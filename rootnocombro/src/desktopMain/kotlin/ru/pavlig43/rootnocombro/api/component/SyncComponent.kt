@@ -19,6 +19,7 @@ import ru.pavlig43.database.data.files.remote.RemoteFileBatchDownloadSummary
 import ru.pavlig43.database.data.sync.SyncService
 import ru.pavlig43.database.data.sync.SyncStatusSnapshot
 import ru.pavlig43.datastore.SyncCheckAttemptStore
+import java.awt.Desktop
 
 /**
  * Компонент шапки, который хранит локальное состояние синхронизации для интерфейса.
@@ -36,16 +37,15 @@ class SyncComponent(
     // Одна блокировка не даёт ручным действиям и стартовой проверке
     // выполняться параллельно и перетирать состояние UI.
     private val syncActionMutex = Mutex()
+    private var initialStatusLoaded = false
 
     private val _uiState = MutableStateFlow(SyncUiState())
     val uiState: StateFlow<SyncUiState> = _uiState.asStateFlow()
 
-    init {
-        loadInitialStatus()
-    }
-
     /** Сначала читает локальный `sync_state`, затем при нужде один раз проверяет YDB. */
-    private fun loadInitialStatus() = launchExclusive {
+    fun loadInitialStatus() = launchExclusive {
+        if (initialStatusLoaded) return@launchExclusive
+        initialStatusLoaded = true
         beginAction("Загрузка состояния")
         val localStatus = withContext(Dispatchers.IO) { syncService.getLocalStatus() }
         updateUiState(localStatus, isSyncRunning = true, lastError = null)
@@ -129,6 +129,23 @@ class SyncComponent(
         }
     }
 
+    /** Открывает сохранённый HTML по локальному URI без повторной сверки. */
+    fun onOpenHtmlReportClick() = launchExclusive {
+        beginAction("Открытие HTML-отчёта")
+        val result = withContext(Dispatchers.IO) {
+            syncService.createSyncAnalysisHtmlReport().mapCatching { file ->
+                Desktop.getDesktop().browse(file.toURI())
+            }
+        }
+        _uiState.update {
+            it.copy(
+                isSyncRunning = false,
+                runningActionLabel = null,
+                lastError = result.exceptionOrNull()?.message,
+            )
+        }
+    }
+
     /**
      * Выполняет безопасный сценарий "получить и файлы":
      *
@@ -168,10 +185,15 @@ class SyncComponent(
                 pendingLocalChangesCount = status.pendingLocalChangesCount,
                 remoteChangesCount = status.remoteChangesCount,
                 hasRemoteChanges = status.hasRemoteChanges,
+                hasCheckedStatus = status.hasCheckedStatus,
+                conflictsCount = status.conflicts.size,
                 isSyncRunning = isSyncRunning,
                 remoteSyncConfigured = status.remoteSyncConfigured,
                 lastStatusCheckAt = status.lastStatusCheckAt,
                 reportSnapshotAt = status.reportSnapshotAt,
+                reportAvailable = status.reportAvailable,
+                htmlReportAvailable = status.htmlReportAvailable,
+                htmlReportSnapshotAt = status.htmlReportSnapshotAt,
                 lastSyncAt = lastSyncAt ?: status.lastSyncAt,
                 lastPullAt = lastPullAt ?: status.lastPullAt,
                 lastError = lastError ?: status.remoteError,
@@ -212,8 +234,8 @@ class SyncComponent(
                     current.copy(
                         isSyncRunning = false,
                         runningActionLabel = null,
-                        lastError = throwable.message
-                            ?: "Операция синхронизации завершилась с ошибкой.",
+                        hasCheckedStatus = false,
+                        lastError = syncOperationErrorMessage(throwable),
                     )
                 }
             } finally {
@@ -232,16 +254,38 @@ data class SyncUiState(
     val pendingLocalChangesCount: Int = 0,
     val remoteChangesCount: Int = 0,
     val hasRemoteChanges: Boolean = false,
+    val hasCheckedStatus: Boolean = false,
+    val conflictsCount: Int = 0,
     val isSyncRunning: Boolean = false,
     val remoteSyncConfigured: Boolean = false,
     val lastStatusCheckAt: LocalDateTime? = null,
     val reportSnapshotAt: LocalDateTime? = null,
+    val reportAvailable: Boolean = false,
+    val htmlReportAvailable: Boolean = false,
+    val htmlReportSnapshotAt: LocalDateTime? = null,
     val lastSyncAt: LocalDateTime? = null,
     val lastPullAt: LocalDateTime? = null,
     val lastError: String? = null,
     val lastFilesDownloadSummary: String? = null,
     val runningActionLabel: String? = null,
 )
+
+internal fun SyncUiState.statusSummary(): String = when {
+    isSyncRunning -> runningActionLabel?.let { "$it..." } ?: "Синхронизация..."
+    lastError != null -> "Операция синхронизации завершилась с ошибкой"
+    !remoteSyncConfigured -> "Синхронизация не настроена"
+    !hasCheckedStatus -> "Статус изменений не проверен"
+    conflictsCount > 0 -> "Есть конфликты: $conflictsCount"
+    hasRemoteChanges -> "В облаке есть изменения для получения"
+    pendingLocalChangesCount > 0 -> "Есть изменения для отправки"
+    else -> "Расхождений нет"
+}
+
+internal fun syncOperationErrorMessage(throwable: Throwable): String = when (throwable) {
+    is LinkageError -> "Не удалось загрузить часть приложения. Перезапустите Nocombro. " +
+        "${throwable.javaClass.simpleName}: ${throwable.message.orEmpty()}"
+    else -> throwable.message ?: "Операция синхронизации завершилась с ошибкой."
+}
 
 // Фоновая проверка бывает только при запуске и не чаще одного раза в час.
 private const val BACKGROUND_STATUS_CHECK_INTERVAL_MILLIS = 60 * 60 * 1000L

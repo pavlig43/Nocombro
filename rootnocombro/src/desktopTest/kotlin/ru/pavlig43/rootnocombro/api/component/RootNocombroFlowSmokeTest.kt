@@ -334,8 +334,8 @@ private fun copyVendorUi(item: Any, displayName: String): Any {
     }
     return copyMethod.invoke(
         item,
-        displayName,
-        readProperty(item, "comment"),
+        androidx.compose.foundation.text.input.TextFieldState(displayName),
+        readProperty(item, "commentState"),
         readProperty(item, "id"),
         readProperty(item, "syncId"),
         readProperty(item, "updatedAt"),
