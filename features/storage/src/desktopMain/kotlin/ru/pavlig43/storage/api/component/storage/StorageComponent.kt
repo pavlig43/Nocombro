@@ -1,5 +1,8 @@
 package ru.pavlig43.storage.api.component.storage
 
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
+import androidx.compose.runtime.snapshotFlow
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
 import com.arkivanov.essenty.instancekeeper.getOrCreate
@@ -67,10 +70,11 @@ class StorageComponent(
     private val _products = MutableStateFlow<List<StorageProductUi>>(emptyList())
 
     /** Изменяемая строка поиска, которой владеет компонент экрана склада. */
-    private val _searchQuery = MutableStateFlow("")
+    val searchState = TextFieldState()
 
     /** Текущий запрос поиска по сводным строкам товаров. */
-    internal val searchQuery = _searchQuery.asStateFlow()
+    internal val searchQuery = snapshotFlow { searchState.text.toString() }
+        .stateIn(coroutineScope, SharingStarted.Eagerly, "")
 
     /**
      * Все партии с историей отрицательного остатка независимо от поиска,
@@ -126,7 +130,7 @@ class StorageComponent(
     internal val tableData: StateFlow<StorageTableData> = combine(
         _products,
         filterManager.filters,
-        _searchQuery,
+        searchQuery,
     ) { products, filters, searchQuery ->
         val normalizedQuery = searchQuery.trim()
         val matchingProductIds = if (normalizedQuery.isEmpty()) {
@@ -208,7 +212,7 @@ class StorageComponent(
 
     /** Обновляет запрос поиска по данным товаров, не включая названия партий. */
     internal fun updateSearchQuery(query: String) {
-        _searchQuery.value = query
+        searchState.setTextAndPlaceCursorAtEnd(query)
     }
 
     internal fun openProduct(productId: Int) {
@@ -311,8 +315,14 @@ class StorageComponent(
     }
 
     internal fun onUpdateOperationCount(value: String) {
+        val input = _operationDialog.value?.countState ?: return
+        if (input.text.toString() != value) input.setTextAndPlaceCursorAtEnd(value)
+        onOperationInputChanged()
+    }
+
+    internal fun onOperationInputChanged() {
         _operationDialog.update { current ->
-            current?.copy(countText = value, error = null)?.let { updated ->
+            current?.copy(error = null)?.let { updated ->
                 updated.copy(
                     selectedCost = updated.costPricePerUnit
                         ?.let { cost -> updated.count?.let { count -> cost * count / 1000 } }
@@ -332,7 +342,8 @@ class StorageComponent(
     }
 
     internal fun onUpdateOperationComment(value: String) {
-        _operationDialog.update { it?.copy(comment = value, error = null) }
+        _operationDialog.value?.commentState?.setTextAndPlaceCursorAtEnd(value)
+        onOperationInputChanged()
     }
 
     internal fun onDismissOperation() {

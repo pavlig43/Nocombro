@@ -16,6 +16,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.snapshotFlow
+import kotlinx.coroutines.flow.drop
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -26,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import ru.pavlig43.coreui.ProjectDialog
+import androidx.compose.foundation.text.input.TextFieldState
 import ru.pavlig43.datetime.single.date.DatePickerDialog
 import ru.pavlig43.datetime.single.date.DateRow
 import ru.pavlig43.thermallabel.api.component.ThermalLabelDialogComponent
@@ -43,6 +47,9 @@ import ru.pavlig43.thermallabel.api.model.ThermalLabelSize
 fun ThermalLabelDialog(
     component: ThermalLabelDialogComponent,
 ) {
+    LaunchedEffect(component) {
+        snapshotFlow { component.massState.text.toString() }.drop(1).collect { component.dismissMessage() }
+    }
     val uiState by component.uiState.collectAsState()
     val message by component.message.collectAsState()
     val dialog by component.dialog.subscribeAsState()
@@ -72,8 +79,7 @@ fun ThermalLabelDialog(
                 )
 
                 OutlinedTextField(
-                    value = uiState.massText,
-                    onValueChange = component::onMassChange,
+                    state = component.massState,
                     modifier = Modifier.fillMaxWidth(),
                     label = { Text("Масса, кг") },
                     enabled = !uiState.isGenerating,
@@ -143,8 +149,7 @@ private fun LabelSizeDropdown(
 
     Column {
         OutlinedTextField(
-            value = selectedTitle,
-            onValueChange = {},
+            state = remember(selectedTitle) { TextFieldState(selectedTitle) },
             modifier = Modifier.fillMaxWidth(),
             readOnly = true,
             enabled = enabled,

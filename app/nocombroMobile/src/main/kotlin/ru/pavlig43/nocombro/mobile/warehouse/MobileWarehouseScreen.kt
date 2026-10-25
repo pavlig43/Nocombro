@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -36,6 +37,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import kotlinx.datetime.LocalDateTime
 import org.jetbrains.compose.resources.painterResource
+import androidx.compose.foundation.text.input.TextFieldState
 import ru.pavlig43.theme.Res
 import ru.pavlig43.theme.search
 
@@ -49,7 +51,7 @@ fun MobileWarehouseRoute(
         state = state,
         onOpenMenu = onOpenMenu,
         onLocationSelected = component::selectLocation,
-        onSearchQueryChanged = component::updateSearchQuery,
+        searchState = component.searchState,
     )
 }
 
@@ -59,7 +61,7 @@ internal fun MobileWarehouseScreen(
     state: MobileWarehouseUiState,
     onOpenMenu: () -> Unit,
     onLocationSelected: (MobileWarehouseLocation) -> Unit,
-    onSearchQueryChanged: (String) -> Unit,
+    searchState: TextFieldState,
 ) {
     Scaffold(
         modifier = Modifier
@@ -101,8 +103,7 @@ internal fun MobileWarehouseScreen(
                 onSelected = onLocationSelected,
             )
             OutlinedTextField(
-                value = state.searchQuery,
-                onValueChange = onSearchQueryChanged,
+                state = searchState,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 8.dp),
@@ -113,7 +114,7 @@ internal fun MobileWarehouseScreen(
                         contentDescription = null,
                     )
                 },
-                singleLine = true,
+                lineLimits = TextFieldLineLimits.SingleLine,
             )
             when {
                 !state.hasSnapshot -> WarehouseEmptyMessage(

@@ -4,6 +4,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.InputTransformation
+import androidx.compose.foundation.text.input.TextFieldLineLimits
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.maxLength
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
@@ -16,7 +20,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -28,12 +31,11 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.format
 import org.jetbrains.compose.resources.painterResource
-import ru.pavlig43.core.model.DecimalData
 import ru.pavlig43.core.model.ItemType
 import ru.pavlig43.datetime.dateFormat
 import ru.pavlig43.datetime.dateTimeFormat
-import ru.pavlig43.mutable.api.input.normalizeDecimalInput
-import ru.pavlig43.mutable.api.input.toDecimalInputText
+import ru.pavlig43.mutable.api.input.decimalInputTransformation
+import ru.pavlig43.mutable.api.input.intInputTransformation
 import ru.pavlig43.mutable.api.input.toDecimalInputOrNull
 import ru.pavlig43.mutable.api.input.toIntInputValueOrNull
 import ru.pavlig43.theme.Res
@@ -43,8 +45,7 @@ import ru.pavlig43.theme.search
 /** Текстовое поле карточной формы с лимитом длины и режимом чтения. */
 @Composable
 fun SingleLineTextField(
-    value: String,
-    onValueChange: (String) -> Unit,
+    state: TextFieldState,
     modifier: Modifier = Modifier,
     readOnly: Boolean = false,
     maxLength: Int = Int.MAX_VALUE,
@@ -52,87 +53,52 @@ fun SingleLineTextField(
     minLines: Int = 1,
 ) {
     OutlinedTextField(
-        value = value,
-        onValueChange = { newValue ->
-            if (!readOnly && newValue.length <= maxLength) onValueChange(newValue)
-        },
+        state = state,
+        inputTransformation = InputTransformation.maxLength(maxLength),
         modifier = modifier.fillMaxWidth(),
         readOnly = readOnly,
-        singleLine = singleLine,
-        minLines = minLines,
+        lineLimits = if (singleLine) TextFieldLineLimits.SingleLine else {
+            TextFieldLineLimits.MultiLine(minHeightInLines = minLines)
+        },
     )
 }
 
 /** Целочисленное поле, принимающее лишь значения из [range]. */
 @Composable
 fun SingleLineIntField(
-    value: Int,
-    onValueChange: (Int) -> Unit,
+    state: TextFieldState,
     range: IntRange,
     modifier: Modifier = Modifier,
     readOnly: Boolean = false,
 ) {
-    var text by remember { mutableStateOf(value.takeUnless { it == 0 }?.toString().orEmpty()) }
-
-    LaunchedEffect(value, range) {
-        if (text.toIntInputValueOrNull(range) != value) {
-            text = value.takeUnless { it == 0 }?.toString().orEmpty()
-        }
-    }
-
     OutlinedTextField(
-        value = text,
-        onValueChange = valueChange@{ newText ->
-            if (readOnly) return@valueChange
-            val parsedValue = newText.toIntInputValueOrNull(range) ?: return@valueChange
-            text = newText
-            onValueChange(parsedValue)
-        },
+        state = state,
+        inputTransformation = intInputTransformation(range),
         modifier = modifier.fillMaxWidth(),
         readOnly = readOnly,
-        singleLine = true,
+        lineLimits = TextFieldLineLimits.SingleLine,
         placeholder = { Text("0") },
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
     )
 }
 
-/** Дробное поле на базе [DecimalData] с числом знаков из модели. */
+/** Дробное поле с заданным числом знаков после точки. */
 @Composable
-fun <D : DecimalData> SingleLineDecimalField(
-    value: D,
-    onValueChange: (D) -> Unit,
+fun SingleLineDecimalField(
+    state: TextFieldState,
+    decimalPlaces: Int,
     modifier: Modifier = Modifier,
     range: LongRange = 0L..Long.MAX_VALUE,
     readOnly: Boolean = false,
 ) {
-    var text by remember { mutableStateOf(value.toDecimalInputText()) }
-    var error by remember { mutableStateOf(false) }
-
-    LaunchedEffect(value.value, value.countDecimal, range) {
-        if (text.toDecimalInputOrNull(value.countDecimal, range)?.value != value.value) {
-            text = value.toDecimalInputText()
-            error = false
-        }
-    }
+    val error = state.text.toString().toDecimalInputOrNull(decimalPlaces, range) == null
 
     OutlinedTextField(
-        value = text,
-        onValueChange = valueChange@{ newText ->
-            if (readOnly) return@valueChange
-            val normalizedText = newText.normalizeDecimalInput(value.countDecimal)
-            text = normalizedText
-            val parsedInput = normalizedText.toDecimalInputOrNull(value.countDecimal, range)
-            if (parsedInput == null) {
-                error = true
-                return@valueChange
-            }
-            error = false
-            @Suppress("UNCHECKED_CAST")
-            onValueChange(value.copyValue(parsedInput.value) as D)
-        },
+        state = state,
+        inputTransformation = decimalInputTransformation(decimalPlaces),
         modifier = modifier.fillMaxWidth(),
         readOnly = readOnly,
-        singleLine = true,
+        lineLimits = TextFieldLineLimits.SingleLine,
         isError = error,
         supportingText = { if (error) Text("Не число") },
         placeholder = { Text("0") },
@@ -165,13 +131,12 @@ fun <T : ItemType> SingleLineItemTypeField(
         modifier = modifier.fillMaxWidth(),
     ) {
         OutlinedTextField(
-            value = value?.displayName ?: "Выберите тип",
-            onValueChange = {},
+            state = remember(value?.displayName) { TextFieldState(value?.displayName ?: "Выберите тип") },
             modifier = Modifier
                 .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, true)
                 .fillMaxWidth(),
             readOnly = true,
-            singleLine = true,
+            lineLimits = TextFieldLineLimits.SingleLine,
             trailingIcon = {
                 ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
             },
@@ -204,12 +169,11 @@ fun SingleLineReadOnlyField(
     modifier: Modifier = Modifier,
 ) {
     OutlinedTextField(
-        value = value,
-        onValueChange = {},
+        state = remember(value) { TextFieldState(value) },
         modifier = modifier.fillMaxWidth(),
         enabled = false,
         readOnly = true,
-        singleLine = true,
+        lineLimits = TextFieldLineLimits.SingleLine,
     )
 }
 
@@ -307,11 +271,10 @@ fun SingleLineReferenceField(
     modifier: Modifier = Modifier,
 ) {
     OutlinedTextField(
-        value = value,
-        onValueChange = {},
+        state = remember(value) { TextFieldState(value) },
         modifier = modifier.fillMaxWidth(),
         readOnly = true,
-        singleLine = true,
+        lineLimits = TextFieldLineLimits.SingleLine,
         trailingIcon = {
             Row {
                 IconButton(

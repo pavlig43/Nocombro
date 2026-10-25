@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.painterResource
 import ru.pavlig43.coreui.ClickableValidationErrorsCard
 import ru.pavlig43.coreui.LoadingUi
+import androidx.compose.foundation.text.input.TextFieldState
 import ru.pavlig43.theme.Res
 import ru.pavlig43.theme.check
 import ru.pavlig43.update.component.UpdateComponent
@@ -55,8 +56,8 @@ internal fun UpdateButton(
     ) {
         if (updateState is UpdateState.Error) {
             TextField(
-                value = (updateState as UpdateState.Error).message,
-                onValueChange = { },
+                state = remember(updateState) { TextFieldState((updateState as UpdateState.Error).message) },
+                readOnly = true,
             )
             Text(
                 text = (updateState as UpdateState.Error).message,

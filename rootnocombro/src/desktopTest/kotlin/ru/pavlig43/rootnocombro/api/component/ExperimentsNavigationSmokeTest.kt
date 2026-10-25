@@ -3,6 +3,7 @@ package ru.pavlig43.rootnocombro.api.component
 import com.arkivanov.decompose.DefaultComponentContext
 import com.arkivanov.essenty.backhandler.BackDispatcher
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
+import com.arkivanov.essenty.lifecycle.destroy
 import io.kotest.matchers.types.shouldBeInstanceOf
 import org.koin.core.context.stopKoin
 import org.koin.java.KoinJavaComponent.getKoin
@@ -31,10 +32,11 @@ class ExperimentsNavigationSmokeTest : DesktopMainDispatcherFunSpec({
         System.setProperty(DATASTORE_PATH_PROPERTY, dataStorePath.toString())
         initKoin(databaseOverride = managedDatabase.database)
         val rootDependencies = getKoin().get<RootDependencies>()
+        val lifecycle = LifecycleRegistry()
         val component = runOnUiThread {
             RootNocombroComponent(
                 componentContext = DefaultComponentContext(
-                    lifecycle = LifecycleRegistry(),
+                    lifecycle = lifecycle,
                     backHandler = BackDispatcher(),
                 ),
                 rootDependencies = rootDependencies,
@@ -44,6 +46,7 @@ class ExperimentsNavigationSmokeTest : DesktopMainDispatcherFunSpec({
         try {
             block(component, managedDatabase.database)
         } finally {
+            runOnUiThread { lifecycle.destroy() }
             stopKoin()
             System.clearProperty(DATASTORE_PATH_PROPERTY)
             managedDatabase.close()

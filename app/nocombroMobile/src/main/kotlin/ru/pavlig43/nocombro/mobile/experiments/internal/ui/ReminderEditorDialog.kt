@@ -25,7 +25,6 @@ import ru.pavlig43.nocombro.mobile.experiments.internal.component.ExperimentRemi
 @Composable
 internal fun ReminderEditorDialog(
     editor: ExperimentReminderEditorState,
-    onTextChange: (String) -> Unit,
     onDateTimeChange: (LocalDateTime) -> Unit,
     onDismiss: () -> Unit,
     onSave: () -> Unit,
@@ -41,8 +40,7 @@ internal fun ReminderEditorDialog(
             ) {
                 OutlinedTextField(
                     modifier = Modifier.fillMaxWidth(),
-                    value = editor.text,
-                    onValueChange = onTextChange,
+                    state = editor.textState,
                     label = { Text("Текст") },
                 )
                 OutlinedButton(

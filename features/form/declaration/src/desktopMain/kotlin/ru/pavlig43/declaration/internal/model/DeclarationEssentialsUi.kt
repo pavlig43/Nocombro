@@ -1,5 +1,7 @@
 package ru.pavlig43.declaration.internal.model
 
+import androidx.compose.foundation.text.input.TextFieldState
+import ru.pavlig43.mutable.api.singleLine.component.SingleLineInputState
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.database.data.declaration.Declaration
@@ -9,7 +11,7 @@ import ru.pavlig43.datetime.getCurrentLocalDate
 import kotlin.time.ExperimentalTime
 
 data class DeclarationEssentialsUi(
-    val displayName: String = "",
+    val displayNameState: TextFieldState = TextFieldState(),
     val isObserveFromNotification: Boolean = true,
     val createdAt: LocalDate = getCurrentLocalDate(),
     val vendorId: Int? = null,
@@ -20,7 +22,10 @@ data class DeclarationEssentialsUi(
     val syncId: String = defaultSyncId(),
     val updatedAt: LocalDateTime = defaultUpdatedAt(),
     val deletedAt: LocalDateTime? = null,
-)
+) : SingleLineInputState {
+    val displayName: String get() = displayNameState.text.toString()
+    override val textFields get() = listOf(displayNameState)
+}
 
 @Suppress("ThrowsCount")
 @OptIn(ExperimentalTime::class)
@@ -43,7 +48,7 @@ internal fun DeclarationEssentialsUi.toDto(): Declaration {
 internal fun Declaration.toUi(): DeclarationEssentialsUi {
     return DeclarationEssentialsUi(
         id = id,
-        displayName = displayName,
+        displayNameState = TextFieldState(displayName),
         bornDate = bornDate,
         isObserveFromNotification = observeFromNotification,
         createdAt = createdAt,

@@ -3,6 +3,7 @@ package ru.pavlig43.rootnocombro.api.component
 import com.arkivanov.decompose.DefaultComponentContext
 import com.arkivanov.essenty.backhandler.BackDispatcher
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
+import com.arkivanov.essenty.lifecycle.destroy
 import com.arkivanov.essenty.lifecycle.resume
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
@@ -62,6 +63,7 @@ class RootNocombroFlowSmokeTest : DesktopMainDispatcherFunSpec({
         try {
             block(component)
         } finally {
+            runOnUiThread { lifecycle.destroy() }
             stopKoin()
             System.clearProperty(DATASTORE_PATH_PROPERTY)
             managedDatabase.close()

@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
@@ -26,6 +27,10 @@ import kotlinx.datetime.format
 import ru.pavlig43.core.model.DecimalData2
 import ru.pavlig43.core.model.DecimalData3
 import ru.pavlig43.core.model.toStartDoubleFormat
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.snapshotFlow
+import kotlinx.coroutines.flow.drop
 import ru.pavlig43.database.data.batch.StorageLocation
 import ru.pavlig43.database.data.transact.StockOperationReason
 import ru.pavlig43.datetime.dateTimeFormat
@@ -107,12 +112,16 @@ internal fun StorageBatchActionsDialog(
 internal fun StorageOperationDialog(
     state: StorageOperationDialogState,
     onDismiss: () -> Unit,
-    onCountChange: (String) -> Unit,
+    onInputChange: () -> Unit,
     onDateTimeChange: (kotlinx.datetime.LocalDateTime) -> Unit,
     onReasonChange: (StockOperationReason) -> Unit,
-    onCommentChange: (String) -> Unit,
     onSubmit: (Boolean) -> Unit,
 ) {
+    val currentOnInputChange by rememberUpdatedState(onInputChange)
+    LaunchedEffect(state.countState, state.commentState) {
+        snapshotFlow { state.countState.text.toString() to state.commentState.text.toString() }
+            .drop(1).collect { currentOnInputChange() }
+    }
     var showDateTimePicker by remember { mutableStateOf(false) }
     var showReasons by remember { mutableStateOf(false) }
     val title = when (state.kind) {
@@ -135,10 +144,9 @@ internal fun StorageOperationDialog(
                 Text("Остаток: ${DecimalData3(state.availableCount).toStartDoubleFormat()}")
 
                 OutlinedTextField(
-                    value = state.countText,
-                    onValueChange = onCountChange,
+                    state = state.countState,
                     label = { Text("Количество, кг") },
-                    singleLine = true,
+                    lineLimits = TextFieldLineLimits.SingleLine,
                     enabled = !state.isSaving,
                     modifier = Modifier.fillMaxWidth(),
                 )
@@ -174,8 +182,7 @@ internal fun StorageOperationDialog(
                 }
 
                 OutlinedTextField(
-                    value = state.comment,
-                    onValueChange = onCommentChange,
+                    state = state.commentState,
                     label = { Text("Комментарий") },
                     enabled = !state.isSaving,
                     modifier = Modifier.fillMaxWidth(),

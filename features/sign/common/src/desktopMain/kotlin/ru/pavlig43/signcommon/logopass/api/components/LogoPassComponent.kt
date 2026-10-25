@@ -1,5 +1,8 @@
 package ru.pavlig43.signcommon.logopass.api.components
 
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
+import androidx.compose.runtime.snapshotFlow
 import com.arkivanov.decompose.ComponentContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -28,32 +31,26 @@ class LogoPassComponent(
     override val logoPassState: StateFlow<LogoPassState> = _logoPassState.asStateFlow()
 
 
-    private val _login = MutableStateFlow("")
-
-
-    override val login = _login.asStateFlow()
+    override val login = TextFieldState()
 
     private fun validateLogin(login: String): Boolean {
-        println(login)
         return true
     }
 
-    override val isValidLogin: StateFlow<Boolean> = _login.map { validateLogin(it) }
+    override val isValidLogin: StateFlow<Boolean> = snapshotFlow { validateLogin(login.text.toString()) }
         .stateIn(
             scope = coroutineScope,
             started = SharingStarted.Eagerly,
             initialValue = false
         )
 
-    private val _password = MutableStateFlow("")
-    override val password = _password.asStateFlow()
+    override val password = TextFieldState()
 
     private fun validatePassword(password: String): Boolean {
-        println(password)
         return true
     }
 
-    override val isValidPassword: StateFlow<Boolean> = _password.map { validatePassword(it) }
+    override val isValidPassword: StateFlow<Boolean> = snapshotFlow { validatePassword(password.text.toString()) }
         .stateIn(
             scope = coroutineScope,
             started = SharingStarted.Eagerly,
@@ -69,16 +66,17 @@ class LogoPassComponent(
 
 
     override fun onLoginChanged(login: String) {
-        _login.update { login }
+        this.login.setTextAndPlaceCursorAtEnd(login)
     }
 
     override fun onPasswordChanged(password: String) {
-        _password.update { password }
+        this.password.setTextAndPlaceCursorAtEnd(password)
     }
 
     override fun sendLogoPass() {
+        val request = LogoPass(login.text.toString(), password.text.toString())
         coroutineScope.launch {
-            val result = logoPassRepository.sendLogoPass(LogoPass(_login.value, _password.value))
+            val result = logoPassRepository.sendLogoPass(request)
             sendLogoPassRequest(result)
 
         }

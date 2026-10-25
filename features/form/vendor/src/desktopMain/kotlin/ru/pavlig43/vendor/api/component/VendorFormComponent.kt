@@ -41,7 +41,7 @@ class VendorFormComponent(
     private val stackNavigation = StackNavigation<Config>()
 
     private val essentialsComponentFactory = SingleLineComponentFactory<Vendor, VendorEssentialsUi>(
-        initItem = VendorEssentialsUi(),
+        initItem = { VendorEssentialsUi() },
         errorFactory = { item: VendorEssentialsUi ->
             buildList {
                 if (item.displayName.isBlank()) add("Название поставщика обязательно")

@@ -1,5 +1,7 @@
 package ru.pavlig43.transaction.internal.model
 
+import androidx.compose.foundation.text.input.TextFieldState
+import ru.pavlig43.mutable.api.singleLine.component.SingleLineInputState
 import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.database.data.transact.Transact
 import ru.pavlig43.database.data.transact.TransactionType
@@ -14,7 +16,7 @@ internal data class TransactionEssentialsUi(
 
     val createdAt: LocalDateTime = getCurrentLocalDateTime(),
 
-    val comment: String ="",
+    val commentState: TextFieldState = TextFieldState(),
 
     val isCompleted: Boolean = true,
 
@@ -26,13 +28,16 @@ internal data class TransactionEssentialsUi(
 
     val deletedAt: LocalDateTime? = null,
 
-)
+) : SingleLineInputState {
+    val comment: String get() = commentState.text.toString()
+    override val textFields get() = listOf(commentState)
+}
 
 
 internal fun Transact.toUi(): TransactionEssentialsUi {
     return TransactionEssentialsUi(
         createdAt = createdAt,
-        comment = comment,
+        commentState = TextFieldState(comment),
         id = id,
         transactionType = transactionType,
         isCompleted = isCompleted,

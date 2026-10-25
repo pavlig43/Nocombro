@@ -42,10 +42,7 @@ private fun vendorEssentialsSections(
                     label = "Название поставщика",
                     content = { item, fieldModifier ->
                         SingleLineTextField(
-                            value = item.displayName,
-                            onValueChange = { value ->
-                                component.onChangeItem { it.copy(displayName = value) }
-                            },
+                            state = item.displayNameState,
                             modifier = fieldModifier,
                         )
                     },
@@ -56,10 +53,7 @@ private fun vendorEssentialsSections(
                     label = "Комментарий",
                     content = { item, fieldModifier ->
                         SingleLineTextField(
-                            value = item.comment,
-                            onValueChange = { value ->
-                                component.onChangeItem { it.copy(comment = value) }
-                            },
+                            state = item.commentState,
                             modifier = fieldModifier,
                             singleLine = false,
                             minLines = 3,

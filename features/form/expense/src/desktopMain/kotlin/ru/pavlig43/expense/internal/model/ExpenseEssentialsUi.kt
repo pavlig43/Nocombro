@@ -1,5 +1,9 @@
 package ru.pavlig43.expense.internal.model
 
+import androidx.compose.foundation.text.input.TextFieldState
+import ru.pavlig43.mutable.api.singleLine.component.SingleLineInputState
+import ru.pavlig43.mutable.api.input.decimalValue
+import ru.pavlig43.mutable.api.input.toDecimalInputText
 import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.core.model.DecimalData2
 import ru.pavlig43.database.data.expense.ExpenseBD
@@ -10,14 +14,21 @@ import ru.pavlig43.datetime.getCurrentLocalDateTime
 
 internal data class ExpenseEssentialsUi(
     val expenseType: ExpenseType? = null,
-    val amount: DecimalData2 = DecimalData2(0),
+    val amountState: TextFieldState = TextFieldState(),
     val expenseDateTime: LocalDateTime = getCurrentLocalDateTime(),
-    val comment: String = "",
+    val commentState: TextFieldState = TextFieldState(),
     val id: Int = 0,
     val syncId: String = defaultSyncId(),
     val updatedAt: LocalDateTime = defaultUpdatedAt(),
     val deletedAt: LocalDateTime? = null,
-)
+) : SingleLineInputState {
+    val comment: String get() = commentState.text.toString()
+    val amount: DecimalData2 get() = DecimalData2(amountState.decimalValue(2) ?: 0L)
+    override val textFields get() = listOf(commentState, amountState)
+    override val inputErrors get() = if (
+        amountState.decimalValue(2) == null
+    ) listOf("Некорректное число") else emptyList()
+}
 
 internal fun ExpenseEssentialsUi.toDto(): ExpenseBD {
     return ExpenseBD(
@@ -36,9 +47,9 @@ internal fun ExpenseEssentialsUi.toDto(): ExpenseBD {
 internal fun ExpenseBD.toUi(): ExpenseEssentialsUi {
     return ExpenseEssentialsUi(
         expenseType = expenseType,
-        amount = DecimalData2(amount),
+        amountState = TextFieldState((DecimalData2(amount)).toDecimalInputText()),
         expenseDateTime = expenseDateTime,
-        comment = comment,
+        commentState = TextFieldState(comment),
         id = id,
         syncId = syncId,
         updatedAt = updatedAt,

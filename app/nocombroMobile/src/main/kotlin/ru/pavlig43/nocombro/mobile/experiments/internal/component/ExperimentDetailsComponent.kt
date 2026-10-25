@@ -1,5 +1,8 @@
 package ru.pavlig43.nocombro.mobile.experiments.internal.component
 
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
+import androidx.compose.runtime.snapshotFlow
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.essenty.instancekeeper.getOrCreate
 import kotlinx.coroutines.Dispatchers
@@ -26,6 +29,7 @@ import ru.pavlig43.datetime.getCurrentLocalDateTime
 import ru.pavlig43.nocombro.mobile.experiments.api.ExperimentDependencies
 import ru.pavlig43.nocombro.mobile.experiments.internal.data.ExperimentDetailsRepository
 import ru.pavlig43.nocombro.mobile.experiments.internal.di.createMobileExperimentsModule
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Экран одного эксперимента: держит форму, список записей, напоминания и автосохранение.
@@ -46,7 +50,10 @@ class ExperimentDetailsComponent(
     private val coroutineScope = componentCoroutineScope()
 
     /** Черновик полей формы, который автосохраняется после паузы ввода. */
-    private val _experimentDraft = MutableStateFlow(ExperimentDraft())
+    val titleState = TextFieldState()
+    val ideaState = TextFieldState()
+    private val experimentDraft = snapshotFlow { ExperimentDraft(titleState.text.toString(), ideaState.text.toString()) }
+        .stateIn(coroutineScope, SharingStarted.Eagerly, ExperimentDraft())
 
     /** Текст ошибки или валидации, показанный над формой. */
     private val _message = MutableStateFlow<String?>(null)
@@ -54,9 +61,17 @@ class ExperimentDetailsComponent(
     /** Открытый редактор напоминания; null значит, что диалог закрыт. */
     private val _reminderEditor = MutableStateFlow<ExperimentReminderEditorState?>(null)
 
+    private var draftLoaded = false
+
     private val selectedExperiment: StateFlow<MobileExperiment?> = repository.observeExperiment(experimentId)
         .onEach { experiment ->
-            _experimentDraft.value = experiment?.toDraft() ?: ExperimentDraft()
+            if (!draftLoaded && experiment != null) {
+                draftLoaded = true
+                val title = experiment?.title.orEmpty()
+                val idea = experiment?.ideaDescription.orEmpty()
+                if (titleState.text.toString() != title) titleState.setTextAndPlaceCursorAtEnd(title)
+                if (ideaState.text.toString() != idea) ideaState.setTextAndPlaceCursorAtEnd(idea)
+            }
         }
         .stateInComponent(null)
 
@@ -70,7 +85,7 @@ class ExperimentDetailsComponent(
         selectedExperiment,
         entries,
         reminders,
-        _experimentDraft,
+        experimentDraft,
     ) { experiment, entries, reminders, draft ->
         ExperimentDetailsContentState(
             experiment = experiment?.toDetails(),
@@ -94,16 +109,23 @@ class ExperimentDetailsComponent(
             message = message,
         )
     }.stateInComponent(ExperimentDetailsUiState())
-        .also { observeDraftSaves() }
+
+    private var started = false
+
+    fun start() {
+        if (started) return
+        started = true
+        observeDraftSaves()
+    }
 
     /** Обновляет локальный черновик названия; запись в БД пойдёт через автосохранение. */
     fun onTitleChange(value: String) {
-        _experimentDraft.update { it.copy(title = value) }
+        titleState.setTextAndPlaceCursorAtEnd(value)
     }
 
     /** Обновляет локальный черновик идеи; запись в БД пойдёт через автосохранение. */
     fun onIdeaChange(value: String) {
-        _experimentDraft.update { it.copy(ideaDescription = value) }
+        ideaState.setTextAndPlaceCursorAtEnd(value)
     }
 
     /** Передаёт выбранную запись родительской навигации experiments. */
@@ -149,7 +171,7 @@ class ExperimentDetailsComponent(
         _reminderEditor.value = ExperimentReminderEditorState(
             reminderId = reminder.id,
             experimentId = reminder.experimentId,
-            text = reminder.text,
+            textState = TextFieldState(reminder.text),
             reminderDateTime = reminder.reminderDateTime,
         )
     }
@@ -161,7 +183,7 @@ class ExperimentDetailsComponent(
 
     /** Правит текст в открытом редакторе напоминания; без открытого диалога вызов ничего не делает. */
     fun onReminderTextChange(value: String) {
-        _reminderEditor.update { editor -> editor?.copy(text = value) }
+        _reminderEditor.value?.textState?.setTextAndPlaceCursorAtEnd(value)
     }
 
     /** Правит дату и время в открытом редакторе напоминания. */
@@ -211,8 +233,8 @@ class ExperimentDetailsComponent(
     /** Сохраняет черновик полей после паузы ввода, чтобы не писать в БД на каждый символ. */
     @OptIn(FlowPreview::class)
     private fun observeDraftSaves() {
-        _experimentDraft
-            .debounce(500)
+        experimentDraft
+            .debounce(500.milliseconds)
             .distinctUntilChanged()
             .onEach { draft ->
                 val experiment = selectedExperiment.value ?: return@onEach
@@ -332,9 +354,10 @@ data class ExperimentDraft(
 data class ExperimentReminderEditorState(
     val reminderId: Int? = null,
     val experimentId: Int,
-    val text: String = "",
+    val textState: TextFieldState = TextFieldState(),
     val reminderDateTime: LocalDateTime = getCurrentLocalDateTime(),
 ) {
+    val text: String get() = textState.text.toString()
     val isEdit: Boolean
         get() = reminderId != null
 }

@@ -1,5 +1,6 @@
 package ru.pavlig43.signcommon.logopass.api.components
 
+import androidx.compose.foundation.text.input.TextFieldState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -7,10 +8,10 @@ class FakeLogoPassComponent : ILogoPassComponent {
     override val logoPassState: StateFlow<LogoPassState> = MutableStateFlow(LogoPassState.Initial())
 
 
-    override val login: StateFlow<String> = MutableStateFlow("login")
+    override val login = TextFieldState("login")
 
     override val isValidLogin: StateFlow<Boolean> = MutableStateFlow(true)
-    override val password: StateFlow<String> = MutableStateFlow("passwor7d")
+    override val password = TextFieldState("passwor7d")
 
     override val isValidPassword: StateFlow<Boolean> = MutableStateFlow(true)
     override val isValidLogoPass: StateFlow<Boolean> = MutableStateFlow(true)

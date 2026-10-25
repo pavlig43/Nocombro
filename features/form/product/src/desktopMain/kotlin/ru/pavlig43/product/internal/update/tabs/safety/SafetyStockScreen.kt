@@ -37,12 +37,8 @@ private fun safetyStockSections(
                     label = "Точка перезаказа",
                     content = { item, fieldModifier ->
                         SingleLineDecimalField(
-                            value = item.reorderPoint,
-                            onValueChange = { value ->
-                                component.onChangeItem {
-                                    it.copy(reorderPoint = value)
-                                }
-                            },
+                            state = item.reorderPointState,
+                            decimalPlaces = 3,
                             modifier = fieldModifier,
                         )
                     },
@@ -51,12 +47,8 @@ private fun safetyStockSections(
                     label = "Количество для заказа",
                     content = { item, fieldModifier ->
                         SingleLineDecimalField(
-                            value = item.orderQuantity,
-                            onValueChange = { value ->
-                                component.onChangeItem {
-                                    it.copy(orderQuantity = value)
-                                }
-                            },
+                            state = item.orderQuantityState,
+                            decimalPlaces = 3,
                             modifier = fieldModifier,
                         )
                     },

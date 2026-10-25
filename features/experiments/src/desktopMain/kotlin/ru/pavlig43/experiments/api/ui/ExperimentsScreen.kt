@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -28,6 +29,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -36,6 +38,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import ru.pavlig43.coreui.ProjectDialog
+import androidx.compose.foundation.text.input.TextFieldState
 import ru.pavlig43.datetime.dateTimeFormat
 import ru.pavlig43.datetime.single.datetime.DateTimePickerDialog
 import ru.pavlig43.experiments.api.component.ExperimentEntryListItem
@@ -62,8 +65,6 @@ fun ExperimentsScreen(
     modifier: Modifier = Modifier,
 ) {
     val uiState by component.uiState.collectAsState()
-    val draft by component.experimentDraft.collectAsState()
-    val entryDraft by component.entryDraft.collectAsState()
     val message by component.message.collectAsState()
     val filesComponent by component.filesComponent.collectAsState()
     val reminderEditorState by component.reminderEditorState.collectAsState()
@@ -90,7 +91,6 @@ fun ExperimentsScreen(
         ReminderEditorDialog(
             state = editor,
             onDismiss = component::dismissReminderDialog,
-            onTextChange = component::onReminderTextChange,
             onDateTimeChange = component::onReminderDateTimeChange,
             onSave = component::saveReminder,
         )
@@ -110,35 +110,36 @@ fun ExperimentsScreen(
             onDeleteExperiment = component::deleteExperiment,
             modifier = Modifier.width(280.dp).fillMaxHeight(),
         )
-        ExperimentDetailsPane(
-            title = draft.title,
-            ideaDescription = draft.ideaDescription,
-            updatedAtText = uiState.selectedExperiment?.updatedAtText,
-            hasSelection = uiState.selectedExperiment != null,
-            isArchived = uiState.selectedExperiment?.isArchived == true,
-            entries = uiState.entries,
-            reminders = uiState.reminders,
-            selectedEntryId = uiState.selectedEntry?.id,
-            onTitleChange = component::onTitleChange,
-            onIdeaDescriptionChange = component::onIdeaDescriptionChange,
-            onOpenToday = component::openTodayEntry,
-            onCreateTodayEntry = component::createTodayEntry,
-            onToggleArchive = component::toggleArchiveSelected,
-            onOpenCreateReminder = component::openCreateReminderDialog,
-            onEditReminder = component::openEditReminderDialog,
-            onDeleteReminder = component::deleteReminder,
-            onSelectEntry = component::selectEntry,
-            onDeleteEntry = component::deleteEntry,
-            modifier = Modifier.weight(1f).fillMaxHeight(),
-        )
-        EntryEditorPane(
-            title = uiState.selectedEntry?.dateText,
-            content = entryDraft,
-            showEmptyState = (uiState.selectedExperiment != null) && (uiState.selectedEntry == null),
-            onContentChange = component::onEntryContentChange,
-            files = filesComponent,
-            modifier = Modifier.weight(1.1f).fillMaxHeight(),
-        )
+        key(uiState.selectedExperiment?.id) {
+            ExperimentDetailsPane(
+                title = component.titleState,
+                ideaDescription = component.ideaState,
+                updatedAtText = uiState.selectedExperiment?.updatedAtText,
+                hasSelection = uiState.selectedExperiment != null,
+                isArchived = uiState.selectedExperiment?.isArchived == true,
+                entries = uiState.entries,
+                reminders = uiState.reminders,
+                selectedEntryId = uiState.selectedEntry?.id,
+                onOpenToday = component::openTodayEntry,
+                onCreateTodayEntry = component::createTodayEntry,
+                onToggleArchive = component::toggleArchiveSelected,
+                onOpenCreateReminder = component::openCreateReminderDialog,
+                onEditReminder = component::openEditReminderDialog,
+                onDeleteReminder = component::deleteReminder,
+                onSelectEntry = component::selectEntry,
+                onDeleteEntry = component::deleteEntry,
+                modifier = Modifier.weight(1f).fillMaxHeight(),
+            )
+        }
+        key(uiState.selectedEntry?.id) {
+            EntryEditorPane(
+                title = uiState.selectedEntry?.dateText,
+                content = component.entryState,
+                showEmptyState = (uiState.selectedExperiment != null) && (uiState.selectedEntry == null),
+                files = filesComponent,
+                modifier = Modifier.weight(1.1f).fillMaxHeight(),
+            )
+        }
     }
 }
 
@@ -234,16 +235,14 @@ private fun ExperimentListPane(
 @Composable
 @Suppress("LongMethod", "LongParameterList")
 private fun ExperimentDetailsPane(
-    title: String,
-    ideaDescription: String,
+    title: TextFieldState,
+    ideaDescription: TextFieldState,
     updatedAtText: String?,
     hasSelection: Boolean,
     isArchived: Boolean,
     entries: List<ExperimentEntryListItem>,
     reminders: List<ExperimentReminderListItem>,
     selectedEntryId: Int?,
-    onTitleChange: (String) -> Unit,
-    onIdeaDescriptionChange: (String) -> Unit,
     onOpenToday: () -> Unit,
     onCreateTodayEntry: () -> Unit,
     onToggleArchive: () -> Unit,
@@ -273,18 +272,16 @@ private fun ExperimentDetailsPane(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 OutlinedTextField(
-                    value = title,
-                    onValueChange = onTitleChange,
+                    state = title,
                     modifier = Modifier.fillMaxWidth(),
                     label = { Text("Название") },
-                    singleLine = true,
+                    lineLimits = TextFieldLineLimits.SingleLine,
                 )
                 OutlinedTextField(
-                    value = ideaDescription,
-                    onValueChange = onIdeaDescriptionChange,
+                    state = ideaDescription,
                     modifier = Modifier.fillMaxWidth(),
                     label = { Text("Идея") },
-                    minLines = 4,
+                    lineLimits = TextFieldLineLimits.MultiLine(minHeightInLines = 4),
                 )
                 updatedAtText?.let {
                     Text(
@@ -462,7 +459,6 @@ private fun ReminderBlock(
 private fun ReminderEditorDialog(
     state: ExperimentReminderEditorState,
     onDismiss: () -> Unit,
-    onTextChange: (String) -> Unit,
     onDateTimeChange: (kotlinx.datetime.LocalDateTime) -> Unit,
     onSave: () -> Unit,
 ) {
@@ -479,11 +475,10 @@ private fun ReminderEditorDialog(
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             OutlinedTextField(
-                value = state.text,
-                onValueChange = onTextChange,
+                state = state.textState,
                 modifier = Modifier.fillMaxWidth(),
                 label = { Text("Текст напоминания") },
-                minLines = 3,
+                lineLimits = TextFieldLineLimits.MultiLine(minHeightInLines = 3),
             )
             OutlinedButton(
                 onClick = { showDateTimePicker = true },
@@ -520,9 +515,8 @@ private fun ReminderEditorDialog(
 @Suppress("LongParameterList")
 private fun EntryEditorPane(
     title: String?,
-    content: String,
+    content: TextFieldState,
     showEmptyState: Boolean,
-    onContentChange: (String) -> Unit,
     files: FilesComponent?,
     modifier: Modifier = Modifier,
 ) {
@@ -561,11 +555,10 @@ private fun EntryEditorPane(
                         style = MaterialTheme.typography.headlineSmall,
                     )
                     OutlinedTextField(
-                        value = content,
-                        onValueChange = onContentChange,
+                        state = content,
                         modifier = Modifier.fillMaxWidth(),
                         label = { Text("Запись") },
-                        minLines = 12,
+                        lineLimits = TextFieldLineLimits.MultiLine(minHeightInLines = 12),
                     )
                     Text("Файлы записи", style = MaterialTheme.typography.titleMedium)
                     files?.let {

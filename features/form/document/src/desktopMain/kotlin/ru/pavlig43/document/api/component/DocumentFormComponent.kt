@@ -44,7 +44,7 @@ class DocumentFormComponent(
 
 
     private val essentialsComponentFactory = SingleLineComponentFactory<Document, DocumentEssentialsUi>(
-        initItem = DocumentEssentialsUi(),
+        initItem = { DocumentEssentialsUi() },
         errorFactory = {item: DocumentEssentialsUi->
             buildList {
                 if (item.displayName.isBlank()) add("Название документа обязательно")

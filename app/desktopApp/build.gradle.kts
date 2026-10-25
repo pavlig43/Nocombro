@@ -23,6 +23,7 @@ kotlin{
         implementation(libs.decompose.compose)
         implementation(libs.compose.ui.backhandler.desktop)
         implementation(libs.androidx.navigationevent.desktop)
+        implementation(libs.androidx.navigationevent.compose)
         implementation(libs.kermit)
         implementation(projects.rootnocombro)
         implementation(compose.desktop.currentOs)

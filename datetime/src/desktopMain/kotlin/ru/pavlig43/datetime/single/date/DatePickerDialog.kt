@@ -16,6 +16,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import dev.darkokoa.datetimewheelpicker.WheelDatePicker
 import dev.darkokoa.datetimewheelpicker.core.WheelPickerDefaults
+import dev.darkokoa.datetimewheelpicker.core.WheelRows
 import dev.darkokoa.datetimewheelpicker.core.format.CjkSuffixConfig
 import dev.darkokoa.datetimewheelpicker.core.format.MonthDisplayStyle
 import dev.darkokoa.datetimewheelpicker.core.format.dateFormatter
@@ -64,7 +65,7 @@ fun DatePickerDialog(
                 monthDisplayStyle = MonthDisplayStyle.SHORT,
                 cjkSuffixConfig = CjkSuffixConfig.HideAll
             ),
-            rowCount = 5,
+            rows = WheelRows.Count(count = 5),
             textStyle = MaterialTheme.typography.titleSmall,
             textColor = MaterialTheme.colorScheme.onSurface,
             selectorProperties = WheelPickerDefaults.selectorProperties(

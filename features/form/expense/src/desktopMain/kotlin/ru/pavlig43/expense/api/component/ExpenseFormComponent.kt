@@ -41,7 +41,7 @@ class ExpenseFormComponent(
     private val stackNavigation = StackNavigation<Config>()
 
     private val essentialsComponentFactory = SingleLineComponentFactory<ExpenseBD, ExpenseEssentialsUi>(
-        initItem = ExpenseEssentialsUi(),
+        initItem = { ExpenseEssentialsUi() },
         errorFactory = { item: ExpenseEssentialsUi ->
             buildList {
                 if (item.expenseType == null) add("Тип расхода обязателен")

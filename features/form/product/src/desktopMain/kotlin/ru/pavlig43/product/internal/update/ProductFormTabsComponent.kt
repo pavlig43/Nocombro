@@ -59,7 +59,7 @@ internal class ProductFormTabsComponent(
 
     override val transactionExecutor: TransactionExecutor = scope.get()
     private val coroutineScope = componentCoroutineScope()
-    private val productEssentials = MutableStateFlow(componentFactory.initItem)
+    private val productEssentials = MutableStateFlow(componentFactory.initItem())
     private var compositionComponent: CompositionComponent? = null
     private var tabNavigationComponentRef: TabNavigationComponent<ProductTab, ProductTabChild>? = null
     private var pendingInitialProduct: ProductEssentialsUi? = null

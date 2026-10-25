@@ -54,7 +54,7 @@ class TransactionFormComponent(
     }
 
     private val componentFactory = SingleLineComponentFactory<Transact, TransactionEssentialsUi>(
-        initItem = TransactionEssentialsUi(),
+        initItem = { TransactionEssentialsUi() },
         errorFactory = { item: TransactionEssentialsUi ->
             buildList {
                 if (item.transactionType == null) add("Тип транзакции обязателен")

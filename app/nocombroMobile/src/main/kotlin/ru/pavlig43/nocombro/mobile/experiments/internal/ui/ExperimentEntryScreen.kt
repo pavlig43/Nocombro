@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -27,6 +28,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.runtime.LaunchedEffect
 import ru.pavlig43.nocombro.mobile.experiments.internal.component.ExperimentEntryComponent
 import ru.pavlig43.nocombro.mobile.experiments.internal.component.MobileExperimentEntryFile
 
@@ -36,6 +39,7 @@ internal fun ExperimentEntryScreen(
     entryComponent: ExperimentEntryComponent,
     onBack: () -> Unit,
 ) {
+    LaunchedEffect(entryComponent) { entryComponent.start() }
     val state by entryComponent.uiState.collectAsState()
     val filePicker = rememberFilePickerLauncher { file ->
         file?.let(entryComponent::addFile)
@@ -98,9 +102,8 @@ internal fun ExperimentEntryScreen(
             item {
                 ExperimentEntryEditor(
                     dateText = state.dateText,
-                    content = state.content,
+                    content = entryComponent.contentState,
                     isLoaded = state.isLoaded,
-                    onContentChange = entryComponent::onContentChange,
                 )
             }
         }
@@ -201,9 +204,8 @@ private fun ExperimentEntryFileRow(
 @Composable
 private fun ExperimentEntryEditor(
     dateText: String,
-    content: String,
+    content: TextFieldState,
     isLoaded: Boolean,
-    onContentChange: (String) -> Unit,
 ) {
     OutlinedCard(
         modifier = Modifier.fillMaxWidth(),
@@ -222,11 +224,10 @@ private fun ExperimentEntryEditor(
                 modifier = Modifier
                     .fillMaxWidth()
                     .heightIn(min = 180.dp),
-                value = content,
-                onValueChange = onContentChange,
+                state = content,
                 enabled = isLoaded,
                 label = { Text(dateText.ifBlank { "Текст" }) },
-                minLines = 7,
+                lineLimits = TextFieldLineLimits.MultiLine(minHeightInLines = 7),
             )
         }
     }

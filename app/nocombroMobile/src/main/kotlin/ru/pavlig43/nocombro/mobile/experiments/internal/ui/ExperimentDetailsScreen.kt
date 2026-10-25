@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -29,6 +30,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.runtime.LaunchedEffect
 import ru.pavlig43.nocombro.mobile.experiments.internal.component.ExperimentDetailsComponent
 import ru.pavlig43.nocombro.mobile.experiments.internal.component.ExperimentDetailsUiState
 import ru.pavlig43.nocombro.mobile.experiments.internal.component.ExperimentEntryListItem
@@ -40,6 +43,7 @@ internal fun ExperimentDetailsScreen(
     detailsComponent: ExperimentDetailsComponent,
     onBack: () -> Unit,
 ) {
+    LaunchedEffect(detailsComponent) { detailsComponent.start() }
     val state by detailsComponent.uiState.collectAsState()
 
     Scaffold(
@@ -75,8 +79,8 @@ internal fun ExperimentDetailsScreen(
             item {
                 ExperimentFieldsSection(
                     state = state,
-                    onTitleChange = detailsComponent::onTitleChange,
-                    onIdeaChange = detailsComponent::onIdeaChange,
+                    titleState = detailsComponent.titleState,
+                    ideaState = detailsComponent.ideaState,
                     onCreateEntry = detailsComponent::createEntryForCurrentDate,
                     onArchiveChange = detailsComponent::setArchived,
                 )
@@ -129,7 +133,6 @@ internal fun ExperimentDetailsScreen(
     state.reminderEditor?.let { editor ->
         ReminderEditorDialog(
             editor = editor,
-            onTextChange = detailsComponent::onReminderTextChange,
             onDateTimeChange = detailsComponent::onReminderDateTimeChange,
             onDismiss = detailsComponent::closeReminderEditor,
             onSave = detailsComponent::saveReminder,
@@ -166,8 +169,8 @@ private fun MessageCard(
 @Composable
 private fun ExperimentFieldsSection(
     state: ExperimentDetailsUiState,
-    onTitleChange: (String) -> Unit,
-    onIdeaChange: (String) -> Unit,
+    titleState: TextFieldState,
+    ideaState: TextFieldState,
     onCreateEntry: () -> Unit,
     onArchiveChange: (Boolean) -> Unit,
 ) {
@@ -176,19 +179,17 @@ private fun ExperimentFieldsSection(
     ) {
         OutlinedTextField(
             modifier = Modifier.fillMaxWidth(),
-            value = state.experimentDraft.title,
-            onValueChange = onTitleChange,
+            state = titleState,
             label = { Text("Название") },
-            singleLine = true,
+            lineLimits = TextFieldLineLimits.SingleLine,
         )
         OutlinedTextField(
             modifier = Modifier
                 .fillMaxWidth()
                 .heightIn(min = 96.dp),
-            value = state.experimentDraft.ideaDescription,
-            onValueChange = onIdeaChange,
+            state = ideaState,
             label = { Text("Идея") },
-            minLines = 3,
+            lineLimits = TextFieldLineLimits.MultiLine(minHeightInLines = 3),
         )
         Row(
             modifier = Modifier.fillMaxWidth(),

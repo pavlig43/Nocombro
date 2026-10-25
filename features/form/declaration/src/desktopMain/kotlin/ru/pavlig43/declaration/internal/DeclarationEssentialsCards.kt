@@ -60,10 +60,7 @@ private fun declarationEssentialsSections(
                     label = "Название",
                     content = { item, fieldModifier ->
                         SingleLineTextField(
-                            value = item.displayName,
-                            onValueChange = { value ->
-                                component.onChangeItem { it.copy(displayName = value) }
-                            },
+                            state = item.displayNameState,
                             modifier = fieldModifier,
                         )
                     },

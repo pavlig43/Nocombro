@@ -44,7 +44,7 @@ class DeclarationFormComponent(
     private val stackNavigation = StackNavigation<Config>()
 
     private val componentFactory = SingleLineComponentFactory<Declaration, DeclarationEssentialsUi>(
-        initItem = DeclarationEssentialsUi(),
+        initItem = { DeclarationEssentialsUi() },
         errorFactory = { item: DeclarationEssentialsUi ->
             buildList {
                 if (item.displayName.isBlank()) add("Название обязательно")

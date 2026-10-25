@@ -1,5 +1,8 @@
 package ru.pavlig43.experiments.api.component
 
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
+import androidx.compose.runtime.snapshotFlow
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
 import com.arkivanov.essenty.instancekeeper.getOrCreate
@@ -59,16 +62,19 @@ class ExperimentsComponent(
     private val _selectedExperimentId = MutableStateFlow(initialSelectedExperimentId)
     private val _selectedEntryId = MutableStateFlow<Int?>(null)
 
-    private val _experimentDraft = MutableStateFlow(ExperimentDraft())
-    private val _entryDraft = MutableStateFlow("")
+    val titleState = TextFieldState()
+    val ideaState = TextFieldState()
+    val entryState = TextFieldState()
     private val _entryDraftEntryId = MutableStateFlow<Int?>(null)
     private val _message = MutableStateFlow<String?>(null)
     private val _filesComponent = MutableStateFlow<ExperimentEntryFilesComponent?>(null)
     private val _reminderEditorState = MutableStateFlow<ExperimentReminderEditorState?>(null)
 
     val message = _message.asStateFlow()
-    val experimentDraft = _experimentDraft.asStateFlow()
-    val entryDraft = _entryDraft.asStateFlow()
+    val experimentDraft = snapshotFlow { ExperimentDraft(titleState.text.toString(), ideaState.text.toString()) }
+        .stateIn(coroutineScope, SharingStarted.Eagerly, ExperimentDraft())
+    val entryDraft = snapshotFlow { entryState.text.toString() }
+        .stateIn(coroutineScope, SharingStarted.Eagerly, "")
     val filesComponent: StateFlow<FilesComponent?> = _filesComponent.asStateFlow()
     val reminderEditorState = _reminderEditorState.asStateFlow()
 
@@ -113,7 +119,12 @@ class ExperimentsComponent(
         state.copy(showArchived = showArchived)
     }.stateInComponent(ExperimentsUiState())
 
-    init {
+    private var started = false
+    private var draftExperimentId: Int? = null
+
+    fun start() {
+        if (started) return
+        started = true
         coroutineScope.launch {
             experiments.collectLatest { list ->
                 val selectedId = _selectedExperimentId.value
@@ -133,10 +144,15 @@ class ExperimentsComponent(
                 if (experiment?.isArchived == true && !_showArchived.value) {
                     _showArchived.value = true
                 }
-                _experimentDraft.value = ExperimentDraft(
-                    title = experiment?.title.orEmpty(),
-                    ideaDescription = experiment?.ideaDescription.orEmpty(),
-                )
+                if (draftExperimentId != experiment?.id) {
+                    draftExperimentId = experiment?.id
+                    experiment?.title.orEmpty().let { text ->
+                        if (titleState.text.toString() != text) titleState.setTextAndPlaceCursorAtEnd(text)
+                    }
+                    experiment?.ideaDescription.orEmpty().let { text ->
+                        if (ideaState.text.toString() != text) ideaState.setTextAndPlaceCursorAtEnd(text)
+                    }
+                }
             }
         }
         coroutineScope.launch {
@@ -150,8 +166,10 @@ class ExperimentsComponent(
         }
         coroutineScope.launch {
             selectedEntry.collectLatest { entry ->
-                _entryDraftEntryId.value = entry?.id
-                _entryDraft.value = entry?.content.orEmpty()
+                if (_entryDraftEntryId.value != entry?.id) {
+                    _entryDraftEntryId.value = entry?.id
+                    entryState.setTextAndPlaceCursorAtEnd(entry?.content.orEmpty())
+                }
                 if (entry == null) {
                     currentComponentEntryId = null
                     _filesComponent.value = null
@@ -191,15 +209,15 @@ class ExperimentsComponent(
     }
 
     fun onTitleChange(value: String) {
-        _experimentDraft.update { it.copy(title = value) }
+        titleState.setTextAndPlaceCursorAtEnd(value)
     }
 
     fun onIdeaDescriptionChange(value: String) {
-        _experimentDraft.update { it.copy(ideaDescription = value) }
+        ideaState.setTextAndPlaceCursorAtEnd(value)
     }
 
     fun onEntryContentChange(value: String) {
-        _entryDraft.value = value
+        entryState.setTextAndPlaceCursorAtEnd(value)
     }
 
     fun createExperiment() {
@@ -230,9 +248,10 @@ class ExperimentsComponent(
                     if (_selectedExperimentId.value == experimentId) {
                         _selectedExperimentId.value = null
                         _selectedEntryId.value = null
-                        _experimentDraft.value = ExperimentDraft()
+                        titleState.setTextAndPlaceCursorAtEnd("")
+                        ideaState.setTextAndPlaceCursorAtEnd("")
                         _entryDraftEntryId.value = null
-                        _entryDraft.value = ""
+                        entryState.setTextAndPlaceCursorAtEnd("")
                     }
                 }
                 .onFailure(::showError)
@@ -265,7 +284,7 @@ class ExperimentsComponent(
         _reminderEditorState.value = ExperimentReminderEditorState(
             reminderId = reminder.id,
             experimentId = reminder.experimentId,
-            text = reminder.text,
+            textState = TextFieldState(reminder.text),
             reminderDateTime = reminder.reminderDateTime,
         )
     }
@@ -275,9 +294,7 @@ class ExperimentsComponent(
     }
 
     fun onReminderTextChange(value: String) {
-        _reminderEditorState.update { state ->
-            state?.copy(text = value)
-        }
+        _reminderEditorState.value?.textState?.setTextAndPlaceCursorAtEnd(value)
     }
 
     fun onReminderDateTimeChange(value: LocalDateTime) {
@@ -343,7 +360,7 @@ class ExperimentsComponent(
                     if (_selectedEntryId.value == entryId) {
                         _selectedEntryId.value = null
                         _entryDraftEntryId.value = null
-                        _entryDraft.value = ""
+                        entryState.setTextAndPlaceCursorAtEnd("")
                     }
                 }
                 .onFailure(::showError)
@@ -362,7 +379,7 @@ class ExperimentsComponent(
         coroutineScope.launch(Dispatchers.IO) {
             combine(
                 _selectedExperimentId,
-                _experimentDraft,
+                experimentDraft,
             ) { experimentId, draft -> experimentId to draft }
                 .debounce(DRAFT_SAVE_DEBOUNCE_MILLIS)
                 .distinctUntilChanged()
@@ -384,7 +401,7 @@ class ExperimentsComponent(
         coroutineScope.launch(Dispatchers.IO) {
             combine(
                 _selectedEntryId,
-                _entryDraft,
+                entryDraft,
                 _entryDraftEntryId,
             ) { entryId, content, draftEntryId -> Triple(entryId, content, draftEntryId) }
                 .debounce(DRAFT_SAVE_DEBOUNCE_MILLIS)
@@ -411,7 +428,7 @@ class ExperimentsComponent(
             repository.createEntryForDate(experimentId, date)
                 .onSuccess { entry ->
                     _entryDraftEntryId.value = entry.id
-                    _entryDraft.value = entry.content
+                    entryState.setTextAndPlaceCursorAtEnd(entry.content)
                     _selectedEntryId.value = entry.id
                 }
                 .onFailure(::showError)
@@ -535,9 +552,10 @@ data class ExperimentDraft(
 data class ExperimentReminderEditorState(
     val reminderId: Int? = null,
     val experimentId: Int,
-    val text: String = "",
+    val textState: TextFieldState = TextFieldState(),
     val reminderDateTime: LocalDateTime,
 ) {
+    val text: String get() = textState.text.toString()
     val isEdit: Boolean
         get() = reminderId != null
 }

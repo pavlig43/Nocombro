@@ -12,6 +12,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.TextFieldLineLimits
+import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -25,7 +28,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -75,20 +80,9 @@ private class NumericRangeFilterRenderer : CustomFilterRenderer<NumericRangeFilt
         var rangeMin by remember { mutableStateOf(current.min.toFloat()) }
         var rangeMax by remember { mutableStateOf(current.max.toFloat()) }
 
-        var minInput by remember { mutableStateOf(current.min.toString()) }
-        var maxInput by remember { mutableStateOf(current.max.toString()) }
-
-        // Flag to prevent circular updates
-        var isUpdatingFromSlider by remember { mutableStateOf(false) }
-
-        // Sync text fields with slider changes only
-        LaunchedEffect(rangeMin, rangeMax) {
-            if (isUpdatingFromSlider) {
-                minInput = rangeMin.roundToInt().toString()
-                maxInput = rangeMax.roundToInt().toString()
-                isUpdatingFromSlider = false
-            }
-        }
+        val minInput = rememberTextFieldState(current.min.toString())
+        val maxInput = rememberTextFieldState(current.max.toString())
+        val currentOnChange by rememberUpdatedState(onChange)
 
         // Auto-apply on change
         val applyFilter = {
@@ -97,12 +91,35 @@ private class NumericRangeFilterRenderer : CustomFilterRenderer<NumericRangeFilt
                     min = rangeMin.roundToInt(),
                     max = rangeMax.roundToInt(),
                 )
-            onChange(
+            currentOnChange(
                 TableFilterState(
                     constraint = FilterConstraint.BETWEEN,
                     values = listOf(newState),
                 ),
             )
+        }
+
+        LaunchedEffect(minInput, dataMin, dataMax) {
+            snapshotFlow { minInput.text.toString() }.collect { text ->
+                text.toIntOrNull()?.let { number ->
+                    val newMin = number.toFloat().coerceIn(dataMin.toFloat(), rangeMax)
+                    if (newMin.roundToInt() != rangeMin.roundToInt()) {
+                        rangeMin = newMin
+                        applyFilter()
+                    }
+                }
+            }
+        }
+        LaunchedEffect(maxInput, dataMin, dataMax) {
+            snapshotFlow { maxInput.text.toString() }.collect { text ->
+                text.toIntOrNull()?.let { number ->
+                    val newMax = number.toFloat().coerceIn(rangeMin, dataMax.toFloat())
+                    if (newMax.roundToInt() != rangeMax.roundToInt()) {
+                        rangeMax = newMax
+                        applyFilter()
+                    }
+                }
+            }
         }
 
         Column(
@@ -170,9 +187,10 @@ private class NumericRangeFilterRenderer : CustomFilterRenderer<NumericRangeFilt
                 RangeSlider(
                     value = rangeMin..rangeMax,
                     onValueChange = { range ->
-                        isUpdatingFromSlider = true
                         rangeMin = range.start
                         rangeMax = range.endInclusive
+                        minInput.setTextAndPlaceCursorAtEnd(rangeMin.roundToInt().toString())
+                        maxInput.setTextAndPlaceCursorAtEnd(rangeMax.roundToInt().toString())
                     },
                     onValueChangeFinished = { applyFilter() },
                     valueRange = dataMin.toFloat()..dataMax.toFloat(),
@@ -185,33 +203,19 @@ private class NumericRangeFilterRenderer : CustomFilterRenderer<NumericRangeFilt
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     OutlinedTextField(
-                        value = minInput,
-                        onValueChange = { newValue ->
-                            minInput = newValue
-                            newValue.toIntOrNull()?.let {
-                                rangeMin = it.toFloat().coerceIn(dataMin.toFloat(), rangeMax)
-                                applyFilter()
-                            }
-                        },
+                        state = minInput,
                         label = { Text("Min") },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         modifier = Modifier.weight(1f),
-                        singleLine = true,
+                        lineLimits = TextFieldLineLimits.SingleLine,
                     )
 
                     OutlinedTextField(
-                        value = maxInput,
-                        onValueChange = { newValue ->
-                            maxInput = newValue
-                            newValue.toIntOrNull()?.let {
-                                rangeMax = it.toFloat().coerceIn(rangeMin, dataMax.toFloat())
-                                applyFilter()
-                            }
-                        },
+                        state = maxInput,
                         label = { Text("Max") },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         modifier = Modifier.weight(1f),
-                        singleLine = true,
+                        lineLimits = TextFieldLineLimits.SingleLine,
                     )
                 }
             }

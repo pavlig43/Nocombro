@@ -35,10 +35,16 @@ abstract class CreateSingleLineComponent<I : SingleItem, UI : Any>(
 
     /** Создаёт запись и публикует ход запроса в [createState]. */
     fun create() {
+        val current = item.value
+        val inputErrors = (current as? SingleLineInputState)?.inputErrors.orEmpty()
+        if (inputErrors.isNotEmpty()) {
+            _createState.value = CreateState.Error(inputErrors.joinToString("\n"))
+            return
+        }
+        val newItem = current.mapperToDTO()
         coroutineScope.launch(Dispatchers.IO) {
             _createState.update { CreateState.Loading }
-            val item = item.value.mapperToDTO()
-            val idResult = createSingleItemRepository.createEssential(item)
+            val idResult = createSingleItemRepository.createEssential(newItem)
             val state = idResult.fold(
                 onSuccess = { CreateState.Success(it) },
                 onFailure = { CreateState.Error(it.message ?: "Неизвестная ошибка") },

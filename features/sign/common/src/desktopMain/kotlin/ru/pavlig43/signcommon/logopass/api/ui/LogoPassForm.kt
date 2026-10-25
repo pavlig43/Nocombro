@@ -6,10 +6,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.TextObfuscationMode
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SecureTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -23,8 +25,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.painterResource
 import ru.pavlig43.signcommon.logopass.api.components.ILogoPassComponent
@@ -40,8 +40,7 @@ fun LogoPassForm(
     logoPassButtonText: String
 ) {
 
-    val login by logoPassComponent.login.collectAsState()
-    val password by logoPassComponent.password.collectAsState()
+
 
 
     var isVisiblePassword by remember { mutableStateOf(false) }
@@ -61,18 +60,16 @@ fun LogoPassForm(
         )
         Spacer(modifier = Modifier.height(16.dp))
         TextField(
-            value = login,
-            onValueChange = { logoPassComponent.onLoginChanged(it) },
+            state = logoPassComponent.login,
             placeholder = { Text("Login", style = MaterialTheme.typography.bodyMedium) },
             modifier = textFieldModifier
         )
         Spacer(modifier = Modifier.height(16.dp))
 
-        TextField(
-            value = password,
-            onValueChange = { logoPassComponent.onPasswordChanged(it) },
+        SecureTextField(
+            state = logoPassComponent.password,
             placeholder = { Text("Password", style = MaterialTheme.typography.bodyMedium) },
-            visualTransformation = if (isVisiblePassword) VisualTransformation.None else PasswordVisualTransformation(),
+            textObfuscationMode = if (isVisiblePassword) TextObfuscationMode.Visible else TextObfuscationMode.Hidden,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             trailingIcon = {
                 IconButton({ isVisiblePassword = !isVisiblePassword }) {

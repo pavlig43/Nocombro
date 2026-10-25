@@ -1,5 +1,6 @@
 package ru.pavlig43.thermallabel.api.model
 
+import androidx.compose.foundation.text.input.TextFieldState
 import kotlinx.datetime.LocalDate
 
 /**
@@ -11,10 +12,12 @@ import kotlinx.datetime.LocalDate
 data class ThermalLabelDialogUi(
     val selectedSize: ThermalLabelSize = ThermalLabelSize.SIZE_100_150,
     val date: LocalDate,
-    val massText: String = "3",
+    val massState: TextFieldState = TextFieldState("3"),
     val isLoading: Boolean = true,
     val isGenerating: Boolean = false,
-)
+) {
+    val massText: String get() = massState.text.toString()
+}
 
 /**
  * Данные, которые автоматически подставляются в этикетку из карточки продукта и его спецификации.

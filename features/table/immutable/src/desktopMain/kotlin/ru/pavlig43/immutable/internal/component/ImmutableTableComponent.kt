@@ -1,5 +1,8 @@
 package ru.pavlig43.immutable.internal.component
 
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
+import androidx.compose.runtime.snapshotFlow
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
 import kotlinx.collections.immutable.ImmutableList
@@ -69,8 +72,9 @@ internal abstract class ImmutableTableComponent<BD, UI : IMultiLineTableUi, Colu
     /** Состояние удаления, которое отключает повторный клик и показывает ошибку в UI. */
     val deleteState = deleteManager.deleteState
 
-    private val _searchQuery = MutableStateFlow("")
-    val searchQuery = _searchQuery.asStateFlow()
+    val searchState = TextFieldState()
+    val searchQuery = snapshotFlow { searchState.text.toString() }
+        .stateIn(coroutineScope, SharingStarted.Eagerly, "")
 
 
     val itemListState = repository.observeOnItems(tableBuilder.parentId).map { result ->
@@ -139,7 +143,7 @@ internal abstract class ImmutableTableComponent<BD, UI : IMultiLineTableUi, Colu
     }
 
     fun updateSearchQuery(query: String) {
-        _searchQuery.value = query
+        searchState.setTextAndPlaceCursorAtEnd(query)
     }
 
     val filters: Map<Column, TableFilterState<*>> get() = filterManager.filters.value

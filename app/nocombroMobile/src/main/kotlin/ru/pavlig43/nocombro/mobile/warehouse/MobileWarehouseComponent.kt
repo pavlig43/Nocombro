@@ -1,5 +1,8 @@
 package ru.pavlig43.nocombro.mobile.warehouse
 
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
+import androidx.compose.runtime.snapshotFlow
 import com.arkivanov.decompose.ComponentContext
 import java.text.Collator
 import java.util.Locale
@@ -16,12 +19,12 @@ class MobileWarehouseComponent(
 ) : ComponentContext by componentContext {
     private val coroutineScope = componentCoroutineScope()
     private val selectedLocation = MutableStateFlow(MobileWarehouseLocation.MAIN)
-    private val searchQuery = MutableStateFlow("")
+    val searchState = TextFieldState()
 
     val uiState: StateFlow<MobileWarehouseUiState> = combine(
         snapshotStore.observeSnapshot(),
         selectedLocation,
-        searchQuery,
+        snapshotFlow { searchState.text.toString() },
         ::buildMobileWarehouseUiState,
     ).stateIn(
         scope = coroutineScope,
@@ -34,7 +37,7 @@ class MobileWarehouseComponent(
     }
 
     fun updateSearchQuery(query: String) {
-        searchQuery.value = query
+        searchState.setTextAndPlaceCursorAtEnd(query)
     }
 }
 

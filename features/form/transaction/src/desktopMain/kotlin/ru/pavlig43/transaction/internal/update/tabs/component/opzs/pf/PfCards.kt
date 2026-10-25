@@ -89,10 +89,8 @@ private fun pfSections(
                     label = "Количество",
                     content = { item, fieldModifier ->
                         SingleLineDecimalField(
-                            value = item.count,
-                            onValueChange = { value ->
-                                component.onChangeItem { it.copy(count = value) }
-                            },
+                            state = item.countState,
+                            decimalPlaces = 3,
                             modifier = fieldModifier,
                         )
                     },

@@ -1,5 +1,7 @@
 package ru.pavlig43.thermallabel.api.component
 
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.router.slot.ChildSlot
 import com.arkivanov.decompose.router.slot.SlotNavigation
@@ -43,6 +45,7 @@ class ThermalLabelDialogComponent(
     private val service: ThermalLabelTemplateService,
     private val onDismissed: () -> Unit,
 ) : ComponentContext by componentContext {
+    val massState: TextFieldState get() = _uiState.value.massState
     private val coroutineScope = componentCoroutineScope()
     private val dialogNavigation = SlotNavigation<ThermalLabelInnerDialog>()
     val onDismissRequest: () -> Unit = onDismissed
@@ -96,11 +99,15 @@ class ThermalLabelDialogComponent(
         dialogNavigation.activate(ThermalLabelInnerDialog.Date)
     }
 
+    fun dismissMessage() {
+        _message.value = null
+    }
+
     fun onMassChange(
         value: String,
     ) {
         _message.value = null
-        _uiState.update { it.copy(massText = value) }
+        massState.setTextAndPlaceCursorAtEnd(value)
     }
 
     private fun createDialogChild(
@@ -123,9 +130,10 @@ class ThermalLabelDialogComponent(
 
     fun generate() {
         val current = uiState.value
+        val massText = massState.text.toString()
         val prefill = loadedPrefill
 
-        validate(current.massText).onFailure { throwable ->
+        validate(massText).onFailure { throwable ->
             _message.value = throwable.message ?: "Проверь поля этикетки."
             return
         }
@@ -145,7 +153,7 @@ class ThermalLabelDialogComponent(
                     dosage = prefill.dosage,
                     storageText = prefill.storageText,
                     date = current.date,
-                    massText = current.massText,
+                    massText = massText,
                 )
             ).onSuccess { path ->
                 FileKit.openFileWithDefaultApplication(

@@ -56,10 +56,7 @@ private fun productSpecificationSections(
                     label = "Дозировка",
                     content = { item, fieldModifier ->
                         SingleLineTextField(
-                            value = item.dosage,
-                            onValueChange = { value ->
-                                component.onChangeItem { it.copy(dosage = value) }
-                            },
+                            state = item.dosageState,
                             modifier = fieldModifier,
                             singleLine = false,
                             minLines = 2,
@@ -70,10 +67,7 @@ private fun productSpecificationSections(
                     label = "Срок годности",
                     content = { item, fieldModifier ->
                         SingleLineTextField(
-                            value = item.shelfLifeText,
-                            onValueChange = { value ->
-                                component.onChangeItem { it.copy(shelfLifeText = value) }
-                            },
+                            state = item.shelfLifeTextState,
                             modifier = fieldModifier,
                             singleLine = false,
                             minLines = 2,
@@ -91,10 +85,7 @@ private fun productSpecificationSections(
                             verticalAlignment = Alignment.Top,
                         ) {
                             SingleLineTextField(
-                                value = item.composition,
-                                onValueChange = { value ->
-                                    component.onChangeItem { it.copy(composition = value) }
-                                },
+                                state = item.compositionState,
                                 modifier = Modifier.weight(1f),
                                 singleLine = false,
                                 minLines = 3,
@@ -113,10 +104,7 @@ private fun productSpecificationSections(
                     label = "Условия хранения",
                     content = { item, fieldModifier ->
                         SingleLineTextField(
-                            value = item.storageConditions,
-                            onValueChange = { value ->
-                                component.onChangeItem { it.copy(storageConditions = value) }
-                            },
+                            state = item.storageConditionsState,
                             modifier = fieldModifier,
                             singleLine = false,
                             minLines = 3,
@@ -134,10 +122,7 @@ private fun productSpecificationSections(
                     label = "Внешний вид",
                     content = { item, fieldModifier ->
                         SingleLineTextField(
-                            value = item.appearance,
-                            onValueChange = { value ->
-                                component.onChangeItem { it.copy(appearance = value) }
-                            },
+                            state = item.appearanceState,
                             modifier = fieldModifier,
                             singleLine = false,
                             minLines = 2,
@@ -150,10 +135,7 @@ private fun productSpecificationSections(
                     label = "Цвет",
                     content = { item, fieldModifier ->
                         SingleLineTextField(
-                            value = item.color,
-                            onValueChange = { value ->
-                                component.onChangeItem { it.copy(color = value) }
-                            },
+                            state = item.colorState,
                             modifier = fieldModifier,
                         )
                     },
@@ -162,10 +144,7 @@ private fun productSpecificationSections(
                     label = "Запах",
                     content = { item, fieldModifier ->
                         SingleLineTextField(
-                            value = item.smell,
-                            onValueChange = { value ->
-                                component.onChangeItem { it.copy(smell = value) }
-                            },
+                            state = item.smellState,
                             modifier = fieldModifier,
                         )
                     },
@@ -174,10 +153,7 @@ private fun productSpecificationSections(
                     label = "Вкус",
                     content = { item, fieldModifier ->
                         SingleLineTextField(
-                            value = item.taste,
-                            onValueChange = { value ->
-                                component.onChangeItem { it.copy(taste = value) }
-                            },
+                            state = item.tasteState,
                             modifier = fieldModifier,
                         )
                     },
@@ -193,12 +169,7 @@ private fun productSpecificationSections(
                     label = "Физико-химические показатели",
                     content = { item, fieldModifier ->
                         SingleLineTextField(
-                            value = item.physicalChemicalIndicators,
-                            onValueChange = { value ->
-                                component.onChangeItem {
-                                    it.copy(physicalChemicalIndicators = value)
-                                }
-                            },
+                            state = item.physicalChemicalIndicatorsState,
                             modifier = fieldModifier,
                             singleLine = false,
                             minLines = 4,
@@ -211,12 +182,7 @@ private fun productSpecificationSections(
                     label = "Микробиологические показатели",
                     content = { item, fieldModifier ->
                         SingleLineTextField(
-                            value = item.microbiologicalIndicators,
-                            onValueChange = { value ->
-                                component.onChangeItem {
-                                    it.copy(microbiologicalIndicators = value)
-                                }
-                            },
+                            state = item.microbiologicalIndicatorsState,
                             modifier = fieldModifier,
                             singleLine = false,
                             minLines = 4,
@@ -229,10 +195,7 @@ private fun productSpecificationSections(
                     label = "Токсичные элементы",
                     content = { item, fieldModifier ->
                         SingleLineTextField(
-                            value = item.toxicElements,
-                            onValueChange = { value ->
-                                component.onChangeItem { it.copy(toxicElements = value) }
-                            },
+                            state = item.toxicElementsState,
                             modifier = fieldModifier,
                             singleLine = false,
                             minLines = 4,
@@ -250,10 +213,7 @@ private fun productSpecificationSections(
                     label = "Аллергены (название; в продукте да/нет; на производстве да/нет)",
                     content = { item, fieldModifier ->
                         SingleLineTextField(
-                            value = item.allergens,
-                            onValueChange = { value ->
-                                component.onChangeItem { it.copy(allergens = value) }
-                            },
+                            state = item.allergensState,
                             modifier = fieldModifier,
                             singleLine = false,
                             minLines = 6,
@@ -266,10 +226,7 @@ private fun productSpecificationSections(
                     label = "Информация о ГМО",
                     content = { item, fieldModifier ->
                         SingleLineTextField(
-                            value = item.gmoInfo,
-                            onValueChange = { value ->
-                                component.onChangeItem { it.copy(gmoInfo = value) }
-                            },
+                            state = item.gmoInfoState,
                             modifier = fieldModifier,
                             singleLine = false,
                             minLines = 4,

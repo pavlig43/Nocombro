@@ -64,10 +64,8 @@ private fun expenseEssentialsSections(
                     label = "Сумма (₽)",
                     content = { item, fieldModifier ->
                         SingleLineDecimalField(
-                            value = item.amount,
-                            onValueChange = { value ->
-                                component.onChangeItem { it.copy(amount = value) }
-                            },
+                            state = item.amountState,
+                            decimalPlaces = 2,
                             modifier = fieldModifier,
                         )
                     },
@@ -90,10 +88,7 @@ private fun expenseEssentialsSections(
                     label = "Комментарий",
                     content = { item, fieldModifier ->
                         SingleLineTextField(
-                            value = item.comment,
-                            onValueChange = { value ->
-                                component.onChangeItem { it.copy(comment = value) }
-                            },
+                            state = item.commentState,
                             modifier = fieldModifier,
                             singleLine = false,
                             minLines = 3,

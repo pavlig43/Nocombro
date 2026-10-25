@@ -1,16 +1,17 @@
 package ru.pavlig43.signcommon.logopass.api.components
 
+import androidx.compose.foundation.text.input.TextFieldState
 import kotlinx.coroutines.flow.StateFlow
 
 interface ILogoPassComponent {
 
     val logoPassState: StateFlow<LogoPassState>
 
-    val login: StateFlow<String>
+    val login: TextFieldState
 
     val isValidLogin: StateFlow<Boolean>
 
-    val password: StateFlow<String>
+    val password: TextFieldState
 
     val isValidPassword: StateFlow<Boolean>
 

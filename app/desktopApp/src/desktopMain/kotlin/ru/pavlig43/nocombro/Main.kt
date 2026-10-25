@@ -5,8 +5,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.ui.InternalComposeUiApi
-import androidx.compose.ui.backhandler.LocalCompatNavigationEventDispatcherOwner
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.graphics.toComposeImageBitmap
 import androidx.compose.ui.platform.LocalWindowInfo
@@ -15,6 +13,7 @@ import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import androidx.navigationevent.NavigationEventHandler
 import androidx.navigationevent.NavigationEventInfo
+import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
 import co.touchlab.kermit.Logger
 import com.arkivanov.decompose.DefaultComponentContext
 import com.arkivanov.decompose.extensions.compose.lifecycle.LifecycleController
@@ -31,11 +30,10 @@ import ru.pavlig43.rootnocombro.api.ui.App
 import ru.pavlig43.rootnocombro.internal.di.initKoin
 import javax.imageio.ImageIO
 
-@OptIn(InternalComposeUiApi::class)
 @Composable
 private fun WindowBackHandler(onBack: () -> Unit) {
-    val owner = LocalCompatNavigationEventDispatcherOwner.current ?: error(
-        "No NavigationEventDispatcher was provided via LocalCompatNavigationEventDispatcherOwner"
+    val owner = LocalNavigationEventDispatcherOwner.current ?: error(
+        "No NavigationEventDispatcher was provided via LocalNavigationEventDispatcherOwner"
     )
     val dispatcher = owner.navigationEventDispatcher
     val currentOnBack = rememberUpdatedState(onBack)

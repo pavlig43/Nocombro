@@ -100,8 +100,7 @@ internal fun <I : IMultiLineTableUi, C> ImmutableTableBox(
             .focusable(),
     ) {
         ImmutableTableToolbar(
-            searchQuery = searchQuery,
-            onSearchQueryChange = component::updateSearchQuery,
+            searchState = component.searchState,
             onCreateClick = { component.onEvent(ImmutableTableUiEvent.CreateNewItem) },
             showCreateAction = component.showCreateAction,
             exportConfiguration = component.exportConfiguration,

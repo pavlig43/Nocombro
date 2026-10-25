@@ -1,5 +1,6 @@
 package ru.pavlig43.storage.api.component.storage
 
+import androidx.compose.foundation.text.input.TextFieldState
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.database.data.batch.StorageLocation
@@ -24,10 +25,10 @@ internal data class StorageOperationDialogState(
     val source: StorageLocation,
     val target: StorageLocation?,
     val availableCount: Long,
-    val countText: String = "",
+    val countState: TextFieldState = TextFieldState(),
     val occurredAt: LocalDateTime,
     val reason: StockOperationReason,
-    val comment: String = "",
+    val commentState: TextFieldState = TextFieldState(),
     val costPricePerUnit: Long? = null,
     val selectedCost: Long = 0,
     val expiryDate: LocalDate? = null,
@@ -36,6 +37,8 @@ internal data class StorageOperationDialogState(
     val requiresMissingCostConfirmation: Boolean = false,
     val error: String? = null,
 ) {
+    val countText: String get() = countState.text.toString()
+    val comment: String get() = commentState.text.toString()
     val count: Long?
         get() = countText.trim().replace(',', '.').toBigDecimalOrNull()
             ?.movePointRight(3)

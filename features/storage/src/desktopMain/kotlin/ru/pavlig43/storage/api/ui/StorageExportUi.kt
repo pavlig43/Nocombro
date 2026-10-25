@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilledTonalButton
@@ -26,6 +27,8 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.ImmutableList
 import org.jetbrains.compose.resources.painterResource
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.clearText
 import ru.pavlig43.tablecore.export.ExcelColumn
 import ru.pavlig43.tablecore.export.TableExportConfiguration
 import ru.pavlig43.tablecore.export.TableExportFormat
@@ -93,8 +96,7 @@ internal fun BoxScope.StorageExportActionBar(
     onExpandExportMenu: () -> Unit,
     onDismissExportMenu: () -> Unit,
     onExportClick: (TableExportFormat) -> Unit,
-    searchQuery: String? = null,
-    onSearchQueryChange: (String) -> Unit = {},
+    searchState: TextFieldState? = null,
     searchFocusRequester: FocusRequester? = null,
     onSearchFocusChanged: (Boolean) -> Unit = {},
     modifier: Modifier = Modifier,
@@ -111,10 +113,9 @@ internal fun BoxScope.StorageExportActionBar(
             horizontalArrangement = Arrangement.spacedBy(10.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            searchQuery?.let { query ->
+            searchState?.let { input ->
                 OutlinedTextField(
-                    value = query,
-                    onValueChange = onSearchQueryChange,
+                    state = input,
                     leadingIcon = {
                         Icon(
                             painter = painterResource(Res.drawable.search),
@@ -122,9 +123,9 @@ internal fun BoxScope.StorageExportActionBar(
                             modifier = Modifier.size(20.dp),
                         )
                     },
-                    trailingIcon = if (query.isNotEmpty()) {
+                    trailingIcon = if (input.text.isNotEmpty()) {
                         {
-                            IconButton(onClick = { onSearchQueryChange("") }) {
+                            IconButton(onClick = { input.clearText() }) {
                                 Icon(
                                     painter = painterResource(Res.drawable.close),
                                     contentDescription = "Очистить поиск",
@@ -135,7 +136,7 @@ internal fun BoxScope.StorageExportActionBar(
                     } else {
                         null
                     },
-                    singleLine = true,
+                    lineLimits = TextFieldLineLimits.SingleLine,
                     shape = RoundedCornerShape(14.dp),
                     modifier = Modifier
                         .weight(1f)

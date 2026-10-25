@@ -1,5 +1,8 @@
 package ru.pavlig43.transaction.internal.update.tabs.component.opzs.ingredients
 
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
+import ru.pavlig43.mutable.api.input.toDecimalInputText
+import androidx.compose.foundation.text.input.TextFieldState
 import com.arkivanov.decompose.DefaultComponentContext
 import com.arkivanov.essenty.backhandler.BackDispatcher
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
@@ -214,7 +217,7 @@ class FillIngredientsRepositoryTest : DesktopMainDispatcherFunSpec({
                     transactionId = 10,
                     productId = 3,
                     declarationId = 5,
-                    count = DecimalData3(1_000_000),
+                    countState = TextFieldState((DecimalData3(1_000_000)).toDecimalInputText()),
                 )
             )
             val component = runOnUiThread {
@@ -265,7 +268,7 @@ class FillIngredientsRepositoryTest : DesktopMainDispatcherFunSpec({
             pfFlow.value = pfFlow.value.copy(declarationId = 1)
             (component.loadCompositionState.value as LoadCompositionState.Deficit).messages.size shouldBe 3
 
-            pfFlow.value = pfFlow.value.copy(count = DecimalData3(18_000))
+            pfFlow.value.countState.setTextAndPlaceCursorAtEnd("18")
             component.onPfProductOrCountChanged()
             component.loadCompositionState.value shouldBe LoadCompositionState.Success
 

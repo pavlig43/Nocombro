@@ -52,10 +52,7 @@ private fun productEssentialsSections(
                     label = "Название продукта",
                     content = { item, fieldModifier ->
                         SingleLineTextField(
-                            value = item.displayName,
-                            onValueChange = { value ->
-                                component.onChangeItem { it.copy(displayName = value) }
-                            },
+                            state = item.displayNameState,
                             modifier = fieldModifier,
                         )
                     },
@@ -80,10 +77,7 @@ private fun productEssentialsSections(
                     label = "SN",
                     content = { item, fieldModifier ->
                         SingleLineTextField(
-                            value = item.secondName,
-                            onValueChange = { value ->
-                                component.onChangeItem { it.copy(secondName = value) }
-                            },
+                            state = item.secondNameState,
                             modifier = fieldModifier,
                         )
                     },
@@ -99,10 +93,8 @@ private fun productEssentialsSections(
                     label = "Цена продажи (₽)",
                     content = { item, fieldModifier ->
                         SingleLineDecimalField(
-                            value = item.priceForSale,
-                            onValueChange = { value ->
-                                component.onChangeItem { it.copy(priceForSale = value) }
-                            },
+                            state = item.priceForSaleState,
+                            decimalPlaces = 2,
                             modifier = fieldModifier,
                         )
                     },
@@ -111,11 +103,8 @@ private fun productEssentialsSections(
                     label = "НДС %",
                     content = { item, fieldModifier ->
                         SingleLineIntField(
-                            value = item.recNds,
+                            state = item.recNdsState,
                             range = 0..99,
-                            onValueChange = { value ->
-                                component.onChangeItem { it.copy(recNds = value) }
-                            },
                             modifier = fieldModifier,
                         )
                     },
@@ -141,11 +130,8 @@ private fun productEssentialsSections(
                     label = "Срок годности (дней)",
                     content = { item, fieldModifier ->
                         SingleLineIntField(
-                            value = item.shelfLifeDays,
+                            state = item.shelfLifeDaysState,
                             range = 0..Int.MAX_VALUE,
-                            onValueChange = { value ->
-                                component.onChangeItem { it.copy(shelfLifeDays = value) }
-                            },
                             modifier = fieldModifier,
                         )
                     },
@@ -156,10 +142,7 @@ private fun productEssentialsSections(
                     label = "Комментарий",
                     content = { item, fieldModifier ->
                         SingleLineTextField(
-                            value = item.comment,
-                            onValueChange = { value ->
-                                component.onChangeItem { it.copy(comment = value) }
-                            },
+                            state = item.commentState,
                             modifier = fieldModifier,
                             singleLine = false,
                             minLines = 2,

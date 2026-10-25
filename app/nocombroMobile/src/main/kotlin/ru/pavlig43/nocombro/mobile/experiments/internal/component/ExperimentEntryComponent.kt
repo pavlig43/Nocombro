@@ -1,5 +1,8 @@
 package ru.pavlig43.nocombro.mobile.experiments.internal.component
 
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
+import androidx.compose.runtime.snapshotFlow
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.essenty.instancekeeper.getOrCreate
 import io.github.vinceglb.filekit.PlatformFile
@@ -11,7 +14,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -36,18 +39,20 @@ class ExperimentEntryComponent(
     private val repository: ExperimentDetailsRepository = scope.get()
     private val coroutineScope = componentCoroutineScope()
 
-    private val editedContent = MutableStateFlow<String?>(null)
+    val contentState = TextFieldState()
+    private var loadedContent: String? = null
     private val errorMessage = MutableStateFlow<String?>(null)
 
     val uiState: StateFlow<ExperimentEntryUiState> = combine(
-        repository.observeEntry(entryId),
+        repository.observeEntry(entryId).onEach { entry ->
+            if (loadedContent == null) contentState.setTextAndPlaceCursorAtEnd(entry.content)
+            loadedContent = entry.content
+        },
         repository.observeEntryFiles(entryId),
-        editedContent,
         errorMessage,
-    ) { entry, files, editedContent, errorMessage ->
+    ) { entry, files, errorMessage ->
         ExperimentEntryUiState(
             dateText = entry.createdAt.format(dateTimeFormat),
-            content = editedContent ?: entry.content,
             files = files,
             errorMessage = errorMessage,
             isLoaded = true,
@@ -57,10 +62,17 @@ class ExperimentEntryComponent(
         SharingStarted.WhileSubscribed(5_000),
         ExperimentEntryUiState(),
     )
-        .also { observeContentChanges() }
+
+    private var started = false
+
+    fun start() {
+        if (started) return
+        started = true
+        observeContentChanges()
+    }
 
     fun onContentChange(value: String) {
-        editedContent.update { value }
+        contentState.setTextAndPlaceCursorAtEnd(value)
     }
 
     fun addFile(file: PlatformFile) {
@@ -94,8 +106,8 @@ class ExperimentEntryComponent(
 
     @OptIn(FlowPreview::class)
     private fun observeContentChanges() {
-        editedContent
-            .filterNotNull()
+        snapshotFlow { contentState.text.toString() }
+            .filter { loadedContent != null && it != loadedContent }
             .debounce(500)
             .distinctUntilChanged()
             .onEach { content ->
@@ -109,7 +121,6 @@ class ExperimentEntryComponent(
 
 data class ExperimentEntryUiState(
     val dateText: String = "",
-    val content: String = "",
     val files: List<MobileExperimentEntryFile> = emptyList(),
     val errorMessage: String? = null,
     val isLoaded: Boolean = false,

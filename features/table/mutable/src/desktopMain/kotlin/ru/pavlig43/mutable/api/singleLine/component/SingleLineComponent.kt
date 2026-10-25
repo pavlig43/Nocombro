@@ -1,8 +1,12 @@
 package ru.pavlig43.mutable.api.singleLine.component
 
+import androidx.compose.runtime.snapshotFlow
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
@@ -14,7 +18,7 @@ import ru.pavlig43.loadinitdata.api.component.LoadInitDataComponent
 
 /** Хранит начальную UI-модель, её проверку и перевод из предметной модели. */
 data class SingleLineComponentFactory<I : SingleItem, T : Any>(
-    val initItem: T,
+    val initItem: () -> T,
     val errorFactory: (T) -> List<String>,
     val mapperToUi: I.() -> T,
 )
@@ -29,7 +33,9 @@ abstract class SingleLineComponent<I : SingleItem, UI : Any>(
 ) : ComponentContext by componentContext {
     protected val coroutineScope = componentCoroutineScope()
 
-    private val _item = MutableStateFlow(componentFactory.initItem)
+    private val _item = MutableStateFlow(componentFactory.initItem())
+    protected var initialItem: I? = null
+        private set
 
     /** Текущая UI-модель формы. */
     val item = _item.asStateFlow()
@@ -38,8 +44,9 @@ abstract class SingleLineComponent<I : SingleItem, UI : Any>(
         componentContext = childContext("init"),
         getInitData = {
             getInitData?.invoke()?.map { item ->
+                initialItem = item
                 componentFactory.mapperToUi(item)
-            } ?: Result.success(componentFactory.initItem)
+            } ?: Result.success(componentFactory.initItem())
         },
         onSuccessGetInitData = { item ->
             onSuccessInitData(item)
@@ -51,11 +58,17 @@ abstract class SingleLineComponent<I : SingleItem, UI : Any>(
     fun onChangeItem(updateItem: (UI) -> UI) {
         val updatedItem = updateItem(item.value)
         _item.update { updatedItem }
-        observeOnItem(updatedItem)
     }
 
     /** Ошибки проверки текущей UI-модели. */
-    val validationErrors = item.map(componentFactory.errorFactory).stateIn(
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val validationErrors = item.flatMapLatest { current ->
+        snapshotFlow {
+            val inputs = current as? SingleLineInputState
+            inputs?.textFields?.map { it.text.toString() } to
+                (componentFactory.errorFactory(current) + inputs?.inputErrors.orEmpty())
+        }.onEach { observeOnItem(current) }.map { it.second }
+    }.stateIn(
         coroutineScope,
         SharingStarted.Eagerly,
         emptyList(),

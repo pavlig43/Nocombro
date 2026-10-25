@@ -138,7 +138,7 @@ internal class MainTabNavigationComponent(
                             ExperimentsComponent(
                                 componentContext = context,
                                 dependencies = scope.get(),
-                            )
+                            ).also { it.start() }
                         )
                     }
 
@@ -148,7 +148,7 @@ internal class MainTabNavigationComponent(
                                 componentContext = context,
                                 dependencies = scope.get(),
                                 initialSelectedExperimentId = mainTabConfig.id,
-                            )
+                            ).also { it.start() }
                         )
                     }
 

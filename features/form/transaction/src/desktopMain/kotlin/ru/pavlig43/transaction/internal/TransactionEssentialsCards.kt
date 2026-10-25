@@ -103,10 +103,7 @@ private fun transactionEssentialsSections(
                     label = "Комментарий",
                     content = { item, fieldModifier ->
                         SingleLineTextField(
-                            value = item.comment,
-                            onValueChange = { value ->
-                                component.onChangeItem { it.copy(comment = value) }
-                            },
+                            state = item.commentState,
                             modifier = fieldModifier,
                             singleLine = false,
                             minLines = 3,

@@ -30,6 +30,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -119,10 +120,9 @@ fun StorageScreen(
         StorageOperationDialog(
             state = state,
             onDismiss = component::onDismissOperation,
-            onCountChange = component::onUpdateOperationCount,
+            onInputChange = component::onOperationInputChanged,
             onDateTimeChange = component::onUpdateOperationDateTime,
             onReasonChange = component::onUpdateOperationReason,
-            onCommentChange = component::onUpdateOperationComment,
             onSubmit = component::onSubmitOperation,
         )
     }
@@ -244,8 +244,7 @@ private fun StorageContent(
                         columns = columns,
                         verticalState = verticalState,
                         onRowClick = component::onRowClick,
-                        searchQuery = searchQuery,
-                        onSearchQueryChange = component::updateSearchQuery,
+                        searchState = component.searchState,
                         searchFocusRequester = searchFocusRequester,
                         onSearchFocusChanged = { searchFocused = it },
                         modifier = Modifier.fillMaxSize(),
@@ -280,8 +279,7 @@ private fun StorageTable(
     columns: ImmutableList<ColumnSpec<StorageProductUi, StorageProductField, StorageTableData>>,
     verticalState: LazyListState,
     onRowClick: (StorageProductUi) -> Unit,
-    searchQuery: String,
-    onSearchQueryChange: (String) -> Unit,
+    searchState: TextFieldState,
     searchFocusRequester: FocusRequester,
     onSearchFocusChanged: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
@@ -353,8 +351,7 @@ private fun StorageTable(
                     )
                 }
             },
-            searchQuery = searchQuery,
-            onSearchQueryChange = onSearchQueryChange,
+            searchState = searchState,
             searchFocusRequester = searchFocusRequester,
             onSearchFocusChanged = onSearchFocusChanged,
             modifier = Modifier

@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -33,6 +34,8 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.painterResource
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.clearText
 import ru.pavlig43.tablecore.export.TableExportConfiguration
 import ru.pavlig43.tablecore.export.TableExportFormat
 import ru.pavlig43.theme.Res
@@ -44,8 +47,7 @@ import ru.pavlig43.immutable.api.component.ImmutableTableAction
 @Composable
 @Suppress("LongParameterList")
 internal fun ImmutableTableToolbar(
-    searchQuery: String,
-    onSearchQueryChange: (String) -> Unit,
+    searchState: TextFieldState,
     onCreateClick: () -> Unit,
     showCreateAction: Boolean,
     exportConfiguration: TableExportConfiguration<*, *>?,
@@ -71,8 +73,7 @@ internal fun ImmutableTableToolbar(
         ) {
             Box(modifier = Modifier.weight(1f)) {
                 OutlinedTextField(
-                    value = searchQuery,
-                    onValueChange = onSearchQueryChange,
+                    state = searchState,
                     leadingIcon = {
                         Icon(
                             painter = painterResource(Res.drawable.search),
@@ -80,9 +81,9 @@ internal fun ImmutableTableToolbar(
                             modifier = Modifier.size(20.dp),
                         )
                     },
-                    trailingIcon = if (searchQuery.isNotEmpty()) {
+                    trailingIcon = if (searchState.text.isNotEmpty()) {
                         {
-                            IconButton(onClick = { onSearchQueryChange("") }) {
+                            IconButton(onClick = { searchState.clearText() }) {
                                 Icon(
                                     painter = painterResource(Res.drawable.close),
                                     contentDescription = "Очистить поиск",
@@ -93,7 +94,7 @@ internal fun ImmutableTableToolbar(
                     } else {
                         null
                     },
-                    singleLine = true,
+                    lineLimits = TextFieldLineLimits.SingleLine,
                     shape = RoundedCornerShape(14.dp),
                     modifier = Modifier
                         .fillMaxWidth()

@@ -1,5 +1,7 @@
 package ru.pavlig43.product.internal.update.tabs.safety
 
+import ru.pavlig43.mutable.api.input.toDecimalInputText
+import androidx.compose.foundation.text.input.TextFieldState
 import com.arkivanov.decompose.ComponentContext
 import kotlinx.coroutines.flow.Flow
 import ru.pavlig43.core.model.DecimalData3
@@ -27,14 +29,14 @@ internal class SafetyStockComponent(
 }
 
 private val safetyStockComponentFactory = SingleLineComponentFactory<SafetyStock, SafetyStockUi>(
-    initItem = SafetyStockUi(
+    initItem = { SafetyStockUi(
         id = 0,
         productId = 0,
-        reorderPoint = DecimalData3(0),
-        orderQuantity = DecimalData3(0),
+        reorderPointState = TextFieldState((DecimalData3(0)).toDecimalInputText()),
+        orderQuantityState = TextFieldState((DecimalData3(0)).toDecimalInputText()),
         syncId = defaultSyncId(),
         updatedAt = defaultUpdatedAt(),
-    ),
+    ) },
     errorFactory = { safety ->
         buildList {
             if (safety.reorderPoint.value == 0L && safety.orderQuantity.value != 0L)  add("Мало вероятно что такой нескончаемый остаток")

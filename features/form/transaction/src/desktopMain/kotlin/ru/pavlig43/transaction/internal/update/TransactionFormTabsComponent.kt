@@ -48,7 +48,7 @@ internal class TransactionFormTabsComponent(
 
     override val transactionExecutor: TransactionExecutor = scope.get()
     private val essentialsFields =
-        MutableStateFlow<TransactionEssentialsUi>(componentFactory.initItem)
+        MutableStateFlow<TransactionEssentialsUi>(componentFactory.initItem())
     private val pfFlow = MutableStateFlow(PfUi())
     private val _unsupportedTransactionType = MutableStateFlow<TransactionType?>(null)
     /** Тип старой транзакции, для которой открыты лишь безопасные общие вкладки. */

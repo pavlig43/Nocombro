@@ -30,8 +30,13 @@ abstract class UpdateSingleLineComponent<I : SingleItem, T : Any>(
     }
 
     override suspend fun onUpdate(): Result<Unit> {
-        val old = initDataComponent.firstData.value?.mapperToDTO()
-        val new = item.value.mapperToDTO()
+        val current = item.value
+        val inputErrors = (current as? SingleLineInputState)?.inputErrors.orEmpty()
+        if (inputErrors.isNotEmpty()) {
+            return Result.failure(IllegalArgumentException(inputErrors.joinToString("\n")))
+        }
+        val old = initialItem
+        val new = current.mapperToDTO()
         return updateSingleLineRepository.update(ChangeSet(old, new))
     }
 }

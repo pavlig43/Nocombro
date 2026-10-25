@@ -28,7 +28,7 @@ import ru.pavlig43.thermallabel.api.component.ThermalLabelDialogComponent
 import ru.pavlig43.thermallabel.api.data.ThermalLabelTemplateService
 
 private fun factory(transactionId: Int) = SingleLineComponentFactory<PfBD, PfUi>(
-    initItem = PfUi(),
+    initItem = { PfUi() },
     errorFactory = { item ->
         buildList {
             val place = "Полуфабрикат"

@@ -1,5 +1,7 @@
 package ru.pavlig43.product.internal.update.tabs.specification
 
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import com.arkivanov.decompose.ComponentContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -64,9 +66,7 @@ internal class ProductSpecificationComponent(
                 productId = productId,
                 currentComposition = getCurrentComposition(),
             ).onSuccess { generatedComposition ->
-                onChangeItem { current ->
-                    current.copy(composition = generatedComposition)
-                }
+                item.value.compositionState.setTextAndPlaceCursorAtEnd(generatedComposition)
             }.onFailure { throwable ->
                 _generationResult.value = SpecificationPdfResultUi(
                     title = "Ошибка генерации состава",
@@ -149,25 +149,25 @@ internal data class SpecificationPdfResultUi(
 )
 
 private val specificationComponentFactory = SingleLineComponentFactory<ProductSpecification, ProductSpecificationUi>(
-    initItem = ProductSpecificationUi(
+    initItem = { ProductSpecificationUi(
         id = 0,
         productId = 0,
-        dosage = "",
-        composition = "",
-        shelfLifeText = "",
-        storageConditions = "",
-        appearance = "",
-        color = "",
-        smell = "",
-        taste = "",
-        physicalChemicalIndicators = "",
-        microbiologicalIndicators = "",
-        toxicElements = "",
-        allergens = "",
-        gmoInfo = "",
+        dosageState = TextFieldState(""),
+        compositionState = TextFieldState(""),
+        shelfLifeTextState = TextFieldState(""),
+        storageConditionsState = TextFieldState(""),
+        appearanceState = TextFieldState(""),
+        colorState = TextFieldState(""),
+        smellState = TextFieldState(""),
+        tasteState = TextFieldState(""),
+        physicalChemicalIndicatorsState = TextFieldState(""),
+        microbiologicalIndicatorsState = TextFieldState(""),
+        toxicElementsState = TextFieldState(""),
+        allergensState = TextFieldState(""),
+        gmoInfoState = TextFieldState(""),
         syncId = defaultSyncId(),
         updatedAt = defaultUpdatedAt(),
-    ),
+    ) },
     errorFactory = { ui ->
         buildList {
             addAll(validateAllergensEditorText(ui.allergens))

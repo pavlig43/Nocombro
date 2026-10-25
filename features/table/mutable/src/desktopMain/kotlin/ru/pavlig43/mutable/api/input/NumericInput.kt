@@ -1,6 +1,45 @@
 package ru.pavlig43.mutable.api.input
 
+import androidx.compose.foundation.text.input.InputTransformation
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.delete
 import ru.pavlig43.core.model.DecimalData
+
+fun TextFieldState.decimalValue(decimalPlaces: Int, range: LongRange = 0L..Long.MAX_VALUE): Long? =
+    text.toString().toDecimalInputOrNull(decimalPlaces, range)?.value
+
+fun TextFieldState.integerValue(range: IntRange = 0..Int.MAX_VALUE): Int? =
+    text.toString().toIntInputValueOrNull(range)
+
+/** Rejects invalid integer edits before they reach the text state. */
+internal fun intInputTransformation(range: IntRange): InputTransformation = InputTransformation {
+    if (asCharSequence().toString().toIntInputValueOrNull(range) == null) revertAllChanges()
+}
+
+/** Applies decimal normalization in the input buffer, preserving selection mapping. */
+internal fun decimalInputTransformation(decimalPlaces: Int): InputTransformation = InputTransformation {
+    var hasSeparator = false
+    var fractionDigits = 0
+    var index = 0
+    while (index < length) {
+        when {
+            charAt(index).isDigit() -> {
+                if (hasSeparator && fractionDigits >= decimalPlaces) {
+                    delete(index, index + 1)
+                } else {
+                    if (hasSeparator) fractionDigits++
+                    index++
+                }
+            }
+            !hasSeparator -> {
+                replace(index, index + 1, ".")
+                hasSeparator = true
+                index++
+            }
+            else -> delete(index, index + 1)
+        }
+    }
+}
 
 /** Текст и точное целое значение дробного поля после чистки ввода. */
 internal data class DecimalInput(
@@ -29,7 +68,7 @@ internal fun String.toDecimalInputOrNull(
 }
 
 /** Даёт дробный текст без незначащих нулей справа. */
-internal fun DecimalData.toDecimalInputText(): String {
+fun DecimalData.toDecimalInputText(): String {
     if (value == 0L) return ""
 
     val scale = decimalScale(countDecimal) ?: return value.toString()

@@ -44,7 +44,7 @@ class ProductFormComponent(
     private val stackNavigation = StackNavigation<Config>()
 
     private val essentialsComponentFactory = SingleLineComponentFactory<Product, ProductEssentialsUi>(
-        initItem = ProductEssentialsUi(),
+        initItem = { ProductEssentialsUi() },
         errorFactory = { item ->
             buildList {
                 if (item.displayName.isBlank()) add("Название продукта обязательно")
