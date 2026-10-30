@@ -1,9 +1,67 @@
 package ru.pavlig43.immutable.internal.ui
 
+import androidx.compose.ui.InternalComposeUiApi
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEvent
+import androidx.compose.ui.input.key.KeyEventType
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
+@OptIn(InternalComposeUiApi::class)
 class SearchKeyboardTest : FunSpec({
+    test("transfers focus on typed input rather than the preceding key press") {
+        listOf('a', 'я').forEach { character ->
+            val pressed = applySearchKeyEvent(
+                query = "",
+                event = KeyEvent(Key.A, KeyEventType.KeyDown, codePoint = character.code),
+                rootFocused = true,
+                searchFocused = false,
+            )
+            pressed shouldBe SearchKeyResult(query = "", consumed = false)
+
+            val typed = applySearchKeyEvent(
+                query = pressed.query,
+                event = KeyEvent(Key.Unknown, KeyEventType.Unknown, codePoint = character.code),
+                rootFocused = true,
+                searchFocused = false,
+            )
+            typed shouldBe SearchKeyResult(
+                query = character.toString(),
+                consumed = true,
+                requestSearchFocus = true,
+            )
+
+            val released = applySearchKeyEvent(
+                query = typed.query,
+                event = KeyEvent(Key.A, KeyEventType.KeyUp, codePoint = character.code),
+                rootFocused = false,
+                searchFocused = true,
+            )
+            released shouldBe SearchKeyResult(query = character.toString(), consumed = false)
+        }
+    }
+
+    test("leaves typed input in the clicked search field to the text field") {
+        applySearchKeyEvent(
+            query = "",
+            event = KeyEvent(Key.Unknown, KeyEventType.Unknown, codePoint = 'я'.code),
+            rootFocused = false,
+            searchFocused = true,
+        ) shouldBe SearchKeyResult(query = "", consumed = false)
+    }
+
+    test("ignores navigation keys and typed control characters") {
+        listOf(
+            KeyEvent(Key.DirectionLeft, KeyEventType.KeyDown, codePoint = Char.MAX_VALUE.code),
+            KeyEvent(Key.Unknown, KeyEventType.Unknown, codePoint = '\n'.code),
+            KeyEvent(Key.Unknown, KeyEventType.Unknown, codePoint = '\t'.code),
+            KeyEvent(Key.Unknown, KeyEventType.Unknown, codePoint = '\b'.code),
+        ).forEach { event ->
+            applySearchKeyEvent("query", event, rootFocused = true, searchFocused = false) shouldBe
+                SearchKeyResult(query = "query", consumed = false)
+        }
+    }
+
     test("adds an English or Russian first character once from the list focus") {
         listOf('a', 'я').forEach { character ->
             val result = applySearchKey(

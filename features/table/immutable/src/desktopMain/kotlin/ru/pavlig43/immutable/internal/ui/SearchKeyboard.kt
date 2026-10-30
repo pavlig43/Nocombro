@@ -146,18 +146,37 @@ private fun handleSearchKeyEvent(
     searchFocusRequester: FocusRequester,
     onQueryChange: (String) -> Unit,
 ): Boolean {
-    if (event.type != KeyEventType.KeyDown) return false
+    val result = applySearchKeyEvent(query, event, rootFocused, searchFocused)
+    if (result.query != query) onQueryChange(result.query)
+    if (result.requestSearchFocus) searchFocusRequester.requestFocus()
+    if (result.requestRootFocus) rootFocusRequester.requestFocus()
+    return result.consumed
+}
 
-    val key = when (event.key) {
-        Key.Backspace -> SearchKey.Backspace
-        Key.Escape -> SearchKey.Escape
-        else -> SearchKey.Character
+@OptIn(ExperimentalComposeUiApi::class)
+internal fun applySearchKeyEvent(
+    query: String,
+    event: KeyEvent,
+    rootFocused: Boolean,
+    searchFocused: Boolean,
+): SearchKeyResult {
+    // Desktop sends KEY_PRESSED followed by KEY_TYPED (Unknown in Compose).
+    // Moving focus on KEY_PRESSED would also deliver KEY_TYPED to the text field,
+    // inserting the first character twice. Transfer focus only on typed input.
+    val key = when (event.type) {
+        KeyEventType.KeyDown -> when (event.key) {
+            Key.Backspace -> SearchKey.Backspace
+            Key.Escape -> SearchKey.Escape
+            else -> return SearchKeyResult(query = query, consumed = false)
+        }
+        KeyEventType.Unknown -> SearchKey.Character
+        else -> return SearchKeyResult(query = query, consumed = false)
     }
-    val result = applySearchKey(
+    return applySearchKey(
         query = query,
         input = SearchKeyInput(
             key = key,
-            character = event.utf16CodePoint.takeIf { it > 0 }?.toChar(),
+            character = event.utf16CodePoint.takeIf { it in 1 until Char.MAX_VALUE.code }?.toChar(),
             ctrlPressed = event.isCtrlPressed,
             altPressed = event.isAltPressed,
             metaPressed = event.isMetaPressed,
@@ -165,8 +184,4 @@ private fun handleSearchKeyEvent(
             searchFocused = searchFocused,
         ),
     )
-    if (result.query != query) onQueryChange(result.query)
-    if (result.requestSearchFocus) searchFocusRequester.requestFocus()
-    if (result.requestRootFocus) rootFocusRequester.requestFocus()
-    return result.consumed
 }
