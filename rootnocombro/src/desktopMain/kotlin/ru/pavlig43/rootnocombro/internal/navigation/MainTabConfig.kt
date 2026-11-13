@@ -34,6 +34,12 @@ sealed interface MainTabConfig{
     class DoctorConfig: MainTabConfig
 
     @Serializable
+    class ProductionPlanListConfig : MainTabConfig
+
+    @Serializable
+    class ProductionPlanConfig(val id: Int) : MainTabConfig
+
+    @Serializable
     sealed interface ItemListConfig: MainTabConfig{
         @Serializable
         class DocumentListConfig : ItemListConfig
@@ -73,7 +79,7 @@ sealed interface MainTabConfig{
         class DeclarationFormConfig(val id:Int):ItemFormConfig
 
         @Serializable
-        class TransactionFormConfig(val id:Int):ItemFormConfig
+        class TransactionFormConfig(val id: Int, val productionPlanId: Int? = null) : ItemFormConfig
 
         @Serializable
         class ExpenseFormConfig(val id: Int) : ItemFormConfig

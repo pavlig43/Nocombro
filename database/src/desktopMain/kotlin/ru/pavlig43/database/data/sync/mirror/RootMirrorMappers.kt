@@ -41,6 +41,7 @@ internal fun Product.toMirrorRow() = ProductMirrorRow(
     priceForSale = priceForSale,
     shelfLifeDays = shelfLifeDays,
     recNds = recNds,
+    maxMixGrams = maxMixGrams,
     updatedAt = updatedAt,
     deletedAt = deletedAt,
 )

@@ -73,6 +73,12 @@ class MirrorLocalSnapshotRepository(
                 if (MirrorSyncTable.TRANSACTION in requestedTables) {
                     put(MirrorSyncTable.TRANSACTION, db.transactionDao.getAll().map { it.toMirrorRow() })
                 }
+                if (MirrorSyncTable.PRODUCTION_PLAN in requestedTables) {
+                    put(MirrorSyncTable.PRODUCTION_PLAN, db.productionPlanDao.getAllPlans().map { it.toMirrorRow() })
+                }
+                if (MirrorSyncTable.PRODUCTION_PLAN_ROW in requestedTables) {
+                    put(MirrorSyncTable.PRODUCTION_PLAN_ROW, db.productionPlanDao.getAllRows().map { it.toMirrorRow(db) })
+                }
                 if (MirrorSyncTable.EXPERIMENT in requestedTables) {
                     put(MirrorSyncTable.EXPERIMENT, db.experimentDao.getAll().map { it.toMirrorRow() })
                 }

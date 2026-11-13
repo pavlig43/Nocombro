@@ -149,6 +149,19 @@ class RootNocombroFlowSmokeTest : DesktopMainDispatcherFunSpec({
         }
     }
 
+    test("production plans open from the drawer and reuse their list tab") {
+        withRootComponent(seeded = false) { root ->
+            val component = root.stack.value.active.instance.shouldBeInstanceOf<RootChild.Tabs>().component
+            runOnUiThread {
+                component.openScreenFromDrawer(DrawerDestination.ProductionPlans)
+                component.openScreenFromDrawer(DrawerDestination.ProductionPlans)
+            }
+            val tabs = component.tabNavigationComponent.tabChildren.value
+            tabs.items.count { it.instance is MainTabChild.ProductionPlansChild } shouldBe 1
+            tabs.items[requireNotNull(tabs.selectedIndex)].instance.shouldBeInstanceOf<MainTabChild.ProductionPlansChild>()
+        }
+    }
+
     test(
         scenario(
             given = "a seeded test environment",

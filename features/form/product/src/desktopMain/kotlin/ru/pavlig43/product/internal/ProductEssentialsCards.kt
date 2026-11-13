@@ -1,6 +1,8 @@
 package ru.pavlig43.product.internal
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import kotlinx.collections.immutable.ImmutableList
@@ -25,10 +27,13 @@ internal fun ProductEssentialsCards(
     onOpenDateDialog: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val sections = remember(component) {
+    val item by component.item.collectAsState()
+    val showMixLimit = item.productType == ProductType.FOOD_PF
+    val sections = remember(component, showMixLimit) {
         productEssentialsSections(
             component = component,
             onOpenDateDialog = onOpenDateDialog,
+            showMixLimit = showMixLimit,
         )
     }
 
@@ -43,6 +48,7 @@ internal fun ProductEssentialsCards(
 private fun productEssentialsSections(
     component: SingleLineComponent<*, ProductEssentialsUi>,
     onOpenDateDialog: () -> Unit,
+    showMixLimit: Boolean,
 ): ImmutableList<SingleLineFormSection<ProductEssentialsUi>> = persistentListOf(
     SingleLineFormSection(
         title = "Карточка товара",
@@ -82,6 +88,14 @@ private fun productEssentialsSections(
                         )
                     },
                 ),
+                *(if (showMixLimit) arrayOf(
+                    SingleLineFormField<ProductEssentialsUi>(
+                        label = "Максимальный замес, кг",
+                        content = { item, fieldModifier ->
+                            SingleLineDecimalField(state = item.maxMixGramsState, decimalPlaces = 3, modifier = fieldModifier)
+                        },
+                    ),
+                ) else emptyArray()),
             ),
         ),
     ),

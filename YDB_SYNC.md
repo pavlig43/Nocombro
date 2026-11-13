@@ -34,6 +34,8 @@ Legacy transport удалён:
 - `vendor`
 - `declaration`
 - `product`
+- `production_plan`
+- `production_plan_row`
 - `composition`
 - `product_declaration`
 - `product_specification`
@@ -58,6 +60,15 @@ Legacy transport удалён:
 DDL находится в `database/ydb/mirror_sync_v1.sql`. Приложение не создаёт
 mirror tables во время работы. Таблицы нужно создать или мигрировать заранее
 через SQL.
+
+Перед выпуском версии с планами производства оператор с доступом к активной YDB
+должен вручную через `ydb` CLI добавить nullable-колонку `product.max_mix_grams`
+типа `Int64` и создать `production_plan` и `production_plan_row` в используемом
+mirror root. Определения новых таблиц приведены в `database/ydb/mirror_sync_v1.sql`.
+Для существующей `product` нужна отдельная команда `ALTER TABLE`, поскольку
+`CREATE TABLE IF NOT EXISTS` колонку не добавляет. Сначала сверить схему через
+`ydb scheme describe`, затем проверить push/pull нового плана с обеими таблицами
+и восстановление лимита продукта. PDF остаётся во временной папке на компьютере.
 
 Для складов `MAIN`/`EXPERIMENTAL` перед выпуском клиента нужно применить
 `database/ydb/migrate_storage_locations_v2.sql`. Пустое значение в поле

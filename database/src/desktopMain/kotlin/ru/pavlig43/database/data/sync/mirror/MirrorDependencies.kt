@@ -16,6 +16,10 @@ internal fun MirrorSyncRow.dependencyKeys(): List<MirrorEntityKey> = when (this)
     is DeclarationMirrorRow -> listOf(MirrorEntityKey(MirrorSyncTable.VENDOR, vendorSyncId))
     is ProductSpecificationMirrorRow -> listOf(MirrorEntityKey(MirrorSyncTable.PRODUCT, productSyncId))
     is SafetyStockMirrorRow -> listOf(MirrorEntityKey(MirrorSyncTable.PRODUCT, productSyncId))
+    is ProductionPlanItemMirrorRow -> listOf(
+        MirrorEntityKey(MirrorSyncTable.PRODUCTION_PLAN, planSyncId),
+        MirrorEntityKey(MirrorSyncTable.PRODUCT, productSyncId),
+    )
     is ExperimentEntryMirrorRow -> listOf(MirrorEntityKey(MirrorSyncTable.EXPERIMENT, experimentSyncId))
     is ExperimentReminderMirrorRow -> listOf(MirrorEntityKey(MirrorSyncTable.EXPERIMENT, experimentSyncId))
     is ProductDeclarationMirrorRow -> listOf(
@@ -58,6 +62,7 @@ internal fun MirrorSyncRow.dependencyKeys(): List<MirrorEntityKey> = when (this)
     is ProductMirrorRow,
     is TransactionMirrorRow,
     is ExperimentMirrorRow,
+    is ProductionPlanMirrorRow,
     is MoneyAccountMirrorRow,
     -> emptyList()
 }

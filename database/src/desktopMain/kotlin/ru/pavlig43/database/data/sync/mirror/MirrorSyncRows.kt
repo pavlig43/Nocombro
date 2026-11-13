@@ -2,6 +2,7 @@ package ru.pavlig43.database.data.sync.mirror
 
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import ru.pavlig43.database.data.batch.MovementType
 import ru.pavlig43.database.data.batch.StorageLocation
@@ -89,6 +90,7 @@ data class ProductMirrorRow(
     val recNds: Int,
     override val updatedAt: LocalDateTime,
     override val deletedAt: LocalDateTime? = null,
+    val maxMixGrams: Long? = null,
 ) : MirrorSyncRow
 
 @Serializable
@@ -298,6 +300,29 @@ data class FileMirrorRow(
     val path: String,
     val remoteObjectKey: String? = null,
     val remoteStorageProvider: String? = null,
+    override val updatedAt: LocalDateTime,
+    override val deletedAt: LocalDateTime? = null,
+) : MirrorSyncRow
+
+@Serializable
+@SerialName("production_plan")
+data class ProductionPlanMirrorRow(
+    override val syncId: String,
+    val title: String,
+    val createdAt: LocalDateTime,
+    override val updatedAt: LocalDateTime,
+    override val deletedAt: LocalDateTime? = null,
+) : MirrorSyncRow
+
+@Serializable
+@SerialName("production_plan_row")
+data class ProductionPlanItemMirrorRow(
+    override val syncId: String,
+    val planSyncId: String,
+    val productSyncId: String,
+    val position: Int,
+    val plannedGrams: Long,
+    val packageGrams: Long,
     override val updatedAt: LocalDateTime,
     override val deletedAt: LocalDateTime? = null,
 ) : MirrorSyncRow

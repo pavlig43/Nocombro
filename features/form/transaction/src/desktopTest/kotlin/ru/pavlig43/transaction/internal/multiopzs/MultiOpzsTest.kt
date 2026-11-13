@@ -26,6 +26,7 @@ import ru.pavlig43.database.data.product.CompositionIn
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductDeclarationIn
 import ru.pavlig43.database.data.product.ProductType
+import ru.pavlig43.database.data.sync.mirror.MirrorDeletionJournalRepository
 import ru.pavlig43.database.data.transact.Transact
 import ru.pavlig43.database.data.transact.TransactionType
 import ru.pavlig43.database.data.transact.ingredient.IngredientBD
@@ -48,12 +49,57 @@ import ru.pavlig43.transaction.internal.di.BatchCostRepository
 import ru.pavlig43.transaction.internal.di.UpdateCollectionRepositoryType
 import ru.pavlig43.transaction.internal.di.UpdateSingleLineRepositoryType
 import ru.pavlig43.transaction.internal.di.createTransactionFormModule
+import ru.pavlig43.transaction.internal.production.PlanDraft
+import ru.pavlig43.transaction.internal.production.PlanLine
+import ru.pavlig43.transaction.internal.production.ProductionPlanRepository
 import ru.pavlig43.transaction.internal.update.tabs.component.opzs.ingredients.FillIngredientsRepository
 
 private val productionTime = LocalDateTime(2026, 10, 14, 17, 35)
 private val born = LocalDate(2026, 1, 1)
 
 class MultiOpzsTest : DesktopMainDispatcherFunSpec({
+    test("opening a plan again keeps the posted line and never recreates a deleted operation") {
+        withFixture { f ->
+            val product = f.db.productDao.getProduct(f.product)
+            f.db.productDao.updateProduct(product.copy(maxMixGrams = 18_000))
+            val first = PlanLine(productId = f.product, planned = "3")
+            val second = PlanLine(productId = f.product, planned = "6")
+            val planId = ProductionPlanRepository(f.db).save(null, PlanDraft("План", listOf(first, second)))
+            suspend fun openPlan(): Pair<LifecycleRegistry, MultiOpzsComponent> {
+                val lifecycle = LifecycleRegistry()
+                val form = runOnUiThread {
+                    TransactionFormComponent(
+                        0, NoopTabOpener, DefaultComponentContext(lifecycle, backHandler = BackDispatcher()),
+                        f.dependencies, productionPlanId = planId,
+                    )
+                }
+                val multi = form.stack.value.active.instance.shouldBeInstanceOf<TransactionFormComponent.Child.MultiOpzs>().component
+                waitUntil { !multi.state.value.loadingPlan }
+                return lifecycle to multi
+            }
+            val (firstTab, original) = openPlan()
+            val initial = original.state.value.rows
+            initial.map { it.count.value } shouldBe listOf(3000L, 6000L)
+            initial.first().declarationId shouldBe f.declaration
+            val actual = initial.first().copy(count = DecimalData3(1000))
+            val transactionId = f.service.create(actual, productionTime)
+            runOnUiThread { firstTab.destroy() }
+            val (secondTab, restored) = openPlan()
+            val reopened = restored.state.value.rows
+            reopened.first().result shouldBe OpzsRowResult.Created(transactionId)
+            reopened.first().count.value shouldBe 1000L
+            reopened.last().result shouldBe OpzsRowResult.Empty
+            f.service.create(actual, productionTime) shouldBe transactionId
+            runOnUiThread { secondTab.destroy() }
+            MirrorDeletionJournalRepository(f.db).captureHardDeletes {
+                f.db.transactionDao.deleteTransactionsByIds(setOf(transactionId))
+            }
+            f.service.loadPlan(planId).first().result.shouldBeInstanceOf<OpzsRowResult.Unavailable>()
+            runCatching { f.service.create(actual, productionTime) }.isFailure shouldBe true
+            f.db.transactionDao.getTransactionBySyncId(first.syncId) shouldBe null
+        }
+    }
+
     test("one OPZS stores product, gram weight, declaration, vendor, date, completion and cost") {
         withFixture { f ->
             val row = f.row(2_001)

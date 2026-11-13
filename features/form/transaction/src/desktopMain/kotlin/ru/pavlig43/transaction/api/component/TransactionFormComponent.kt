@@ -33,6 +33,7 @@ class TransactionFormComponent(
     private val tabOpener: TabOpener,
     componentContext: ComponentContext,
     dependencies: TransactionFormDependencies,
+    productionPlanId: Int? = null,
 ) : ComponentContext by componentContext, MainTabComponent {
 
     private val koinContext = instanceKeeper.getOrCreate {
@@ -42,7 +43,9 @@ class TransactionFormComponent(
     private val scope: Scope =
         koinContext.getOrCreateKoinScope(createTransactionFormModule(dependencies))
 
-    private val _model = MutableStateFlow(MainTabComponent.NavTabState(""))
+    private val _model = MutableStateFlow(MainTabComponent.NavTabState(
+        if (productionPlanId == null) "" else "*МультиОПЗС"
+    ))
     override val model = _model.asStateFlow()
 
     private val stackNavigation = StackNavigation<Config>()
@@ -74,18 +77,19 @@ class TransactionFormComponent(
         componentContext: ComponentContext
     ): Child {
         return when (config) {
-            Config.MultiOpzs -> Child.MultiOpzs(
+            Config.MultiOpzs, is Config.PlannedMultiOpzs -> Child.MultiOpzs(
                 MultiOpzsComponent(
                     componentContext = componentContext,
                     service = scope.get(),
                     tableDependencies = scope.get(),
                     tabOpener = tabOpener,
+                    planId = (config as? Config.PlannedMultiOpzs)?.planId,
                     onBack = {
                         stackNavigation.pop()
                         (stack.value.active.instance as? Child.Create)?.component?.item?.value
                             ?.let(::onChangeValueForMainTab)
                     },
-                )
+                ).also { it.loadPlan() }
             )
             is Config.Create -> Child.Create(
                 CreateTransactionSingleLineComponent(
@@ -113,9 +117,11 @@ class TransactionFormComponent(
     internal val stack: Value<ChildStack<Config, Child>> = childStack(
         source = stackNavigation,
         serializer = Config.serializer(),
-        initialConfiguration = if (transactionId == 0) Config.Create else Config.Update(
-            transactionId
-        ),
+        initialConfiguration = when {
+            productionPlanId != null -> Config.PlannedMultiOpzs(productionPlanId)
+            transactionId == 0 -> Config.Create
+            else -> Config.Update(transactionId)
+        },
         handleBackButton = false,
         childFactory = ::createChild
     )
@@ -127,6 +133,9 @@ class TransactionFormComponent(
 
         @Serializable
         data object MultiOpzs : Config
+
+        @Serializable
+        data class PlannedMultiOpzs(val planId: Int) : Config
 
         @Serializable
         data class Update(val id: Int) : Config

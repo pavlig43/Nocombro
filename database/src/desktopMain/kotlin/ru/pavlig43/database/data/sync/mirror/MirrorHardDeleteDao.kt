@@ -43,6 +43,12 @@ interface MirrorHardDeleteDao {
     @Query("DELETE FROM $TRANSACTION_TABLE_NAME WHERE sync_id = :syncId")
     suspend fun deleteTransaction(syncId: String): Int
 
+    @Query("DELETE FROM production_plan WHERE sync_id = :syncId")
+    suspend fun deleteProductionPlan(syncId: String): Int
+
+    @Query("DELETE FROM production_plan_row WHERE sync_id = :syncId")
+    suspend fun deleteProductionPlanRow(syncId: String): Int
+
     @Query("DELETE FROM $EXPERIMENT_TABLE_NAME WHERE sync_id = :syncId")
     suspend fun deleteExperiment(syncId: String): Int
 

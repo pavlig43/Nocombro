@@ -8,6 +8,7 @@ import ru.pavlig43.mutable.api.input.integerValue
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.core.model.DecimalData2
+import ru.pavlig43.core.model.DecimalData3
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.database.data.sync.defaultSyncId
@@ -32,6 +33,7 @@ internal data class ProductEssentialsUi(
 
     val recNdsState: TextFieldState = TextFieldState(),
 
+    val maxMixGramsState: TextFieldState = TextFieldState(),
     val id: Int = 0,
 
     val syncId: String = defaultSyncId(),
@@ -46,6 +48,7 @@ internal data class ProductEssentialsUi(
     val priceForSale: DecimalData2 get() = DecimalData2(priceForSaleState.decimalValue(2) ?: 0L)
     val shelfLifeDays: Int get() = shelfLifeDaysState.integerValue(0..Int.MAX_VALUE) ?: 0
     val recNds: Int get() = recNdsState.integerValue(0..99) ?: 0
+    val maxMixGrams: Long? get() = maxMixGramsState.decimalValue(3)?.takeIf { it > 0 }
     override val textFields get() = listOf(
         displayNameState,
         secondNameState,
@@ -53,12 +56,18 @@ internal data class ProductEssentialsUi(
         priceForSaleState,
         shelfLifeDaysState,
         recNdsState,
+        maxMixGramsState,
     )
-    override val inputErrors get() = if (
-        priceForSaleState.decimalValue(2) == null ||
-        shelfLifeDaysState.integerValue(0..Int.MAX_VALUE) == null ||
-        recNdsState.integerValue(0..99) == null
-    ) listOf("Некорректное число") else emptyList()
+    override val inputErrors get() = buildList {
+        if (productType == ProductType.FOOD_PF && maxMixGramsState.text.isNotBlank() && maxMixGrams == null) {
+            add("Максимальный замес должен быть больше нуля")
+        }
+        if (
+            priceForSaleState.decimalValue(2) == null ||
+            shelfLifeDaysState.integerValue(0..Int.MAX_VALUE) == null ||
+            recNdsState.integerValue(0..99) == null
+        ) add("Некорректное число")
+    }
 }
 
 @OptIn(ExperimentalTime::class)
@@ -72,6 +81,7 @@ internal fun ProductEssentialsUi.toDto(): Product {
         priceForSale = priceForSale.value,
         shelfLifeDays = shelfLifeDays,
         recNds = recNds,
+        maxMixGrams = maxMixGrams.takeIf { productType == ProductType.FOOD_PF },
         id = id,
         syncId = syncId,
         updatedAt = updatedAt,
@@ -88,6 +98,7 @@ internal fun Product.toUi(): ProductEssentialsUi {
         commentState = TextFieldState(comment),
         priceForSaleState = TextFieldState((DecimalData2(priceForSale)).toDecimalInputText()),
         shelfLifeDaysState = TextFieldState((shelfLifeDays).takeUnless { it == 0 }?.toString().orEmpty()),
+        maxMixGramsState = TextFieldState(maxMixGrams?.let { DecimalData3(it).toDecimalInputText() }.orEmpty()),
         recNdsState = TextFieldState((recNds).takeUnless { it == 0 }?.toString().orEmpty()),
         id = id,
         syncId = syncId,

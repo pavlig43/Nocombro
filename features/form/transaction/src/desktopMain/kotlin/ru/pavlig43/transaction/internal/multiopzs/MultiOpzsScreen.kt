@@ -64,8 +64,8 @@ internal fun MultiOpzsScreen(component: MultiOpzsComponent, modifier: Modifier =
                 Spacer(Modifier.weight(1f))
                 Button(
                     component::create,
-                    enabled = !state.running && state.validationErrors.isEmpty() && state.rows.none { it.loading } &&
-                        state.rows.any { it.result !is OpzsRowResult.Created },
+                    enabled = !state.running && !state.loadingPlan && state.validationErrors.isEmpty() &&
+                        state.rows.none { it.loading } && state.rows.any(MultiOpzsRow::editable),
                     shape = RoundedCornerShape(14.dp),
                     modifier = Modifier.height(48.dp),
                 ) { Text("Создать ОПЗС") }
@@ -75,6 +75,7 @@ internal fun MultiOpzsScreen(component: MultiOpzsComponent, modifier: Modifier =
             Text("Дата и время производства")
             SingleLineDateTimeField(state.producedAt, component::openDate, readOnly = state.running)
             if (state.finished) Text("Создано и проведено: ${state.createdCount} из ${state.rows.size}")
+            if (state.loadingPlan) Text("Загрузка плана…")
         }
         Surface(
             modifier = Modifier.weight(1f).fillMaxWidth(),

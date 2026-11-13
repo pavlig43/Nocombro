@@ -36,6 +36,8 @@ class MirrorHardDeleteRepository(
             MirrorSyncTable.DECLARATION -> db.mirrorHardDeleteDao.deleteDeclaration(request.syncId)
             MirrorSyncTable.PRODUCT -> db.mirrorHardDeleteDao.deleteProduct(request.syncId)
             MirrorSyncTable.TRANSACTION -> db.mirrorHardDeleteDao.deleteTransaction(request.syncId)
+            MirrorSyncTable.PRODUCTION_PLAN -> db.mirrorHardDeleteDao.deleteProductionPlan(request.syncId)
+            MirrorSyncTable.PRODUCTION_PLAN_ROW -> db.mirrorHardDeleteDao.deleteProductionPlanRow(request.syncId)
             MirrorSyncTable.EXPERIMENT -> db.mirrorHardDeleteDao.deleteExperiment(request.syncId)
             MirrorSyncTable.PRODUCT_SPECIFICATION ->
                 db.mirrorHardDeleteDao.deleteProductSpecification(request.syncId)

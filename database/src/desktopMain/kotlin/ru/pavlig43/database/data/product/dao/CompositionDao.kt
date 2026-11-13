@@ -34,6 +34,18 @@ abstract class CompositionDao {
         return getComposition(parentId).map(InternalComposition::toCompositionOut)
     }
 
+    @Transaction
+    @Query("""
+        SELECT composition.* FROM composition
+        INNER JOIN product ON product.id = composition.product_id
+        WHERE composition.parent_id = :parentId AND composition.deleted_at IS NULL AND product.deleted_at IS NULL
+        ORDER BY composition.id
+    """)
+    internal abstract suspend fun getActiveComposition(parentId: Int): List<InternalComposition>
+
+    suspend fun getActiveCompositionOut(parentId: Int): List<CompositionOut> =
+        getActiveComposition(parentId).map(InternalComposition::toCompositionOut)
+
     suspend fun getIngredientsFromComposition(
         productId: Int,
         transactionId: Int,

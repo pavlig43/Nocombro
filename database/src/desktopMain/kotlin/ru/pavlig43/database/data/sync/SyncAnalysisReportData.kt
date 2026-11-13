@@ -29,7 +29,7 @@ internal class SyncAnalysisReportData(rows: Map<MirrorSyncTable, List<MirrorSync
             f("Годен до", row.bestBefore), f("Отслеживать срок", row.observeFromNotification))
         is ProductMirrorRow -> listOf(f("Название", row.displayName), f("Второе название", row.secondName),
             f("Тип", row.type.displayName), f("Дата создания", row.createdAt), money("Цена продажи", row.priceForSale),
-            f("Срок годности", "${row.shelfLifeDays} дн."), f("НДС", "${row.recNds} %"), f("Комментарий", row.comment))
+            f("Срок годности", "${row.shelfLifeDays} дн."), f("Максимальный замес, г", row.maxMixGrams ?: ""), f("НДС", "${row.recNds} %"), f("Комментарий", row.comment))
         is CompositionMirrorRow -> listOf(ref("Компонент", MirrorSyncTable.PRODUCT, row.productSyncId), qty("Количество", row.count))
         is ProductSpecificationMirrorRow -> listOf(f("Дозировка", row.dosage), f("Состав", row.composition),
             f("Срок годности", row.shelfLifeText), f("Хранение", row.storageConditions), f("Внешний вид", row.appearance),
@@ -51,6 +51,9 @@ internal class SyncAnalysisReportData(rows: Map<MirrorSyncTable, List<MirrorSync
         is ReminderMirrorRow -> listOf(f("Текст", row.text), f("Дата и время", row.reminderDateTime))
         is ExpenseMirrorRow -> listOf(f("Вид расхода", row.expenseType.displayName), f("Дата и время", row.expenseDateTime),
             money("Сумма", row.amount), f("Комментарий", row.comment))
+        is ProductionPlanMirrorRow -> listOf(f("Название", row.title), f("Дата создания", row.createdAt))
+        is ProductionPlanItemMirrorRow -> listOf(ref("Продукт", MirrorSyncTable.PRODUCT, row.productSyncId),
+            f("Строка", row.position + 1), qty("План", row.plannedGrams), qty("Пакет", row.packageGrams))
         is ExperimentMirrorRow -> listOf(f("Название", row.title), f("Идея", row.ideaDescription), f("В архиве", row.isArchived))
         is ExperimentEntryMirrorRow -> listOf(f("Дата записи", row.entryDate), f("Дата и время создания", row.createdAt), f("Текст", row.content))
         is ExperimentReminderMirrorRow -> listOf(f("Текст", row.text), f("Дата и время", row.reminderDateTime))
@@ -80,6 +83,7 @@ internal class SyncAnalysisReportData(rows: Map<MirrorSyncTable, List<MirrorSync
         is SaleMirrorRow -> ReportKey(MirrorSyncTable.BATCH_MOVEMENT, row.movementSyncId)
         is ReminderMirrorRow -> ReportKey(MirrorSyncTable.TRANSACTION, row.transactionSyncId)
         is ExpenseMirrorRow -> row.transactionSyncId?.let { ReportKey(MirrorSyncTable.TRANSACTION, it) }
+        is ProductionPlanItemMirrorRow -> ReportKey(MirrorSyncTable.PRODUCTION_PLAN, row.planSyncId)
         is ExperimentEntryMirrorRow -> ReportKey(MirrorSyncTable.EXPERIMENT, row.experimentSyncId)
         is ExperimentReminderMirrorRow -> ReportKey(MirrorSyncTable.EXPERIMENT, row.experimentSyncId)
         is FileMirrorRow -> ReportKey(when (row.ownerType) {
@@ -96,6 +100,7 @@ internal class SyncAnalysisReportData(rows: Map<MirrorSyncTable, List<MirrorSync
         is DocumentMirrorRow -> row.displayName
         is DeclarationMirrorRow -> row.displayName
         is ProductMirrorRow -> row.displayName
+        is ProductionPlanMirrorRow -> row.title
         is ExperimentMirrorRow -> row.title
         is MoneyAccountMirrorRow -> row.name
         is TransactionMirrorRow -> "${row.transactionType.displayName}, ${reportDateTime(row.createdAt)}"
@@ -158,6 +163,8 @@ private fun category(value: MoneyMovementCategory?): String = when (value) {
 internal fun reportTableTitle(table: MirrorSyncTable): String = when (table) {
     MirrorSyncTable.VENDOR -> "Поставщик / клиент"; MirrorSyncTable.DOCUMENT -> "Документ"
     MirrorSyncTable.DECLARATION -> "Декларация"; MirrorSyncTable.PRODUCT -> "Товар"
+    MirrorSyncTable.PRODUCTION_PLAN -> "План производства"
+    MirrorSyncTable.PRODUCTION_PLAN_ROW -> "Строка плана"
     MirrorSyncTable.TRANSACTION -> "Операция"; MirrorSyncTable.EXPERIMENT -> "Опыт"
     MirrorSyncTable.PRODUCT_SPECIFICATION -> "Спецификация"; MirrorSyncTable.SAFETY_STOCK -> "Запас товара"
     MirrorSyncTable.EXPERIMENT_ENTRY -> "Запись опыта"; MirrorSyncTable.EXPERIMENT_REMINDER -> "Напоминание об опыте"

@@ -47,6 +47,28 @@ CREATE TABLE IF NOT EXISTS `product` (
     price_for_sale Int64,
     shelf_life_days Int32,
     rec_nds Int32,
+    max_mix_grams Int64,
+    updated_at Utf8,
+    deleted_at Utf8,
+    PRIMARY KEY (sync_id)
+);
+
+CREATE TABLE IF NOT EXISTS `production_plan` (
+    sync_id Utf8,
+    title Utf8,
+    created_at Utf8,
+    updated_at Utf8,
+    deleted_at Utf8,
+    PRIMARY KEY (sync_id)
+);
+
+CREATE TABLE IF NOT EXISTS `production_plan_row` (
+    sync_id Utf8,
+    plan_sync_id Utf8,
+    product_sync_id Utf8,
+    row_position Int32,
+    planned_grams Int64,
+    package_grams Int64,
     updated_at Utf8,
     deleted_at Utf8,
     PRIMARY KEY (sync_id)
