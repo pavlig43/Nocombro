@@ -36,6 +36,9 @@ import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductDeclarationIn
 import ru.pavlig43.database.data.product.ProductSpecification
 import ru.pavlig43.database.data.product.SafetyStock
+import ru.pavlig43.database.data.production.ProductionPlan
+import ru.pavlig43.database.data.production.ProductionPlanDao
+import ru.pavlig43.database.data.production.ProductionPlanRow
 import ru.pavlig43.database.data.product.dao.CompositionDao
 import ru.pavlig43.database.data.product.dao.ProductDao
 import ru.pavlig43.database.data.product.dao.ProductDeclarationDao
@@ -76,6 +79,8 @@ import ru.pavlig43.database.data.vendor.dao.VendorDao
         ProductDeclarationIn::class,
         ProductSpecification::class,
         SafetyStock::class,
+        ProductionPlan::class,
+        ProductionPlanRow::class,
 
         BatchBD::class,
         BatchCostPriceEntity::class,
@@ -102,7 +107,7 @@ import ru.pavlig43.database.data.vendor.dao.VendorDao
         MirrorDeletionJournalEntity::class,
 
     ],
-    version = 10,
+    version = 11,
 
 )
 @TypeConverters(Converters::class)
@@ -120,6 +125,7 @@ abstract class NocombroDatabase : RoomDatabase() {
     abstract val productSpecificationDao: ProductSpecificationDao
     abstract val compositionDao: CompositionDao
     abstract val safetyStockDao: SafetyStockDao
+    abstract val productionPlanDao: ProductionPlanDao
 
     abstract val transactionDao: TransactionDao
     abstract val batchDao: BatchDao

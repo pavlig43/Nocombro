@@ -64,6 +64,10 @@ class MirrorDisplayLabelResolver(
             is ReminderMirrorRow ->
                 "${row.text} · ${nameOf(MirrorSyncTable.TRANSACTION, row.transactionSyncId)}"
             is ExpenseMirrorRow -> "${row.expenseType} · ${row.comment.ifBlank { row.amount.toString() }}"
+            is ProductionPlanMirrorRow -> row.title
+            is ProductionPlanItemMirrorRow ->
+                "${nameOf(MirrorSyncTable.PRODUCTION_PLAN, row.planSyncId)} · " +
+                    nameOf(MirrorSyncTable.PRODUCT, row.productSyncId)
             is ExperimentMirrorRow -> row.title
             is ExperimentEntryMirrorRow ->
                 "${nameOf(MirrorSyncTable.EXPERIMENT, row.experimentSyncId)} · ${row.entryDate} · " +
@@ -92,6 +96,7 @@ class MirrorDisplayLabelResolver(
             is ProductMirrorRow -> row.displayName
             is BatchMirrorRow ->
                 "Партия ${nameOf(MirrorSyncTable.PRODUCT, row.productSyncId)} от ${row.dateBorn}"
+            is ProductionPlanMirrorRow -> row.title
             is TransactionMirrorRow -> "${row.transactionType} от ${row.createdAt.date}"
             is ExperimentMirrorRow -> row.title
             is ExperimentEntryMirrorRow ->

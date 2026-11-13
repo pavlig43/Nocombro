@@ -121,6 +121,8 @@ class MirrorEntityApplyRepository(
             BATCH_MOVEMENT_TABLE_NAME -> applyBatchMovement(change)
             REMINDER_TABLE_NAME -> applyReminder(change)
             EXPENSE_TABLE_NAME -> applyExpense(change)
+            MirrorSyncTable.PRODUCTION_PLAN.tableName -> db.applyProductionPlan(change)
+            MirrorSyncTable.PRODUCTION_PLAN_ROW.tableName -> db.applyProductionPlanRow(change)
             EXPERIMENT_TABLE_NAME -> applyExperiment(change)
             EXPERIMENT_ENTRY_TABLE_NAME -> applyExperimentEntry(change)
             EXPERIMENT_REMINDER_TABLE_NAME -> applyExperimentReminder(change)
@@ -211,6 +213,7 @@ class MirrorEntityApplyRepository(
             priceForSale = payload.priceForSale,
             shelfLifeDays = payload.shelfLifeDays,
             recNds = payload.recNds,
+            maxMixGrams = payload.maxMixGrams,
             id = existing?.id ?: 0,
             syncId = payload.syncId,
             updatedAt = payload.updatedAt,

@@ -28,6 +28,7 @@ internal class ProductTableComponent(
     searchMatcher = ProductSearchMatcher,
     sortMatcher = ProductSorter,
     repository = repository,
+    itemListPreprocessor = { products -> products.filter { it.type in tableBuilder.fullListProductTypes } },
 ) {
 
     override val columns: ImmutableList<ColumnSpec<ProductTableUi, ProductField, TableData<ProductTableUi>>> =

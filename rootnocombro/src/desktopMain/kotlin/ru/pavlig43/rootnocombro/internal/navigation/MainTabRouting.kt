@@ -25,6 +25,7 @@ internal fun DrawerDestination.toMainTabConfig(): MainTabConfig =
         DrawerDestination.VendorList -> VendorListConfig()
         DrawerDestination.DeclarationList -> DeclarationListConfig()
         DrawerDestination.ProductTransactionList -> TransactionListConfig()
+        DrawerDestination.ProductionPlans -> MainTabConfig.ProductionPlanListConfig()
         DrawerDestination.ExpenseList -> ExpenseListConfig()
         DrawerDestination.Safety -> SafetyListConfig()
         DrawerDestination.SampleTable -> MainTabConfig.SampleTableConfig()

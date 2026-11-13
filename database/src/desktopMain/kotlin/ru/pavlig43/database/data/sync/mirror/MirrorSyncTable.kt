@@ -13,6 +13,8 @@ import ru.pavlig43.database.data.files.FILE_TABLE_NAME
 import ru.pavlig43.database.data.money.MONEY_ACCOUNT_TABLE_NAME
 import ru.pavlig43.database.data.money.MONEY_MOVEMENT_TABLE_NAME
 import ru.pavlig43.database.data.product.COMPOSITION_TABLE_NAME
+import ru.pavlig43.database.data.production.PRODUCTION_PLAN_TABLE
+import ru.pavlig43.database.data.production.PRODUCTION_PLAN_ROW_TABLE
 import ru.pavlig43.database.data.product.PRODUCT_DECLARATION_TABLE_NAME
 import ru.pavlig43.database.data.product.PRODUCT_SPECIFICATION_TABLE_NAME
 import ru.pavlig43.database.data.product.PRODUCT_TABLE_NAME
@@ -58,6 +60,8 @@ enum class MirrorSyncTable(
     MONEY_ACCOUNT(MONEY_ACCOUNT_TABLE_NAME, 19),
     MONEY_MOVEMENT(MONEY_MOVEMENT_TABLE_NAME, 20),
     FILE(FILE_TABLE_NAME, 21),
+    PRODUCTION_PLAN(PRODUCTION_PLAN_TABLE, 22),
+    PRODUCTION_PLAN_ROW(PRODUCTION_PLAN_ROW_TABLE, 23),
     ;
 
     companion object {

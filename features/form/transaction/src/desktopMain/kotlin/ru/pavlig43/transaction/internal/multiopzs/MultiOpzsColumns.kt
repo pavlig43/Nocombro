@@ -35,7 +35,7 @@ internal fun multiOpzsColumns(component: MultiOpzsComponent, running: Boolean) =
             header("Продукт")
             width(180.dp, 270.dp)
             cell { row, _ ->
-                if (running || row.result is OpzsRowResult.Created) {
+                if (running || !row.editable) {
                     Text(row.productName)
                 } else {
                     NameRowWithSearchIcon(
@@ -50,7 +50,7 @@ internal fun multiOpzsColumns(component: MultiOpzsComponent, running: Boolean) =
             width(180.dp, 260.dp)
             cell { row, _ ->
                 val text = if (row.loading) "Загрузка…" else row.declarationName.ifEmpty { "Выбрать декларацию" }
-                if (running || row.result is OpzsRowResult.Created || row.loading || row.productId == 0) {
+                if (running || !row.editable || row.loading || row.productId == 0) {
                     Text(text)
                 } else {
                     NameRowWithSearchIcon(text = text, onClick = { component.openDeclaration(row.syncId) })
@@ -88,7 +88,7 @@ internal fun multiOpzsColumns(component: MultiOpzsComponent, running: Boolean) =
                     ""
                 }) else column.title,
                 cell = { row, data ->
-                    if (!running && row.result !is OpzsRowResult.Created) {
+                    if (!running && row.editable) {
                         Checkbox(
                             checked = row.composeId in data.selectedIds,
                             onCheckedChange = {
@@ -105,9 +105,9 @@ internal fun multiOpzsColumns(component: MultiOpzsComponent, running: Boolean) =
             val editor = column.editCell
             column.copy(
                 width = 110.dp, minWidth = 90.dp, autoWidth = false,
-                canStartEdit = { row, _ -> !running && row.result !is OpzsRowResult.Created },
+                canStartEdit = { row, _ -> !running && row.editable },
                 editCell = { row, data, onComplete ->
-                    if (running || row.result is OpzsRowResult.Created) Text(row.count.toString())
+                    if (running || !row.editable) Text(row.count.toString())
                     else editor?.invoke(this, row, data, onComplete)
                 },
             )
@@ -120,4 +120,5 @@ private fun OpzsRowResult.displayText(): String = when (this) {
     OpzsRowResult.Creating -> "Создаётся…"
     is OpzsRowResult.Created -> "ОПЗС №$transactionId создана и проведена"
     is OpzsRowResult.Failed -> reason
+    is OpzsRowResult.Unavailable -> reason
 }

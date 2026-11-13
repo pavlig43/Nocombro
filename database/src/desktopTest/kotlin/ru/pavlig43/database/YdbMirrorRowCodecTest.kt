@@ -8,6 +8,7 @@ import ru.pavlig43.database.data.sync.mirror.MirrorSyncTable
 import ru.pavlig43.database.data.sync.mirror.MoneyAccountYdbMirrorCodec
 import ru.pavlig43.database.data.sync.mirror.MoneyMovementYdbMirrorCodec
 import ru.pavlig43.database.data.sync.mirror.ProductYdbMirrorCodec
+import ru.pavlig43.database.data.sync.mirror.ProductionPlanItemYdbMirrorCodec
 import ru.pavlig43.database.data.sync.mirror.TransactionYdbMirrorCodec
 import ru.pavlig43.database.data.sync.mirror.VendorYdbMirrorCodec
 import ru.pavlig43.database.data.sync.mirror.YdbMirrorJdbcConfig
@@ -16,6 +17,14 @@ import ru.pavlig43.testkit.DesktopMainDispatcherFunSpec
 
 /** Проверяет SQL и типы колонок codec, включая атомарный условный `UPSERT`. */
 class YdbMirrorRowCodecTest : DesktopMainDispatcherFunSpec({
+    test("production plan numeric columns use matching YDB types") {
+        ProductYdbMirrorCodec.conditionalBatchUpsertSql("product") shouldContain "p12: Int64?"
+        val sql = ProductionPlanItemYdbMirrorCodec.conditionalBatchUpsertSql("production_plan_row")
+        sql shouldContain "p4: Int32?"
+        sql shouldContain "p5: Int64?"
+        sql shouldContain "p6: Int64?"
+    }
+
     test("mirror table path uses optional root") {
         val config = YdbMirrorJdbcConfig(
             jdbcUrl = "jdbc:ydb:test",

@@ -32,10 +32,13 @@ internal class MultiOpzsComponent(
     private val service: CreateOpzsService,
     private val tableDependencies: ImmutableTableDependencies,
     private val tabOpener: TabOpener,
+    private val planId: Int? = null,
     private val onBack: () -> Unit,
 ) : ComponentContext by componentContext {
     private val coroutineScope = componentCoroutineScope()
-    private val _state = MutableStateFlow(MultiOpzsState())
+    private val _state = MutableStateFlow(
+        if (planId == null) MultiOpzsState() else MultiOpzsState(rows = emptyList(), loadingPlan = true)
+    )
     val state = _state.asStateFlow()
     private val navigation = SlotNavigation<MultiOpzsDialog>()
     val dialog = childSlot(
@@ -45,8 +48,22 @@ internal class MultiOpzsComponent(
         childFactory = ::createDialog,
     )
 
+    fun loadPlan() {
+        val id = planId ?: return
+        coroutineScope.launch {
+            try {
+                val rows = service.loadPlan(id)
+                _state.update { it.copy(rows = rows, loadingPlan = false, finished = rows.any { row -> !row.editable }) }
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (error: Exception) {
+                _state.update { it.copy(loadingPlan = false, planError = error.message ?: "Не удалось открыть план") }
+            }
+        }
+    }
+
     fun addRow() {
-        if (!_state.value.running) _state.update {
+        if (!_state.value.running && !_state.value.loadingPlan) _state.update {
             val id = (it.rows.maxOfOrNull(MultiOpzsRow::composeId) ?: -1) + 1
             it.copy(rows = it.rows + MultiOpzsRow(composeId = id))
         }
@@ -66,12 +83,12 @@ internal class MultiOpzsComponent(
             MutableUiEvent.CreateNewItem -> addRow()
             MutableUiEvent.DeleteSelected -> _state.update { state ->
                 state.copy(
-                    rows = state.rows.filterNot { it.composeId in state.selectedIds && it.result !is OpzsRowResult.Created },
+                    rows = state.rows.filterNot { it.composeId in state.selectedIds && it.editable },
                     selectedIds = emptySet(),
                 )
             }
             is MutableUiEvent.Selection -> _state.update { state ->
-                val editable = state.rows.filterNot { it.result is OpzsRowResult.Created }.map { it.composeId }.toSet()
+                val editable = state.rows.filter(MultiOpzsRow::editable).map { it.composeId }.toSet()
                 val selected = when (val selection = event.selectionUiEvent) {
                     SelectionUiEvent.ClearSelection -> emptySet()
                     is SelectionUiEvent.ToggleSelection -> if (selection.id in state.selectedIds) {
@@ -142,12 +159,12 @@ internal class MultiOpzsComponent(
     /** Проверяет весь список до первой записи и затем ждёт сохранения каждой строки. */
     fun create() {
         val snapshot = _state.value
-        if (snapshot.running || snapshot.rows.any { it.loading }) return
-        val pending = snapshot.rows.filterNot { it.result is OpzsRowResult.Created }
+        if (snapshot.running || snapshot.loadingPlan || snapshot.rows.any { it.loading }) return
+        val pending = snapshot.rows.filter(MultiOpzsRow::editable)
         if (pending.isEmpty()) return
         navigation.dismiss()
         _state.update { it.copy(running = true, finished = false, selectedIds = emptySet(), rows = it.rows.map { row ->
-            if (row.result is OpzsRowResult.Created) row else row.copy(result = OpzsRowResult.Waiting)
+            if (row.editable) row.copy(result = OpzsRowResult.Waiting) else row
         }) }
         coroutineScope.launch {
             try {
@@ -184,7 +201,7 @@ internal class MultiOpzsComponent(
     }
 
     private fun row(key: String) = _state.value.rows.find { it.syncId == key }
-    private fun canEdit(key: String) = !_state.value.running && row(key)?.result !is OpzsRowResult.Created
+    private fun canEdit(key: String) = !_state.value.running && row(key)?.editable == true
     private fun updateRow(key: String, transform: (MultiOpzsRow) -> MultiOpzsRow) {
         _state.update { it.copy(rows = it.rows.map { row -> if (row.syncId == key) transform(row) else row }) }
     }

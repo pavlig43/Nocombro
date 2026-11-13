@@ -11,6 +11,9 @@ interface MirrorDeletionJournalDao {
     @Query("SELECT * FROM $MIRROR_DELETION_JOURNAL_TABLE_NAME")
     suspend fun getAll(): List<MirrorDeletionJournalEntity>
 
+    @Query("SELECT EXISTS(SELECT 1 FROM $MIRROR_DELETION_JOURNAL_TABLE_NAME WHERE entity_table = :table AND sync_id = :syncId)")
+    suspend fun contains(table: String, syncId: String): Boolean
+
     /**
      * Добавляет или обновляет tombstone по паре `entity_table + sync_id`.
      *

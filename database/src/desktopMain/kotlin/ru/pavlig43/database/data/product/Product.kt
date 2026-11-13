@@ -55,6 +55,8 @@ data class Product(
 
     @ColumnInfo("deleted_at")
     val deletedAt: LocalDateTime? = null,
+    @ColumnInfo("max_mix_grams")
+    val maxMixGrams: Long? = null,
 ) : SingleItem
 
 

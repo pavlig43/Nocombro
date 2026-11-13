@@ -74,6 +74,8 @@ import ru.pavlig43.storage.api.component.batchMovement.BatchMovementComponent
 import ru.pavlig43.storage.api.component.storage.StorageComponent
 import ru.pavlig43.tablecore.model.IMultiLineTableUi
 import ru.pavlig43.transaction.api.component.TransactionFormComponent
+import ru.pavlig43.transaction.api.component.ProductionPlanComponent
+import ru.pavlig43.transaction.api.component.ProductionPlansComponent
 import ru.pavlig43.vendor.api.component.VendorFormComponent
 
 internal class MainTabNavigationComponent(
@@ -95,7 +97,26 @@ internal class MainTabNavigationComponent(
     )
 
     fun openScreenFromDrawer(destination: DrawerDestination) {
+        if (destination == DrawerDestination.ProductionPlans) {
+            openOrSelect(MainTabConfig.ProductionPlanListConfig()) { it is MainTabConfig.ProductionPlanListConfig }
+            return
+        }
         tabNavigationComponent.addTab(destination.toMainTabConfig())
+    }
+
+    private fun openOrSelect(config: MainTabConfig, matches: (MainTabConfig) -> Boolean) {
+        val index = tabNavigationComponent.tabChildren.value.items.indexOfFirst { matches(it.configuration) }
+        if (index < 0) tabNavigationComponent.addTab(config) else tabNavigationComponent.onSelectTab(index)
+    }
+
+    private fun openProductionPlan(id: Int) {
+        val config = MainTabConfig.ProductionPlanConfig(id)
+        if (id == 0) tabNavigationComponent.addTab(config)
+        else openOrSelect(config) { it is MainTabConfig.ProductionPlanConfig && it.id == id }
+    }
+
+    private fun openPlannedMultiOpzs(id: Int) {
+        openOrSelect(TransactionFormConfig(0, id)) { it is TransactionFormConfig && it.productionPlanId == id }
     }
 
     // Создаём tabOpener раньше, чем tabNavigationComponent
@@ -109,6 +130,17 @@ internal class MainTabNavigationComponent(
             tabChildFactory = { context, mainTabConfig: MainTabConfig, onCloseTab: () -> Unit ->
                 when (mainTabConfig) {
                     is NotificationConfig -> NotificationChild(notificationComponent)
+
+                    is MainTabConfig.ProductionPlanListConfig -> MainTabChild.ProductionPlansChild(
+                        ProductionPlansComponent(context, scope.get(), ::openProductionPlan)
+                    )
+
+                    is MainTabConfig.ProductionPlanConfig -> MainTabChild.ProductionPlanChild(
+                        ProductionPlanComponent(
+                            context, mainTabConfig.id, scope.get(), tabOpener,
+                            ::openProductionPlan, ::openPlannedMultiOpzs, onCloseTab,
+                        ).also { it.start() }
+                    )
 
                     is AnalyticConfig -> MainMoneyChild(
                         AnalyticMainComponent(
@@ -322,7 +354,8 @@ internal class MainTabNavigationComponent(
                     transactionId = tabConfig.id,
                     componentContext = context,
                     dependencies = scope.get(),
-                    tabOpener = tabOpener
+                    tabOpener = tabOpener,
+                    productionPlanId = tabConfig.productionPlanId,
                 )
             )
 

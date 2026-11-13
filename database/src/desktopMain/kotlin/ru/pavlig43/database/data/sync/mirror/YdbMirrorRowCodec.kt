@@ -210,6 +210,7 @@ internal object ProductYdbMirrorCodec : YdbMirrorRowCodec {
         "rec_nds",
         "updated_at",
         "deleted_at",
+        "max_mix_grams",
     )
 
     @Suppress("MagicNumber")
@@ -226,6 +227,7 @@ internal object ProductYdbMirrorCodec : YdbMirrorRowCodec {
         statement.setInt(9, row.recNds)
         statement.setString(10, row.updatedAt.toString())
         statement.setString(11, row.deletedAt?.toString())
+        row.maxMixGrams?.let { statement.setLong(12, it) } ?: statement.setNull(12, java.sql.Types.BIGINT)
     }
 
     override fun read(resultSet: ResultSet): MirrorSyncRow {
@@ -239,6 +241,7 @@ internal object ProductYdbMirrorCodec : YdbMirrorRowCodec {
             priceForSale = resultSet.getLong("price_for_sale"),
             shelfLifeDays = resultSet.getInt("shelf_life_days"),
             recNds = resultSet.getInt("rec_nds"),
+            maxMixGrams = resultSet.getLong("max_mix_grams").let { if (resultSet.wasNull()) null else it },
             updatedAt = LocalDateTime.parse(resultSet.getString("updated_at")),
             deletedAt = resultSet.getString("deleted_at")?.let(LocalDateTime::parse),
         )
@@ -326,6 +329,8 @@ internal val supportedYdbMirrorCodecs: Map<MirrorSyncTable, YdbMirrorRowCodec> =
     ProductYdbMirrorCodec,
     TransactionYdbMirrorCodec,
     ExperimentYdbMirrorCodec,
+    ProductionPlanYdbMirrorCodec,
+    ProductionPlanItemYdbMirrorCodec,
     ProductSpecificationYdbMirrorCodec,
     SafetyStockYdbMirrorCodec,
     ExperimentEntryYdbMirrorCodec,
@@ -353,10 +358,14 @@ private fun columnType(columnName: String): String {
         "count",
         "amount",
         "price",
+        "max_mix_grams",
+        "planned_grams",
+        "package_grams",
         -> "Int64"
         "shelf_life_days",
         "rec_nds",
         "nds_percent",
+        "row_position",
         -> "Int32"
         "is_completed",
         "is_archived",

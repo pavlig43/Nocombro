@@ -5,6 +5,7 @@ import ru.pavlig43.core.model.ChangeSet
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.database.data.transact.Transact
+import ru.pavlig43.database.data.transact.TRANSACTION_TABLE_NAME
 import ru.pavlig43.database.data.transact.TransactionType
 import ru.pavlig43.database.data.transact.ingredient.IngredientBD
 import ru.pavlig43.database.data.transact.pf.PfBD
@@ -23,6 +24,37 @@ internal class CreateOpzsService(
     private val ingredientsRepository: UpdateCollectionRepository<IngredientBD, IngredientBD>,
     private val batchCostRepository: BatchCostRepository,
 ) {
+    suspend fun loadPlan(planId: Int): List<MultiOpzsRow> = db.inTransaction {
+        require(db.productionPlanDao.getPlan(planId)?.let { it.deletedAt == null } == true) {
+            "План производства недоступен"
+        }
+        db.productionPlanDao.getRows(planId).mapIndexed { index, line ->
+            val product = db.productDao.getProduct(line.productId)
+            val transaction = db.transactionDao.getTransactionBySyncId(line.syncId)
+            val pf = transaction?.takeIf { it.deletedAt == null && it.isCompleted && it.transactionType == TransactionType.OPZS }
+                ?.let { db.pfDao.getPf(it.id) }
+            val declaration = if (transaction == null && product.deletedAt == null) declarations(product.id).singleOrNull() else null
+            val status = when {
+                pf != null -> OpzsRowResult.Created(pf.transactionId)
+                wasDeleted(line.syncId) || transaction?.deletedAt != null ->
+                    OpzsRowResult.Unavailable("ОПЗС удалена")
+                transaction != null -> OpzsRowResult.Unavailable("ОПЗС недоступна")
+                else -> OpzsRowResult.Empty
+            }
+            MultiOpzsRow(
+                composeId = index, syncId = line.syncId,
+                productId = pf?.productId ?: product.id, productName = pf?.productName ?: product.displayName,
+                declarationId = pf?.declarationId ?: declaration?.id ?: 0,
+                declarationName = pf?.declarationName ?: declaration?.displayName.orEmpty(),
+                vendorName = pf?.vendorName ?: declaration?.vendorName.orEmpty(),
+                count = ru.pavlig43.core.model.DecimalData3(pf?.count ?: line.plannedGrams), result = status,
+            )
+        }
+    }
+
+    private suspend fun wasDeleted(syncId: String): Boolean =
+        db.mirrorDeletionJournalDao.contains(TRANSACTION_TABLE_NAME, syncId)
+
     suspend fun declarations(productId: Int): List<Declaration> =
         db.productDeclarationDao.getProductDeclarationIn(productId)
             .map { it.declarationId }.distinct()
@@ -45,6 +77,7 @@ internal class CreateOpzsService(
                 existing.transactionType == TransactionType.OPZS) { "ОПЗС с этим sync_id недоступна" }
             return@inTransaction existing.id
         }
+        check(!wasDeleted(row.syncId)) { "ОПЗС удалена" }
         validate(row)
         val id = db.transactionDao.create(
             Transact(

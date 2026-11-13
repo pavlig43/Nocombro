@@ -25,8 +25,12 @@ internal sealed interface OpzsRowResult {
     data object Waiting : OpzsRowResult
     data object Creating : OpzsRowResult
     data class Created(val transactionId: Int) : OpzsRowResult
+    data class Unavailable(val reason: String) : OpzsRowResult
     data class Failed(val reason: String) : OpzsRowResult
 }
+
+internal val MultiOpzsRow.editable: Boolean
+    get() = result !is OpzsRowResult.Created && result !is OpzsRowResult.Unavailable
 
 @OptIn(ExperimentalTime::class)
 internal data class MultiOpzsState(
@@ -35,11 +39,13 @@ internal data class MultiOpzsState(
     val selectedIds: Set<Int> = emptySet(),
     val running: Boolean = false,
     val finished: Boolean = false,
+    val loadingPlan: Boolean = false,
+    val planError: String? = null,
 ) {
     val createdCount: Int get() = rows.count { it.result is OpzsRowResult.Created }
 
     val validationErrors: List<String> get() = rows.flatMap { row ->
-        if (row.result is OpzsRowResult.Created) emptyList() else buildList {
+        if (!row.editable) emptyList() else buildList {
             val prefix = "Строка ${row.composeId + 1}: "
             if (row.productId == 0) add(prefix + "Выберите продукт")
             if (row.declarationId == 0 && !row.loading) add(prefix + "Выберите декларацию")
@@ -47,7 +53,7 @@ internal data class MultiOpzsState(
         }
     }
 
-    val errorMessages: List<String> get() = (validationErrors + rows.mapNotNull { row ->
+    val errorMessages: List<String> get() = (listOfNotNull(planError) + validationErrors + rows.mapNotNull { row ->
         (row.result as? OpzsRowResult.Failed)?.let { "Строка ${row.composeId + 1}: ${it.reason}" }
     }).distinct()
 }
