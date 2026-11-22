@@ -60,7 +60,7 @@ internal data class ProductEssentialsUi(
     )
     override val inputErrors get() = buildList {
         if (productType == ProductType.FOOD_PF && maxMixGramsState.text.isNotBlank() && maxMixGrams == null) {
-            add("Максимальный замес должен быть больше нуля")
+            add("Масса замеса должна быть больше нуля")
         }
         if (
             priceForSaleState.decimalValue(2) == null ||

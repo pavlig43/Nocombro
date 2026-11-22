@@ -306,9 +306,8 @@ data class FileMirrorRow(
 
 @Serializable
 @SerialName("production_plan")
-data class ProductionPlanMirrorRow(
+data class ProductPlanMirrorRow(
     override val syncId: String,
-    val title: String,
     val createdAt: LocalDateTime,
     override val updatedAt: LocalDateTime,
     override val deletedAt: LocalDateTime? = null,
@@ -316,7 +315,7 @@ data class ProductionPlanMirrorRow(
 
 @Serializable
 @SerialName("production_plan_row")
-data class ProductionPlanItemMirrorRow(
+data class ProductPlanItemMirrorRow(
     override val syncId: String,
     val planSyncId: String,
     val productSyncId: String,

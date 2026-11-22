@@ -8,7 +8,8 @@ import ru.pavlig43.database.data.sync.mirror.MirrorSyncTable
 import ru.pavlig43.database.data.sync.mirror.MoneyAccountYdbMirrorCodec
 import ru.pavlig43.database.data.sync.mirror.MoneyMovementYdbMirrorCodec
 import ru.pavlig43.database.data.sync.mirror.ProductYdbMirrorCodec
-import ru.pavlig43.database.data.sync.mirror.ProductionPlanItemYdbMirrorCodec
+import ru.pavlig43.database.data.sync.mirror.ProductPlanItemYdbMirrorCodec
+import ru.pavlig43.database.data.sync.mirror.ProductPlanYdbMirrorCodec
 import ru.pavlig43.database.data.sync.mirror.TransactionYdbMirrorCodec
 import ru.pavlig43.database.data.sync.mirror.VendorYdbMirrorCodec
 import ru.pavlig43.database.data.sync.mirror.YdbMirrorJdbcConfig
@@ -17,9 +18,10 @@ import ru.pavlig43.testkit.DesktopMainDispatcherFunSpec
 
 /** Проверяет SQL и типы колонок codec, включая атомарный условный `UPSERT`. */
 class YdbMirrorRowCodecTest : DesktopMainDispatcherFunSpec({
-    test("production plan numeric columns use matching YDB types") {
+    test("production plan stores creation time and uses matching YDB numeric types") {
         ProductYdbMirrorCodec.conditionalBatchUpsertSql("product") shouldContain "p12: Int64?"
-        val sql = ProductionPlanItemYdbMirrorCodec.conditionalBatchUpsertSql("production_plan_row")
+        ProductPlanYdbMirrorCodec.columnNames shouldBe listOf("sync_id", "created_at", "updated_at", "deleted_at")
+        val sql = ProductPlanItemYdbMirrorCodec.conditionalBatchUpsertSql("production_plan_row")
         sql shouldContain "p4: Int32?"
         sql shouldContain "p5: Int64?"
         sql shouldContain "p6: Int64?"

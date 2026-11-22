@@ -10,7 +10,7 @@ val MIGRATION_10_11 = object : Migration(10, 11) {
         connection.execSQL(
             """
             CREATE TABLE production_plan (
-                title TEXT NOT NULL, created_at TEXT NOT NULL,
+                created_at TEXT NOT NULL,
                 id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, sync_id TEXT NOT NULL,
                 updated_at TEXT NOT NULL, deleted_at TEXT
             )

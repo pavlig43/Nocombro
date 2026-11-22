@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -46,90 +47,77 @@ import ua.wwind.table.config.DefaultTableCustomization
 import ua.wwind.table.config.SelectionMode
 import ua.wwind.table.config.TableCustomization
 import ua.wwind.table.config.TableDefaults
+import ua.wwind.table.config.TableDimensions
 import ua.wwind.table.config.TableSettings
 import ua.wwind.table.state.TableState
 import ua.wwind.table.strings.StringProvider
 
 @Composable
+@Suppress("LongParameterList")
 fun <I : IMultiLineTableUi, C> MutableTableBox(
     component: MutableTableComponent<*, *, I, C>,
     tableSettingsModify:(TableSettings)-> TableSettings = {it},
     tableCustomization: TableCustomization<I,C> = DefaultTableCustomization(),
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    showExport: Boolean = true,
+    rowKey: (I?, Int) -> Any = { _, index -> index },
+    dimensions: TableDimensions = TableDefaults.standardDimensions(),
+    verticalState: LazyListState = rememberLazyListState(),
 ) {
 
     LoadInitDataScreen(component.initDataComponent) {
-
         val tableData: TableData<I> by component.tableData.collectAsState()
-
         Box(modifier.padding(16.dp)) {
-
-
             TableBox(
                 columns = component.columns,
                 onFiltersChanged = component::updateFilters,
-                tableSettingsModify = { settings ->
-                    tableSettingsModify(settings).copy(
-                        enableTextSelection = false,
-                        selectionMode = SelectionMode.None,
-                    )
-                },
                 onSortChanged = component::updateSort,
                 initialSort = component.sort,
                 initialFilters = component.filters,
-            ) { verticalState, horizontalState, tableState, stringProvider, modifier ->
+                dimensions = dimensions,
+                verticalState = verticalState,
+                tableSettingsModify = { settings ->
+                    tableSettingsModify(settings).copy(enableTextSelection = false, selectionMode = SelectionMode.None)
+                },
+            ) { verticalState, horizontalState, tableState, stringProvider, tableModifier ->
                 MutableTable(
                     columns = component.columns,
                     tableState = tableState,
                     stringProvider = stringProvider,
                     verticalState = verticalState,
                     horizontalState = horizontalState,
-                    items = tableData.displayedItems,
+                    rowKey = rowKey,
                     onEvent = component::onEvent,
                     tableData = tableData,
-                    exportConfiguration = component.exportConfiguration,
+                    exportConfiguration = if (showExport) component.exportConfiguration else null,
                     tableCustomization = tableCustomization,
-                    modifier = modifier
+                    modifier = tableModifier,
                 )
-
             }
-
         }
     }
-
-
 }
-
 
 @Suppress("LongParameterList", "LongMethod","MagicNumber")
 @Composable
-private fun <I : IMultiLineTableUi, C, E : TableData<I>> BoxScope.MutableTable(
-    columns: ImmutableList<ColumnSpec<I, C, E>>,
+private fun <I : IMultiLineTableUi, C> BoxScope.MutableTable(
+    columns: ImmutableList<ColumnSpec<I, C, TableData<I>>>,
     tableState: TableState<C>,
     stringProvider: StringProvider,
     verticalState: LazyListState,
     horizontalState: ScrollState,
-    items: List<I>,
+    rowKey: (I?, Int) -> Any,
     onEvent: (MutableUiEvent) -> Unit,
-    tableData: E,
-    exportConfiguration: TableExportConfiguration<I, C>,
+    tableData: TableData<I>,
+    exportConfiguration: TableExportConfiguration<I, C>?,
     tableCustomization: TableCustomization<I,C>,
     modifier: Modifier
 ) {
-    val coroutineScope = rememberCoroutineScope()
-    var exportErrorMessage by rememberSaveable { mutableStateOf<String?>(null) }
-    var isExportMenuExpanded by rememberSaveable { mutableStateOf(false) }
-    val actionBarTopPadding = 132.dp
-    val exportColumns = buildExportColumns(
-        columns = columns,
-        tableState = tableState,
-        items = items,
-        exportConfiguration = exportConfiguration,
-    )
-
+    val items = tableData.displayedItems
     EditableTable(
         itemsCount = items.size,
         itemAt = { index -> items.getOrNull(index) },
+        rowKey = rowKey,
         state = tableState,
         strings = stringProvider,
         tableData = tableData,
@@ -140,8 +128,30 @@ private fun <I : IMultiLineTableUi, C, E : TableData<I>> BoxScope.MutableTable(
         customization = tableCustomization,
         verticalState = verticalState,
         horizontalState = horizontalState,
-        modifier = modifier.padding(top = actionBarTopPadding)
+        modifier = if (exportConfiguration == null) modifier else modifier.padding(top = 132.dp),
     )
+    if (exportConfiguration != null) {
+        MutableTableExport(columns, tableState, items, exportConfiguration)
+    }
+    SelectionActionBar(
+        selectedCount = tableData.selectedIds.size,
+        onDeleteClick = { onEvent(MutableUiEvent.DeleteSelected) },
+        onClearSelection = { onEvent(MutableUiEvent.Selection(SelectionUiEvent.ClearSelection)) },
+        modifier = Modifier.align(Alignment.BottomCenter).padding(16.dp),
+    )
+}
+
+@Composable
+private fun <I : IMultiLineTableUi, C> BoxScope.MutableTableExport(
+    columns: ImmutableList<ColumnSpec<I, C, TableData<I>>>,
+    tableState: TableState<C>,
+    items: List<I>,
+    exportConfiguration: TableExportConfiguration<I, C>,
+) {
+    val coroutineScope = rememberCoroutineScope()
+    var exportErrorMessage by rememberSaveable { mutableStateOf<String?>(null) }
+    var isExportMenuExpanded by rememberSaveable { mutableStateOf(false) }
+    val exportColumns = buildExportColumns(columns, tableState, items, exportConfiguration)
     ExportActionBar(
         exportConfiguration = exportConfiguration,
         isExportMenuExpanded = isExportMenuExpanded,
@@ -169,21 +179,6 @@ private fun <I : IMultiLineTableUi, C, E : TableData<I>> BoxScope.MutableTable(
                 .padding(top = 138.dp, start = 16.dp, end = 16.dp),
         )
     }
-    SelectionActionBar(
-        selectedCount = tableData.selectedIds.size,
-        onDeleteClick = {
-            onEvent(MutableUiEvent.DeleteSelected)
-        },
-        onClearSelection = {
-            onEvent(MutableUiEvent.Selection(SelectionUiEvent.ClearSelection))
-        },
-//                                liquidState = liquidState,
-        modifier = Modifier
-            .align(Alignment.BottomCenter)
-            .padding(16.dp),
-    )
-
-
 }
 
 /**

@@ -120,5 +120,4 @@ private fun OpzsRowResult.displayText(): String = when (this) {
     OpzsRowResult.Creating -> "Создаётся…"
     is OpzsRowResult.Created -> "ОПЗС №$transactionId создана и проведена"
     is OpzsRowResult.Failed -> reason
-    is OpzsRowResult.Unavailable -> reason
 }

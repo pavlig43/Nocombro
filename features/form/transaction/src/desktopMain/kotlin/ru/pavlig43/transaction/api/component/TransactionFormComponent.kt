@@ -33,7 +33,7 @@ class TransactionFormComponent(
     private val tabOpener: TabOpener,
     componentContext: ComponentContext,
     dependencies: TransactionFormDependencies,
-    productionPlanId: Int? = null,
+    productPlanId: Int? = null,
 ) : ComponentContext by componentContext, MainTabComponent {
 
     private val koinContext = instanceKeeper.getOrCreate {
@@ -44,7 +44,7 @@ class TransactionFormComponent(
         koinContext.getOrCreateKoinScope(createTransactionFormModule(dependencies))
 
     private val _model = MutableStateFlow(MainTabComponent.NavTabState(
-        if (productionPlanId == null) "" else "*МультиОПЗС"
+        if (productPlanId == null) "" else "*МультиОПЗС"
     ))
     override val model = _model.asStateFlow()
 
@@ -118,7 +118,7 @@ class TransactionFormComponent(
         source = stackNavigation,
         serializer = Config.serializer(),
         initialConfiguration = when {
-            productionPlanId != null -> Config.PlannedMultiOpzs(productionPlanId)
+            productPlanId != null -> Config.PlannedMultiOpzs(productPlanId)
             transactionId == 0 -> Config.Create
             else -> Config.Update(transactionId)
         },

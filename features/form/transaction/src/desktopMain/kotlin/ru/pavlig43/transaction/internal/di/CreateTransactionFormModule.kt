@@ -336,7 +336,7 @@ private class ExpensesCollectionRepository(
 
 
 private class PfUpdateRepository(
-    db: NocombroDatabase
+    private val db: NocombroDatabase,
 ) : UpdateSingleLineRepository<PfBD> {
 
     private val pfDao = db.pfDao
@@ -353,34 +353,49 @@ private class PfUpdateRepository(
         if (changeSet.old == changeSet.new) return Result.success(Unit)
 
         return runCatching {
-            val pf = changeSet.new
+            db.inTransaction {
+                val pf = changeSet.new
+                val batchId = if (pf.batchId == 0) {
+                    batchDao.createBatch(
+                        BatchBD(
+                            id = 0,
+                            productId = pf.productId,
+                            dateBorn = pf.dateBorn,
+                            declarationId = pf.declarationId,
+                        ),
+                    ).toInt()
+                } else {
+                    val batch = batchDao.getBatch(pf.batchId)
+                    batchDao.updateBatch(
+                        batch.copy(
+                            productId = pf.productId,
+                            dateBorn = pf.dateBorn,
+                            declarationId = pf.declarationId,
+                            updatedAt = defaultUpdatedAt(batch.updatedAt),
+                        ),
+                    )
+                    batch.id
+                }
 
-            // 1. Создаём/обновляем Batch
-            val batch = BatchBD(
-                id = pf.batchId,
-                productId = pf.productId,
-                dateBorn = pf.dateBorn,
-                declarationId = pf.declarationId
-            )
-            val batchId = if (batch.id == 0) {
-                batchDao.createBatch(batch).toInt()
-            } else {
-                batchDao.updateBatch(batch)
-                batch.id
-            }
-
-            // 2. Создаём/обновляем BatchMovement INCOMING
-            val movement = BatchMovement(
-                batchId = batchId,
-                movementType = MovementType.INCOMING,
-                count = pf.count,
-                transactionId = pf.transactionId,
-                id = pf.movementId
-            )
-            if (movement.id == 0) {
-                movementDao.createMovement(movement)
-            } else {
-                movementDao.upsertMovement(movement)
+                if (pf.movementId == 0) {
+                    movementDao.createMovement(
+                        BatchMovement(
+                            batchId = batchId,
+                            movementType = MovementType.INCOMING,
+                            count = pf.count,
+                            transactionId = pf.transactionId,
+                        ),
+                    )
+                } else {
+                    val movement = movementDao.getMovement(pf.movementId)
+                    movementDao.upsertMovement(
+                        movement.copy(
+                            batchId = batchId,
+                            count = pf.count,
+                            updatedAt = defaultUpdatedAt(movement.updatedAt),
+                        ),
+                    )
+                }
             }
         }
     }

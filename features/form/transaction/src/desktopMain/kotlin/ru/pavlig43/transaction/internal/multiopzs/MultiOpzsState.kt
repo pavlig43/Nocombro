@@ -18,19 +18,21 @@ internal data class MultiOpzsRow(
     val count: DecimalData3 = DecimalData3(0),
     val loading: Boolean = false,
     val result: OpzsRowResult = OpzsRowResult.Empty,
+    val plannedBatching: PlannedBatching? = null,
 ) : IMultiLineTableUi
+
+internal data class PlannedBatching(val productId: Int, val plannedGrams: Long, val packageGrams: Long)
 
 internal sealed interface OpzsRowResult {
     data object Empty : OpzsRowResult
     data object Waiting : OpzsRowResult
     data object Creating : OpzsRowResult
     data class Created(val transactionId: Int) : OpzsRowResult
-    data class Unavailable(val reason: String) : OpzsRowResult
     data class Failed(val reason: String) : OpzsRowResult
 }
 
 internal val MultiOpzsRow.editable: Boolean
-    get() = result !is OpzsRowResult.Created && result !is OpzsRowResult.Unavailable
+    get() = result !is OpzsRowResult.Created
 
 @OptIn(ExperimentalTime::class)
 internal data class MultiOpzsState(

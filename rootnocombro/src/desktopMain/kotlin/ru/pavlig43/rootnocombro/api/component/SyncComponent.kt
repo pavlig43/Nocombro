@@ -18,8 +18,11 @@ import ru.pavlig43.core.componentCoroutineScope
 import ru.pavlig43.database.data.files.remote.RemoteFileBatchDownloadSummary
 import ru.pavlig43.database.data.sync.SyncService
 import ru.pavlig43.database.data.sync.SyncStatusSnapshot
+import ru.pavlig43.datastore.CachedSyncStatus
 import ru.pavlig43.datastore.SyncCheckAttemptStore
 import java.awt.Desktop
+import java.io.IOException
+import java.util.logging.Logger
 
 /**
  * Компонент шапки, который хранит локальное состояние синхронизации для интерфейса.
@@ -47,8 +50,17 @@ class SyncComponent(
         if (initialStatusLoaded) return@launchExclusive
         initialStatusLoaded = true
         beginAction("Загрузка состояния")
-        val localStatus = withContext(Dispatchers.IO) { syncService.getLocalStatus() }
+        val (localStatus, cachedStatus) = withContext(Dispatchers.IO) {
+            val status = syncService.getLocalStatus()
+            val cached = if (status.remoteSyncConfigured && !status.hasCheckedStatus) {
+                syncCheckAttemptStore.loadCachedStatus()
+            } else {
+                null
+            }
+            status to cached
+        }
         updateUiState(localStatus, isSyncRunning = true, lastError = null)
+        cachedStatus?.let(::restoreCheckedStatus)
 
         val shouldCheckRemote = withContext(Dispatchers.IO) {
             syncCheckAttemptStore.tryRecordBackgroundAttempt(
@@ -172,7 +184,7 @@ class SyncComponent(
     }
 
     @Suppress("LongParameterList")
-    private fun updateUiState(
+    private suspend fun updateUiState(
         status: SyncStatusSnapshot,
         isSyncRunning: Boolean,
         lastError: String?,
@@ -180,12 +192,15 @@ class SyncComponent(
         lastPullAt: LocalDateTime? = null,
         lastFilesDownloadSummary: String? = null,
     ) {
+        val error = lastError ?: status.remoteError
+        if (!isSyncRunning && error == null) saveCheckedStatus(status)
         _uiState.update {
             it.copy(
                 pendingLocalChangesCount = status.pendingLocalChangesCount,
                 remoteChangesCount = status.remoteChangesCount,
                 hasRemoteChanges = status.hasRemoteChanges,
                 hasCheckedStatus = status.hasCheckedStatus,
+                isCachedStatus = false,
                 conflictsCount = status.conflicts.size,
                 isSyncRunning = isSyncRunning,
                 remoteSyncConfigured = status.remoteSyncConfigured,
@@ -196,10 +211,42 @@ class SyncComponent(
                 htmlReportSnapshotAt = status.htmlReportSnapshotAt,
                 lastSyncAt = lastSyncAt ?: status.lastSyncAt,
                 lastPullAt = lastPullAt ?: status.lastPullAt,
-                lastError = lastError ?: status.remoteError,
+                lastError = error,
                 lastFilesDownloadSummary = lastFilesDownloadSummary ?: it.lastFilesDownloadSummary,
                 runningActionLabel = null,
             )
+        }
+    }
+
+    private fun restoreCheckedStatus(status: CachedSyncStatus) {
+        val checkedAt = runCatching { LocalDateTime.parse(status.checkedAt) }.getOrNull() ?: return
+        _uiState.update { current ->
+            current.copy(
+                pendingLocalChangesCount = status.pendingLocalChangesCount,
+                remoteChangesCount = status.remoteChangesCount,
+                hasRemoteChanges = status.hasRemoteChanges,
+                conflictsCount = status.conflictsCount,
+                hasCheckedStatus = true,
+                isCachedStatus = true,
+                lastStatusCheckAt = checkedAt,
+            )
+        }
+    }
+
+    private suspend fun saveCheckedStatus(status: SyncStatusSnapshot) {
+        val checkedAt = status.lastStatusCheckAt ?: return
+        if (!status.hasCheckedStatus || !status.remoteSyncConfigured) return
+        val cached = CachedSyncStatus(
+            checkedAt = checkedAt.toString(),
+            pendingLocalChangesCount = status.pendingLocalChangesCount,
+            remoteChangesCount = status.remoteChangesCount,
+            hasRemoteChanges = status.hasRemoteChanges,
+            conflictsCount = status.conflicts.size,
+        )
+        try {
+            withContext(Dispatchers.IO) { syncCheckAttemptStore.saveStatus(cached) }
+        } catch (exception: IOException) {
+            Logger.getLogger(SyncComponent::class.java.name).warning("Не удалось сохранить статус: ${exception.message}")
         }
     }
 
@@ -235,6 +282,7 @@ class SyncComponent(
                         isSyncRunning = false,
                         runningActionLabel = null,
                         hasCheckedStatus = false,
+                        isCachedStatus = false,
                         lastError = syncOperationErrorMessage(throwable),
                     )
                 }
@@ -255,6 +303,7 @@ data class SyncUiState(
     val remoteChangesCount: Int = 0,
     val hasRemoteChanges: Boolean = false,
     val hasCheckedStatus: Boolean = false,
+    val isCachedStatus: Boolean = false,
     val conflictsCount: Int = 0,
     val isSyncRunning: Boolean = false,
     val remoteSyncConfigured: Boolean = false,
@@ -275,10 +324,15 @@ internal fun SyncUiState.statusSummary(): String = when {
     lastError != null -> "Операция синхронизации завершилась с ошибкой"
     !remoteSyncConfigured -> "Синхронизация не настроена"
     !hasCheckedStatus -> "Статус изменений не проверен"
-    conflictsCount > 0 -> "Есть конфликты: $conflictsCount"
-    hasRemoteChanges -> "В облаке есть изменения для получения"
-    pendingLocalChangesCount > 0 -> "Есть изменения для отправки"
-    else -> "Расхождений нет"
+    else -> {
+        val summary = when {
+            conflictsCount > 0 -> "Есть конфликты: $conflictsCount"
+            hasRemoteChanges -> "В облаке есть изменения для получения"
+            pendingLocalChangesCount > 0 -> "Есть изменения для отправки"
+            else -> "Расхождений нет"
+        }
+        if (isCachedStatus) "По последней проверке ${summary.replaceFirstChar { it.lowercaseChar() }}" else summary
+    }
 }
 
 internal fun syncOperationErrorMessage(throwable: Throwable): String = when (throwable) {

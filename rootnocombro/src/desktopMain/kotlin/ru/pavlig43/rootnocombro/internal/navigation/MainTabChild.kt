@@ -16,8 +16,7 @@ import ru.pavlig43.sampletable.api.component.SampleTableComponent
 import ru.pavlig43.storage.api.component.batchMovement.BatchMovementComponent
 import ru.pavlig43.storage.api.component.storage.StorageComponent
 import ru.pavlig43.transaction.api.component.TransactionFormComponent
-import ru.pavlig43.transaction.api.component.ProductionPlanComponent
-import ru.pavlig43.transaction.api.component.ProductionPlansComponent
+import ru.pavlig43.transaction.api.component.ProductPlanComponent
 import ru.pavlig43.vendor.api.component.VendorFormComponent
 
 internal sealed interface MainTabChild {
@@ -30,8 +29,7 @@ internal sealed interface MainTabChild {
     class StorageChild(override val component: StorageComponent) : MainTabChild
 
     class ExperimentsChild(override val component: ExperimentsComponent) : MainTabChild
-    class ProductionPlansChild(override val component: ProductionPlansComponent) : MainTabChild
-    class ProductionPlanChild(override val component: ProductionPlanComponent) : MainTabChild
+    class ProductPlanChild(override val component: ProductPlanComponent) : MainTabChild
 
     class MainMoneyChild(override val component: AnalyticMainComponent) : MainTabChild
 

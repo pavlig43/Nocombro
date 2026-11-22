@@ -2,6 +2,7 @@ package ru.pavlig43.rootnocombro.api.component
 
 import io.kotest.matchers.shouldBe
 import org.koin.dsl.koinApplication
+import ru.pavlig43.datastore.CachedSyncStatus
 import ru.pavlig43.datastore.DATASTORE_PATH_PROPERTY
 import ru.pavlig43.datastore.SyncCheckAttemptStore
 import ru.pavlig43.datastore.getSettingsRepository
@@ -21,11 +22,15 @@ class SyncCheckAttemptStoreTest : DesktopMainDispatcherFunSpec({
             val store = application.koin.get<SyncCheckAttemptStore>()
             val firstAttemptAt = 10_000_000L
 
+            store.loadCachedStatus() shouldBe null
             store.tryRecordBackgroundAttempt(firstAttemptAt, ONE_HOUR_MILLIS) shouldBe true
+            val snapshot = CachedSyncStatus("2026-11-22T00:46", 2, 7, true, 1)
+            store.saveStatus(snapshot)
             store.tryRecordBackgroundAttempt(
                 firstAttemptAt + ONE_HOUR_MILLIS - 1,
                 ONE_HOUR_MILLIS,
             ) shouldBe false
+            store.loadCachedStatus() shouldBe snapshot
             store.tryRecordBackgroundAttempt(
                 firstAttemptAt + ONE_HOUR_MILLIS,
                 ONE_HOUR_MILLIS,

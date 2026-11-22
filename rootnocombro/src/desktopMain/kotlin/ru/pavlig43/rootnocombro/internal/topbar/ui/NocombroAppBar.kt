@@ -360,6 +360,7 @@ private fun copySyncSnapshotToClipboard(
         appendLine("sync.remote_changes=${syncUiState.remoteChangesCount}")
         appendLine("sync.has_remote_changes=${syncUiState.hasRemoteChanges}")
         appendLine("sync.status_checked=${syncUiState.hasCheckedStatus}")
+        appendLine("sync.status_cached=${syncUiState.isCachedStatus}")
         appendLine("sync.conflicts=${syncUiState.conflictsCount}")
         appendLine("sync.last_sync_at=${syncUiState.lastSyncAt}")
         appendLine("sync.last_pull_at=${syncUiState.lastPullAt}")

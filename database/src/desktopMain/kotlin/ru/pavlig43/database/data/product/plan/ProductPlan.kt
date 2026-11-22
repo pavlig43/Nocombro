@@ -1,4 +1,4 @@
-package ru.pavlig43.database.data.production
+package ru.pavlig43.database.data.product.plan
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
@@ -14,8 +14,7 @@ const val PRODUCTION_PLAN_TABLE = "production_plan"
 const val PRODUCTION_PLAN_ROW_TABLE = "production_plan_row"
 
 @Entity(tableName = PRODUCTION_PLAN_TABLE, indices = [Index(value = ["sync_id"], unique = true)])
-data class ProductionPlan(
-    val title: String,
+data class ProductPlan(
     @ColumnInfo("created_at") val createdAt: LocalDateTime,
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     @ColumnInfo("sync_id") val syncId: String = defaultSyncId(),
@@ -27,7 +26,7 @@ data class ProductionPlan(
     tableName = PRODUCTION_PLAN_ROW_TABLE,
     foreignKeys = [
         ForeignKey(
-            entity = ProductionPlan::class, parentColumns = ["id"], childColumns = ["plan_id"],
+            entity = ProductPlan::class, parentColumns = ["id"], childColumns = ["plan_id"],
             onDelete = ForeignKey.CASCADE,
         ),
         ForeignKey(
@@ -37,7 +36,7 @@ data class ProductionPlan(
     ],
     indices = [Index("plan_id"), Index("product_id"), Index(value = ["sync_id"], unique = true)],
 )
-data class ProductionPlanRow(
+data class ProductPlanRow(
     @ColumnInfo("plan_id") val planId: Int,
     @ColumnInfo("product_id") val productId: Int,
     val position: Int,

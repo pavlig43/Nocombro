@@ -43,6 +43,7 @@ fun <I : IMultiLineTableUi, C, E : TableData<I>> TableBox(
     dimensions: TableDimensions = TableDefaults.standardDimensions(),
     tableModifier: Modifier = Modifier.fillMaxWidth().padding(end = 16.dp, bottom = 16.dp),
     subtleScrollbars: Boolean = false,
+    verticalState: LazyListState = rememberLazyListState(),
     table: @Composable BoxScope.(
         verticalState: LazyListState,
         horizontalState: ScrollState,
@@ -82,7 +83,6 @@ fun <I : IMultiLineTableUi, C, E : TableData<I>> TableBox(
         snapshotFlow { state.sort }.collect { sort -> onSortChanged(sort) }
     }
 
-    val verticalState = rememberLazyListState()
     val horizontalState = rememberScrollState()
     Box(modifier = modifier) {
         table(

@@ -1,6 +1,8 @@
 package ru.pavlig43.database.data.sync.mirror
 
+import kotlinx.datetime.format
 import ru.pavlig43.database.data.files.OwnerType
+import ru.pavlig43.datetime.dateTimeWithSecondsFormat
 
 /**
  * Строит человекочитаемые подписи mirror rows для диагностики и аудита.
@@ -64,8 +66,8 @@ class MirrorDisplayLabelResolver(
             is ReminderMirrorRow ->
                 "${row.text} · ${nameOf(MirrorSyncTable.TRANSACTION, row.transactionSyncId)}"
             is ExpenseMirrorRow -> "${row.expenseType} · ${row.comment.ifBlank { row.amount.toString() }}"
-            is ProductionPlanMirrorRow -> row.title
-            is ProductionPlanItemMirrorRow ->
+            is ProductPlanMirrorRow -> row.createdAt.format(dateTimeWithSecondsFormat)
+            is ProductPlanItemMirrorRow ->
                 "${nameOf(MirrorSyncTable.PRODUCTION_PLAN, row.planSyncId)} · " +
                     nameOf(MirrorSyncTable.PRODUCT, row.productSyncId)
             is ExperimentMirrorRow -> row.title
@@ -96,7 +98,7 @@ class MirrorDisplayLabelResolver(
             is ProductMirrorRow -> row.displayName
             is BatchMirrorRow ->
                 "Партия ${nameOf(MirrorSyncTable.PRODUCT, row.productSyncId)} от ${row.dateBorn}"
-            is ProductionPlanMirrorRow -> row.title
+            is ProductPlanMirrorRow -> row.createdAt.format(dateTimeWithSecondsFormat)
             is TransactionMirrorRow -> "${row.transactionType} от ${row.createdAt.date}"
             is ExperimentMirrorRow -> row.title
             is ExperimentEntryMirrorRow ->

@@ -19,8 +19,8 @@ class DatabaseMigration10To11Test : FunSpec({
                 it.isNull(1) shouldBe true
             }
             connection.execSQL("""
-                INSERT INTO production_plan (id, title, created_at, sync_id, updated_at)
-                VALUES (1, 'План', '2026-01-01T00:00:00', 'plan', '2026-01-01T00:00:00')
+                INSERT INTO production_plan (id, created_at, sync_id, updated_at)
+                VALUES (1, '2026-01-01T00:00:00', 'plan', '2026-01-01T00:00:00')
             """.trimIndent())
             connection.execSQL("""
                 INSERT INTO production_plan_row (plan_id, product_id, position, planned_grams, package_grams, sync_id, updated_at)

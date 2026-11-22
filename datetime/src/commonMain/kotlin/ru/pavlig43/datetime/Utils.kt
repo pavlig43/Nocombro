@@ -208,6 +208,17 @@ val dateFormat = LocalDate.Format {
     year()
 
 }
+
+val dateTimeWithSecondsFormat = LocalDateTime.Format {
+    date(dateFormat)
+    char(' ')
+    hour()
+    char(':')
+    minute()
+    char(':')
+    second()
+}
+
 @Suppress("MagicNumber")
 val emptyDate = LocalDate(1900, 1, 1)
 

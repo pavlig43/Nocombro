@@ -17,6 +17,13 @@ class SyncUiStateTest : DesktopMainDispatcherFunSpec({
             .statusSummary() shouldBe "Операция синхронизации завершилась с ошибкой"
     }
 
+    test("a restored result is labeled as the last check") {
+        val restored = SyncUiState(remoteSyncConfigured = true, hasCheckedStatus = true, isCachedStatus = true)
+        restored.statusSummary() shouldBe "По последней проверке расхождений нет"
+        restored.copy(remoteChangesCount = 3, hasRemoteChanges = true).statusSummary() shouldBe
+            "По последней проверке в облаке есть изменения для получения"
+    }
+
     test("local winners remote winners and conflicts cannot be described as synchronized") {
         val checked = SyncUiState(remoteSyncConfigured = true, hasCheckedStatus = true)
         checked.copy(pendingLocalChangesCount = 71).statusSummary() shouldBe "Есть изменения для отправки"

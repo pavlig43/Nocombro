@@ -53,7 +53,7 @@ internal class MultiOpzsComponent(
         coroutineScope.launch {
             try {
                 val rows = service.loadPlan(id)
-                _state.update { it.copy(rows = rows, loadingPlan = false, finished = rows.any { row -> !row.editable }) }
+                _state.update { it.copy(rows = rows, loadingPlan = false) }
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (error: Exception) {

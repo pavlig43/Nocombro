@@ -2,10 +2,10 @@ package ru.pavlig43.transaction.internal.multiopzs
 
 import kotlinx.datetime.LocalDateTime
 import ru.pavlig43.core.model.ChangeSet
+import ru.pavlig43.core.model.DecimalData3
 import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.database.data.transact.Transact
-import ru.pavlig43.database.data.transact.TRANSACTION_TABLE_NAME
 import ru.pavlig43.database.data.transact.TransactionType
 import ru.pavlig43.database.data.transact.ingredient.IngredientBD
 import ru.pavlig43.database.data.transact.pf.PfBD
@@ -13,6 +13,7 @@ import ru.pavlig43.database.inTransaction
 import ru.pavlig43.mutable.api.multiLine.data.UpdateCollectionRepository
 import ru.pavlig43.mutable.api.singleLine.data.UpdateSingleLineRepository
 import ru.pavlig43.transaction.internal.di.BatchCostRepository
+import ru.pavlig43.transaction.internal.plan.plannedFoodWeights
 import ru.pavlig43.transaction.internal.update.tabs.component.opzs.ingredients.FillIngredientsRepository
 import ru.pavlig43.transaction.internal.update.tabs.component.opzs.ingredients.FillIngredientsResult
 
@@ -25,35 +26,24 @@ internal class CreateOpzsService(
     private val batchCostRepository: BatchCostRepository,
 ) {
     suspend fun loadPlan(planId: Int): List<MultiOpzsRow> = db.inTransaction {
-        require(db.productionPlanDao.getPlan(planId)?.let { it.deletedAt == null } == true) {
+        require(db.productPlanDao.getPlan(planId)?.let { it.deletedAt == null } == true) {
             "План производства недоступен"
         }
-        db.productionPlanDao.getRows(planId).mapIndexed { index, line ->
+        db.productPlanDao.getRows(planId).mapIndexed { index, line ->
             val product = db.productDao.getProduct(line.productId)
-            val transaction = db.transactionDao.getTransactionBySyncId(line.syncId)
-            val pf = transaction?.takeIf { it.deletedAt == null && it.isCompleted && it.transactionType == TransactionType.OPZS }
-                ?.let { db.pfDao.getPf(it.id) }
-            val declaration = if (transaction == null && product.deletedAt == null) declarations(product.id).singleOrNull() else null
-            val status = when {
-                pf != null -> OpzsRowResult.Created(pf.transactionId)
-                wasDeleted(line.syncId) || transaction?.deletedAt != null ->
-                    OpzsRowResult.Unavailable("ОПЗС удалена")
-                transaction != null -> OpzsRowResult.Unavailable("ОПЗС недоступна")
-                else -> OpzsRowResult.Empty
-            }
+            val declaration = if (product.deletedAt == null) declarations(product.id).singleOrNull() else null
             MultiOpzsRow(
-                composeId = index, syncId = line.syncId,
-                productId = pf?.productId ?: product.id, productName = pf?.productName ?: product.displayName,
-                declarationId = pf?.declarationId ?: declaration?.id ?: 0,
-                declarationName = pf?.declarationName ?: declaration?.displayName.orEmpty(),
-                vendorName = pf?.vendorName ?: declaration?.vendorName.orEmpty(),
-                count = ru.pavlig43.core.model.DecimalData3(pf?.count ?: line.plannedGrams), result = status,
+                composeId = index,
+                productId = product.id,
+                productName = product.displayName,
+                declarationId = declaration?.id ?: 0,
+                declarationName = declaration?.displayName.orEmpty(),
+                vendorName = declaration?.vendorName.orEmpty(),
+                count = DecimalData3(line.plannedGrams),
+                plannedBatching = PlannedBatching(product.id, line.plannedGrams, line.packageGrams),
             )
         }
     }
-
-    private suspend fun wasDeleted(syncId: String): Boolean =
-        db.mirrorDeletionJournalDao.contains(TRANSACTION_TABLE_NAME, syncId)
 
     suspend fun declarations(productId: Int): List<Declaration> =
         db.productDeclarationDao.getProductDeclarationIn(productId)
@@ -77,7 +67,6 @@ internal class CreateOpzsService(
                 existing.transactionType == TransactionType.OPZS) { "ОПЗС с этим sync_id недоступна" }
             return@inTransaction existing.id
         }
-        check(!wasDeleted(row.syncId)) { "ОПЗС удалена" }
         validate(row)
         val id = db.transactionDao.create(
             Transact(
@@ -88,12 +77,16 @@ internal class CreateOpzsService(
                 syncId = row.syncId,
             )
         ).toInt()
+        val foodWeights = row.plannedBatching?.takeIf {
+            it.productId == row.productId && it.plannedGrams == row.count.value
+        }?.let { db.plannedFoodWeights(it.productId, it.plannedGrams, it.packageGrams) }
         val ingredients = when (val result = fillIngredients.fillIngredientsFromComposition(
             productId = row.productId, transactionId = id, countPf = row.count.value,
+            foodWeights = foodWeights,
         ).getOrThrow()) {
             is FillIngredientsResult.Ready -> result.ingredients
             is FillIngredientsResult.Deficit -> error(result.deficits.joinToString("; ") {
-                "${it.productName}: не хватает ${ru.pavlig43.core.model.DecimalData3(it.missingCount)} кг"
+                "${it.productName}: не хватает ${DecimalData3(it.missingCount)} кг"
             })
         }
         require(ingredients.isNotEmpty() && ingredients.any { it.count > 0 }) {

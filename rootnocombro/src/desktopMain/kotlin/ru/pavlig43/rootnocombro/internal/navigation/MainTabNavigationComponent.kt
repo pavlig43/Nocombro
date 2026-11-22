@@ -19,6 +19,7 @@ import ru.pavlig43.immutable.api.component.ImmutableTableBuilderData
 import ru.pavlig43.immutable.api.component.ImmutableTableComponentFactoryMain
 import ru.pavlig43.immutable.api.component.ImmutableTableAction
 import ru.pavlig43.immutable.api.component.ProductImmutableTableBuilder
+import ru.pavlig43.immutable.api.component.ProductPlanImmutableTableBuilder
 import ru.pavlig43.immutable.api.component.SafetyImmutableTableBuilder
 import ru.pavlig43.immutable.api.component.TransactionImmutableTableBuilder
 import ru.pavlig43.immutable.api.component.VendorImmutableTableBuilder
@@ -58,6 +59,7 @@ import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig.DocumentListConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig.ExpenseListConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig.ProductListConfig
+import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig.ProductPlanListConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig.SafetyListConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig.TransactionListConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig.VendorListConfig
@@ -74,8 +76,7 @@ import ru.pavlig43.storage.api.component.batchMovement.BatchMovementComponent
 import ru.pavlig43.storage.api.component.storage.StorageComponent
 import ru.pavlig43.tablecore.model.IMultiLineTableUi
 import ru.pavlig43.transaction.api.component.TransactionFormComponent
-import ru.pavlig43.transaction.api.component.ProductionPlanComponent
-import ru.pavlig43.transaction.api.component.ProductionPlansComponent
+import ru.pavlig43.transaction.api.component.ProductPlanComponent
 import ru.pavlig43.vendor.api.component.VendorFormComponent
 
 internal class MainTabNavigationComponent(
@@ -97,8 +98,8 @@ internal class MainTabNavigationComponent(
     )
 
     fun openScreenFromDrawer(destination: DrawerDestination) {
-        if (destination == DrawerDestination.ProductionPlans) {
-            openOrSelect(MainTabConfig.ProductionPlanListConfig()) { it is MainTabConfig.ProductionPlanListConfig }
+        if (destination == DrawerDestination.ProductPlans) {
+            openOrSelect(ProductPlanListConfig()) { it is ProductPlanListConfig }
             return
         }
         tabNavigationComponent.addTab(destination.toMainTabConfig())
@@ -109,14 +110,14 @@ internal class MainTabNavigationComponent(
         if (index < 0) tabNavigationComponent.addTab(config) else tabNavigationComponent.onSelectTab(index)
     }
 
-    private fun openProductionPlan(id: Int) {
-        val config = MainTabConfig.ProductionPlanConfig(id)
+    private fun openProductPlan(id: Int) {
+        val config = MainTabConfig.ProductPlanConfig(id)
         if (id == 0) tabNavigationComponent.addTab(config)
-        else openOrSelect(config) { it is MainTabConfig.ProductionPlanConfig && it.id == id }
+        else openOrSelect(config) { it is MainTabConfig.ProductPlanConfig && it.id == id }
     }
 
     private fun openPlannedMultiOpzs(id: Int) {
-        openOrSelect(TransactionFormConfig(0, id)) { it is TransactionFormConfig && it.productionPlanId == id }
+        openOrSelect(TransactionFormConfig(0, id)) { it is TransactionFormConfig && it.productPlanId == id }
     }
 
     // Создаём tabOpener раньше, чем tabNavigationComponent
@@ -131,15 +132,11 @@ internal class MainTabNavigationComponent(
                 when (mainTabConfig) {
                     is NotificationConfig -> NotificationChild(notificationComponent)
 
-                    is MainTabConfig.ProductionPlanListConfig -> MainTabChild.ProductionPlansChild(
-                        ProductionPlansComponent(context, scope.get(), ::openProductionPlan)
-                    )
-
-                    is MainTabConfig.ProductionPlanConfig -> MainTabChild.ProductionPlanChild(
-                        ProductionPlanComponent(
+                    is MainTabConfig.ProductPlanConfig -> MainTabChild.ProductPlanChild(
+                        ProductPlanComponent(
                             context, mainTabConfig.id, scope.get(), tabOpener,
-                            ::openProductionPlan, ::openPlannedMultiOpzs, onCloseTab,
-                        ).also { it.start() }
+                            ::openProductPlan, ::openPlannedMultiOpzs, onCloseTab,
+                        )
                     )
 
                     is AnalyticConfig -> MainMoneyChild(
@@ -261,6 +258,8 @@ internal class MainTabNavigationComponent(
                     withCheckbox = true
                 )
 
+                is ProductPlanListConfig -> ProductPlanImmutableTableBuilder(withCheckbox = true) { openProductPlan(0) }
+
                 is TransactionListConfig -> TransactionImmutableTableBuilder(
                     fullListTransactionTypes = TransactionType.entries,
                     withCheckbox = true
@@ -283,6 +282,7 @@ internal class MainTabNavigationComponent(
             is DeclarationListConfig -> tabOpener.openDeclarationTab(item.composeId)
             is DocumentListConfig -> tabOpener.openDocumentTab(item.composeId)
             is ProductListConfig -> tabOpener.openProductTab(item.composeId)
+            is ProductPlanListConfig -> openProductPlan(item.composeId)
             is VendorListConfig -> tabOpener.openVendorTab(item.composeId)
             is TransactionListConfig -> tabOpener.openTransactionTab(item.composeId)
             is ExpenseListConfig -> {
@@ -355,7 +355,7 @@ internal class MainTabNavigationComponent(
                     componentContext = context,
                     dependencies = scope.get(),
                     tabOpener = tabOpener,
-                    productionPlanId = tabConfig.productionPlanId,
+                    productPlanId = tabConfig.productPlanId,
                 )
             )
 

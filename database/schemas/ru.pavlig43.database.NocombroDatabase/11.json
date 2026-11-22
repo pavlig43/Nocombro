@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 11,
-    "identityHash": "d0736cc2be7fcfc47640817b8ab52885",
+    "identityHash": "15fa29cd0adc27c465501ee32eca700e",
     "entities": [
       {
         "tableName": "file",
@@ -875,14 +875,8 @@
       },
       {
         "tableName": "production_plan",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`title` TEXT NOT NULL, `created_at` TEXT NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `sync_id` TEXT NOT NULL, `updated_at` TEXT NOT NULL, `deleted_at` TEXT)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`created_at` TEXT NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `sync_id` TEXT NOT NULL, `updated_at` TEXT NOT NULL, `deleted_at` TEXT)",
         "fields": [
-          {
-            "fieldPath": "title",
-            "columnName": "title",
-            "affinity": "TEXT",
-            "notNull": true
-          },
           {
             "fieldPath": "createdAt",
             "columnName": "created_at",
@@ -2381,7 +2375,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'd0736cc2be7fcfc47640817b8ab52885')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '15fa29cd0adc27c465501ee32eca700e')"
     ]
   }
 }

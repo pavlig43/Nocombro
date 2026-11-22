@@ -1,6 +1,7 @@
 package ru.pavlig43.rootnocombro.internal.navigation
 
 import kotlinx.datetime.LocalDateTime
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -34,10 +35,8 @@ sealed interface MainTabConfig{
     class DoctorConfig: MainTabConfig
 
     @Serializable
-    class ProductionPlanListConfig : MainTabConfig
-
-    @Serializable
-    class ProductionPlanConfig(val id: Int) : MainTabConfig
+    @SerialName("ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ProductionPlanConfig")
+    class ProductPlanConfig(val id: Int) : MainTabConfig
 
     @Serializable
     sealed interface ItemListConfig: MainTabConfig{
@@ -61,6 +60,10 @@ sealed interface MainTabConfig{
 
         @Serializable
         class SafetyListConfig:ItemListConfig
+
+        @Serializable
+        @SerialName("ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ProductionPlanListConfig")
+        class ProductPlanListConfig : ItemListConfig
     }
 
 
@@ -79,7 +82,10 @@ sealed interface MainTabConfig{
         class DeclarationFormConfig(val id:Int):ItemFormConfig
 
         @Serializable
-        class TransactionFormConfig(val id: Int, val productionPlanId: Int? = null) : ItemFormConfig
+        class TransactionFormConfig(
+            val id: Int,
+            @SerialName("productionPlanId") val productPlanId: Int? = null,
+        ) : ItemFormConfig
 
         @Serializable
         class ExpenseFormConfig(val id: Int) : ItemFormConfig

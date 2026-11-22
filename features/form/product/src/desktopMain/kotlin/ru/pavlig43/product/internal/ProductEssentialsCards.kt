@@ -90,7 +90,7 @@ private fun productEssentialsSections(
                 ),
                 *(if (showMixLimit) arrayOf(
                     SingleLineFormField<ProductEssentialsUi>(
-                        label = "Максимальный замес, кг",
+                        label = "Масса замеса, кг",
                         content = { item, fieldModifier ->
                             SingleLineDecimalField(state = item.maxMixGramsState, decimalPlaces = 3, modifier = fieldModifier)
                         },

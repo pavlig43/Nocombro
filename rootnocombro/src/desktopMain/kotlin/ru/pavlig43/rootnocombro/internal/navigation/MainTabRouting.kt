@@ -9,6 +9,7 @@ import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig.DocumentListConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig.ExpenseListConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig.ProductListConfig
+import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig.ProductPlanListConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig.SafetyListConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig.TransactionListConfig
 import ru.pavlig43.rootnocombro.internal.navigation.MainTabConfig.ItemListConfig.VendorListConfig
@@ -25,7 +26,7 @@ internal fun DrawerDestination.toMainTabConfig(): MainTabConfig =
         DrawerDestination.VendorList -> VendorListConfig()
         DrawerDestination.DeclarationList -> DeclarationListConfig()
         DrawerDestination.ProductTransactionList -> TransactionListConfig()
-        DrawerDestination.ProductionPlans -> MainTabConfig.ProductionPlanListConfig()
+        DrawerDestination.ProductPlans -> ProductPlanListConfig()
         DrawerDestination.ExpenseList -> ExpenseListConfig()
         DrawerDestination.Safety -> SafetyListConfig()
         DrawerDestination.SampleTable -> MainTabConfig.SampleTableConfig()

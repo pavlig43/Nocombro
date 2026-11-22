@@ -153,12 +153,14 @@ class RootNocombroFlowSmokeTest : DesktopMainDispatcherFunSpec({
         withRootComponent(seeded = false) { root ->
             val component = root.stack.value.active.instance.shouldBeInstanceOf<RootChild.Tabs>().component
             runOnUiThread {
-                component.openScreenFromDrawer(DrawerDestination.ProductionPlans)
-                component.openScreenFromDrawer(DrawerDestination.ProductionPlans)
+                component.openScreenFromDrawer(DrawerDestination.ProductPlans)
+                component.openScreenFromDrawer(DrawerDestination.ProductPlans)
             }
             val tabs = component.tabNavigationComponent.tabChildren.value
-            tabs.items.count { it.instance is MainTabChild.ProductionPlansChild } shouldBe 1
-            tabs.items[requireNotNull(tabs.selectedIndex)].instance.shouldBeInstanceOf<MainTabChild.ProductionPlansChild>()
+            tabs.items.count { it.configuration is MainTabConfig.ItemListConfig.ProductPlanListConfig } shouldBe 1
+            val selected = tabs.items[requireNotNull(tabs.selectedIndex)]
+            selected.configuration.shouldBeInstanceOf<MainTabConfig.ItemListConfig.ProductPlanListConfig>()
+            selected.instance.shouldBeInstanceOf<MainTabChild.ImmutableTableChild>()
         }
     }
 

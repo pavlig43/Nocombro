@@ -4,6 +4,7 @@ import ru.pavlig43.database.data.document.DocumentType
 import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.database.data.transact.TransactionType
 import ru.pavlig43.immutable.internal.component.items.productDeclaration.ProductDeclarationTableUi
+import ru.pavlig43.immutable.internal.component.items.product.plan.ProductPlanTableUi
 import ru.pavlig43.immutable.internal.component.items.safety.SafetyTableUi
 import ru.pavlig43.tablecore.model.IMultiLineTableUi
 
@@ -87,4 +88,11 @@ data class ExpenseImmutableTableBuilder(
     override val withCheckbox: Boolean
 ) : ImmutableTableBuilderData<ru.pavlig43.immutable.internal.component.items.expense.ExpenseTableUi> {
     override val tabTitle: String = "Расходы"
+}
+
+class ProductPlanImmutableTableBuilder(
+    override val withCheckbox: Boolean,
+    internal val onCreate: () -> Unit,
+) : ImmutableTableBuilderData<ProductPlanTableUi> {
+    override val tabTitle = "Планы производства"
 }

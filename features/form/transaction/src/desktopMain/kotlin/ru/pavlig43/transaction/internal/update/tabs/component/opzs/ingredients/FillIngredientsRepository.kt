@@ -5,6 +5,7 @@ import ru.pavlig43.database.NocombroDatabase
 import ru.pavlig43.database.data.batch.MovementType
 import ru.pavlig43.database.data.product.ProductType
 import ru.pavlig43.database.data.transact.ingredient.IngredientBD
+import ru.pavlig43.transaction.internal.plan.isFoodIngredient
 import kotlin.math.min
 
 /** Подбирает партии сырья для заполнения ОПЗС по составу ПФ. */
@@ -20,16 +21,22 @@ internal class FillIngredientsRepository(
      * @param productId продукт ПФ
      * @param transactionId ID правимой ОПЗС; её движения не входят в остаток
      * @param countPf вес ПФ в граммах
+     * @param foodWeights вес пищевого сырья по продуктам, если выпуск идёт по раскладке
      * @return готовые строки либо полный список дефицитов
      */
     suspend fun fillIngredientsFromComposition(
         productId: Int,
         transactionId: Int,
         countPf: Long,
+        foodWeights: Map<Int, Long>? = null,
     ): Result<FillIngredientsResult> = runCatching {
         val requiredIngredients = compositionDao
             .getIngredientsFromComposition(productId, transactionId, countPf)
             .mergeSameProducts()
+            .mapNotNull { ingredient ->
+                if (foodWeights == null || !ingredient.productType.isFoodIngredient) ingredient
+                else foodWeights[ingredient.productId]?.let { ingredient.copy(count = it) }
+            }
         val movements = if (requiredIngredients.isEmpty()) {
             emptyList()
         } else {

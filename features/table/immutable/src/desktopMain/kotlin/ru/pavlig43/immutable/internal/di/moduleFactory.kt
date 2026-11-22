@@ -13,6 +13,7 @@ import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.database.data.document.Document
 import ru.pavlig43.database.data.expense.MainExpenseBD
 import ru.pavlig43.database.data.product.ProductDeclarationOut
+import ru.pavlig43.database.data.product.plan.ProductPlan
 import ru.pavlig43.database.data.safety.SafetyTableItem
 import ru.pavlig43.database.data.vendor.Vendor
 import ru.pavlig43.database.data.sync.mirror.MirrorDeletionJournalRepository
@@ -77,6 +78,8 @@ internal enum class ImmutableTableRepositoryType {
     /** Расходы */
     EXPENSE,
 
+    PRODUCTION_PLAN,
+
 
 
 
@@ -102,6 +105,19 @@ private fun createImmutableRepository(
     ImmutableTableRepositoryType.BATCH -> BatchRepository(db)
     ImmutableTableRepositoryType.SAFETY -> SafetyRepository(db)
     ImmutableTableRepositoryType.EXPENSE -> ExpenseRepository(db)
+    ImmutableTableRepositoryType.PRODUCTION_PLAN -> ProductPlanRepository(db)
+}
+
+private class ProductPlanRepository(db: NocombroDatabase) : ImmutableListRepository<ProductPlan> {
+    private val dao = db.productPlanDao
+    private val deletionJournal = MirrorDeletionJournalRepository(db)
+
+    override suspend fun deleteByIds(ids: Set<Int>): Result<Unit> = runCatching {
+        deletionJournal.captureHardDeletes { dao.deletePlansByIds(ids) }
+    }
+
+    override fun observeOnItems(parentId: Int): Flow<Result<List<ProductPlan>>> =
+        dao.observePlans().map { Result.success(it) }.catch { emit(Result.failure(it)) }
 }
 
 /**

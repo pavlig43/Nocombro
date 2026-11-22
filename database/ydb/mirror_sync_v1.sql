@@ -55,7 +55,6 @@ CREATE TABLE IF NOT EXISTS `product` (
 
 CREATE TABLE IF NOT EXISTS `production_plan` (
     sync_id Utf8,
-    title Utf8,
     created_at Utf8,
     updated_at Utf8,
     deleted_at Utf8,

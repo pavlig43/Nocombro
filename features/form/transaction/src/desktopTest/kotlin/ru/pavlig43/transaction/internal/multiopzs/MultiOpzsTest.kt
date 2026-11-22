@@ -26,7 +26,8 @@ import ru.pavlig43.database.data.product.CompositionIn
 import ru.pavlig43.database.data.product.Product
 import ru.pavlig43.database.data.product.ProductDeclarationIn
 import ru.pavlig43.database.data.product.ProductType
-import ru.pavlig43.database.data.sync.mirror.MirrorDeletionJournalRepository
+import ru.pavlig43.database.data.sync.mirror.MirrorLocalSnapshotRepository
+import ru.pavlig43.database.data.sync.mirror.MirrorSyncTable
 import ru.pavlig43.database.data.transact.Transact
 import ru.pavlig43.database.data.transact.TransactionType
 import ru.pavlig43.database.data.transact.ingredient.IngredientBD
@@ -49,28 +50,31 @@ import ru.pavlig43.transaction.internal.di.BatchCostRepository
 import ru.pavlig43.transaction.internal.di.UpdateCollectionRepositoryType
 import ru.pavlig43.transaction.internal.di.UpdateSingleLineRepositoryType
 import ru.pavlig43.transaction.internal.di.createTransactionFormModule
-import ru.pavlig43.transaction.internal.production.PlanDraft
-import ru.pavlig43.transaction.internal.production.PlanLine
-import ru.pavlig43.transaction.internal.production.ProductionPlanRepository
+import ru.pavlig43.transaction.internal.plan.PlanDraft
+import ru.pavlig43.transaction.internal.plan.PlanLine
+import ru.pavlig43.transaction.internal.plan.ProductPlanRepository
+import ru.pavlig43.transaction.internal.plan.readProductPlanLayout
+import ru.pavlig43.transaction.internal.plan.weighIngredients
 import ru.pavlig43.transaction.internal.update.tabs.component.opzs.ingredients.FillIngredientsRepository
 
 private val productionTime = LocalDateTime(2026, 10, 14, 17, 35)
 private val born = LocalDate(2026, 1, 1)
 
 class MultiOpzsTest : DesktopMainDispatcherFunSpec({
-    test("opening a plan again keeps the posted line and never recreates a deleted operation") {
+    test("each transfer from a plan starts a fresh draft with independent operation IDs") {
         withFixture { f ->
             val product = f.db.productDao.getProduct(f.product)
             f.db.productDao.updateProduct(product.copy(maxMixGrams = 18_000))
             val first = PlanLine(productId = f.product, planned = "3")
             val second = PlanLine(productId = f.product, planned = "6")
-            val planId = ProductionPlanRepository(f.db).save(null, PlanDraft("План", listOf(first, second)))
+            val repository = ProductPlanRepository(f.db)
+            val planId = repository.save(null, PlanDraft(lines = listOf(first, second)))
             suspend fun openPlan(): Pair<LifecycleRegistry, MultiOpzsComponent> {
                 val lifecycle = LifecycleRegistry()
                 val form = runOnUiThread {
                     TransactionFormComponent(
                         0, NoopTabOpener, DefaultComponentContext(lifecycle, backHandler = BackDispatcher()),
-                        f.dependencies, productionPlanId = planId,
+                        f.dependencies, productPlanId = planId,
                     )
                 }
                 val multi = form.stack.value.active.instance.shouldBeInstanceOf<TransactionFormComponent.Child.MultiOpzs>().component
@@ -81,22 +85,19 @@ class MultiOpzsTest : DesktopMainDispatcherFunSpec({
             val initial = original.state.value.rows
             initial.map { it.count.value } shouldBe listOf(3000L, 6000L)
             initial.first().declarationId shouldBe f.declaration
+            (initial.first().syncId != first.syncId) shouldBe true
             val actual = initial.first().copy(count = DecimalData3(1000))
             val transactionId = f.service.create(actual, productionTime)
+            f.db.transactionDao.getTransaction(transactionId).syncId shouldBe actual.syncId
             runOnUiThread { firstTab.destroy() }
             val (secondTab, restored) = openPlan()
             val reopened = restored.state.value.rows
-            reopened.first().result shouldBe OpzsRowResult.Created(transactionId)
-            reopened.first().count.value shouldBe 1000L
-            reopened.last().result shouldBe OpzsRowResult.Empty
-            f.service.create(actual, productionTime) shouldBe transactionId
+            reopened.map { it.result } shouldBe listOf(OpzsRowResult.Empty, OpzsRowResult.Empty)
+            reopened.map { it.count.value } shouldBe listOf(3000L, 6000L)
+            (reopened.first().syncId != actual.syncId) shouldBe true
             runOnUiThread { secondTab.destroy() }
-            MirrorDeletionJournalRepository(f.db).captureHardDeletes {
-                f.db.transactionDao.deleteTransactionsByIds(setOf(transactionId))
-            }
-            f.service.loadPlan(planId).first().result.shouldBeInstanceOf<OpzsRowResult.Unavailable>()
-            runCatching { f.service.create(actual, productionTime) }.isFailure shouldBe true
-            f.db.transactionDao.getTransactionBySyncId(first.syncId) shouldBe null
+            repository.delete(planId)
+            f.db.pfDao.getPf(transactionId)?.count shouldBe 1000L
         }
     }
 
@@ -121,6 +122,67 @@ class MultiOpzsTest : DesktopMainDispatcherFunSpec({
             f.db.batchMovementDao.getByTransactionId(id).all {
                 it.movement.syncId.isNotBlank() && it.movement.deletedAt == null
             } shouldBe true
+        }
+    }
+
+    test("editing OPZS output preserves the batch and movement sync IDs") {
+        withFixture { f ->
+            val id = f.service.create(f.row(2_000), productionTime)
+            val pf = checkNotNull(f.db.pfDao.getPf(id))
+            val batch = f.db.batchDao.getBatch(pf.batchId)
+            val movement = f.db.batchMovementDao.getMovement(pf.movementId)
+            val repository = f.koin.koin.get<UpdateSingleLineRepository<PfBD>>(
+                UpdateSingleLineRepositoryType.PF.qualifier,
+            )
+            val newDate = LocalDate(2026, 10, 15)
+
+            repository.update(ChangeSet(pf, pf.copy(count = 2_500, dateBorn = newDate))).getOrThrow()
+            val snapshot = MirrorLocalSnapshotRepository(f.db).loadSnapshot(
+                listOf(MirrorSyncTable.BATCH, MirrorSyncTable.BATCH_COST_PRICE, MirrorSyncTable.BATCH_MOVEMENT),
+            )
+
+            val updatedBatch = f.db.batchDao.getBatch(pf.batchId)
+            val updatedMovement = f.db.batchMovementDao.getMovement(pf.movementId)
+            updatedBatch.dateBorn shouldBe newDate
+            updatedBatch.syncId shouldBe batch.syncId
+            (updatedBatch.updatedAt > batch.updatedAt) shouldBe true
+            updatedMovement.count shouldBe 2_500L
+            updatedMovement.syncId shouldBe movement.syncId
+            (updatedMovement.updatedAt > movement.updatedAt) shouldBe true
+            snapshot.rowsByTable.getValue(MirrorSyncTable.BATCH_COST_PRICE).any {
+                it.syncId == batch.syncId && it.deletedAt == null
+            } shouldBe true
+        }
+    }
+
+    test("planned OPZS withdraws the sum of printed weights for unequal batches") {
+        withFixture { f ->
+            val product = f.db.productDao.getProduct(f.product)
+            f.db.productDao.updateProduct(product.copy(maxMixGrams = 2_002))
+            val second = f.db.productDao.create(Product(ProductType.FOOD_BASE, "Второе сырьё", createdAt = born)).toInt()
+            val third = f.db.productDao.create(Product(ProductType.FOOD_PF, "Компонент П/Ф", createdAt = born)).toInt()
+            f.stock(second, 2_000, born, 20_000)
+            f.stock(third, 2_000, born, 20_000)
+            f.db.compositionDao.upsertComposition(listOf(
+                f.db.compositionDao.getAll().single().copy(count = 333),
+                CompositionIn(0, f.product, second, 333),
+                CompositionIn(0, f.product, third, 334),
+            ))
+            val line = PlanLine(productId = f.product, planned = "3,003", packageWeight = "1,001")
+            val repository = ProductPlanRepository(f.db)
+            val planId = repository.save(null, PlanDraft(lines = listOf(line)))
+            val layout = f.db.readProductPlanLayout(planId).products.single()
+            val printed = (0 until layout.batches.batchCount).map { index ->
+                weighIngredients(layout.recipe, layout.batches.packagesAt(index) * layout.packageGrams)
+            }
+            printed shouldBe listOf(listOf(667L, 666L, 669L), listOf(333L, 333L, 335L))
+
+            val draft = f.service.loadPlan(planId).single()
+            repository.delete(planId)
+            val operationId = f.service.create(draft, productionTime)
+            val withdrawals = f.db.ingredientDao.getByTransactionId(operationId).groupBy { it.productId }
+                .mapValues { (_, ingredients) -> ingredients.sumOf { it.count } }
+            withdrawals shouldBe mapOf(f.raw to 1_000L, second to 999L, third to 1_004L)
         }
     }
 

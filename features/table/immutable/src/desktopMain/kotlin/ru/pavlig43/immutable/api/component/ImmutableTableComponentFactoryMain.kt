@@ -15,6 +15,7 @@ import ru.pavlig43.database.data.declaration.Declaration
 import ru.pavlig43.database.data.document.Document
 import ru.pavlig43.database.data.expense.MainExpenseBD
 import ru.pavlig43.database.data.product.ProductDeclarationOut
+import ru.pavlig43.database.data.product.plan.ProductPlan
 import ru.pavlig43.database.data.safety.SafetyTableItem
 import ru.pavlig43.database.data.vendor.Vendor
 import ru.pavlig43.immutable.api.ImmutableTableDependencies
@@ -26,6 +27,7 @@ import ru.pavlig43.immutable.internal.component.items.expense.ExpenseTableCompon
 import ru.pavlig43.immutable.internal.component.items.product.ProductTableComponent
 import ru.pavlig43.immutable.internal.component.items.product.ProductTableItem
 import ru.pavlig43.immutable.internal.component.items.productDeclaration.ProductDeclarationTableComponent
+import ru.pavlig43.immutable.internal.component.items.product.plan.ProductPlanTableComponent
 import ru.pavlig43.immutable.internal.component.items.safety.SafetyTableComponent
 import ru.pavlig43.immutable.internal.component.items.transaction.TransactionTableComponent
 import ru.pavlig43.immutable.internal.component.items.transaction.TransactionTableItem
@@ -145,6 +147,15 @@ class ImmutableTableComponentFactoryMain(
                 onCreate = { tabOpener.openExpenseFormTab(0) },
                 repository = scope.get<ImmutableListRepository<MainExpenseBD>>(
                     ImmutableTableRepositoryType.EXPENSE.qualifier
+                ),
+            )
+
+            is ProductPlanImmutableTableBuilder -> ProductPlanTableComponent(
+                componentContext = context,
+                tableBuilder = immutableTableBuilderData,
+                onItemClick = onItemClick,
+                repository = scope.get<ImmutableListRepository<ProductPlan>>(
+                    ImmutableTableRepositoryType.PRODUCTION_PLAN.qualifier
                 ),
             )
 

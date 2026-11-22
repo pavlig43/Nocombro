@@ -13,8 +13,8 @@ import ru.pavlig43.database.data.files.FILE_TABLE_NAME
 import ru.pavlig43.database.data.money.MONEY_ACCOUNT_TABLE_NAME
 import ru.pavlig43.database.data.money.MONEY_MOVEMENT_TABLE_NAME
 import ru.pavlig43.database.data.product.COMPOSITION_TABLE_NAME
-import ru.pavlig43.database.data.production.PRODUCTION_PLAN_TABLE
-import ru.pavlig43.database.data.production.PRODUCTION_PLAN_ROW_TABLE
+import ru.pavlig43.database.data.product.plan.PRODUCTION_PLAN_TABLE
+import ru.pavlig43.database.data.product.plan.PRODUCTION_PLAN_ROW_TABLE
 import ru.pavlig43.database.data.product.PRODUCT_DECLARATION_TABLE_NAME
 import ru.pavlig43.database.data.product.PRODUCT_SPECIFICATION_TABLE_NAME
 import ru.pavlig43.database.data.product.PRODUCT_TABLE_NAME
